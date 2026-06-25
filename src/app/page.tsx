@@ -15,35 +15,29 @@ import {
   Home as HomeIcon,
   MessageSquare,
   Key,
-  ShieldCheck,
-  Star
+  ShieldCheck
 } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 
 export default function Home() {
   const router = useRouter();
-  const { properties, setSelectedCity, reviews, addReview } = useApp();
+  const { properties, setSelectedCity } = useApp();
   const { scrollY } = useScroll();
 
-  const [reviewName, setReviewName] = useState("");
-  const [reviewFeedback, setReviewFeedback] = useState("");
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [quizStep, setQuizStep] = useState(0);
+  const [quizCity, setQuizCity] = useState("");
+  const [quizType, setQuizType] = useState("");
+  const [quizBudget, setQuizBudget] = useState("");
+  const [quizName, setQuizName] = useState("");
+  const [quizContact, setQuizContact] = useState("");
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [shortlistedCount, setShortlistedCount] = useState(0);
+  const [showToast, setShowToast] = useState(false);
 
-  const handleReviewSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!reviewName || !reviewFeedback) return;
-    addReview({
-      name: reviewName,
-      feedback: reviewFeedback,
-      rating: reviewRating
-    });
-    setReviewName("");
-    setReviewFeedback("");
-    setReviewSubmitted(true);
-    setTimeout(() => {
-      setReviewSubmitted(false);
-    }, 4000);
+  const handleShortlist = () => {
+    setShortlistedCount((prev) => prev + 1);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
 
@@ -62,9 +56,9 @@ export default function Home() {
     { name: "Udaipur", count: 240, desc: "City of Lakes & Palaces", bg: "from-blue-600/10 to-teal-500/10", image: "https://content.jdmagicbox.com/comp/udaipur-rajasthan/h6/9999px294.x294.190109172305.s8h6/catalogue/archi-s-galaxy-udaipur-rajasthan-th9b6z57si.jpg" },
     { name: "Jaipur", count: 480, desc: "Heritage Forts & Royalty", bg: "from-rose-500/10 to-amber-500/10", image: "https://www.jaipurpropertyhouse.in/wp-content/uploads/2022/12/arihant-avana-mansarovar-jaipur.jpg" },
     { name: "Jodhpur", count: 180, desc: "The Stunning Blue City", bg: "from-indigo-600/10 to-blue-500/10", image: "" },
-    { name: "Kota", count: 110, desc: "River Chambal & Study Hub", bg: "from-emerald-600/10 to-teal-500/10", image: "https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=400&q=80" },
-    { name: "Ajmer", count: 95, desc: "Aravalli Hills & Sufi Shrine", bg: "from-teal-600/10 to-cyan-500/10", image: "https://images.unsplash.com/photo-1626125345510-4603468eedfb?auto=format&fit=crop&w=400&q=80" },
-    { name: "Bikaner", count: 75, desc: "Desert Dunes & Havelis", bg: "from-amber-600/10 to-orange-500/10", image: "https://images.unsplash.com/photo-1509305717901-8473a93b9fef?auto=format&fit=crop&w=400&q=80" },
+    { name: "Kota", count: 110, desc: "River Chambal & Study Hub", bg: "from-emerald-600/10 to-teal-500/10", image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=25.1800,75.8300" },
+    { name: "Ajmer", count: 95, desc: "Aravalli Hills & Sufi Shrine", bg: "from-teal-600/10 to-cyan-500/10", image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=26.4500,74.6300" },
+    { name: "Bikaner", count: 75, desc: "Desert Dunes & Havelis", bg: "from-amber-600/10 to-orange-500/10", image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=28.0100,73.3100" },
   ];
 
   const handleCityBrowse = (cityName: string) => {
@@ -137,26 +131,25 @@ export default function Home() {
             </div>
 
             {/* Right Column: Layered Asymmetric Images Collage (Jharokha Palace Arches - Static) */}
-            <div className="hidden lg:col-span-5 lg:flex flex-col items-center justify-center relative h-[500px] w-full">
+            <div className="hidden lg:col-span-5 lg:flex flex-col items-center justify-center relative h-[520px] w-full">
               {/* Image 1: Main Udaipur lakeside terrace villa (Large) */}
-              <div className="absolute w-[80%] h-[320px] rounded-3xl overflow-hidden border border-sand shadow-2xl z-10 top-0 left-0">
+              <div className="absolute w-[80%] h-[360px] overflow-hidden heritage-arch-double z-10 top-0 left-0">
                 <img
-                  src="https://images.unsplash.com/photo-1598977123418-45f04b615e52?auto=format&fit=crop&w=800&q=80"
+                  src="https://maps.google.com/cbk?output=thumbnail&w=800&h=600&ll=26.9239,75.8267"
                   alt="Rambagh Palace Jaipur"
                   className="w-full h-full object-cover object-center"
                 />
               </div>
 
               {/* Image 2: Small heritage Haveli courtyard (Small, overlaps) */}
-              <div className="absolute w-[60%] h-[240px] rounded-3xl overflow-hidden border border-sand shadow-2xl z-20 bottom-4 right-0">
+              <div className="absolute w-[60%] h-[260px] overflow-hidden heritage-arch-double z-20 bottom-4 right-0">
                 <img
-                  src="https://images.unsplash.com/photo-1595238612450-e3c18b3550a4?auto=format&fit=crop&w=600&q=80"
+                  src="https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=24.5764,73.6836"
                   alt="Heritage Haveli Courtyard Archway"
                   className="w-full h-full object-cover object-center"
                 />
                 {/* Overlay Badge inside Image */}
-                <div className="absolute bottom-3.5 left-3.5 bg-cream px-3 py-1 rounded-xl border border-sand text-[9px] text-indigo uppercase font-black tracking-widest flex items-center gap-1.5 shadow-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-terracotta" />
+                <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-md px-4 py-1.5 rounded border border-sand/50 text-[9px] text-charcoal font-semibold uppercase tracking-[0.2em] flex items-center shadow-md">
                   <span>Verified Portals</span>
                 </div>
               </div>
@@ -213,6 +206,8 @@ export default function Home() {
         </div>
       </section>
 
+
+
       {/* 2. FEATURED LISTINGS */}
       <section className="relative py-24 z-20 px-6 max-w-7xl mx-auto w-full">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
@@ -239,8 +234,33 @@ export default function Home() {
           {featuredProperties.map((property, idx) => {
             const yTransform = idx === 0 ? yCard1 : idx === 1 ? yCard2 : yCard3;
             return (
-              <motion.div key={property.id} style={{ y: yTransform }} className="w-full">
+              <motion.div key={property.id} style={{ y: yTransform }} className="w-full relative group">
                 <PropertyCard property={property} />
+                {/* Shortlist/Heart Button */}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleShortlist();
+                  }}
+                  className="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-charcoal hover:text-terracotta flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer"
+                  title="Shortlist Property"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="w-5 h-5 hover:fill-terracotta"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+                    />
+                  </svg>
+                </button>
               </motion.div>
             );
           })}
@@ -255,7 +275,7 @@ export default function Home() {
           <div className="lg:col-span-6 relative h-[450px] w-full">
             <div className="absolute inset-0 rounded-3xl overflow-hidden border border-sand shadow-xl">
               <img
-                src="https://images.unsplash.com/photo-1598977123418-45f04b615e52?auto=format&fit=crop&w=1200&q=80"
+                src="https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.2700,73.0100"
                 alt="Rajasthan Restored Haveli courtyard"
                 className="w-full h-full object-cover"
               />
@@ -393,25 +413,25 @@ export default function Home() {
               name: "Udaipur",
               title: "The City of Lakes",
               desc: "Known for floating marble palaces, historic Mewar arches, and serene lakeside sunsets.",
-              image: "https://images.unsplash.com/photo-1595238612450-e3c18b3550a4?auto=format&fit=crop&w=600&q=80"
+              image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=24.5764,73.6836"
             },
             {
               name: "Jaipur",
               title: "The Pink City",
               desc: "Home of the majestic Hawa Mahal, block printers, royal fort gates, and bustling bazaars.",
-              image: "https://images.unsplash.com/photo-1477587458883-471a5ed08be4?auto=format&fit=crop&w=600&q=80"
+              image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=26.9239,75.8267"
             },
             {
               name: "Jaisalmer",
               title: "The Golden City",
               desc: "Discover ancient sandstone forts emerging from the Thar desert and yellow dune camps.",
-              image: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=600&q=80"
+              image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=26.9124,70.9127"
             },
             {
               name: "Mount Abu",
               title: "Hill Station Oasis",
               desc: "Aravalli range hill retreat showcasing Nakki Lake views and Dilwara Jain stone carvings.",
-              image: "https://images.unsplash.com/photo-1562813733-b31f71025d54?auto=format&fit=crop&w=600&q=80"
+              image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=24.5925,72.7156"
             }
           ].map((dest) => (
             <div
@@ -459,25 +479,25 @@ export default function Home() {
                 name: "Lake Palace, Udaipur",
                 location: "Udaipur, Rajasthan",
                 desc: "Floating marble monument on Lake Pichola, offering pure royal exclusivity.",
-                image: "https://images.unsplash.com/photo-1595238612450-e3c18b3550a4?auto=format&fit=crop&w=600&q=80"
+                image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=24.5756,73.6801"
               },
               {
                 name: "Umaid Bhawan, Jodhpur",
                 location: "Jodhpur, Rajasthan",
                 desc: "One of the world's largest private residences built with golden sandstone arches.",
-                image: "https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=600&q=80"
+                image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=26.2809,73.0475"
               },
               {
                 name: "Rambagh Palace, Jaipur",
                 location: "Jaipur, Rajasthan",
                 desc: "The Jewel of Jaipur, displaying symmetrical Mughal gardens and heritage corridors.",
-                image: "https://images.unsplash.com/photo-1598977123418-45f04b615e52?auto=format&fit=crop&w=600&q=80"
+                image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=26.8981,75.8055"
               },
               {
                 name: "Neemrana Fort, Alwar",
                 location: "Alwar, Delhi NCR Ext",
                 desc: "15th-century heritage hill fort with tiered garden terraces and amphitheaters.",
-                image: "https://images.unsplash.com/photo-1605538032432-a9f0c8d9baac?auto=format&fit=crop&w=600&q=80"
+                image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=27.9944,76.3888"
               }
             ].map((venue) => (
               <div
@@ -525,8 +545,8 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Steps Road (Systematic Overlapping Card Stack) */}
-        <div className="flex flex-col md:flex-row items-stretch justify-center max-w-5xl mx-auto py-8 md:-space-x-8 lg:-space-x-10 space-y-4 md:space-y-0 px-4">
+        {/* Steps Road (Systematic Card Stack with flip animation) */}
+        <div className="flex flex-col md:flex-row items-center justify-center max-w-6xl mx-auto py-8 gap-6 md:gap-8 flex-wrap">
           {[
             {
               step: "01",
@@ -559,150 +579,59 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5, delay: idx * 0.12 }}
-              className="w-full md:w-72 bg-white border border-sand p-6 sm:p-7 rounded-3xl shadow-md hover:shadow-2xl hover:z-30 transition-all duration-300 transform hover:-translate-y-4 group hover:border-terracotta/40 cursor-pointer"
+              className="flip-card w-full sm:w-64 h-[250px] cursor-pointer"
             >
-              {/* Step indicator */}
-              <span className="absolute top-4 right-5 text-3xl font-black text-sand/65 select-none group-hover:text-terracotta/20 transition-colors">
-                {item.step}
-              </span>
+              <div className="flip-card-inner">
+                {/* Front Side */}
+                <div className="flip-card-front bg-white border border-sand p-6 flex flex-col justify-between shadow-md hover:shadow-lg transition-shadow">
+                  <div>
+                    {/* Step indicator */}
+                    <span className="absolute top-4 right-5 text-3xl font-black text-sand/65 select-none">
+                      {item.step}
+                    </span>
 
-              {/* Icon container */}
-              <div className="w-12 h-12 rounded-xl bg-sand/35 flex items-center justify-center mb-5 border border-sand group-hover:bg-terracotta/10 group-hover:border-terracotta/20 transition-all duration-200">
-                {item.icon}
+                    {/* Icon container */}
+                    <div className="w-12 h-12 rounded-xl bg-sand/35 flex items-center justify-center mb-5 border border-sand">
+                      {item.icon}
+                    </div>
+
+                    <h3 className="font-serif font-black text-base text-charcoal pr-8">
+                      {item.title}
+                    </h3>
+                  </div>
+
+                  <div className="text-[10px] text-terracotta font-extrabold uppercase tracking-wider flex items-center gap-1">
+                    <span>Hover to read more</span>
+                    <span>→</span>
+                  </div>
+                </div>
+
+                {/* Back Side */}
+                <div className="flip-card-back bg-indigo text-white p-6 flex flex-col justify-between shadow-lg">
+                  <div>
+                    <span className="absolute top-4 right-5 text-3xl font-black text-white/10 select-none">
+                      {item.step}
+                    </span>
+
+                    <h3 className="font-serif font-black text-base text-gold mb-3">
+                      {item.title}
+                    </h3>
+
+                    <p className="text-white/90 text-xs leading-relaxed font-semibold">
+                      {item.desc}
+                    </p>
+                  </div>
+
+                  <div className="text-[9px] text-gold-soft font-bold uppercase tracking-widest border-t border-white/10 pt-3">
+                    Verified Protocol
+                  </div>
+                </div>
               </div>
-
-              <h3 className="font-serif font-black text-base text-charcoal mb-2 group-hover:text-indigo transition-colors">
-                {item.title}
-              </h3>
-              <p className="text-charcoal/70 text-xs leading-relaxed font-semibold">
-                {item.desc}
-              </p>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* 4.5 CUSTOMER REVIEWS & INTAKE FORM */}
-      <section className="relative py-24 z-20 bg-sand/10 border-t border-sand/30 px-6 w-full">
-        <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12">
-
-          {/* Left Side: Existing Reviews */}
-          <div className="lg:col-span-7 flex flex-col gap-8 text-left">
-            <div>
-              <span className="text-terracotta font-extrabold text-xs uppercase tracking-widest block mb-2">
-                Client Testimonials
-              </span>
-              <h2 className="text-3xl font-serif font-black text-indigo tracking-tight">
-                Customer Reviews
-              </h2>
-              <p className="text-charcoal/70 text-sm mt-1">
-                Read experiences from people who bought, sold, or relocated through our network.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-6">
-              {reviews.map((rev) => (
-                <div
-                  key={rev.id}
-                  className="bg-white border border-sand p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-center justify-between gap-4 mb-3">
-                    <div className="flex flex-col">
-                      <span className="font-serif font-black text-base text-indigo">{rev.name}</span>
-                      <span className="text-[10px] text-charcoal/40 font-bold">{rev.date}</span>
-                    </div>
-                    {/* Stars */}
-                    <div className="flex items-center gap-0.5 text-gold">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-3.5 h-3.5 ${i < rev.rating ? "fill-gold text-gold" : "text-sand"}`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-xs text-charcoal/70 leading-relaxed font-semibold italic">
-                    &ldquo;{rev.feedback}&rdquo;
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right Side: Simple Submission Interface */}
-          <div className="lg:col-span-5">
-            <div className="bg-white border border-sand p-6 sm:p-8 rounded-3xl shadow-lg text-left">
-              <h3 className="font-serif font-black text-lg text-indigo mb-1">Leave Your Feedback</h3>
-              <p className="text-xs text-charcoal/50 mb-6">Let us know about your property hunt or relocation experience.</p>
-
-              <form onSubmit={handleReviewSubmit} className="flex flex-col gap-4 text-sm font-semibold">
-
-                {/* Name */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-indigo">Your Name *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Vikram Chauhan"
-                    value={reviewName}
-                    onChange={(e) => setReviewName(e.target.value)}
-                    className="w-full bg-white border border-sand rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-terracotta text-charcoal font-medium"
-                  />
-                </div>
-
-                {/* Rating */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-indigo">Rating *</label>
-                  <div className="flex gap-1.5 items-center">
-                    {[1, 2, 3, 4, 5].map((val) => (
-                      <button
-                        key={val}
-                        type="button"
-                        onClick={() => setReviewRating(val)}
-                        className="p-1 hover:scale-110 transition-transform"
-                      >
-                        <Star
-                          className={`w-5 h-5 ${val <= reviewRating ? "fill-gold text-gold" : "text-sand"
-                            }`}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Feedback text */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-indigo">Your Experience *</label>
-                  <textarea
-                    rows={4}
-                    required
-                    placeholder="Tell us what you liked, your interactions with agents, or restoration quality..."
-                    value={reviewFeedback}
-                    onChange={(e) => setReviewFeedback(e.target.value)}
-                    className="w-full bg-white border border-sand rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-terracotta text-charcoal font-medium resize-none"
-                  />
-                </div>
-
-                {reviewSubmitted && (
-                  <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 rounded-xl p-3 text-xs font-bold text-center">
-                    Review submitted successfully! Khamagani Sa.
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  className="mt-2 py-3 bg-terracotta hover:bg-terracotta-hover text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-1.5 hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
-                >
-                  <span>Submit Feedback</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-
-              </form>
-            </div>
-          </div>
-
-        </div>
-      </section>
 
       {/* 5. RELOCATION CONCIERGE BANNER (Sandstone Double Ruled Quote Box) */}
       <section className="relative z-20 pb-24 px-6 max-w-7xl mx-auto w-full">
@@ -730,11 +659,7 @@ export default function Home() {
               Relocating from another state can be overwhelming. Let us know your specifications (budget, BHK layout, school distance), and our local city leads will secure RERA-certified properties, negotiate contract terms, and support your move-in.
             </p>
 
-            {/* Real human quote overlay */}
-            <div className="border-l-2 border-terracotta pl-4 py-1 mt-2 text-xs italic text-indigo font-bold max-w-lg">
-              &ldquo;Finding a property in Udaipur that feels authentic yet modern was incredibly difficult from Bangalore. The concierge team found us a private lakeside villa within a week.&rdquo; <br />
-              <span className="text-[10px] text-charcoal/60 font-extrabold uppercase tracking-wide block mt-1.5">— Dr. Amitabh Sen, Relocated in July 2025</span>
-            </div>
+
           </div>
 
           {/* CTA Action button */}
@@ -750,6 +675,192 @@ export default function Home() {
         </motion.div>
       </section>
 
+      {/* 4.8 INTERACTIVE LEAD-GEN QUIZ (conversion & engagement booster) */}
+      <section className="relative py-20 z-20 bg-[#faf8f5]/40 border-t border-sand w-full px-6">
+        <div className="max-w-4xl mx-auto w-full text-center">
+          
+          <div className="flex flex-col items-center mb-10 gap-2">
+            <span className="text-terracotta font-extrabold text-xs uppercase tracking-widest">
+              Matchmaking Tool
+            </span>
+            <h2 className="text-3xl font-serif font-black text-indigo tracking-tight">
+              Find Your Perfect Heritage Home
+            </h2>
+            <p className="text-charcoal/70 text-xs sm:text-sm max-w-xl">
+              Answer 3 simple questions and our Rajasthan real estate leads will shortlist custom properties fitting your requirements.
+            </p>
+          </div>
+
+          <div className="bg-white border border-sand p-8 sm:p-10 rounded-3xl shadow-xl text-left relative min-h-[300px] flex flex-col justify-between">
+            {!quizSubmitted ? (
+              <>
+                {/* Step Indicators */}
+                <div className="flex items-center justify-between mb-8">
+                  {[0, 1, 2, 3].map((stepNum) => (
+                    <div key={stepNum} className="flex-1 flex items-center">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-colors duration-300 ${quizStep >= stepNum ? 'bg-terracotta text-white' : 'bg-sand/40 text-charcoal/40'}`}>
+                        {stepNum + 1}
+                      </div>
+                      {stepNum < 3 && (
+                        <div className={`flex-1 h-0.5 mx-2 transition-colors duration-300 ${quizStep > stepNum ? 'bg-terracotta' : 'bg-sand/30'}`} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Step 1: City Selection */}
+                {quizStep === 0 && (
+                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-5">
+                    <h3 className="font-serif font-black text-lg text-indigo">1. Choose your preferred destination city:</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      {["Udaipur", "Jaipur", "Jodhpur", "Other"].map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => { setQuizCity(c); setQuizStep(1); }}
+                          className={`py-4 rounded-xl border font-bold text-sm text-left px-5 transition-all cursor-pointer ${quizCity === c ? 'border-terracotta bg-terracotta/5 text-terracotta' : 'border-sand hover:border-indigo/40 text-charcoal'}`}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Step 2: Property Style */}
+                {quizStep === 1 && (
+                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-5">
+                    <h3 className="font-serif font-black text-lg text-indigo">2. Select your heritage property style:</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      {["Heritage Haveli", "Lakeside Villa", "Modern Penthouse", "Raw Land/Plot"].map((t) => (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => { setQuizType(t); setQuizStep(2); }}
+                          className={`py-4 rounded-xl border font-bold text-sm text-left px-5 transition-all cursor-pointer ${quizType === t ? 'border-terracotta bg-terracotta/5 text-terracotta' : 'border-sand hover:border-indigo/40 text-charcoal'}`}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Step 3: Budget range */}
+                {quizStep === 2 && (
+                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-5">
+                    <h3 className="font-serif font-black text-lg text-indigo">3. Select your budget range:</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      {["Under 1 Crore", "1 to 3 Crores", "3 to 5 Crores", "5+ Crores"].map((b) => (
+                        <button
+                          key={b}
+                          type="button"
+                          onClick={() => { setQuizBudget(b); setQuizStep(3); }}
+                          className={`py-4 rounded-xl border font-bold text-sm text-left px-5 transition-all cursor-pointer ${quizBudget === b ? 'border-terracotta bg-terracotta/5 text-terracotta' : 'border-sand hover:border-indigo/40 text-charcoal'}`}
+                        >
+                          {b}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Step 4: Submission */}
+                {quizStep === 3 && (
+                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-4">
+                    <h3 className="font-serif font-black text-lg text-indigo">4. Where should we send your custom matches?</h3>
+                    <div className="flex flex-col gap-3 text-xs sm:text-sm font-semibold">
+                      <input
+                        type="text"
+                        placeholder="Your Name"
+                        value={quizName}
+                        onChange={(e) => setQuizName(e.target.value)}
+                        className="w-full bg-white border border-sand rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-terracotta text-charcoal"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Your Phone Number / Email"
+                        value={quizContact}
+                        onChange={(e) => setQuizContact(e.target.value)}
+                        className="w-full bg-white border border-sand rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-terracotta text-charcoal"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (quizName && quizContact) {
+                            setQuizSubmitted(true);
+                          } else {
+                            alert("Please fill in both fields.");
+                          }
+                        }}
+                        className="mt-2 py-3 bg-terracotta hover:bg-terracotta-hover text-white font-bold rounded-xl shadow-md cursor-pointer"
+                      >
+                        Submit Custom Match Request
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Back button */}
+                {quizStep > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setQuizStep((prev) => prev - 1)}
+                    className="mt-6 text-xs text-charcoal/50 hover:text-indigo font-bold cursor-pointer text-left w-fit"
+                  >
+                    ← Back to previous question
+                  </button>
+                )}
+              </>
+            ) : (
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center justify-center py-10 gap-4">
+                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl font-bold">
+                  ✓
+                </div>
+                <h3 className="font-serif font-black text-xl text-indigo">Matches Found & Sent!</h3>
+                <p className="text-xs sm:text-sm text-charcoal/70 max-w-md">
+                  Thank you, <strong>{quizName}</strong>. Our city lead in <strong>{quizCity}</strong> will contact you at <strong>{quizContact}</strong> shortly with verified <strong>{quizType}</strong> listings matching the <strong>{quizBudget}</strong> range.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuizStep(0);
+                    setQuizCity("");
+                    setQuizType("");
+                    setQuizBudget("");
+                    setQuizName("");
+                    setQuizContact("");
+                    setQuizSubmitted(false);
+                  }}
+                  className="mt-4 text-xs text-terracotta font-bold hover:underline cursor-pointer"
+                >
+                  Restart Curation Quiz
+                </button>
+              </motion.div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Shortlist Toast Notification */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-6 right-6 z-50 bg-indigo text-white px-5 py-3 rounded-2xl shadow-2xl border border-sand/20 flex items-center gap-3"
+          >
+            <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center text-gold">
+              ★
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs font-bold font-sans">Added to Shortlist!</span>
+              <span className="text-[10px] text-white/60 font-semibold">{shortlistedCount} properties saved</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

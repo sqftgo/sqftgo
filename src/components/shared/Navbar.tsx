@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
-import { MapPin, Plus, ChevronDown, User, LogOut, Home, Search, MessageSquare, Briefcase } from "lucide-react";
+import { MapPin, Plus, ChevronDown, User, Users, LogOut, Home, Search, MessageSquare, Briefcase } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const RAJASTHAN_CITIES = [
@@ -42,16 +42,17 @@ export const Navbar: React.FC = () => {
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Browse Properties", href: "/listings" },
+    { name: "Destinations", href: "/destinations" },
+    { name: "Dealers", href: "/dealers" },
     { name: "Relocation Help", href: "/get-assistance" },
-    { name: "Enquiry", href: "/enquiry" },
     { name: "Services", href: "/services" },
   ];
 
   const mobileTabs = [
     { name: "Home", href: "/", icon: Home },
     { name: "Search", href: "/listings", icon: Search },
+    { name: "Dealers", href: "/dealers", icon: Users },
     { name: "Services", href: "/services", icon: Briefcase },
-    { name: "Enquiry", href: "/enquiry", icon: MessageSquare },
   ];
 
   const handleCityChange = (city: string) => {

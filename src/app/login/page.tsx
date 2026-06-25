@@ -325,7 +325,7 @@ function AuthForm() {
         {/* Background Image of Rajasthan Heritage Palace/Villa */}
         <div className="absolute inset-0 w-full h-full z-0 select-none pointer-events-none">
           <img
-            src="https://images.unsplash.com/photo-1605538032432-a9f0c8d9baac?auto=format&fit=crop&w=1200&q=80"
+            src="https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.9239,75.8267"
             alt="Rajasthan Heritage Palace at Sunset"
             className="w-full h-full object-cover object-center brightness-[0.7] contrast-[1.05]"
           />

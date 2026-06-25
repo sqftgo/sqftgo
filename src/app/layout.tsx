@@ -5,6 +5,7 @@ import { AppProvider } from "@/context/AppContext";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
 import DepthBackground from "@/components/shared/DepthBackground";
+import DreamProjectButton from "@/components/shared/DreamProjectButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,6 +47,9 @@ export default function RootLayout({
           
           {/* Global Footer */}
           <Footer />
+          
+          {/* Global Dream Project Button */}
+          <DreamProjectButton />
         </AppProvider>
       </body>
     </html>

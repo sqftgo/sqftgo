@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { useApp } from "@/context/AppContext";
-import { Send, CheckCircle2, User, Mail, Phone, MessageSquare } from "lucide-react";
+import { Property, useApp } from "@/context/AppContext";
+import { Send, CheckCircle2, User, Mail, Phone, MessageSquare, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface InquiryFormProps {
-  propertyId: string;
+  property: Property;
 }
 
-export const InquiryForm: React.FC<InquiryFormProps> = ({ propertyId }) => {
+export const InquiryForm: React.FC<InquiryFormProps> = ({ property }) => {
   const { submitInquiry } = useApp();
   const [formData, setFormData] = useState({
     name: "",
@@ -26,7 +26,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ propertyId }) => {
 
     // Simulate network latency
     setTimeout(() => {
-      submitInquiry(propertyId, formData);
+      submitInquiry(property.id, formData);
       setIsSubmitting(false);
       setIsSuccess(true);
       setFormData({
@@ -39,9 +39,47 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ propertyId }) => {
   };
 
   return (
-    <div className="w-full rounded-2xl bg-white/80 border border-sand p-6 shadow-md">
-      <h3 className="font-serif font-black text-lg text-indigo mb-1">Inquire About Property</h3>
-      <p className="text-xs text-charcoal/50 mb-6">Send a message directly to the owner/agent to request a callback or viewing.</p>
+    <div className="w-full rounded-3xl bg-cream border border-sand shadow-md flex flex-col relative overflow-hidden">
+      {/* Decorative Background */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-indigo/5 rounded-full blur-[40px] pointer-events-none" />
+
+      {/* Owner Profile Header */}
+      <div className="p-6 pb-5 flex flex-col gap-5 relative z-10 border-b border-sand/60">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo to-charcoal flex items-center justify-center text-white font-black text-xl shadow-md border-2 border-white">
+              {property.ownerName.charAt(0)}
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center shadow-sm">
+              <CheckCircle className="w-3 h-3 text-white" />
+            </div>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-black text-lg text-indigo tracking-tight">{property.ownerName}</span>
+            <span className="text-[10px] font-bold text-charcoal/50 uppercase tracking-widest mt-0.5">Verified Owner</span>
+          </div>
+        </div>
+        
+        <div className="flex flex-col gap-3 text-xs font-bold text-charcoal/80">
+          <a href={`tel:${property.ownerPhone}`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white transition-colors border border-transparent hover:border-sand/50">
+            <div className="w-8 h-8 rounded-full bg-terracotta/10 flex items-center justify-center flex-shrink-0">
+              <Phone className="w-4 h-4 text-terracotta" />
+            </div>
+            <span>{property.ownerPhone}</span>
+          </a>
+          <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white transition-colors border border-transparent hover:border-sand/50">
+            <div className="w-8 h-8 rounded-full bg-indigo/10 flex items-center justify-center flex-shrink-0">
+              <Mail className="w-4 h-4 text-indigo" />
+            </div>
+            <span>contact@svrepl.com</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Inquiry Form Section */}
+      <div className="p-6 relative z-10">
+        <h3 className="font-serif font-black text-lg text-indigo mb-1">Inquire About Property</h3>
+        <p className="text-xs text-charcoal/50 mb-6">Send a message directly to request a callback or viewing.</p>
 
       <AnimatePresence mode="wait">
         {!isSuccess ? (
@@ -170,6 +208,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ propertyId }) => {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 };

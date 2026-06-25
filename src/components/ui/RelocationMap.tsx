@@ -199,7 +199,7 @@ export default function RelocationMap({ city }: RelocationMapProps) {
           title="Google Maps"
           width="100%"
           height="100%"
-          src={`https://maps.google.com/maps?q=${encodeURIComponent(`${city}, India`)}&t=k&z=18&ie=UTF8&iwloc=&output=embed`}
+          src={`https://maps.google.com/maps?q=${encodeURIComponent(`${city}, India`)}&t=m&z=14&ie=UTF8&iwloc=&output=embed`}
           className="w-full h-full border-0 absolute inset-0"
           allowFullScreen
           loading="lazy"

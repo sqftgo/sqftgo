@@ -91,7 +91,7 @@ export default function PropertyDetailPage({ params }: PageProps) {
           <div className="flex flex-col gap-3.5">
             <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-sand/20 border border-sand shadow-md">
               <img
-                src={property.images?.length > 0 ? property.images[activeImageIdx] : "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80"}
+                src={property.images?.length > 0 ? property.images[activeImageIdx] : "https://maps.google.com/cbk?output=thumbnail&w=800&h=600&ll=24.5764,73.6836"}
                 alt={property.title}
                 className="w-full h-full object-cover"
               />
@@ -267,32 +267,8 @@ export default function PropertyDetailPage({ params }: PageProps) {
             </button>
           </div>
 
-          {/* Owner/Agent card details */}
-          <div className="rounded-2xl bg-white/80 border border-sand p-6 shadow-sm flex flex-col gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-indigo flex items-center justify-center text-white font-bold text-lg shadow-sm">
-                {property.ownerName.charAt(0)}
-              </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-sm text-indigo">{property.ownerName}</span>
-                <span className="text-xs text-charcoal/50 font-medium">Property Owner</span>
-              </div>
-            </div>
-            
-            <div className="flex flex-col gap-2.5 text-xs font-semibold text-charcoal/70 border-t border-sand pt-4">
-              <a href={`tel:${property.ownerPhone}`} className="flex items-center gap-3 py-1 hover:text-terracotta transition-colors">
-                <Phone className="w-4 h-4 text-terracotta" />
-                <span>{property.ownerPhone}</span>
-              </a>
-              <div className="flex items-center gap-3 py-1">
-                <Mail className="w-4 h-4 text-terracotta" />
-                <span>contact@svrepl.com</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Inquiry form */}
-          <InquiryForm propertyId={property.id} />
+          {/* Owner Profile & Inquiry Form */}
+          <InquiryForm property={property} />
 
         </div>
 

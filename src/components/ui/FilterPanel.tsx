@@ -13,6 +13,11 @@ export interface FilterState {
   furnishing: string[]; // e.g. ["Furnished", "Semi-Furnished", "Unfurnished"]
   minPrice: string;
   maxPrice: string;
+  reraApprovedOnly?: boolean;
+  featuredOnly?: boolean;
+  minSize?: string;
+  maxSize?: string;
+  selectedAmenities?: string[];
 }
 
 interface FilterPanelProps {
@@ -21,6 +26,7 @@ interface FilterPanelProps {
   onReset: () => void;
   isOpen?: boolean;
   onClose?: () => void;
+  showBasicFilters?: boolean;
 }
 
 const CITIES = [
@@ -35,12 +41,81 @@ const PROPERTY_TYPES = [
   "Office Space", "Commercial Space", "Shop", "Industrial Plot"
 ];
 
+const BUDGET_BUY_MIN_OPTIONS = [
+  { label: "Min Price", value: "" },
+  { label: "₹10 Lakhs", value: "1000000" },
+  { label: "₹25 Lakhs", value: "2500000" },
+  { label: "₹50 Lakhs", value: "5000000" },
+  { label: "₹75 Lakhs", value: "7500000" },
+  { label: "₹1 Crore", value: "10000000" },
+  { label: "₹2 Crores", value: "20000000" },
+  { label: "₹5 Crores", value: "50000000" },
+  { label: "₹10 Crores", value: "100000000" }
+];
+
+const BUDGET_BUY_MAX_OPTIONS = [
+  { label: "Max Price", value: "" },
+  { label: "₹25 Lakhs", value: "2500000" },
+  { label: "₹50 Lakhs", value: "5000000" },
+  { label: "₹75 Lakhs", value: "7500000" },
+  { label: "₹1 Crore", value: "10000000" },
+  { label: "₹2 Crores", value: "20000000" },
+  { label: "₹5 Crores", value: "50000000" },
+  { label: "₹10 Crores", value: "100000000" },
+  { label: "₹15 Crores", value: "150000000" }
+];
+
+const BUDGET_RENT_MIN_OPTIONS = [
+  { label: "Min Rent", value: "" },
+  { label: "₹5,000", value: "5000" },
+  { label: "₹10,000", value: "10000" },
+  { label: "₹15,000", value: "15000" },
+  { label: "₹20,000", value: "20000" },
+  { label: "₹30,000", value: "30000" },
+  { label: "₹50,000", value: "50000" },
+  { label: "₹1 Lakh", value: "100000" }
+];
+
+const BUDGET_RENT_MAX_OPTIONS = [
+  { label: "Max Rent", value: "" },
+  { label: "₹10,000", value: "10000" },
+  { label: "₹15,000", value: "15000" },
+  { label: "₹20,000", value: "20000" },
+  { label: "₹30,000", value: "30000" },
+  { label: "₹50,000", value: "50000" },
+  { label: "₹1 Lakh", value: "100000" },
+  { label: "₹2 Lakhs", value: "200000" }
+];
+
+const SIZE_MIN_OPTIONS = [
+  { label: "Min Size (sq.ft.)", value: "" },
+  { label: "500 sq.ft.", value: "500" },
+  { label: "1000 sq.ft.", value: "1000" },
+  { label: "1500 sq.ft.", value: "1500" },
+  { label: "2000 sq.ft.", value: "2000" },
+  { label: "3000 sq.ft.", value: "3000" }
+];
+
+const SIZE_MAX_OPTIONS = [
+  { label: "Max Size (sq.ft.)", value: "" },
+  { label: "1000 sq.ft.", value: "1000" },
+  { label: "1500 sq.ft.", value: "1500" },
+  { label: "2000 sq.ft.", value: "2000" },
+  { label: "3000 sq.ft.", value: "3000" },
+  { label: "5000 sq.ft.", value: "5000" }
+];
+
+const AMENITY_OPTIONS = [
+  "Swimming Pool", "Gym", "Garden", "Parking", "EV Charging", "Power Backup", "Security"
+];
+
 export const FilterPanel: React.FC<FilterPanelProps> = ({
   filters,
   onFilterChange,
   onReset,
   isOpen = true,
   onClose,
+  showBasicFilters = true,
 }) => {
   const handlePurposeChange = (purpose: "all" | "buy" | "sell" | "rent" | "lease") => {
     onFilterChange({ ...filters, purpose, minPrice: "", maxPrice: "" });
@@ -76,6 +151,26 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     onFilterChange({ ...filters, [field]: value });
   };
 
+  const handleToggleRera = () => {
+    onFilterChange({ ...filters, reraApprovedOnly: !filters.reraApprovedOnly });
+  };
+
+  const handleToggleFeatured = () => {
+    onFilterChange({ ...filters, featuredOnly: !filters.featuredOnly });
+  };
+
+  const handleSizeChange = (field: "minSize" | "maxSize", value: string) => {
+    onFilterChange({ ...filters, [field]: value });
+  };
+
+  const handleAmenityToggle = (amenity: string) => {
+    const current = filters.selectedAmenities || [];
+    const nextAmenities = current.includes(amenity)
+      ? current.filter((a) => a !== amenity)
+      : [...current, amenity];
+    onFilterChange({ ...filters, selectedAmenities: nextAmenities });
+  };
+
   const showSpecs = filters.type !== "Industrial Plot" && filters.type !== "Agricultural Land";
 
   return (
@@ -109,64 +204,68 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-col gap-6 overflow-y-auto max-h-[calc(100vh-250px)] pr-1 no-scrollbar">
-        {/* Purpose: Buy vs Sell vs Rent vs Lease */}
-        <div className="flex flex-col gap-2">
-          <span className="text-xs font-bold text-indigo uppercase tracking-wide">Purpose</span>
-          <div className="grid grid-cols-5 gap-1 bg-sand/35 border border-sand/60 p-1 rounded-xl">
-            {(["all", "buy", "sell", "rent", "lease"] as const).map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => handlePurposeChange(p)}
-                className={`py-1.5 text-[10px] font-bold rounded-lg transition-all duration-150 ${
-                  filters.purpose === p
-                    ? "bg-white text-terracotta shadow-sm border border-sand"
-                    : "text-charcoal/60 hover:text-charcoal"
-                }`}
-              >
-                {p === "all" ? "All" : p.charAt(0).toUpperCase() + p.slice(1)}
-              </button>
-            ))}
-          </div>
-        </div>
+      <div className="flex flex-col gap-6">
+        {showBasicFilters && (
+          <>
+            {/* Purpose: Buy vs Sell vs Rent vs Lease */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-bold text-indigo uppercase tracking-wide">Purpose</span>
+              <div className="grid grid-cols-5 gap-1 bg-sand/35 border border-sand/60 p-1 rounded-xl">
+                {(["all", "buy", "sell", "rent", "lease"] as const).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => handlePurposeChange(p)}
+                    className={`py-1.5 text-[10px] font-bold rounded-lg transition-all duration-150 ${
+                      filters.purpose === p
+                        ? "bg-white text-terracotta shadow-sm border border-sand"
+                        : "text-charcoal/60 hover:text-charcoal"
+                    }`}
+                  >
+                    {p === "all" ? "All" : p.charAt(0).toUpperCase() + p.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        {/* City Select */}
-        <div className="flex flex-col gap-2">
-          <span className="text-xs font-bold text-indigo uppercase tracking-wide">City</span>
-          <CustomSelect
-            options={CITIES.map((c) => ({ label: c, value: c }))}
-            value={filters.city}
-            onChange={handleCityChange}
-            searchable
-            className="w-full"
-            buttonClassName="bg-white border border-sand text-charcoal rounded-xl px-3 py-2.5 text-sm font-semibold hover:border-terracotta transition-colors"
-          />
-        </div>
+            {/* City Select */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-bold text-indigo uppercase tracking-wide">City</span>
+              <CustomSelect
+                options={CITIES.map((c) => ({ label: c, value: c }))}
+                value={filters.city}
+                onChange={handleCityChange}
+                searchable
+                className="w-full"
+                buttonClassName="bg-white border border-sand text-charcoal rounded-xl px-3 py-2.5 text-sm font-semibold hover:border-terracotta transition-colors"
+              />
+            </div>
 
-        {/* Locality Input */}
-        <div className="flex flex-col gap-2">
-          <span className="text-xs font-bold text-indigo uppercase tracking-wide">Locality</span>
-          <input
-            type="text"
-            value={filters.locality}
-            onChange={handleLocalityChange}
-            placeholder="Search locality (e.g. Fateh Sagar)"
-            className="w-full bg-white border border-sand text-charcoal rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-colors"
-          />
-        </div>
+            {/* Locality Input */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-bold text-indigo uppercase tracking-wide">Locality</span>
+              <input
+                type="text"
+                value={filters.locality}
+                onChange={handleLocalityChange}
+                placeholder="Search locality (e.g. Fateh Sagar)"
+                className="w-full bg-white border border-sand text-charcoal rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-colors"
+              />
+            </div>
 
-        {/* Property Type */}
-        <div className="flex flex-col gap-2">
-          <span className="text-xs font-bold text-indigo uppercase tracking-wide">Property Type</span>
-          <CustomSelect
-            options={[{ label: "All Types", value: "any" }, ...PROPERTY_TYPES.map((t) => ({ label: t, value: t }))]}
-            value={filters.type}
-            onChange={handleTypeChange}
-            className="w-full"
-            buttonClassName="bg-white border border-sand text-charcoal rounded-xl px-3 py-2.5 text-sm font-semibold hover:border-terracotta transition-colors"
-          />
-        </div>
+            {/* Property Type */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-bold text-indigo uppercase tracking-wide">Property Type</span>
+              <CustomSelect
+                options={[{ label: "All Types", value: "any" }, ...PROPERTY_TYPES.map((t) => ({ label: t, value: t }))]}
+                value={filters.type}
+                onChange={handleTypeChange}
+                className="w-full"
+                buttonClassName="bg-white border border-sand text-charcoal rounded-xl px-3 py-2.5 text-sm font-semibold hover:border-terracotta transition-colors"
+              />
+            </div>
+          </>
+        )}
 
         {/* BHK Selector */}
         {showSpecs && (
@@ -194,32 +293,81 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           </div>
         )}
 
-        {/* Price Range Filter */}
+        {showBasicFilters && (
+          /* Price Range Filter */
+          <div className="flex flex-col gap-2">
+            <span className="text-xs font-bold text-indigo uppercase tracking-wide">
+              {filters.purpose === "rent" || filters.purpose === "lease" ? "Monthly Rent/Lease" : "Budget Price"}
+            </span>
+            <div className="flex flex-col gap-2">
+              <CustomSelect
+                options={filters.purpose === "rent" || filters.purpose === "lease" ? BUDGET_RENT_MIN_OPTIONS : BUDGET_BUY_MIN_OPTIONS}
+                value={filters.minPrice}
+                onChange={(val) => handlePriceChange("minPrice", val)}
+                className="w-full"
+                buttonClassName="bg-white border border-sand text-charcoal text-xs font-bold rounded-xl px-2.5 py-2.5 hover:border-terracotta transition-colors text-left"
+              />
+              <CustomSelect
+                options={filters.purpose === "rent" || filters.purpose === "lease" ? BUDGET_RENT_MAX_OPTIONS : BUDGET_BUY_MAX_OPTIONS}
+                value={filters.maxPrice}
+                onChange={(val) => handlePriceChange("maxPrice", val)}
+                className="w-full"
+                buttonClassName="bg-white border border-sand text-charcoal text-xs font-bold rounded-xl px-2.5 py-2.5 hover:border-terracotta transition-colors text-left"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Size Range Filter */}
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-bold text-indigo uppercase tracking-wide">
-            {filters.purpose === "rent" || filters.purpose === "lease" ? "Monthly Rent/Lease (₹)" : "Price (₹)"}
-          </span>
-          <div className="grid grid-cols-2 gap-2">
-            <input
-              type="number"
-              placeholder="Min"
-              value={filters.minPrice}
-              onChange={(e) => handlePriceChange("minPrice", e.target.value)}
-              className="w-full bg-white border border-sand text-charcoal rounded-xl px-3 py-2 text-sm font-medium focus:outline-none focus:border-terracotta transition-colors"
+          <span className="text-xs font-bold text-indigo uppercase tracking-wide">Property Size (sq.ft.)</span>
+          <div className="flex flex-col gap-2">
+            <CustomSelect
+              options={SIZE_MIN_OPTIONS}
+              value={filters.minSize || ""}
+              onChange={(val) => handleSizeChange("minSize", val)}
+              className="w-full"
+              buttonClassName="bg-white border border-sand text-charcoal text-xs font-bold rounded-xl px-2.5 py-2.5 hover:border-terracotta transition-colors text-left"
             />
-            <input
-              type="number"
-              placeholder="Max"
-              value={filters.maxPrice}
-              onChange={(e) => handlePriceChange("maxPrice", e.target.value)}
-              className="w-full bg-white border border-sand text-charcoal rounded-xl px-3 py-2 text-sm font-medium focus:outline-none focus:border-terracotta transition-colors"
+            <CustomSelect
+              options={SIZE_MAX_OPTIONS}
+              value={filters.maxSize || ""}
+              onChange={(val) => handleSizeChange("maxSize", val)}
+              className="w-full"
+              buttonClassName="bg-white border border-sand text-charcoal text-xs font-bold rounded-xl px-2.5 py-2.5 hover:border-terracotta transition-colors text-left"
             />
           </div>
-          <span className="text-[10px] text-charcoal/50 font-medium italic mt-0.5">
-            {filters.purpose === "rent" || filters.purpose === "lease"
-              ? "e.g. 10000 to 30000"
-              : "e.g. 50L (5000000) to 2Cr (20000000)"}
-          </span>
+        </div>
+
+        {/* Verification & Curations Status */}
+        <div className="flex flex-col gap-2.5 pt-4 border-t border-sand">
+          <span className="text-xs font-bold text-indigo uppercase tracking-wide">Verification & Curation</span>
+          <div className="flex flex-col gap-2.5">
+            <label className="flex items-center gap-2.5 text-xs font-bold text-charcoal/80 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={!!filters.reraApprovedOnly}
+                onChange={handleToggleRera}
+                className="rounded accent-terracotta text-terracotta focus:ring-terracotta w-4.5 h-4.5 cursor-pointer"
+              />
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span>RERA Registered Only</span>
+              </span>
+            </label>
+            <label className="flex items-center gap-2.5 text-xs font-bold text-charcoal/80 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={!!filters.featuredOnly}
+                onChange={handleToggleFeatured}
+                className="rounded accent-terracotta text-terracotta focus:ring-terracotta w-4.5 h-4.5 cursor-pointer"
+              />
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-gold" />
+                <span>Featured Collection Only</span>
+              </span>
+            </label>
+          </div>
         </div>
 
         {/* Furnishing Status */}
@@ -247,6 +395,30 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             </div>
           </div>
         )}
+
+        {/* Amenities checklist */}
+        <div className="flex flex-col gap-2 pt-4 border-t border-sand">
+          <span className="text-xs font-bold text-indigo uppercase tracking-wide">Amenities</span>
+          <div className="grid grid-cols-2 gap-x-2 gap-y-2">
+            {AMENITY_OPTIONS.map((amenity) => {
+              const selected = (filters.selectedAmenities || []).includes(amenity);
+              return (
+                <label
+                  key={amenity}
+                  className="flex items-center gap-2 text-xs text-charcoal/80 font-semibold cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selected}
+                    onChange={() => handleAmenityToggle(amenity)}
+                    className="rounded accent-terracotta text-terracotta focus:ring-terracotta w-4 h-4 cursor-pointer"
+                  />
+                  <span>{amenity}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );

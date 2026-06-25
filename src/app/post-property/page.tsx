@@ -70,7 +70,7 @@ export default function PostPropertyPage() {
   
   // Mock image upload state
   const [mockUploadedImages, setMockUploadedImages] = useState<string[]>([
-    "https://images.unsplash.com/photo-1605538032432-a9f0c8d9baac?auto=format&fit=crop&w=800&q=80"
+    "https://maps.google.com/cbk?output=thumbnail&w=800&h=600&ll=26.2700,73.0100"
   ]);
 
   if (!mounted || !isAdmin) {
@@ -96,9 +96,9 @@ export default function PostPropertyPage() {
 
   const handleMockUpload = () => {
     const mockUnsplashPics = [
-      "https://images.unsplash.com/photo-1595238612450-e3c18b3550a4?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1598977123418-45f04b615e52?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=800&q=80"
+      "https://maps.google.com/cbk?output=thumbnail&w=800&h=600&ll=24.5764,73.6836",
+      "https://maps.google.com/cbk?output=thumbnail&w=800&h=600&ll=24.5925,73.6791",
+      "https://maps.google.com/cbk?output=thumbnail&w=800&h=600&ll=24.6000,73.6800"
     ];
     const nextPic = mockUnsplashPics[mockUploadedImages.length % mockUnsplashPics.length];
     setMockUploadedImages((prev) => [...prev, nextPic]);
@@ -148,7 +148,7 @@ export default function PostPropertyPage() {
       description: description || `A well-maintained ${bhk ? bhk + " BHK " : ""}${type} located in the pleasant vicinity of ${locality}, ${city}. Ideal for family residence.`,
       amenities: selectedAmenities.length > 0 ? selectedAmenities : ["Security", "Parking"],
       images: mockUploadedImages.length > 0 ? mockUploadedImages : [
-        "https://images.unsplash.com/photo-1605538032432-a9f0c8d9baac?auto=format&fit=crop&w=800&q=80"
+        "https://maps.google.com/cbk?output=thumbnail&w=800&h=600&ll=26.2700,73.0100"
       ],
     });
 

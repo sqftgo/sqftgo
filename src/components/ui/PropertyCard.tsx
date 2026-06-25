@@ -2,13 +2,14 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Heart, MapPin, BedDouble, Square, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, MapPin, BedDouble, Square, CheckCircle, ChevronLeft, ChevronRight, Phone, UserCheck, Sparkles, ShieldCheck } from "lucide-react";
 import { Property, useApp } from "@/context/AppContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface PropertyCardProps {
   property: Property;
   onSelect?: (property: Property) => void;
+  layout?: "grid" | "list";
 }
 
 // Helper to format prices into Indian Lakh/Crore conventions
@@ -27,7 +28,7 @@ export const formatIndianCurrency = (price: number, purpose: "buy" | "sell" | "r
   return `₹${price.toLocaleString("en-IN")}`;
 };
 
-export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect }) => {
+export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, layout = "grid" }) => {
   const { favorites, toggleFavorite } = useApp();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [hovered, setHovered] = useState(false);
@@ -46,18 +47,24 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect }
     setCurrentImageIndex((prev) => (prev - 1 + property.images.length) % property.images.length);
   };
 
+  const isListLayout = layout === "list";
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="group relative flex flex-col w-full rounded-2xl bg-white/95 border border-sand shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 overflow-hidden"
+      className={`group relative flex flex-col w-full rounded-2xl bg-white border border-sand hover:border-terracotta/30 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden ${
+        isListLayout ? "md:flex-row md:h-64" : ""
+      }`}
     >
       {/* Thumbnail Carousel Section */}
-      <div className="relative aspect-video w-full overflow-hidden bg-sand/30">
+      <div className={`relative overflow-hidden bg-sand/30 ${
+        isListLayout ? "w-full md:w-80 h-48 md:h-full flex-shrink-0" : "aspect-video w-full"
+      }`}>
         <img
           src={property.images[currentImageIndex]}
           alt={property.title}
@@ -69,12 +76,12 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect }
 
         {/* Purpose Badge & Featured Tag */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
-          <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white shadow-sm ${
+          <span className={`px-3 py-1 rounded text-[9px] font-bold uppercase tracking-[0.15em] text-white shadow-sm w-fit ${
             property.purpose === "buy" || property.purpose === "sell" 
               ? "bg-indigo" 
               : property.purpose === "rent"
               ? "bg-terracotta"
-              : "bg-emerald-600"
+              : "bg-emerald-700"
           }`}>
             {property.purpose === "buy" || property.purpose === "sell" 
               ? "For Sale" 
@@ -83,7 +90,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect }
               : "For Lease"}
           </span>
           {property.featured && (
-            <span className="px-3 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider text-white bg-gold shadow-sm">
+            <span className="px-3 py-1 rounded text-[9px] font-bold uppercase tracking-[0.15em] text-white bg-charcoal shadow-sm w-fit">
               Featured
             </span>
           )}
@@ -91,10 +98,15 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect }
 
         {/* RERA Verification Badge */}
         <div className="absolute bottom-3 left-3 z-10">
-          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider text-charcoal bg-white border border-sand shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span>RERA Approved</span>
-          </span>
+          {property.reraApproved ? (
+            <span className="flex items-center px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-[0.15em] text-emerald-800 bg-white/95 border border-emerald-200 shadow-sm backdrop-blur-sm">
+              <span>RERA Registered</span>
+            </span>
+          ) : (
+            <span className="flex items-center px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-[0.15em] text-charcoal/70 bg-white/95 border border-sand shadow-sm backdrop-blur-sm">
+              <span>Verification Pending</span>
+            </span>
+          )}
         </div>
 
         {/* Show on Map Button (if callback provided) */}
@@ -105,7 +117,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect }
               e.stopPropagation();
               onSelect(property);
             }}
-            className="absolute top-3 right-13 p-2 rounded-xl border border-sand bg-white text-charcoal hover:bg-white hover:text-terracotta shadow-sm z-10 transition-all duration-200"
+            className="absolute top-3 right-13 p-2 rounded-xl border border-sand bg-white text-charcoal hover:bg-white hover:text-terracotta shadow-sm z-10 transition-all duration-200 cursor-pointer"
             title="Center on Map"
           >
             <MapPin className="w-4 h-4 text-terracotta" />
@@ -119,7 +131,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect }
             e.stopPropagation();
             toggleFavorite(property.id);
           }}
-          className={`absolute top-3 right-3 p-2 rounded-xl border shadow-sm z-10 transition-all duration-200 ${
+          className={`absolute top-3 right-3 p-2 rounded-xl border shadow-sm z-10 transition-all duration-200 cursor-pointer ${
             isFavorite
               ? "bg-red-500/20 border-red-500/30 text-red-500"
               : "bg-white border-sand text-charcoal hover:bg-white hover:text-red-500"
@@ -130,18 +142,18 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect }
           </motion.div>
         </button>
 
-        {/* Arrow Controls (visible when hovered or on mobile) */}
+        {/* Arrow Controls */}
         {property.images.length > 1 && (
           <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
             <button
               onClick={prevImage}
-              className="p-1 rounded-lg bg-white/80 hover:bg-white border border-sand text-charcoal transition-colors"
+              className="p-1 rounded-lg bg-white/80 hover:bg-white border border-sand text-charcoal transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={nextImage}
-              className="p-1 rounded-lg bg-white/80 hover:bg-white border border-sand text-charcoal transition-colors"
+              className="p-1 rounded-lg bg-white/80 hover:bg-white border border-sand text-charcoal transition-colors cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -164,46 +176,89 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect }
       </div>
 
       {/* Details Section */}
-      <Link href={`/property/${property.id}`} className="flex flex-col flex-1 p-5 bg-white">
-        {/* Pricing & Type Row */}
-        <div className="flex items-baseline justify-between mb-2">
-          <div className="flex flex-col">
-            <span className="text-[9px] font-bold text-charcoal/50 uppercase tracking-widest leading-none mb-1">
+      <div className={`flex flex-col md:flex-row flex-grow bg-white ${isListLayout ? "md:divide-x md:divide-sand" : ""}`}>
+        
+        {/* Info Area (Middle Section) */}
+        <Link href={`/property/${property.id}`} className="flex flex-col flex-grow p-5 text-left justify-between min-w-0">
+          <div className="flex flex-col gap-1.5">
+            {/* Header: Property Type */}
+            <span className="text-[9px] font-bold text-indigo bg-indigo/5 border border-indigo/10 px-2.5 py-0.5 rounded-md tracking-wider uppercase w-fit">
+              {property.type}
+            </span>
+
+            {/* Title */}
+            <h3 className="font-serif font-black text-lg text-charcoal line-clamp-1 group-hover:text-terracotta transition-colors duration-200 mt-1">
+              {property.title}
+            </h3>
+
+            {/* Location */}
+            <div className="flex items-center gap-1 text-charcoal/60 text-xs mb-1.5">
+              <MapPin className="w-3.5 h-3.5 text-terracotta/80 flex-shrink-0" />
+              <span className="font-semibold truncate">{property.locality}, {property.city}</span>
+            </div>
+
+            {/* Description Snippet (Only for list layout) */}
+            {isListLayout && (
+              <p className="text-charcoal/60 text-xs line-clamp-2 leading-relaxed mb-3">
+                {property.description}
+              </p>
+            )}
+          </div>
+
+          {/* Specs Footer Row */}
+          <div className="flex items-center gap-3.5 text-[10px] text-charcoal/50 font-bold uppercase tracking-widest pt-3 border-t border-sand">
+            {property.bhk && (
+              <>
+                <span>{property.bhk} BHK</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-sand" />
+              </>
+            )}
+            <span>{property.size} SQFT</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-sand" />
+            <span className="truncate">{property.furnished}</span>
+          </div>
+        </Link>
+
+        {/* Action & Pricing Panel (Right Section - List Layout Only) */}
+        <div className={`p-5 flex flex-col justify-between items-stretch text-left md:w-56 bg-cream/10 ${
+          isListLayout ? "flex-shrink-0 border-t md:border-t-0 border-sand" : "hidden"
+        }`}>
+          {/* Price Header */}
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none">
               Guide Price
             </span>
-            <span className="text-xl font-serif font-black text-terracotta leading-none">
+            <span className="text-2xl font-serif font-black text-terracotta mt-1">
               {formatIndianCurrency(property.price, property.purpose)}
             </span>
           </div>
-          <span className="text-[10px] font-bold text-indigo bg-indigo/5 border border-indigo/10 px-2.5 py-1 rounded-md tracking-wider uppercase">
-            {property.type}
-          </span>
-        </div>
 
-        {/* Title with hover color change */}
-        <h3 className="font-serif font-black text-base text-charcoal line-clamp-1 group-hover:text-terracotta transition-colors duration-200 mt-2 mb-1">
-          {property.title}
-        </h3>
+          {/* Owner/Dealer Info Block */}
+          <div className="flex items-center gap-2.5 py-3.5 border-y border-sand/50 my-2">
+            <div className="w-8 h-8 rounded-full bg-indigo/5 border border-sand flex items-center justify-center text-indigo text-xs font-black">
+              {property.ownerName.charAt(0)}
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[10px] font-black text-charcoal truncate">{property.ownerName}</span>
+              <span className="text-[8px] font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-0.5 mt-0.5">
+                <UserCheck className="w-2.5 h-2.5" />
+                <span>Verified Owner</span>
+              </span>
+            </div>
+          </div>
 
-        {/* Locality & City */}
-        <div className="flex items-center gap-1 text-charcoal/60 text-xs mb-5">
-          <MapPin className="w-3.5 h-3.5 text-terracotta/80 flex-shrink-0" />
-          <span className="font-semibold">{property.locality}, {property.city}</span>
+          {/* Direct CTA Buttons */}
+          <div className="flex flex-col gap-1.5">
+            <Link
+              href={`/property/${property.id}`}
+              className="w-full py-2 px-3.5 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white text-center font-bold text-xs shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5"
+            >
+              <Phone className="w-3.5 h-3.5" />
+              <span>Contact Owner</span>
+            </Link>
+          </div>
         </div>
-
-        {/* Editorial Layout Specs Row (Human Design style) */}
-        <div className="flex items-center gap-2.5 text-[10px] text-charcoal/50 font-bold uppercase tracking-widest mt-auto pt-4 border-t border-sand">
-          {property.bhk && (
-            <>
-              <span>{property.bhk} BHK</span>
-              <span className="w-1 h-1 rounded-full bg-sand" />
-            </>
-          )}
-          <span>{property.size} SQFT</span>
-          <span className="w-1 h-1 rounded-full bg-sand" />
-          <span className="truncate">{property.furnished.split("-")[0]}</span>
-        </div>
-      </Link>
+      </div>
     </motion.div>
   );
 };

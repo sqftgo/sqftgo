@@ -21,6 +21,7 @@ export interface Property {
   inquiryCount: number;
   status: "Active" | "Pending Review" | "Sold" | "Rented";
   featured?: boolean;
+  reraApproved?: boolean;
 }
 
 export interface AssistanceRequest {
@@ -100,19 +101,19 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const mockImages = {
   villas: [
-    "https://images.unsplash.com/photo-1595238612450-e3c18b3550a4?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1598977123418-45f04b615e52?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80",
+    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=24.5764,73.6836",
+    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=24.5925,73.6791",
+    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=24.6000,73.6800",
   ],
   apartments: [
-    "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=1200&q=80",
+    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.9239,75.8267",
+    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.8530,75.7600",
+    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.9100,75.8000",
   ],
   houses: [
-    "https://images.unsplash.com/photo-1598977123418-45f04b615e52?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1605538032432-a9f0c8d9baac?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80",
+    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.2700,73.0100",
+    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=25.1800,75.8300",
+    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.4500,74.6300",
   ],
 };
 
@@ -136,6 +137,7 @@ const initialProperties: Property[] = [
     inquiryCount: 12,
     status: "Active",
     featured: true,
+    reraApproved: true,
   },
   {
     id: "prop-2",
@@ -156,6 +158,7 @@ const initialProperties: Property[] = [
     inquiryCount: 4,
     status: "Active",
     featured: true,
+    reraApproved: true,
   },
   {
     id: "prop-3",
@@ -176,6 +179,7 @@ const initialProperties: Property[] = [
     inquiryCount: 9,
     status: "Active",
     featured: true,
+    reraApproved: true,
   },
   {
     id: "prop-4",
@@ -196,6 +200,7 @@ const initialProperties: Property[] = [
     inquiryCount: 18,
     status: "Active",
     featured: true,
+    reraApproved: true,
   },
   {
     id: "prop-5",
@@ -228,7 +233,7 @@ const initialProperties: Property[] = [
     furnished: "Unfurnished",
     description: "East-facing industrial plot measuring 40x60 in the upscale Panchsheel Nagar expansion. Features 40ft wide internal tar roads, underground electricity grid, municipal water connections, and a green park boundary. Ready for immediate construction.",
     amenities: ["Park view", "Corner Plot", "Water Supply", "Gated Boundary"],
-    images: ["https://images.unsplash.com/photo-1599740831146-80a63eea90b0?auto=format&fit=crop&w=1200&q=80"],
+    images: ["https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=28.0229,73.3119"],
     ownerName: "Vikram Chauhan",
     ownerPhone: "+91 98281 12233",
     inquiryCount: 2,
@@ -252,6 +257,7 @@ const initialProperties: Property[] = [
     ownerPhone: "+91 99999 88888",
     inquiryCount: 7,
     status: "Active",
+    reraApproved: true,
   },
   {
     id: "prop-8",
@@ -272,6 +278,7 @@ const initialProperties: Property[] = [
     inquiryCount: 15,
     status: "Active",
     featured: true,
+    reraApproved: true,
   },
   {
     id: "prop-9",
@@ -285,12 +292,13 @@ const initialProperties: Property[] = [
     furnished: "Semi-Furnished",
     description: "Modern, ready-to-move corporate office space on SG Highway, Ahmedabad. Features 25 workstations, 2 private cabins, a conference room, and server room infrastructure. Located in a premium grade-A business park.",
     amenities: ["Security", "Power Backup", "Elevator", "Parking", "Gym"],
-    images: ["https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80"],
+    images: ["https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=23.0258,72.5074"],
     ownerName: "Parth Patel",
     ownerPhone: "+91 99112 99112",
     inquiryCount: 5,
     status: "Active",
     featured: true,
+    reraApproved: true,
   },
   {
     id: "prop-10",
@@ -304,12 +312,13 @@ const initialProperties: Property[] = [
     furnished: "Furnished",
     description: "An outstanding retail opportunity with a double-height glass frontage in one of Surat's highest footfall commercial markets on Varachha Road. Best suited for fashion apparel, electronics, or premium jewelry brands.",
     amenities: ["Security", "Parking", "Modular Kitchen"],
-    images: ["https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?auto=format&fit=crop&w=1200&q=80"],
+    images: ["https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=21.2089,72.8634"],
     ownerName: "Harshil Mehta",
     ownerPhone: "+91 98112 98112",
     inquiryCount: 8,
     status: "Active",
     featured: true,
+    reraApproved: true,
   },
   {
     id: "prop-11",
@@ -329,6 +338,7 @@ const initialProperties: Property[] = [
     inquiryCount: 22,
     status: "Active",
     featured: true,
+    reraApproved: true,
   },
   {
     id: "prop-12",
@@ -362,14 +372,15 @@ const initialProperties: Property[] = [
     description: "Operational heritage luxury desert camp resort near Sam Sand Dunes, Jaisalmer. Features 20 premium Swiss tents, central dining courtyard, bonfire arena, folk dance stage, and camel safari logistics. Excellent high-yield tourist hotspot.",
     amenities: ["Heritage Courtyard", "Private Garden", "Power Backup", "Security", "Parking"],
     images: [
-      "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1533587837-a1516e556834?auto=format&fit=crop&w=1200&q=80"
+      "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.8981,70.5015",
+      "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.8985,70.5020"
     ],
     ownerName: "Sumer Singh Bhati",
     ownerPhone: "+91 98292 22222",
     inquiryCount: 14,
     status: "Active",
     featured: true,
+    reraApproved: true,
   },
   {
     id: "prop-14",
@@ -402,7 +413,7 @@ const initialProperties: Property[] = [
     furnished: "Unfurnished",
     description: "Premium industrial plot measuring 5000 sq ft situated in the busy Metoda GIDC industrial zone in Rajkot. Equipped with high-power industrial grid connections, municipal water channels, and direct container truck accessibility.",
     amenities: ["Water Supply", "Power Backup", "Gated Boundary"],
-    images: ["https://images.unsplash.com/photo-1599740831146-80a63eea90b0?auto=format&fit=crop&w=1200&q=80"],
+    images: ["https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=22.2573,70.7388"],
     ownerName: "Ketan Bhai Patel",
     ownerPhone: "+91 98251 44444",
     inquiryCount: 3,
@@ -427,6 +438,7 @@ const initialProperties: Property[] = [
     inquiryCount: 8,
     status: "Active",
     featured: true,
+    reraApproved: true,
   },
   {
     id: "prop-17",
@@ -447,6 +459,7 @@ const initialProperties: Property[] = [
     inquiryCount: 11,
     status: "Active",
     featured: true,
+    reraApproved: true,
   },
   {
     id: "prop-18",
@@ -460,7 +473,7 @@ const initialProperties: Property[] = [
     furnished: "Unfurnished",
     description: "Scenic lakeside agricultural farm land in Rajsamand. Features fertile soil, close proximity to Rajsamand Lake, municipal irrigation pipelines, and direct road connectivity. Best suited for organic farming or building a private leisure farmhouse.",
     amenities: ["Water Supply", "Private Garden", "Lake View"],
-    images: ["https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=80"],
+    images: ["https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=25.0715,73.8824"],
     ownerName: "Devendra Singh Gohil",
     ownerPhone: "+91 98293 77777",
     inquiryCount: 6,
