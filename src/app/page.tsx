@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useApp } from "@/context/AppContext";
-import SearchBar from "@/components/ui/SearchBar";
-import PropertyCard from "@/components/ui/PropertyCard";
+import { useApp, Property } from "@/context/AppContext";
+import PropertyCard, { formatIndianCurrency } from "@/components/ui/PropertyCard";
+import CustomSelect from "@/components/ui/CustomSelect";
 import {
   Compass,
   MapPin,
@@ -15,15 +15,69 @@ import {
   Home as HomeIcon,
   MessageSquare,
   Key,
-  ShieldCheck
+  ShieldCheck,
+  Building2,
+  User,
+  Phone,
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
+  Award,
+  Star,
+  Check,
+  UserCheck,
+  FileText,
+  HelpCircle,
+  X
 } from "lucide-react";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+
+const RAJASTHAN_CITIES = [
+  "Udaipur", "Jaipur", "Jodhpur", "Kota", "Bikaner", 
+  "Jaisalmer", "Rajsamand", "Pali", "Pushkar", "Alwar"
+];
+
+const PROPERTY_TYPES = [
+  { label: "All Types", value: "any" },
+  { label: "Home", value: "Home" },
+  { label: "Villa", value: "Villa" },
+  { label: "Apartment", value: "Apartment" },
+  { label: "Plots / Land", value: "Industrial Plot" },
+  { label: "Commercial Space", value: "Commercial Space" },
+  { label: "Office Space", value: "Office Space" },
+];
+
+const BUDGET_OPTIONS_BUY = [
+  { label: "Any Price", value: "any" },
+  { label: "Under ₹50 Lakh", value: "0-5000000" },
+  { label: "₹50L - ₹1 Crore", value: "5000000-10000000" },
+  { label: "₹1Cr - ₹3 Crore", value: "10000000-30000000" },
+  { label: "Above ₹3 Crore", value: "30000000-999999999" },
+];
+
+const BUDGET_OPTIONS_RENT = [
+  { label: "Any Rent", value: "any" },
+  { label: "Under ₹15,000", value: "0-15000" },
+  { label: "₹15,000 - ₹30,000", value: "15000-30000" },
+  { label: "₹30,000 - ₹50,000", value: "30000-50000" },
+  { label: "Above ₹50,000", value: "50000-999999" },
+];
 
 export default function Home() {
   const router = useRouter();
-  const { properties, setSelectedCity } = useApp();
-  const { scrollY } = useScroll();
+  const { properties, setSelectedCity, directoryProfiles } = useApp();
 
+  // Search States
+  const [heroTab, setHeroTab] = useState<"buy" | "rent" | "plots" | "commercial">("buy");
+  const [searchCity, setSearchCity] = useState("Udaipur");
+  const [searchLocality, setSearchLocality] = useState("");
+  const [searchType, setSearchType] = useState("any");
+  const [searchBudget, setSearchBudget] = useState("any");
+
+  // Toggle for Top Picks
+  const [topPicksTab, setTopPicksTab] = useState<"buy" | "rent" | "plots">("buy");
+
+  // Matchmaking Quiz States
   const [quizStep, setQuizStep] = useState(0);
   const [quizCity, setQuizCity] = useState("");
   const [quizType, setQuizType] = useState("");
@@ -34,656 +88,1071 @@ export default function Home() {
   const [shortlistedCount, setShortlistedCount] = useState(0);
   const [showToast, setShowToast] = useState(false);
 
+  // Modals States
+  const [showPriceTrends, setShowPriceTrends] = useState(false);
+  const [showLocalityReviews, setShowLocalityReviews] = useState(false);
+  const [showBuyersGuide, setShowBuyersGuide] = useState(false);
+
+  // Carousel scroll refs
+  const topPicksScrollRef = useRef<HTMLDivElement>(null);
+  const prominentProjectsScrollRef = useRef<HTMLDivElement>(null);
+  const developersScrollRef = useRef<HTMLDivElement>(null);
+  const sellersScrollRef = useRef<HTMLDivElement>(null);
+  const newlyAddedScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollContainer = (ref: React.RefObject<HTMLDivElement | null>, direction: "left" | "right") => {
+    if (ref.current) {
+      const { scrollLeft, clientWidth } = ref.current;
+      const scrollAmount = clientWidth * 0.75;
+      ref.current.scrollTo({
+        left: direction === "left" ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
+        behavior: "smooth"
+      });
+    }
+  };
+
+  const handleHeroSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSelectedCity(searchCity);
+    const params = new URLSearchParams();
+    params.set("city", searchCity);
+    
+    if (heroTab === "rent") {
+      params.set("purpose", "rent");
+    } else {
+      params.set("purpose", "buy");
+    }
+
+    if (heroTab === "plots") {
+      params.set("type", "Industrial Plot");
+    } else if (heroTab === "commercial") {
+      params.set("type", "Commercial Space");
+    } else if (searchType !== "any") {
+      params.set("type", searchType);
+    }
+
+    if (searchLocality) params.set("locality", searchLocality);
+    if (searchBudget !== "any") params.set("budget", searchBudget);
+
+    router.push(`/listings?${params.toString()}`);
+  };
+
   const handleShortlist = () => {
     setShortlistedCount((prev) => prev + 1);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
   };
 
-
-
-  // Featured listings asymmetric scroll offsets (columns slide relative to each other)
-  const yCard1 = useTransform(scrollY, [500, 1400], [0, -30]);
-  const yCard2 = useTransform(scrollY, [500, 1400], [0, 15]);
-  const yCard3 = useTransform(scrollY, [500, 1400], [0, -15]);
-
-
-
-  // Featured listings (featured: true)
-  const featuredProperties = properties.filter((p) => p.featured).slice(0, 3);
-
-  const rajasthanCities = [
-    { name: "Udaipur", count: 240, desc: "City of Lakes & Palaces", bg: "from-blue-600/10 to-teal-500/10", image: "https://content.jdmagicbox.com/comp/udaipur-rajasthan/h6/9999px294.x294.190109172305.s8h6/catalogue/archi-s-galaxy-udaipur-rajasthan-th9b6z57si.jpg" },
-    { name: "Jaipur", count: 480, desc: "Heritage Forts & Royalty", bg: "from-rose-500/10 to-amber-500/10", image: "https://www.jaipurpropertyhouse.in/wp-content/uploads/2022/12/arihant-avana-mansarovar-jaipur.jpg" },
-    { name: "Jodhpur", count: 180, desc: "The Stunning Blue City", bg: "from-indigo-600/10 to-blue-500/10", image: "" },
-    { name: "Kota", count: 110, desc: "River Chambal & Study Hub", bg: "from-emerald-600/10 to-teal-500/10", image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=25.1800,75.8300" },
-    { name: "Ajmer", count: 95, desc: "Aravalli Hills & Sufi Shrine", bg: "from-teal-600/10 to-cyan-500/10", image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=26.4500,74.6300" },
-    { name: "Bikaner", count: 75, desc: "Desert Dunes & Havelis", bg: "from-amber-600/10 to-orange-500/10", image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=28.0100,73.3100" },
-  ];
-
   const handleCityBrowse = (cityName: string) => {
     setSelectedCity(cityName);
     router.push(`/listings?city=${cityName}`);
   };
 
-  // Stagger animation container
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.12,
-      },
-    },
-  };
+  // Filters for Top Picks
+  const filteredTopPicks = properties.filter((p) => {
+    if (topPicksTab === "buy") {
+      return p.purpose === "buy" && p.featured;
+    } else if (topPicksTab === "rent") {
+      return p.purpose === "rent" && p.featured;
+    } else {
+      return p.type === "Industrial Plot" || p.type === "Agricultural Land";
+    }
+  });
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } },
-  };
+  const displayTopPicks = filteredTopPicks.length > 0 ? filteredTopPicks : properties.slice(0, 6);
+
+  // Filters for Builders
+  const builders = directoryProfiles.filter((p) => p.category === "Builder & Developer");
+  
+  // Filters for Sellers
+  const sellers = directoryProfiles.filter((p) => p.category === "Agent & Broker" || p.category === "Property Consultant");
+
+  // Newly Added Properties (last 6 properties in database)
+  const newlyAddedProperties = [...properties]
+    .sort((a, b) => b.id.localeCompare(a.id))
+    .slice(0, 6);
+
+  // Quick Browse cities list with custom visuals
+  const browseCities = [
+    { name: "Udaipur", count: 240, desc: "Lake & Restoration Villas", image: "https://content.jdmagicbox.com/comp/udaipur-rajasthan/h6/9999px294.x294.190109172305.s8h6/catalogue/archi-s-galaxy-udaipur-rajasthan-th9b6z57si.jpg" },
+    { name: "Jaipur", count: 480, desc: "Elite Penthouses & Apartments", image: "https://www.jaipurpropertyhouse.in/wp-content/uploads/2022/12/arihant-avana-mansarovar-jaipur.jpg" },
+    { name: "Jodhpur", count: 180, desc: "Sun City Heritage Haveli Estates", image: "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.2700,73.0100" },
+    { name: "Jaisalmer", count: 110, desc: "Sandstone Havelis & Thar Plots", image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=26.9124,70.9127" },
+  ];
+
+  // Static Projects list
+  const mockProjects = [
+    {
+      id: "proj-1",
+      name: "Sun Valley Royal Vista",
+      developer: "Mewar Builders & Developers",
+      price: "₹75 Lakh - ₹1.8 Crore",
+      location: "Fateh Sagar, Udaipur",
+      bhk: "2, 3 & 4 BHK Luxury Apartments",
+      image: "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=24.5764,73.6836"
+    },
+    {
+      id: "proj-2",
+      name: "Aravali Ridge Residency",
+      developer: "Jaipur Heritage Housing",
+      price: "₹85 Lakh - ₹2.5 Crore",
+      location: "Malviya Nagar, Jaipur",
+      bhk: "3 & 4 BHK Premium Apartments",
+      image: "https://www.jaipurpropertyhouse.in/wp-content/uploads/2022/12/arihant-avana-mansarovar-jaipur.jpg"
+    },
+    {
+      id: "proj-3",
+      name: "Fort View Meadows",
+      developer: "Marwar Palace Homes",
+      price: "₹1.2 Crore - ₹3.7 Crore",
+      location: "Mehrangarh Road, Jodhpur",
+      bhk: "Independent Heritage Villas",
+      image: "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.2700,73.0100"
+    },
+    {
+      id: "proj-4",
+      name: "Chambal Heights",
+      developer: "Riverfront Builders Group",
+      price: "₹38 Lakh - ₹85 Lakh",
+      location: "Kunhari, Kota",
+      bhk: "1, 2 & 3 BHK Flats & Penthouses",
+      image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=25.1800,75.8300"
+    }
+  ];
 
   return (
     <div className="flex-1 flex flex-col w-full relative">
 
-      {/* 1. HERO SECTION (Daylight Heritage theme - No Background Image & No Parallax) */}
-      <section className="relative min-h-[85vh] md:min-h-[90vh] flex items-center justify-center pt-16 pb-20 overflow-hidden z-10 px-4 md:px-6">
+      {/* 1. HERO SECTION WITH INTEGRATED SEARCH BANNER */}
+      <section className="relative pt-24 pb-20 md:pb-28 bg-gradient-to-r from-indigo via-blue-900 to-indigo-950 text-white overflow-hidden z-10 px-4 md:px-6">
+        
+        {/* Background Decorative Circles */}
+        <div className="absolute top-[-100px] left-[-100px] w-[350px] h-[350px] bg-terracotta/10 rounded-full blur-[80px] pointer-events-none" />
+        <div className="absolute bottom-[-150px] right-[-50px] w-[500px] h-[500px] bg-gold/10 rounded-full blur-[100px] pointer-events-none" />
 
-        <div className="container mx-auto max-w-7xl flex flex-col gap-10 w-full z-10">
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
-            {/* Left Column: Text Content & Stats */}
-            <div className="lg:col-span-7 flex flex-col text-left gap-8 md:gap-9">
-
-              {/* Heading */}
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-2 text-terracotta font-serif font-black text-sm md:text-base tracking-wide uppercase">
-                  <span>Khamagani Sa!</span>
+        <div className="container mx-auto max-w-7xl relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            {/* Left: Text & Search Widget */}
+            <div className="lg:col-span-7 flex flex-col gap-6 text-left">
+              
+              <div className="flex flex-col gap-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-gold text-xs font-bold uppercase tracking-widest w-fit">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Rajasthan&apos;s Elite Brokerage</span>
                 </div>
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-black tracking-tight leading-none text-charcoal">
-                  Sun Valley <br className="hidden sm:inline" />
-                  <span className="text-indigo">
-                    Real Estate Private Limited
-                  </span>
+                
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-black tracking-tight leading-none text-white">
+                  Properties to buy <br />
+                  in <span className="text-gold">India & Rajasthan</span>
                 </h1>
-                <p className="text-terracotta font-serif font-black text-sm md:text-base tracking-wide uppercase mt-1">
-                  Buy, Sell, Rent, Lease Property in India
-                </p>
-                <p className="max-w-xl text-xs sm:text-sm text-charcoal/85 leading-relaxed font-semibold">
-                  We have been serving the needs of Real Estate in India since 2008. Our platform is designed to meet the needs of buyers, sellers, and brokers in real estate. Our success is attributed to understanding the needs of our customers and we are consistently working to fulfill those needs by utilizing innovative e-commerce solutions.
+                
+                <p className="text-slate-200 text-xs sm:text-sm font-semibold max-w-lg leading-relaxed mt-2">
+                  With Sun Valley Real Estate, access RERA-certified apartments, restored heritage havelis, and premium plots. Find your ideal home with trusted local verification.
                 </p>
               </div>
 
-              {/* Micro Stats */}
-              <div className="grid grid-cols-3 gap-6 sm:gap-12 mt-4 text-charcoal/80">
-                <div className="flex flex-col items-start">
-                  <span className="text-xl md:text-3xl font-serif font-black text-indigo">1200+</span>
-                  <span className="text-[10px] font-bold text-charcoal/50 uppercase tracking-widest mt-1">Properties Listed</span>
+              {/* Integrated Search Widget */}
+              <div className="w-full bg-white text-charcoal rounded-3xl p-4 sm:p-5 shadow-2xl border border-sand mt-3 relative z-30">
+                
+                {/* Search Tabs Selector */}
+                <div className="flex flex-wrap gap-1.5 mb-4 border-b border-sand/40 pb-3">
+                  {[
+                    { key: "buy", label: "Buy" },
+                    { key: "rent", label: "Rent" },
+                    { key: "plots", label: "Plots" },
+                    { key: "commercial", label: "Commercial" }
+                  ].map((tab) => (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => {
+                        setHeroTab(tab.key as any);
+                        setSearchBudget("any");
+                      }}
+                      className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                        heroTab === tab.key
+                          ? "bg-indigo text-white shadow-md shadow-indigo/20"
+                          : "bg-transparent text-charcoal/50 hover:text-charcoal hover:bg-sand/30"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
                 </div>
-                <div className="flex flex-col items-start border-x border-sand px-6 sm:px-12">
-                  <span className="text-xl md:text-3xl font-serif font-black text-terracotta">20+</span>
-                  <span className="text-[10px] font-bold text-charcoal/50 uppercase tracking-widest mt-1">Indian Cities</span>
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-xl md:text-3xl font-serif font-black text-indigo">98%</span>
-                  <span className="text-[10px] font-bold text-charcoal/50 uppercase tracking-widest mt-1">Happy Clients</span>
-                </div>
+
+                {/* Form Fields */}
+                <form onSubmit={handleHeroSearch} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
+                  
+                  {/* Select City */}
+                  <div className="lg:col-span-3 flex items-center gap-2 border border-sand bg-sand/10 hover:border-indigo/35 rounded-xl px-3 py-2 transition-colors relative">
+                    <MapPin className="w-4.5 h-4.5 text-terracotta flex-shrink-0" />
+                    <div className="flex flex-col flex-1 text-left min-w-0">
+                      <span className="text-[9px] font-black text-charcoal/40 uppercase tracking-widest leading-none mb-1">
+                        Select City
+                      </span>
+                      <CustomSelect
+                        options={RAJASTHAN_CITIES.map((c) => ({ label: c, value: c }))}
+                        value={searchCity}
+                        onChange={setSearchCity}
+                        placeholder="Choose City"
+                        className="w-full text-xs font-black text-charcoal"
+                        buttonClassName="bg-transparent border-none p-0 text-xs font-black text-charcoal"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Locality Input */}
+                  <div className="lg:col-span-3 flex items-center gap-2 border border-sand bg-sand/10 hover:border-indigo/35 rounded-xl px-3 py-2 transition-colors relative">
+                    <Compass className="w-4.5 h-4.5 text-indigo flex-shrink-0" />
+                    <div className="flex flex-col flex-1 text-left min-w-0">
+                      <span className="text-[9px] font-black text-charcoal/40 uppercase tracking-widest leading-none mb-1">
+                        Locality
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="Search locality..."
+                        value={searchLocality}
+                        onChange={(e) => setSearchLocality(e.target.value)}
+                        className="w-full bg-transparent border-none text-xs font-bold text-charcoal focus:outline-none placeholder:text-charcoal/30 h-5"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Property Type Dropdown */}
+                  <div className={`lg:col-span-3 flex items-center gap-2 border border-sand bg-sand/10 hover:border-indigo/35 rounded-xl px-3 py-2 transition-colors relative ${
+                    heroTab === "plots" || heroTab === "commercial" ? "opacity-50 pointer-events-none" : ""
+                  }`}>
+                    <HomeIcon className="w-4.5 h-4.5 text-indigo flex-shrink-0" />
+                    <div className="flex flex-col flex-1 text-left min-w-0">
+                      <span className="text-[9px] font-black text-charcoal/40 uppercase tracking-widest leading-none mb-1">
+                        Type
+                      </span>
+                      <CustomSelect
+                        options={PROPERTY_TYPES}
+                        value={searchType}
+                        onChange={setSearchType}
+                        placeholder="All Types"
+                        className="w-full text-xs font-black text-charcoal"
+                        buttonClassName="bg-transparent border-none p-0 text-xs font-black text-charcoal"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Budget Dropdown */}
+                  <div className="lg:col-span-3 flex items-center gap-2 border border-sand bg-sand/10 hover:border-indigo/35 rounded-xl px-3 py-2 transition-colors relative">
+                    <span className="w-4.5 h-4.5 text-indigo flex-shrink-0 text-center font-bold text-xs">₹</span>
+                    <div className="flex flex-col flex-1 text-left min-w-0">
+                      <span className="text-[9px] font-black text-charcoal/40 uppercase tracking-widest leading-none mb-1">
+                        Budget Limit
+                      </span>
+                      <CustomSelect
+                        options={heroTab === "rent" ? BUDGET_OPTIONS_RENT : BUDGET_OPTIONS_BUY}
+                        value={searchBudget}
+                        onChange={setSearchBudget}
+                        placeholder="Any Price"
+                        className="w-full text-xs font-black text-charcoal"
+                        buttonClassName="bg-transparent border-none p-0 text-xs font-black text-charcoal"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    className="sm:col-span-2 lg:col-span-12 py-3 bg-terracotta hover:bg-terracotta-hover text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-300 shadow-md shadow-terracotta/20 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  >
+                    <span>Find Properties</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+
+                </form>
               </div>
+
             </div>
 
-            {/* Right Column: Layered Asymmetric Images Collage (Jharokha Palace Arches - Static) */}
-            <div className="hidden lg:col-span-5 lg:flex flex-col items-center justify-center relative h-[520px] w-full">
-              {/* Image 1: Main Udaipur lakeside terrace villa (Large) */}
-              <div className="absolute w-[80%] h-[360px] overflow-hidden heritage-arch-double z-10 top-0 left-0">
+            {/* Right: Modern Asymmetric Image Frame Collage */}
+            <div className="hidden lg:col-span-5 lg:flex items-center justify-center relative w-full h-[500px]">
+              
+              {/* Tilted Main Visual Frame */}
+              <div className="absolute w-[85%] h-[380px] rounded-[36px] overflow-hidden shadow-2xl border-[6px] border-white/10 rotate-6 hover:rotate-2 hover:scale-[1.02] transition-all duration-500 z-10">
                 <img
-                  src="https://maps.google.com/cbk?output=thumbnail&w=800&h=600&ll=26.9239,75.8267"
-                  alt="Rambagh Palace Jaipur"
-                  className="w-full h-full object-cover object-center"
+                  src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80"
+                  alt="Elite Rajasthan Residence"
+                  className="w-full h-full object-cover"
                 />
               </div>
 
-              {/* Image 2: Small heritage Haveli courtyard (Small, overlaps) */}
-              <div className="absolute w-[60%] h-[260px] overflow-hidden heritage-arch-double z-20 bottom-4 right-0">
+              {/* Smaller Overlapping Visual Frame */}
+              <div className="absolute w-[60%] h-[230px] rounded-[24px] overflow-hidden shadow-2xl border-[4px] border-white/10 bottom-6 right-2 -rotate-3 hover:rotate-0 hover:scale-[1.03] transition-all duration-500 z-20">
                 <img
-                  src="https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=24.5764,73.6836"
-                  alt="Heritage Haveli Courtyard Archway"
-                  className="w-full h-full object-cover object-center"
+                  src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80"
+                  alt="Restored Palace Patio"
+                  className="w-full h-full object-cover"
                 />
-                {/* Overlay Badge inside Image */}
-                <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-md px-4 py-1.5 rounded border border-sand/50 text-[9px] text-charcoal font-semibold uppercase tracking-[0.2em] flex items-center shadow-md">
-                  <span>Verified Portals</span>
+                
+                {/* Floating Rating Badge */}
+                <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md px-3 py-1 rounded-lg border border-sand/50 text-[9px] text-charcoal font-black uppercase tracking-widest flex items-center gap-1.5 shadow-md">
+                  <Star className="w-3 h-3 text-gold fill-gold" />
+                  <span>RERA CERTIFIED</span>
                 </div>
               </div>
+
             </div>
+
           </div>
-
-          {/* SearchBar Widget centered and below columns - Static */}
-          <div className="w-full max-w-5xl mx-auto mt-6 relative z-30 text-center flex flex-col gap-6">
-            <SearchBar />
-
-            {/* Quick Action Navigation Segment: Buy, Rent, Plot */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mt-2">
-              <Link
-                href="/listings?purpose=buy"
-                className="group flex items-center gap-3.5 px-6 py-3.5 rounded-2xl bg-white border border-sand hover:border-terracotta/35 text-charcoal hover:text-terracotta shadow-md hover:shadow-lg transition-all duration-300"
-              >
-                <div className="w-9 h-9 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                  <Compass className="w-4.5 h-4.5" />
-                </div>
-                <div className="flex flex-col text-left">
-                  <span className="text-xs font-black tracking-wide uppercase leading-none mb-1">Buy Property</span>
-                  <span className="text-[10px] text-charcoal/50 font-bold">Explore villas & havelis</span>
-                </div>
-              </Link>
-
-              <Link
-                href="/listings?purpose=rent"
-                className="group flex items-center gap-3.5 px-6 py-3.5 rounded-2xl bg-white border border-sand hover:border-indigo/35 text-charcoal hover:text-indigo shadow-md hover:shadow-lg transition-all duration-300"
-              >
-                <div className="w-9 h-9 rounded-xl bg-indigo/10 text-indigo flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                  <Key className="w-4.5 h-4.5" />
-                </div>
-                <div className="flex flex-col text-left">
-                  <span className="text-xs font-black tracking-wide uppercase leading-none mb-1">Rent Property</span>
-                  <span className="text-[10px] text-charcoal/50 font-bold">Premium lease spaces</span>
-                </div>
-              </Link>
-
-              <Link
-                href="/listings?purpose=buy&type=Plot"
-                className="group flex items-center gap-3.5 px-6 py-3.5 rounded-2xl bg-white border border-sand hover:border-gold/45 text-charcoal hover:text-gold/90 shadow-md hover:shadow-lg transition-all duration-300"
-              >
-                <div className="w-9 h-9 rounded-xl bg-gold/10 text-gold/90 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                  <MapPin className="w-4.5 h-4.5" />
-                </div>
-                <div className="flex flex-col text-left">
-                  <span className="text-xs font-black tracking-wide uppercase leading-none mb-1">Explore Plots</span>
-                  <span className="text-[10px] text-charcoal/50 font-bold">Invest in raw land</span>
-                </div>
-              </Link>
-            </div>
-          </div>
-
         </div>
+
       </section>
 
-
-
-      {/* 2. FEATURED LISTINGS */}
-      <section className="relative py-24 z-20 px-6 max-w-7xl mx-auto w-full">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
+      {/* 2. SVREPL'S TOP PICKS SECTION (Housing's Top Picks Style) */}
+      <section className="relative py-20 px-6 max-w-7xl mx-auto w-full">
+        
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          
           <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-1 text-terracotta font-extrabold text-xs uppercase tracking-widest">
-              <Compass className="w-4 h-4" />
-              <span>Handpicked Collection</span>
+            <div className="flex items-center gap-1.5 text-terracotta font-black text-xs uppercase tracking-wider">
+              <Compass className="w-4 h-4 animate-spin-slow" />
+              <span>Handpicked Real Estate</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-serif font-black text-charcoal tracking-tight">
-              Featured Properties
+            <h2 className="text-2xl sm:text-3xl font-serif font-black text-charcoal tracking-tight">
+              SVREPL&apos;s Top Picks
             </h2>
           </div>
-          <Link
-            href="/listings"
-            className="group flex items-center gap-1.5 text-sm font-bold text-terracotta hover:text-indigo transition-colors duration-200"
-          >
-            <span>View all listings</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
+
+          {/* Quick Filter Tabs & Navigation */}
+          <div className="flex items-center flex-wrap gap-4">
+            
+            {/* Filter Tabs */}
+            <div className="flex bg-sand/35 border border-sand/50 p-1 rounded-xl">
+              {[
+                { key: "buy", label: "For Sale" },
+                { key: "rent", label: "For Rent" },
+                { key: "plots", label: "Land/Plots" }
+              ].map((pickTab) => (
+                <button
+                  key={pickTab.key}
+                  type="button"
+                  onClick={() => setTopPicksTab(pickTab.key as any)}
+                  className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                    topPicksTab === pickTab.key
+                      ? "bg-white text-indigo shadow-sm border border-sand/30"
+                      : "text-charcoal/50 hover:text-charcoal"
+                  }`}
+                >
+                  {pickTab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Slider Navigation Buttons */}
+            <div className="hidden sm:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => scrollContainer(topPicksScrollRef, "left")}
+                className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
+                title="Scroll Left"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollContainer(topPicksScrollRef, "right")}
+                className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
+                title="Scroll Right"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+
+          </div>
+
         </div>
 
-        {/* Property cards grid with asymmetric parallax offsets */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
-          {featuredProperties.map((property, idx) => {
-            const yTransform = idx === 0 ? yCard1 : idx === 1 ? yCard2 : yCard3;
-            return (
-              <motion.div key={property.id} style={{ y: yTransform }} className="w-full relative group">
-                <PropertyCard property={property} />
-                {/* Shortlist/Heart Button */}
+        {/* Top Picks Horizontal Carousel */}
+        <div
+          ref={topPicksScrollRef}
+          className="flex overflow-x-auto gap-6 pb-6 pt-2 scrollbar-none snap-x snap-mandatory scroll-smooth items-stretch"
+        >
+          {displayTopPicks.map((property) => (
+            <div key={property.id} className="w-[300px] sm:w-[360px] flex-shrink-0 snap-start relative group flex flex-col bg-white border border-sand rounded-2xl shadow-sm hover:shadow-xl hover:border-terracotta/30 transition-all duration-300 overflow-hidden">
+              
+              {/* Image & Badges */}
+              <div className="relative aspect-[4/3] w-full overflow-hidden bg-sand/30">
+                <img
+                  src={property.images[0]}
+                  alt={property.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                
+                {/* Overlay Badge */}
+                <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+                  <span className={`px-3 py-1 rounded text-[8px] font-black uppercase tracking-wider text-white shadow-sm w-fit ${
+                    property.purpose === "buy" || property.purpose === "sell" 
+                      ? "bg-indigo" 
+                      : "bg-terracotta"
+                  }`}>
+                    {property.purpose === "buy" || property.purpose === "sell" ? "For Sale" : "For Rent"}
+                  </span>
+                  
+                  {property.reraApproved && (
+                    <span className="px-2.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider text-emerald-800 bg-white/95 border border-emerald-200 shadow-sm">
+                      RERA Registered
+                    </span>
+                  )}
+                </div>
+
+                {/* Shortlist Button */}
                 <button
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     handleShortlist();
                   }}
-                  className="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-charcoal hover:text-terracotta flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer"
-                  title="Shortlist Property"
+                  className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-white/95 hover:bg-white text-charcoal hover:text-terracotta flex items-center justify-center shadow-md active:scale-90 transition-all duration-200 cursor-pointer"
+                  title="Shortlist"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={2}
-                    stroke="currentColor"
-                    className="w-5 h-5 hover:fill-terracotta"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-                    />
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4.5 h-4.5 hover:fill-terracotta">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                   </svg>
                 </button>
-              </motion.div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 2.5 HERITAGE HIGHLIGHT (Static, Spaced Layout with Real Rajasthan Haveli Image) */}
-      <section className="relative py-28 z-20 px-6 max-w-7xl mx-auto w-full overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-
-          {/* Left: Restoration Photo (Static) */}
-          <div className="lg:col-span-6 relative h-[450px] w-full">
-            <div className="absolute inset-0 rounded-3xl overflow-hidden border border-sand shadow-xl">
-              <img
-                src="https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.2700,73.0100"
-                alt="Rajasthan Restored Haveli courtyard"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-
-          {/* Right: Text Card (Proper spacing, no overlap, Static) */}
-          <div className="lg:col-span-6 relative z-10 flex justify-center lg:justify-start mt-8 lg:mt-0">
-            <div className="w-full max-w-xl rounded-3xl bg-cream text-charcoal p-8 border border-sand shadow-2xl relative">
-              <span className="text-terracotta font-extrabold text-[10px] uppercase tracking-widest block mb-2">
-                Restoration Collection
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-serif font-black tracking-tight leading-tight mb-4 text-indigo">
-                The Havelis of Old Jodhpur & Udaipur
-              </h2>
-              <p className="text-charcoal/70 text-xs sm:text-sm leading-relaxed mb-6 font-semibold">
-                Living in a Haveli is an inheritance of culture. We work with structural preservation teams to restore ancient lime-plastered courtyards, stone-carved jharokhas, and structural woodwork. Every heritage home listed in our Restoration Collection meets modern sanitation, electricity, and plumbing codes while retaining its royal architectural soul.
-              </p>
-
-              <div className="flex items-center gap-3.5 mt-2">
-                <Link
-                  href="/listings?type=Independent House"
-                  className="px-5 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white font-bold text-xs hover:shadow-md transition-colors shadow-sm"
-                >
-                  Explore Havelis
-                </Link>
-                <Link
-                  href="/get-assistance"
-                  className="px-5 py-2.5 rounded-xl border border-sand hover:border-terracotta/30 text-charcoal font-bold text-xs transition-colors"
-                >
-                  Request Heritage Hunt
-                </Link>
               </div>
-            </div>
-          </div>
 
-        </div>
-      </section>
-
-      {/* 3. BROWSE BY CITY */}
-      <section className="relative py-24 z-20 bg-sand/35 border-y border-sand/40 w-full px-6">
-        <div className="max-w-7xl mx-auto w-full">
-          <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-16 gap-3">
-            <span className="text-terracotta font-extrabold text-xs uppercase tracking-widest">
-              Explore Neighborhoods
-            </span>
-            <h2 className="text-3xl md:text-4xl font-serif font-black text-charcoal tracking-tight">
-              Browse by Rajasthan City
-            </h2>
-            <p className="text-charcoal/70 text-sm">
-              Discover unique residential options, prices, and locations across Rajasthan&apos;s most iconic municipalities.
-            </p>
-          </div>
-
-          {/* Cities 2-Column Grid */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          >
-            {rajasthanCities.map((city) => {
-              return (
-                <motion.div
-                  key={city.name}
-                  variants={itemVariants}
-                  onClick={() => handleCityBrowse(city.name)}
-                  className="group relative h-64 rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-500 border border-sand/50 bg-indigo"
-                >
-                  {/* Background Image or Gradient */}
-                  {city.image ? (
-                    <img
-                      src={city.image}
-                      alt={city.name}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                  ) : (
-                    <div className={`absolute inset-0 bg-gradient-to-br ${city.bg.replace(/\/10/g, '/80')} opacity-80`} />
-                  )}
-                  
-                  {/* Overlay Gradient for readability */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/30 to-charcoal/10 opacity-80 group-hover:opacity-90 transition-opacity duration-500" />
-
-                  {/* Card Content Layout */}
-                  <div className="absolute inset-0 p-6 flex flex-col justify-between">
-                    
-                    {/* Top Row: Count Tag & Action Icon */}
-                    <div className="flex items-start justify-between w-full">
-                      <span className="bg-white/20 backdrop-blur-md border border-white/20 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
-                        <MapPin className="w-3 h-3 text-gold" />
-                        {city.count} Properties
-                      </span>
-                      
-                      <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:-translate-y-1 transition-all duration-300">
-                        <ArrowUpRight className="w-5 h-5" />
-                      </div>
-                    </div>
-
-                    {/* Bottom Row: City Info */}
-                    <div className="flex flex-col gap-1 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                      <h3 className="text-2xl lg:text-3xl font-serif font-black text-white drop-shadow-md">
-                        {city.name}
-                      </h3>
-                      <p className="text-xs text-slate-200 font-semibold line-clamp-1 opacity-90">
-                        {city.desc}
-                      </p>
-                    </div>
+              {/* Card Details */}
+              <div className="p-5 flex flex-col flex-grow text-left justify-between">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-xl font-serif font-black text-terracotta">
+                      {formatIndianCurrency(property.price, property.purpose)}
+                    </span>
+                    <span className="text-[9px] font-black text-indigo bg-indigo/5 border border-indigo/10 px-2 py-0.5 rounded uppercase">
+                      {property.type}
+                    </span>
                   </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-      </section>
 
-      {/* 3.1 TOP TOURIST DESTINATIONS */}
-      <section className="relative py-24 z-20 px-6 max-w-7xl mx-auto w-full">
-        <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-16 gap-3">
-          <span className="text-terracotta font-extrabold text-xs uppercase tracking-widest">
-            Royal Landmarks
-          </span>
-          <h2 className="text-3xl md:text-4xl font-serif font-black text-indigo tracking-tight">
-            Top Tourist Destinations
-          </h2>
-          <p className="text-charcoal/70 text-sm">
-            Experience the cultural legacy, massive architecture, and scenic dunes of North India&apos;s most celebrated heritage locations.
-          </p>
-        </div>
+                  <h3 className="font-serif font-black text-base text-charcoal line-clamp-1 group-hover:text-indigo transition-colors duration-200">
+                    {property.title}
+                  </h3>
 
-        {/* Tourist Destination Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            {
-              name: "Udaipur",
-              title: "The City of Lakes",
-              desc: "Known for floating marble palaces, historic Mewar arches, and serene lakeside sunsets.",
-              image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=24.5764,73.6836"
-            },
-            {
-              name: "Jaipur",
-              title: "The Pink City",
-              desc: "Home of the majestic Hawa Mahal, block printers, royal fort gates, and bustling bazaars.",
-              image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=26.9239,75.8267"
-            },
-            {
-              name: "Jaisalmer",
-              title: "The Golden City",
-              desc: "Discover ancient sandstone forts emerging from the Thar desert and yellow dune camps.",
-              image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=26.9124,70.9127"
-            },
-            {
-              name: "Mount Abu",
-              title: "Hill Station Oasis",
-              desc: "Aravalli range hill retreat showcasing Nakki Lake views and Dilwara Jain stone carvings.",
-              image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=24.5925,72.7156"
-            }
-          ].map((dest) => (
-            <div
-              key={dest.name}
-              className="group relative h-72 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-sand"
-            >
-              <img
-                src={dest.image}
-                alt={dest.name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-charcoal/50" />
-              <div className="absolute inset-0 flex flex-col justify-end p-5">
-                <span className="text-[10px] font-extrabold text-gold uppercase tracking-wider mb-1">
-                  Destination
-                </span>
-                <h3 className="text-lg font-serif font-black text-white">{dest.name}</h3>
-                <span className="text-[11px] text-white/85 font-medium leading-none mb-1.5">{dest.title}</span>
-                <p className="text-[10px] text-slate-300 font-medium leading-relaxed line-clamp-2">{dest.desc}</p>
+                  <div className="flex items-center gap-1 text-charcoal/60 text-xs">
+                    <MapPin className="w-3.5 h-3.5 text-terracotta/80 shrink-0" />
+                    <span className="font-semibold truncate">{property.locality}, {property.city}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-sand pt-4 mt-4">
+                  <div className="flex items-center gap-3 text-[10px] text-charcoal/50 font-bold uppercase tracking-wider">
+                    {property.bhk && <span>{property.bhk} BHK</span>}
+                    <span>{property.size} SQFT</span>
+                  </div>
+                  
+                  <Link
+                    href={`/property/${property.id}`}
+                    className="flex items-center gap-1 px-4 py-2 bg-indigo hover:bg-indigo-hover text-white rounded-xl font-bold text-[10px] uppercase tracking-wider transition-colors"
+                  >
+                    <span>Details</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
               </div>
+
             </div>
           ))}
         </div>
+
       </section>
 
-      {/* 3.2 WEDDING PLACES IN INDIA */}
-      <section className="relative py-24 z-20 bg-sand/20 border-y border-sand/40 w-full px-6">
+      {/* 3. PROMINENT PROJECTS TO EXPLORE (Housing's Prominent Projects Style) */}
+      <section className="relative py-20 bg-sand/20 border-y border-sand/40 w-full px-6">
         <div className="max-w-7xl mx-auto w-full">
-          <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-16 gap-3">
-            <span className="text-terracotta font-extrabold text-xs uppercase tracking-widest">
-              Elite Celebrations
-            </span>
-            <h2 className="text-3xl md:text-4xl font-serif font-black text-indigo tracking-tight">
-              Premium Wedding Places
-            </h2>
-            <p className="text-charcoal/70 text-sm">
-              Discover Udaipur&apos;s floating lake palaces and North India&apos;s hilltop heritage forts, serving as the world&apos;s most romantic wedding hosts.
-            </p>
+
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
+            <div className="flex flex-col gap-2 text-left">
+              <span className="text-terracotta font-black text-xs uppercase tracking-wider">
+                Elite Residential Communities
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-serif font-black text-charcoal tracking-tight">
+                Prominent Projects to Explore
+              </h2>
+            </div>
+
+            {/* Slider Navigation */}
+            <div className="hidden sm:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => scrollContainer(prominentProjectsScrollRef, "left")}
+                className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
+                title="Scroll Left"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollContainer(prominentProjectsScrollRef, "right")}
+                className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
+                title="Scroll Right"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
-          {/* Wedding Venues Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                name: "Lake Palace, Udaipur",
-                location: "Udaipur, Rajasthan",
-                desc: "Floating marble monument on Lake Pichola, offering pure royal exclusivity.",
-                image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=24.5756,73.6801"
-              },
-              {
-                name: "Umaid Bhawan, Jodhpur",
-                location: "Jodhpur, Rajasthan",
-                desc: "One of the world's largest private residences built with golden sandstone arches.",
-                image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=26.2809,73.0475"
-              },
-              {
-                name: "Rambagh Palace, Jaipur",
-                location: "Jaipur, Rajasthan",
-                desc: "The Jewel of Jaipur, displaying symmetrical Mughal gardens and heritage corridors.",
-                image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=26.8981,75.8055"
-              },
-              {
-                name: "Neemrana Fort, Alwar",
-                location: "Alwar, Delhi NCR Ext",
-                desc: "15th-century heritage hill fort with tiered garden terraces and amphitheaters.",
-                image: "https://maps.google.com/cbk?output=thumbnail&w=600&h=400&ll=27.9944,76.3888"
-              }
-            ].map((venue) => (
-              <div
-                key={venue.name}
-                className="group bg-white rounded-2xl overflow-hidden border border-sand hover:border-terracotta/40 hover:-translate-y-1 shadow-sm hover:shadow-md transition-all duration-300"
-              >
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-sand/30">
+          {/* Projects Horizontal Carousel */}
+          <div
+            ref={prominentProjectsScrollRef}
+            className="flex overflow-x-auto gap-6 pb-6 pt-2 scrollbar-none snap-x snap-mandatory scroll-smooth items-stretch"
+          >
+            {mockProjects.map((project) => (
+              <div key={project.id} className="w-[300px] sm:w-[380px] flex-shrink-0 snap-start bg-white border border-sand rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group overflow-hidden">
+                
+                {/* Project Image */}
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-sand/35">
                   <img
-                    src={venue.image}
-                    alt={venue.name}
+                    src={project.image}
+                    alt={project.name}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute bottom-2.5 left-2.5 bg-cream px-2 py-0.5 rounded text-[8px] text-indigo font-black tracking-widest border border-sand uppercase">
-                    {venue.location.split(",")[0]}
+                  <div className="absolute bottom-3 left-3 bg-cream/90 backdrop-blur-sm px-3 py-1 rounded-lg border border-sand text-[9px] text-indigo font-black uppercase tracking-wider">
+                    {project.location.split(",")[1]?.trim() || project.location}
                   </div>
                 </div>
-                <div className="p-5 flex flex-col gap-2 text-left">
-                  <h3 className="font-serif font-black text-base text-indigo line-clamp-1 group-hover:text-terracotta transition-colors duration-200">
-                    {venue.name}
-                  </h3>
-                  <span className="text-[10px] text-charcoal/50 font-bold uppercase tracking-wider">
-                    {venue.location}
-                  </span>
-                  <p className="text-xs text-charcoal/65 font-medium leading-relaxed line-clamp-2">
-                    {venue.desc}
-                  </p>
+
+                {/* Project Info */}
+                <div className="p-5 flex flex-col text-left justify-between flex-grow">
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[9px] font-black text-indigo/60 uppercase tracking-widest">
+                      Developer: {project.developer}
+                    </span>
+                    <h3 className="font-serif font-black text-lg text-charcoal line-clamp-1 group-hover:text-terracotta transition-colors duration-200">
+                      {project.name}
+                    </h3>
+                    <p className="text-xs text-charcoal/60 font-semibold">{project.bhk}</p>
+                    <div className="flex items-center gap-1 text-[11px] text-charcoal/50 font-bold uppercase mt-1">
+                      <MapPin className="w-3.5 h-3.5 text-terracotta/75 shrink-0" />
+                      <span className="truncate">{project.location}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-sand pt-4 mt-5">
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black text-charcoal/40 uppercase tracking-wider">Starting Price</span>
+                      <span className="text-base font-serif font-black text-indigo">{project.price.split("-")[0]}</span>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/listings?city=${project.location.split(",")[1]?.trim() || "Udaipur"}`)}
+                      className="px-4 py-2 bg-indigo hover:bg-indigo-hover text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all"
+                    >
+                      Explore Project
+                    </button>
+                  </div>
                 </div>
+
               </div>
             ))}
           </div>
+
         </div>
       </section>
 
-      {/* 4. THE BOUTIQUE APPROACH (How It Works) */}
-      <section className="relative py-24 z-20 px-6 max-w-7xl mx-auto w-full">
-        <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-16 gap-3">
-          <span className="text-terracotta font-extrabold text-xs uppercase tracking-widest">
-            The Sourcing Protocol
+      {/* 4. TOP HIGHLIGHTED PROJECTS (Side-by-side Showcase Cards) */}
+      <section className="relative py-20 px-6 max-w-7xl mx-auto w-full">
+        
+        <div className="text-center max-w-2xl mx-auto mb-12 flex flex-col gap-2.5">
+          <span className="text-terracotta font-black text-xs uppercase tracking-wider">
+            Premium Highlight Collections
           </span>
-          <h2 className="text-3xl md:text-4xl font-serif font-black text-charcoal tracking-tight">
-            Our Sourcing & Verification Process
+          <h2 className="text-2xl sm:text-3xl font-serif font-black text-charcoal tracking-tight">
+            Top Highlighted Projects
           </h2>
-          <p className="text-charcoal/70 text-sm">
-            We operate differently from standard automated real estate sites. Every address undergoes strict title screening and physical assessment.
+          <p className="text-charcoal/60 text-xs sm:text-sm">
+            Handpicked architecture portfolios, showcasing elite properties in highly sought-after cities.
           </p>
         </div>
 
-        {/* Steps Road (Systematic Card Stack with flip animation) */}
-        <div className="flex flex-col md:flex-row items-center justify-center max-w-6xl mx-auto py-8 gap-6 md:gap-8 flex-wrap">
-          {[
-            {
-              step: "01",
-              title: "Physical Vetting",
-              desc: "Our local agents inspect each listing in-person. We verify the structural integrity and document correct coordinates.",
-              icon: <MapPin className="w-6 h-6 text-indigo" />,
-            },
-            {
-              step: "02",
-              title: "Legal Title Scrutiny",
-              desc: "We perform full RERA verification and property title checks to protect you from encumbrances or leasehold disputes.",
-              icon: <HomeIcon className="w-6 h-6 text-terracotta" />,
-            },
-            {
-              step: "03",
-              title: "Accompanied Tours",
-              desc: "Schedule private physical viewings or high-definition live virtual walk-throughs with our local experts.",
-              icon: <MessageSquare className="w-6 h-6 text-indigo" />,
-            },
-            {
-              step: "04",
-              title: "Registrar Handover",
-              desc: "We assist with contract drafting, registrar registration, local stamp duties, and utilities handover.",
-              icon: <Key className="w-6 h-6 text-gold" />,
-            },
-          ].map((item, idx) => (
-            <motion.div
-              key={item.step}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: idx * 0.12 }}
-              className="flip-card w-full sm:w-64 h-[250px] cursor-pointer"
-            >
-              <div className="flip-card-inner">
-                {/* Front Side */}
-                <div className="flip-card-front bg-white border border-sand p-6 flex flex-col justify-between shadow-md hover:shadow-lg transition-shadow">
-                  <div>
-                    {/* Step indicator */}
-                    <span className="absolute top-4 right-5 text-3xl font-black text-sand/65 select-none">
-                      {item.step}
-                    </span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          
+          {/* Highlight 1 */}
+          <div className="group relative h-80 rounded-3xl overflow-hidden shadow-md hover:shadow-xl border border-sand transition-all duration-300">
+            <img
+              src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80"
+              alt="Udaipur Lakeside Villas"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/95 via-charcoal/40 to-charcoal/10" />
+            <div className="absolute inset-0 p-8 flex flex-col justify-end text-left items-start">
+              <span className="text-gold text-[9px] font-black uppercase tracking-widest mb-1.5">Exclusive Collection</span>
+              <h3 className="text-xl sm:text-2xl font-serif font-black text-white mb-2">Restored Lakeside Villas, Udaipur</h3>
+              <p className="text-slate-300 text-xs font-medium leading-relaxed max-w-md mb-5">
+                Breathtaking view plots, swimming pools, and limestone arches resting on the shores of Lake Pichola and Fateh Sagar.
+              </p>
+              <button
+                onClick={() => handleCityBrowse("Udaipur")}
+                className="px-5 py-2.5 bg-terracotta hover:bg-terracotta-hover text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all flex items-center gap-1"
+              >
+                <span>Browse Villas</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
 
-                    {/* Icon container */}
-                    <div className="w-12 h-12 rounded-xl bg-sand/35 flex items-center justify-center mb-5 border border-sand">
-                      {item.icon}
+          {/* Highlight 2 */}
+          <div className="group relative h-80 rounded-3xl overflow-hidden shadow-md hover:shadow-xl border border-sand transition-all duration-300">
+            <img
+              src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80"
+              alt="Jaipur Luxury Penthouses"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/95 via-charcoal/40 to-charcoal/10" />
+            <div className="absolute inset-0 p-8 flex flex-col justify-end text-left items-start">
+              <span className="text-gold text-[9px] font-black uppercase tracking-widest mb-1.5">Modern Heritage</span>
+              <h3 className="text-xl sm:text-2xl font-serif font-black text-white mb-2">Premium Royal Penthouses, Jaipur</h3>
+              <p className="text-slate-300 text-xs font-medium leading-relaxed max-w-md mb-5">
+                High-rise residential configurations in Malviya Nagar & Mansarovar, featuring modern amenities and Aravali hill views.
+              </p>
+              <button
+                onClick={() => handleCityBrowse("Jaipur")}
+                className="px-5 py-2.5 bg-indigo hover:bg-indigo-hover text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all flex items-center gap-1"
+              >
+                <span>Browse Penthouses</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* 5. PROJECTS BY TRUSTED DEVELOPERS (Housing's Builders Showcases) */}
+      <section className="relative py-20 bg-sand/20 border-y border-sand/40 w-full px-6">
+        <div className="max-w-7xl mx-auto w-full">
+
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
+            <div className="flex flex-col gap-2 text-left">
+              <span className="text-terracotta font-black text-xs uppercase tracking-wider">
+                Verified Builders Directory
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-serif font-black text-charcoal tracking-tight">
+                Projects by Trusted Developers
+              </h2>
+            </div>
+
+            {/* Slider Navigation */}
+            <div className="hidden sm:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => scrollContainer(developersScrollRef, "left")}
+                className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
+                title="Scroll Left"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollContainer(developersScrollRef, "right")}
+                className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
+                title="Scroll Right"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Developers Carousel */}
+          <div
+            ref={developersScrollRef}
+            className="flex overflow-x-auto gap-6 pb-6 pt-2 scrollbar-none snap-x snap-mandatory scroll-smooth items-stretch"
+          >
+            {builders.map((profile) => (
+              <div key={profile.id} className="w-[280px] sm:w-[320px] flex-shrink-0 snap-start bg-white border border-sand p-6 rounded-2xl shadow-sm hover:shadow-xl hover:border-indigo/25 transition-all duration-300 flex flex-col justify-between group">
+                
+                <div className="flex flex-col gap-4 text-left">
+                  {/* Builder Header Logo/Avatar */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-indigo/5 border border-indigo/10 flex items-center justify-center text-indigo group-hover:scale-110 group-hover:bg-indigo/10 transition-all duration-300">
+                      <Building2 className="w-6 h-6" />
                     </div>
-
-                    <h3 className="font-serif font-black text-base text-charcoal pr-8">
-                      {item.title}
-                    </h3>
+                    <div className="flex flex-col min-w-0">
+                      <h4 className="font-serif font-black text-sm text-charcoal truncate">{profile.firmName}</h4>
+                      <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-0.5">
+                        <Check className="w-2.5 h-2.5" />
+                        <span>RERA Registered Builder</span>
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="text-[10px] text-terracotta font-extrabold uppercase tracking-wider flex items-center gap-1">
-                    <span>Hover to read more</span>
-                    <span>→</span>
-                  </div>
-                </div>
+                  <p className="text-[11px] text-charcoal/60 leading-relaxed font-semibold line-clamp-3">
+                    {profile.description}
+                  </p>
 
-                {/* Back Side */}
-                <div className="flip-card-back bg-indigo text-white p-6 flex flex-col justify-between shadow-lg">
-                  <div>
-                    <span className="absolute top-4 right-5 text-3xl font-black text-white/10 select-none">
-                      {item.step}
-                    </span>
-
-                    <h3 className="font-serif font-black text-base text-gold mb-3">
-                      {item.title}
-                    </h3>
-
-                    <p className="text-white/90 text-xs leading-relaxed font-semibold">
-                      {item.desc}
-                    </p>
-                  </div>
-
-                  <div className="text-[9px] text-gold-soft font-bold uppercase tracking-widest border-t border-white/10 pt-3">
-                    Verified Protocol
+                  {/* Micro Stats */}
+                  <div className="grid grid-cols-2 gap-4 border-y border-sand/40 py-3.5 my-1">
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black text-charcoal/40 uppercase">Owner</span>
+                      <span className="text-[11px] font-black text-charcoal truncate">{profile.ownerName}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black text-charcoal/40 uppercase">Category</span>
+                      <span className="text-[11px] font-black text-terracotta truncate">{profile.category.split("&")[0]}</span>
+                    </div>
                   </div>
                 </div>
+
+                <div className="flex flex-col gap-2 mt-4">
+                  <div className="flex items-center gap-2 text-xs text-charcoal/50 font-bold">
+                    <MapPin className="w-3.5 h-3.5 text-terracotta/75 shrink-0" />
+                    <span className="truncate">{profile.address}</span>
+                  </div>
+
+                  <Link
+                    href={`/dealers/${profile.id}`}
+                    className="w-full py-2.5 mt-2 bg-indigo/5 hover:bg-indigo border border-indigo/10 hover:border-indigo text-indigo hover:text-white rounded-xl text-center font-bold text-[10px] uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5"
+                  >
+                    <span>View Projects</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+
               </div>
-            </motion.div>
-          ))}
+            ))}
+          </div>
+
         </div>
       </section>
 
+      {/* 6. RESEARCH & INSIGHTS (Housing's Insights Cards with Modal Trigger) */}
+      <section className="relative py-20 px-6 max-w-7xl mx-auto w-full">
+        
+        <div className="text-center max-w-2xl mx-auto mb-12 flex flex-col gap-2.5">
+          <span className="text-terracotta font-black text-xs uppercase tracking-wider">
+            Market Intelligence
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-serif font-black text-charcoal tracking-tight">
+            Research & Insights
+          </h2>
+          <p className="text-charcoal/60 text-xs sm:text-sm">
+            Make informed financial decisions with real-time analytics, local reviews, and compliance checklists.
+          </p>
+        </div>
 
-      {/* 5. RELOCATION CONCIERGE BANNER (Sandstone Double Ruled Quote Box) */}
-      <section className="relative z-20 pb-24 px-6 max-w-7xl mx-auto w-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          
+          {/* Card 1: Price Trends */}
+          <div
+            onClick={() => setShowPriceTrends(true)}
+            className="group bg-white border border-sand p-6 rounded-3xl shadow-sm hover:shadow-xl hover:border-terracotta/35 transition-all duration-300 cursor-pointer flex flex-col justify-between text-left relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-terracotta/5 to-transparent rounded-bl-full" />
+            <div>
+              <div className="w-12 h-12 rounded-xl bg-terracotta/10 border border-terracotta/20 text-terracotta flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <h3 className="font-serif font-black text-lg text-charcoal mb-2 group-hover:text-terracotta transition-colors">
+                Real Estate Price Trends
+              </h3>
+              <p className="text-charcoal/60 text-xs font-semibold leading-relaxed">
+                Review historical price per sqft values across Udaipur, Jaipur, and Jodhpur over the last 5 years.
+              </p>
+            </div>
+            <span className="text-[10px] text-terracotta font-black uppercase tracking-wider mt-6 flex items-center gap-1">
+              <span>Analyze Trends</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </span>
+          </div>
+
+          {/* Card 2: Locality Review */}
+          <div
+            onClick={() => setShowLocalityReviews(true)}
+            className="group bg-white border border-sand p-6 rounded-3xl shadow-sm hover:shadow-xl hover:border-indigo/25 transition-all duration-300 cursor-pointer flex flex-col justify-between text-left relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-indigo/5 to-transparent rounded-bl-full" />
+            <div>
+              <div className="w-12 h-12 rounded-xl bg-indigo/10 border border-indigo/20 text-indigo flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <MapPin className="w-6 h-6" />
+              </div>
+              <h3 className="font-serif font-black text-lg text-charcoal mb-2 group-hover:text-indigo transition-colors">
+                Locality Review Index
+              </h3>
+              <p className="text-charcoal/60 text-xs font-semibold leading-relaxed">
+                Read independent scores regarding connectivity, safety, and school density in top residential neighborhoods.
+              </p>
+            </div>
+            <span className="text-[10px] text-indigo font-black uppercase tracking-wider mt-6 flex items-center gap-1">
+              <span>Read Reviews</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </span>
+          </div>
+
+          {/* Card 3: Buyer's Guide */}
+          <div
+            onClick={() => setShowBuyersGuide(true)}
+            className="group bg-white border border-sand p-6 rounded-3xl shadow-sm hover:shadow-xl hover:border-gold/45 transition-all duration-300 cursor-pointer flex flex-col justify-between text-left relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-gold/5 to-transparent rounded-bl-full" />
+            <div>
+              <div className="w-12 h-12 rounded-xl bg-gold/15 border border-gold/30 text-gold flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <FileText className="w-6 h-6" />
+              </div>
+              <h3 className="font-serif font-black text-lg text-charcoal mb-2 group-hover:text-gold/90 transition-colors">
+                Red-Tape Buyer&apos;s Guide
+              </h3>
+              <p className="text-charcoal/60 text-xs font-semibold leading-relaxed">
+                A checklist of legal document procedures, registry structures, stamp duty protocols, and title scrutiny.
+              </p>
+            </div>
+            <span className="text-[10px] text-gold/90 font-black uppercase tracking-wider mt-6 flex items-center gap-1">
+              <span>Browse Checklist</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </span>
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* 7. RECOMMENDED SELLERS SECTION (Housing's Certified Agents) */}
+      <section className="relative py-20 bg-sand/20 border-y border-sand/40 w-full px-6">
+        <div className="max-w-7xl mx-auto w-full">
+
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
+            <div className="flex flex-col gap-2 text-left">
+              <span className="text-terracotta font-black text-xs uppercase tracking-wider">
+                Certified Professional Partners
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-serif font-black text-charcoal tracking-tight">
+                Recommended Sellers
+              </h2>
+            </div>
+
+            {/* Slider Navigation */}
+            <div className="hidden sm:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => scrollContainer(sellersScrollRef, "left")}
+                className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
+                title="Scroll Left"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollContainer(sellersScrollRef, "right")}
+                className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
+                title="Scroll Right"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Recommended Sellers Carousel */}
+          <div
+            ref={sellersScrollRef}
+            className="flex overflow-x-auto gap-6 pb-6 pt-2 scrollbar-none snap-x snap-mandatory scroll-smooth items-stretch"
+          >
+            {sellers.map((profile) => (
+              <div key={profile.id} className="w-[280px] sm:w-[320px] flex-shrink-0 snap-start bg-white border border-sand p-6 rounded-2xl shadow-sm hover:shadow-xl hover:border-terracotta/30 transition-all duration-300 flex flex-col justify-between group">
+                
+                <div className="flex flex-col gap-4 text-left">
+                  
+                  {/* Seller Header */}
+                  <div className="flex items-start justify-between">
+                    <div className="w-12 h-12 rounded-xl bg-terracotta/5 border border-terracotta/10 flex items-center justify-center text-terracotta font-bold">
+                      <User className="w-6 h-6" />
+                    </div>
+                    
+                    <span className="inline-flex items-center gap-1 bg-gold/15 text-gold border border-gold/30 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider">
+                      <Award className="w-2.5 h-2.5" />
+                      <span>RECOMMENDED</span>
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <h3 className="font-serif font-black text-base text-charcoal line-clamp-1 group-hover:text-indigo transition-colors duration-200">
+                      {profile.firmName}
+                    </h3>
+                    <span className="text-[10px] text-charcoal/50 font-bold uppercase tracking-wider">{profile.ownerName}</span>
+                  </div>
+
+                  <p className="text-[11px] text-charcoal/60 leading-relaxed font-semibold line-clamp-2">
+                    {profile.description}
+                  </p>
+
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-amber-500 bg-amber-50 border border-amber-200 px-2 py-1 rounded w-fit">
+                    <Star className="w-3 h-3 fill-amber-500" />
+                    <span>4.9 / 5.0 Rated Agent</span>
+                  </div>
+
+                </div>
+
+                <div className="flex flex-col gap-3 mt-5 pt-4 border-t border-sand">
+                  
+                  {/* Address & Contacts */}
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2 text-xs text-charcoal/50 font-bold">
+                      <MapPin className="w-3.5 h-3.5 text-terracotta/75 shrink-0" />
+                      <span className="truncate">{profile.address}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-charcoal/50 font-bold">
+                      <Phone className="w-3.5 h-3.5 text-indigo/70 shrink-0" />
+                      <span>{profile.mobile}</span>
+                    </div>
+                  </div>
+
+                  <Link
+                    href={`/dealers/${profile.id}`}
+                    className="w-full py-2.5 bg-indigo hover:bg-indigo-hover text-white rounded-xl text-center font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>Contact Seller</span>
+                  </Link>
+
+                </div>
+
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* 8. NEWLY-ADDED PROPERTIES SECTION */}
+      <section className="relative py-20 px-6 max-w-7xl mx-auto w-full">
+        
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
+          <div className="flex flex-col gap-2 text-left">
+            <span className="text-terracotta font-black text-xs uppercase tracking-wider">
+              Fresh Listings In The Region
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-serif font-black text-charcoal tracking-tight">
+              Newly-Added Properties
+            </h2>
+          </div>
+
+          {/* Slider Navigation */}
+          <div className="hidden sm:flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => scrollContainer(newlyAddedScrollRef, "left")}
+              className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
+              title="Scroll Left"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollContainer(newlyAddedScrollRef, "right")}
+              className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
+              title="Scroll Right"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Newly Added Properties Carousel */}
+        <div
+          ref={newlyAddedScrollRef}
+          className="flex overflow-x-auto gap-6 pb-6 pt-2 scrollbar-none snap-x snap-mandatory scroll-smooth items-stretch"
+        >
+          {newlyAddedProperties.map((property) => (
+            <div key={property.id} className="w-[280px] sm:w-[320px] flex-shrink-0 snap-start bg-white border border-sand rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col group overflow-hidden">
+              
+              {/* Thumbnail */}
+              <div className="relative aspect-[4/3] w-full overflow-hidden bg-sand/35">
+                <img
+                  src={property.images[0]}
+                  alt={property.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                
+                <div className="absolute top-2.5 left-2.5 bg-indigo/95 px-2 py-0.5 rounded text-[8px] font-black uppercase text-white tracking-wider">
+                  New Listing
+                </div>
+              </div>
+
+              {/* Info Details */}
+              <div className="p-4 flex flex-col text-left justify-between flex-grow">
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[10px] font-black text-terracotta uppercase">{formatIndianCurrency(property.price, property.purpose)}</span>
+                  <h3 className="font-serif font-black text-sm text-charcoal line-clamp-1 group-hover:text-indigo transition-colors duration-200">
+                    {property.title}
+                  </h3>
+                  <div className="flex items-center gap-1 text-[11px] text-charcoal/50 font-bold uppercase truncate">
+                    <MapPin className="w-3.5 h-3.5 text-terracotta/75 shrink-0" />
+                    <span>{property.locality}, {property.city}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-sand pt-3.5 mt-4">
+                  <div className="flex items-center gap-2 text-[9px] text-charcoal/40 font-bold uppercase">
+                    {property.bhk && <span>{property.bhk} BHK</span>}
+                    <span>{property.size} SQFT</span>
+                  </div>
+                  
+                  <Link
+                    href={`/property/${property.id}`}
+                    className="text-[9px] font-black uppercase tracking-wider text-indigo hover:text-terracotta font-sans flex items-center gap-0.5 transition-colors"
+                  >
+                    <span>View</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+
+            </div>
+          ))}
+        </div>
+
+      </section>
+
+      {/* 9. HAVE A PROPERTY TO SELL? CTA BANNER */}
+      <section className="relative z-20 pb-20 px-6 max-w-7xl mx-auto w-full">
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="relative rounded-3xl overflow-hidden bg-[#f5ebd2] text-charcoal p-8 md:p-12 lg:p-16 border-double-ruled border-terracotta/35 shadow-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-10"
+          className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-terracotta to-orange-600 text-white p-8 md:p-12 shadow-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-8 border-2 border-white/10"
         >
-          {/* Background Decor Accents */}
-          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-terracotta/5 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-indigo/5 rounded-full blur-[80px] pointer-events-none" />
-
-          {/* Banner Text Content */}
-          <div className="flex flex-col gap-5 max-w-2xl relative z-10 text-left">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-terracotta/10 border border-terracotta/20 text-terracotta text-[10px] font-extrabold tracking-widest uppercase w-fit">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Assisted Relocation</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-black tracking-tight leading-tight text-indigo">
-              Moving to Udaipur or Jaipur? <br className="hidden sm:inline" />
-              Let Our Concierge Handle the Search.
+          {/* Subtle Back Decor */}
+          <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-white/5 rounded-full blur-[80px] pointer-events-none" />
+          
+          <div className="flex flex-col gap-4 max-w-2xl text-left relative z-10">
+            <span className="px-3 py-1 bg-white/20 border border-white/10 text-white text-[9px] font-black uppercase tracking-widest rounded w-fit">
+              Owner services
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-serif font-black tracking-tight leading-tight text-white">
+              Have a property to sell or rent? <br />
+              List it with SVREPL completely free.
             </h2>
-            <p className="text-charcoal/85 text-xs sm:text-sm leading-relaxed font-semibold">
-              Relocating from another state can be overwhelming. Let us know your specifications (budget, BHK layout, school distance), and our local city leads will secure RERA-certified properties, negotiate contract terms, and support your move-in.
+            <p className="text-slate-100 text-xs sm:text-sm leading-relaxed font-semibold">
+              Connect with genuine RERA-compliant buyers, agents, and brokers in Rajasthan. Reach out to our verified active database of thousands of clients looking for heritage villas and luxury houses.
             </p>
-
-
           </div>
 
-          {/* CTA Action button */}
           <div className="flex-shrink-0 relative z-10">
             <Link
-              href="/get-assistance"
-              className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white font-bold text-sm shadow-lg shadow-terracotta/20 hover:-translate-y-0.5 transition-all duration-200"
+              href="/post-property"
+              className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white hover:bg-cream text-terracotta hover:text-terracotta-hover font-black text-xs uppercase tracking-widest shadow-lg transition-all duration-200"
             >
-              <span>Get Relocation Assistance</span>
+              <span>List Property Now</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </motion.div>
       </section>
 
-      {/* 4.8 INTERACTIVE LEAD-GEN QUIZ (conversion & engagement booster) */}
-      <section className="relative py-20 z-20 bg-[#faf8f5]/40 border-t border-sand w-full px-6">
+      {/* 10. INTERACTIVE MATCHMAKING QUIZ */}
+      <section className="relative py-20 bg-sand/35 border-t border-sand/40 w-full px-6">
         <div className="max-w-4xl mx-auto w-full text-center">
           
           <div className="flex flex-col items-center mb-10 gap-2">
-            <span className="text-terracotta font-extrabold text-xs uppercase tracking-widest">
-              Matchmaking Tool
+            <span className="text-terracotta font-black text-xs uppercase tracking-wider">
+              Smart Curation Agent
             </span>
-            <h2 className="text-3xl font-serif font-black text-indigo tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-serif font-black text-indigo tracking-tight">
               Find Your Perfect Heritage Home
             </h2>
             <p className="text-charcoal/70 text-xs sm:text-sm max-w-xl">
@@ -691,7 +1160,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="bg-white border border-sand p-8 sm:p-10 rounded-3xl shadow-xl text-left relative min-h-[300px] flex flex-col justify-between">
+          <div className="bg-white border border-sand p-6 sm:p-10 rounded-3xl shadow-xl text-left relative min-h-[300px] flex flex-col justify-between">
             {!quizSubmitted ? (
               <>
                 {/* Step Indicators */}
@@ -841,6 +1310,277 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* 11. PRICE TRENDS MODAL */}
+      <AnimatePresence>
+        {showPriceTrends && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowPriceTrends(false)}
+              className="absolute inset-0 bg-charcoal/60 backdrop-blur-sm"
+            />
+            
+            {/* Modal Body */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-sand z-10 text-charcoal max-h-[90vh] overflow-y-auto no-scrollbar"
+            >
+              <button
+                type="button"
+                onClick={() => setShowPriceTrends(false)}
+                className="absolute top-4 right-4 text-charcoal/40 hover:text-charcoal transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp className="w-6 h-6 text-terracotta" />
+                <h3 className="font-serif font-black text-xl text-indigo">Average Property Price Trends (2021-2026)</h3>
+              </div>
+              
+              <p className="text-xs text-charcoal/60 mb-6 font-semibold">
+                Average valuation in Rupees per Square Foot (₹/sqft) for luxury residential properties across Rajasthan&apos;s key municipalities.
+              </p>
+
+              {/* SVG Line Chart */}
+              <div className="w-full bg-sand/15 border border-sand/40 rounded-2xl p-4 sm:p-6 mb-6">
+                <svg viewBox="0 0 500 250" className="w-full h-auto text-charcoal">
+                  
+                  {/* Grid Lines */}
+                  <line x1="40" y1="40" x2="480" y2="40" stroke="rgba(28, 37, 48, 0.08)" strokeDasharray="3" />
+                  <line x1="40" y1="90" x2="480" y2="90" stroke="rgba(28, 37, 48, 0.08)" strokeDasharray="3" />
+                  <line x1="40" y1="140" x2="480" y2="140" stroke="rgba(28, 37, 48, 0.08)" strokeDasharray="3" />
+                  <line x1="40" y1="190" x2="480" y2="190" stroke="rgba(28, 37, 48, 0.08)" strokeDasharray="3" />
+                  
+                  {/* Axes */}
+                  <line x1="40" y1="20" x2="40" y2="210" stroke="rgba(28, 37, 48, 0.3)" />
+                  <line x1="40" y1="210" x2="490" y2="210" stroke="rgba(28, 37, 48, 0.3)" />
+
+                  {/* Y Axis Labels */}
+                  <text x="35" y="44" textAnchor="end" className="text-[9px] font-black text-charcoal/50">10k</text>
+                  <text x="35" y="94" textAnchor="end" className="text-[9px] font-black text-charcoal/50">7.5k</text>
+                  <text x="35" y="144" textAnchor="end" className="text-[9px] font-black text-charcoal/50">5k</text>
+                  <text x="35" y="194" textAnchor="end" className="text-[9px] font-black text-charcoal/50">2.5k</text>
+                  
+                  {/* X Axis Labels */}
+                  <text x="40" y="225" textAnchor="middle" className="text-[9px] font-black text-charcoal/50">2021</text>
+                  <text x="128" y="225" textAnchor="middle" className="text-[9px] font-black text-charcoal/50">2022</text>
+                  <text x="216" y="225" textAnchor="middle" className="text-[9px] font-black text-charcoal/50">2023</text>
+                  <text x="304" y="225" textAnchor="middle" className="text-[9px] font-black text-charcoal/50">2024</text>
+                  <text x="392" y="225" textAnchor="middle" className="text-[9px] font-black text-charcoal/50">2025</text>
+                  <text x="480" y="225" textAnchor="middle" className="text-[9px] font-black text-charcoal/50">2026</text>
+
+                  {/* Line 1: Jaipur (Indigo) */}
+                  {/* points: 2021: 5.5k (y=130), 2022: 6.0k (y=120), 2023: 6.8k (y=104), 2024: 7.2k (y=96), 2025: 8.1k (y=78), 2026: 8.9k (y=62) */}
+                  <path d="M 40 130 L 128 120 L 216 104 L 304 96 L 392 78 L 480 62" fill="none" stroke="var(--brand-indigo)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                  
+                  {/* Line 2: Udaipur (Terracotta) */}
+                  {/* points: 2021: 4.5k (y=150), 2022: 4.9k (y=142), 2023: 5.5k (y=130), 2024: 6.1k (y=118), 2025: 6.8k (y=104), 2026: 7.5k (y=90) */}
+                  <path d="M 40 150 L 128 142 L 216 130 L 304 118 L 392 104 L 480 90" fill="none" stroke="var(--brand-terracotta)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+
+                  {/* Line 3: Jodhpur (Gold) */}
+                  {/* points: 2021: 3.8k (y=164), 2022: 4.0k (y=160), 2023: 4.4k (y=152), 2024: 5.0k (y=140), 2025: 5.5k (y=130), 2026: 6.1k (y=118) */}
+                  <path d="M 40 164 L 128 160 L 216 152 L 304 140 L 392 130 L 480 118" fill="none" stroke="var(--brand-gold)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+
+                </svg>
+
+                {/* Legend */}
+                <div className="flex items-center justify-center gap-6 mt-4 flex-wrap text-xs font-bold">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-4 h-1.5 rounded-full bg-indigo block" />
+                    <span>Jaipur (Avg. +12.4% y-o-y)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-4 h-1.5 rounded-full bg-terracotta block" />
+                    <span>Udaipur (Avg. +10.8% y-o-y)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-4 h-1.5 rounded-full bg-gold block" />
+                    <span>Jodhpur (Avg. +9.6% y-o-y)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-sand/20 border border-sand/40 rounded-2xl p-4 text-xs leading-relaxed font-semibold">
+                <span className="text-indigo font-black block mb-1">Key Takeaway:</span>
+                Due to the massive surge in post-pandemic destination weddings, hospitality groups buying out heritage locations, and active RERA infrastructure development, Udaipur and Jaipur have outpaced national real estate averages by over 4.2%.
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 12. LOCALITY REVIEWS MODAL */}
+      <AnimatePresence>
+        {showLocalityReviews && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowLocalityReviews(false)}
+              className="absolute inset-0 bg-charcoal/60 backdrop-blur-sm"
+            />
+            
+            {/* Modal Body */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-sand z-10 text-charcoal max-h-[90vh] overflow-y-auto no-scrollbar"
+            >
+              <button
+                type="button"
+                onClick={() => setShowLocalityReviews(false)}
+                className="absolute top-4 right-4 text-charcoal/40 hover:text-charcoal transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-2 mb-4">
+                <MapPin className="w-6 h-6 text-indigo" />
+                <h3 className="font-serif font-black text-xl text-indigo">Locality Index Ratings</h3>
+              </div>
+              
+              <p className="text-xs text-charcoal/60 mb-6 font-semibold">
+                Consolidated live rating reports by independent RERA compliance experts, rating critical lifestyle indices.
+              </p>
+
+              <div className="flex flex-col gap-6">
+                {[
+                  {
+                    name: "Fateh Sagar Lake Locality",
+                    city: "Udaipur",
+                    connectivity: 4.8,
+                    safety: 4.9,
+                    schools: 4.5,
+                    description: "Udaipur's most premium residential lake edge. Extreme security, tourist-friendly, highly walkable, and completely pollution controlled."
+                  },
+                  {
+                    name: "Malviya Nagar",
+                    city: "Jaipur",
+                    connectivity: 4.9,
+                    safety: 4.8,
+                    schools: 4.9,
+                    description: "High-density retail malls, luxury apartments, and metro-rail access. One of Rajasthan's most premium and active family neighborhoods."
+                  },
+                  {
+                    name: "Mehrangarh Road Haveli District",
+                    city: "Jodhpur",
+                    connectivity: 4.2,
+                    safety: 4.7,
+                    schools: 4.0,
+                    description: "Steeped in royal history. Historic blue-walled havelis. Moderate vehicle access but highly sought-after for tourism and homestay conversions."
+                  }
+                ].map((loc, idx) => (
+                  <div key={idx} className="bg-sand/15 border border-sand/35 p-5 rounded-2xl text-left">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                      <div className="flex flex-col">
+                        <h4 className="font-serif font-black text-base text-charcoal">{loc.name}</h4>
+                        <span className="text-[9px] font-black text-indigo uppercase">{loc.city}</span>
+                      </div>
+                      <div className="flex gap-4 text-[10px] font-black text-indigo uppercase tracking-wider bg-white px-3 py-1 rounded-lg border border-sand/30 shadow-sm w-fit shrink-0">
+                        <span>Conn: ⭐ {loc.connectivity}</span>
+                        <span>Safe: ⭐ {loc.safety}</span>
+                        <span>Edu: ⭐ {loc.schools}</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-charcoal/70 leading-relaxed font-semibold">
+                      {loc.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 13. BUYER'S GUIDE CHECKLIST MODAL */}
+      <AnimatePresence>
+        {showBuyersGuide && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowBuyersGuide(false)}
+              className="absolute inset-0 bg-charcoal/60 backdrop-blur-sm"
+            />
+            
+            {/* Modal Body */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-sand z-10 text-charcoal max-h-[90vh] overflow-y-auto no-scrollbar"
+            >
+              <button
+                type="button"
+                onClick={() => setShowBuyersGuide(false)}
+                className="absolute top-4 right-4 text-charcoal/40 hover:text-charcoal transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-2 mb-4">
+                <FileText className="w-6 h-6 text-gold" />
+                <h3 className="font-serif font-black text-xl text-indigo">Property Purchase Compliance Checklist</h3>
+              </div>
+              
+              <p className="text-xs text-charcoal/60 mb-6 font-semibold">
+                Avoid real estate fraud and disputes by ensuring the following document legal milestones are completely checked.
+              </p>
+
+              <div className="flex flex-col gap-4 text-left">
+                {[
+                  {
+                    step: "01",
+                    title: "RERA Registration Number Check",
+                    description: "Verify that the project or property is registered on the Rajasthan Real Estate Regulatory Authority (RERA) website. This guarantees regulatory compliance and delivery security."
+                  },
+                  {
+                    step: "02",
+                    title: "Title Deed Verification",
+                    description: "Request a clean trace of ownership. Check that there are no pending legal mortgage encumbrances by demanding a 30-year non-encumbrance certificate."
+                  },
+                  {
+                    step: "03",
+                    title: "Land Use Conversion Documents",
+                    description: "Ensure the plot has correct CLU (Change of Land Use) clearance for residential construction if purchasing agricultural land."
+                  },
+                  {
+                    step: "04",
+                    title: "Stamp Duty & Local Registration Details",
+                    description: "Make sure stamp duty values are calculated based on Rajasthan circle rates. Pay via government e-GRAS and register at the local Sub-Registrar office."
+                  }
+                ].map((item, idx) => (
+                  <div key={idx} className="flex gap-4 border-b border-sand/40 pb-4 last:border-b-0">
+                    <div className="w-8 h-8 rounded-full bg-sand/30 text-indigo flex-shrink-0 flex items-center justify-center font-bold text-xs">
+                      {item.step}
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <h4 className="font-serif font-black text-sm text-charcoal">{item.title}</h4>
+                      <p className="text-xs text-charcoal/65 leading-relaxed font-semibold">{item.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Shortlist Toast Notification */}
       <AnimatePresence>

@@ -67,31 +67,95 @@ export default function ServicesPage() {
     <div className="w-full flex flex-col items-center bg-cream/30 min-h-screen">
       
       {/* 1. HERO SECTION WITH SEARCH */}
-      <section className="w-full bg-cream border-b border-sand pt-16 pb-20 px-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-terracotta/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo/5 rounded-full blur-[100px] pointer-events-none" />
-        
-        <div className="max-w-4xl mx-auto text-center flex flex-col items-center gap-6 relative z-10">
-          <span className="text-terracotta font-black text-[10px] uppercase tracking-[0.2em] bg-white px-4 py-1.5 rounded-full border border-sand shadow-sm">
-            Professional Network
-          </span>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-black text-indigo tracking-tight leading-tight">
-            Trusted Real Estate <br className="hidden md:block"/> Service Partners
-          </h1>
-          <p className="text-sm md:text-base text-charcoal/70 leading-relaxed font-semibold max-w-2xl">
-            Whether you are restoring a heritage haveli or building a modern lakeside villa, connect with Rajasthan&apos;s most reliable, RERA-compliant professionals to make your vision a reality.
-          </p>
+      <section className="w-full bg-cream border-b border-sand pt-16 pb-20 px-6 relative overflow-hidden animate-fade-in">
+        {/* Decorative backdrop shapes */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-terracotta/5 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/3 w-[300px] h-[300px] bg-gold/5 rounded-full blur-[90px] pointer-events-none" />
 
-          {/* Search Bar */}
-          <div className="w-full max-w-xl mt-4 relative">
-            <input
-              type="text"
-              placeholder="Search by firm name, professional, or keyword..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-sand hover:border-terracotta/30 focus:border-terracotta rounded-full py-3.5 pl-12 pr-6 text-sm font-semibold text-charcoal outline-none transition-all shadow-sm focus:shadow-md"
-            />
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+            
+            {/* Left Column: Title, Description, Search, Call-to-action */}
+            <div className="lg:col-span-7 flex flex-col text-left items-start gap-6">
+              
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-sand bg-white shadow-sm hover:shadow transition-shadow">
+                <span className="w-2 h-2 rounded-full bg-terracotta animate-pulse" />
+                <span className="text-terracotta font-black text-[10px] uppercase tracking-[0.2em]">
+                  Professional Directory
+                </span>
+              </div>
+              
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-black tracking-tight leading-[1.1] text-charcoal">
+                Rajasthan&apos;s Finest <br />
+                <span className="text-indigo">Service Partners</span>
+              </h1>
+              
+              <p className="text-sm md:text-base text-charcoal/80 leading-relaxed font-semibold max-w-xl">
+                Whether you are restoring a heritage haveli or building a modern lakeside villa, connect with Rajasthan&apos;s most reliable, RERA-compliant professionals to make your vision a reality.
+              </p>
+
+              {/* Quick stats for validation */}
+              <div className="flex gap-8 border-y border-sand/60 py-4 w-full max-w-lg my-2 text-charcoal/80">
+                <div className="flex flex-col">
+                  <span className="text-2xl font-serif font-black text-indigo">450+</span>
+                  <span className="text-[10px] font-bold text-charcoal/50 uppercase tracking-widest mt-0.5">Verified Pros</span>
+                </div>
+                <div className="flex flex-col border-l border-sand/60 pl-8">
+                  <span className="text-2xl font-serif font-black text-terracotta">9</span>
+                  <span className="text-[10px] font-bold text-charcoal/50 uppercase tracking-widest mt-0.5">Specialist Categories</span>
+                </div>
+                <div className="flex flex-col border-l border-sand/60 pl-8">
+                  <span className="text-2xl font-serif font-black text-indigo">100%</span>
+                  <span className="text-[10px] font-bold text-charcoal/50 uppercase tracking-widest mt-0.5">RERA Checked</span>
+                </div>
+              </div>
+
+              {/* Search Container & CTA Button */}
+              <div className="w-full max-w-xl flex flex-col sm:flex-row gap-3 mt-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    placeholder="Search by firm name, professional, or keyword..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-white border border-sand hover:border-terracotta/30 focus:border-terracotta rounded-2xl py-3.5 pl-12 pr-6 text-sm font-semibold text-charcoal outline-none transition-all shadow-sm focus:shadow-md"
+                  />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
+                </div>
+                <Link
+                  href="/services/register"
+                  className="bg-terracotta hover:bg-terracotta-hover text-white text-xs font-black uppercase tracking-wider px-6 py-4 rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 border-none cursor-pointer shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>List Your Business</span>
+                </Link>
+              </div>
+
+            </div>
+
+            {/* Right Column: Layered Jharokha Arch collage with customized image */}
+            <div className="hidden lg:col-span-5 lg:flex flex-col items-center justify-center relative w-full h-[450px]">
+              
+              {/* Decorative Frame containing Udaipur-style interior rendering */}
+              <div className="relative w-[90%] h-[380px] overflow-hidden heritage-arch-double z-10 transition-transform duration-500 hover:scale-[1.02] cursor-pointer">
+                <img
+                  src="/services_hero.png"
+                  alt="Luxury Traditional Rajasthan Courtyard Interior"
+                  className="w-full h-full object-cover object-center"
+                />
+                
+                {/* Visual Glassmorphic Tag */}
+                <div className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-sand/40 text-[10px] text-indigo font-black uppercase tracking-widest flex items-center gap-2 shadow-lg">
+                  <ShieldCheck className="w-4 h-4 text-terracotta" />
+                  <span>Heritage Certified</span>
+                </div>
+              </div>
+
+              {/* Ambient Decorative backplates */}
+              <div className="absolute w-[95%] h-[390px] border border-sand rounded-3xl -z-10 translate-x-4 translate-y-4 opacity-50" />
+            </div>
+
           </div>
         </div>
       </section>
@@ -313,7 +377,7 @@ export default function ServicesPage() {
                 </div>
                 <h3 className="font-serif font-black text-2xl text-indigo mb-2">No profiles found</h3>
                 <p className="text-sm text-charcoal/60 font-semibold mb-8 max-w-sm mx-auto">
-                  We couldn't find any professionals matching your criteria. Try adjusting your search or selecting a different category.
+                  We couldn&apos;t find any professionals matching your criteria. Try adjusting your search or selecting a different category.
                 </p>
                 
                 <Link
