@@ -73,7 +73,7 @@ const BUDGET_RENT_MAX_OPTIONS = [
 const filterProperties = (list: Property[], filters: FilterState): Property[] => {
   return list.filter((p) => {
     // 1. City check
-    if (p.city.toLowerCase() !== filters.city.toLowerCase()) return false;
+    if (filters.city && filters.city.toLowerCase() !== "all india" && p.city.toLowerCase() !== filters.city.toLowerCase()) return false;
 
     // 2. Locality check
     if (filters.locality && !p.locality.toLowerCase().includes(filters.locality.toLowerCase())) return false;

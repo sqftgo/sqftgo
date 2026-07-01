@@ -32,9 +32,11 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const RAJASTHAN_CITIES = [
-  "Udaipur", "Jaipur", "Jodhpur", "Kota", "Bikaner", 
-  "Jaisalmer", "Rajsamand", "Pali", "Pushkar", "Alwar"
+const CITIES = [
+  "Udaipur", "Jaipur", "Jodhpur", "Kota", "Bikaner",
+  "Jaisalmer", "Rajsamand", "Pali", "Pushkar", "Alwar",
+  "Ahmedabad", "Surat", "Gandhinagar", "Kutch", "Anand",
+  "Rajkot", "Shimla", "Chandigarh", "Dharamshala", "Agra"
 ];
 
 const PROPERTY_TYPES = [
@@ -74,17 +76,10 @@ export default function Home() {
   const [searchType, setSearchType] = useState("any");
   const [searchBudget, setSearchBudget] = useState("any");
 
+
   // Toggle for Top Picks
   const [topPicksTab, setTopPicksTab] = useState<"buy" | "rent" | "plots">("buy");
 
-  // Matchmaking Quiz States
-  const [quizStep, setQuizStep] = useState(0);
-  const [quizCity, setQuizCity] = useState("");
-  const [quizType, setQuizType] = useState("");
-  const [quizBudget, setQuizBudget] = useState("");
-  const [quizName, setQuizName] = useState("");
-  const [quizContact, setQuizContact] = useState("");
-  const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [shortlistedCount, setShortlistedCount] = useState(0);
   const [showToast, setShowToast] = useState(false);
 
@@ -136,6 +131,7 @@ export default function Home() {
 
     router.push(`/listings?${params.toString()}`);
   };
+
 
   const handleShortlist = () => {
     setShortlistedCount((prev) => prev + 1);
@@ -224,56 +220,52 @@ export default function Home() {
     <div className="flex-1 flex flex-col w-full relative">
 
       {/* 1. HERO SECTION WITH INTEGRATED SEARCH BANNER */}
-      <section className="relative pt-24 pb-20 md:pb-28 bg-gradient-to-r from-indigo via-blue-900 to-indigo-950 text-white overflow-hidden z-10 px-4 md:px-6">
-        
-        {/* Background Decorative Circles */}
-        <div className="absolute top-[-100px] left-[-100px] w-[350px] h-[350px] bg-terracotta/10 rounded-full blur-[80px] pointer-events-none" />
-        <div className="absolute bottom-[-150px] right-[-50px] w-[500px] h-[500px] bg-gold/10 rounded-full blur-[100px] pointer-events-none" />
-
-        <div className="container mx-auto max-w-7xl relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            {/* Left: Text & Search Widget */}
-            <div className="lg:col-span-7 flex flex-col gap-6 text-left">
+      <section className="relative pt-2 pb-12 text-charcoal overflow-hidden z-10 px-4 md:px-6 bg-[#faf8f5]">
+        <div className="max-w-7xl mx-auto w-full relative overflow-hidden rounded-[36px] bg-[#0c1b33] min-h-[480px] md:min-h-[520px] flex items-center justify-center p-6 sm:p-8 shadow-xl border border-white/5">
+          {/* Background Image */}
+          <img
+            src="/indian_heritage_hero_bg.png"
+            alt="Luxury Rajasthan Heritage Lake Palace Background"
+            className="absolute inset-0 w-full h-full object-cover object-center select-none pointer-events-none"
+          />
+          {/* Dark overlay for readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#09152b]/65 via-[#09152b]/55 to-[#09152b]/75" />
+          
+          <div className="w-full relative z-20 flex flex-col items-center justify-center text-center gap-5 py-4">
+            <div className="flex flex-col items-center gap-2">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-sans font-black tracking-tight leading-tight text-white max-w-3xl text-center">
+                <span className="text-terracotta">believe</span> in finding it
+              </h1>
               
-              <div className="flex flex-col gap-3">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-gold text-xs font-bold uppercase tracking-widest w-fit">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Rajasthan&apos;s Elite Brokerage</span>
-                </div>
-                
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-black tracking-tight leading-none text-white">
-                  Properties to buy <br />
-                  in <span className="text-gold">India & Rajasthan</span>
-                </h1>
-                
-                <p className="text-slate-200 text-xs sm:text-sm font-semibold max-w-lg leading-relaxed mt-2">
-                  With Sun Valley Real Estate, access RERA-certified apartments, restored heritage havelis, and premium plots. Find your ideal home with trusted local verification.
-                </p>
-              </div>
+              <p className="text-white/80 text-sm sm:text-base md:text-lg font-medium max-w-2xl leading-relaxed mt-1 text-center">
+                with India's largest choice of luxury & heritage homes
+              </p>
+            </div>
 
-              {/* Integrated Search Widget */}
-              <div className="w-full bg-white text-charcoal rounded-3xl p-4 sm:p-5 shadow-2xl border border-sand mt-3 relative z-30">
+            {/* Floating Search Card — Matching Reference Layout */}
+            <div className="w-full max-w-3xl relative z-20">
+              <form onSubmit={handleHeroSearch} className="bg-white rounded-2xl shadow-2xl border-t-[4px] border-t-[#0c1b33]">
                 
-                {/* Search Tabs Selector */}
-                <div className="flex flex-wrap gap-1.5 mb-4 border-b border-sand/40 pb-3">
+                {/* Tab Row */}
+                <div className="flex items-center gap-6 px-6 sm:px-8 pt-5 pb-4">
                   {[
-                    { key: "buy", label: "Buy" },
-                    { key: "rent", label: "Rent" },
-                    { key: "plots", label: "Plots" },
-                    { key: "commercial", label: "Commercial" }
+                    { key: "buy", label: "BUY" },
+                    { key: "rent", label: "RENT" },
+                    { key: "plots", label: "PLOTS" },
+                    { key: "commercial", label: "COMMERCIAL" }
                   ].map((tab) => (
                     <button
                       key={tab.key}
                       type="button"
                       onClick={() => {
                         setHeroTab(tab.key as any);
+                        setSearchType("any");
                         setSearchBudget("any");
                       }}
-                      className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                      className={`text-xs sm:text-sm font-extrabold uppercase tracking-wider transition-all duration-200 cursor-pointer relative ${
                         heroTab === tab.key
-                          ? "bg-indigo text-white shadow-md shadow-indigo/20"
-                          : "bg-transparent text-charcoal/50 hover:text-charcoal hover:bg-sand/30"
+                          ? "text-indigo border border-indigo rounded-full px-4 py-1.5"
+                          : "text-charcoal/50 hover:text-charcoal px-1 py-1.5"
                       }`}
                     >
                       {tab.label}
@@ -281,128 +273,120 @@ export default function Home() {
                   ))}
                 </div>
 
-                {/* Form Fields */}
-                <form onSubmit={handleHeroSearch} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
+                {/* Divider */}
+                <div className="border-t border-gray-200 mx-6 sm:mx-8" />
+
+                {/* 4-Column Filter Row */}
+                <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 px-6 sm:px-8 py-5">
                   
-                  {/* Select City */}
-                  <div className="lg:col-span-3 flex items-center gap-2 border border-sand bg-sand/10 hover:border-indigo/35 rounded-xl px-3 py-2 transition-colors relative">
-                    <MapPin className="w-4.5 h-4.5 text-terracotta flex-shrink-0" />
-                    <div className="flex flex-col flex-1 text-left min-w-0">
-                      <span className="text-[9px] font-black text-charcoal/40 uppercase tracking-widest leading-none mb-1">
-                        Select City
-                      </span>
+                  {/* SELECT CITY */}
+                  <div className="flex items-center gap-3 pr-4 border-r border-gray-200 last:border-r-0">
+                    <div className="w-9 h-9 rounded-full border-2 border-terracotta/30 flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-4 h-4 text-terracotta" />
+                    </div>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none mb-1">Select City</span>
                       <CustomSelect
-                        options={RAJASTHAN_CITIES.map((c) => ({ label: c, value: c }))}
+                        options={CITIES.map((c) => ({ label: c, value: c }))}
                         value={searchCity}
                         onChange={setSearchCity}
-                        placeholder="Choose City"
-                        className="w-full text-xs font-black text-charcoal"
-                        buttonClassName="bg-transparent border-none p-0 text-xs font-black text-charcoal"
+                        placeholder="Select City"
+                        searchable
+                        buttonClassName="text-sm font-bold text-charcoal py-0 cursor-pointer"
+                        inlineChevron
                       />
                     </div>
                   </div>
 
-                  {/* Locality Input */}
-                  <div className="lg:col-span-3 flex items-center gap-2 border border-sand bg-sand/10 hover:border-indigo/35 rounded-xl px-3 py-2 transition-colors relative">
-                    <Compass className="w-4.5 h-4.5 text-indigo flex-shrink-0" />
-                    <div className="flex flex-col flex-1 text-left min-w-0">
-                      <span className="text-[9px] font-black text-charcoal/40 uppercase tracking-widest leading-none mb-1">
-                        Locality
-                      </span>
+                  {/* LOCALITY */}
+                  <div className="flex items-center gap-3 px-4 border-r border-gray-200 last:border-r-0">
+                    <div className="w-9 h-9 rounded-full border-2 border-indigo/20 flex items-center justify-center flex-shrink-0">
+                      <Compass className="w-4 h-4 text-indigo" />
+                    </div>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none mb-1">Locality</span>
                       <input
                         type="text"
                         placeholder="Search locality..."
                         value={searchLocality}
                         onChange={(e) => setSearchLocality(e.target.value)}
-                        className="w-full bg-transparent border-none text-xs font-bold text-charcoal focus:outline-none placeholder:text-charcoal/30 h-5"
+                        className="text-sm font-bold text-charcoal bg-transparent outline-none placeholder:text-charcoal/30 w-full py-0"
                       />
                     </div>
                   </div>
 
-                  {/* Property Type Dropdown */}
-                  <div className={`lg:col-span-3 flex items-center gap-2 border border-sand bg-sand/10 hover:border-indigo/35 rounded-xl px-3 py-2 transition-colors relative ${
-                    heroTab === "plots" || heroTab === "commercial" ? "opacity-50 pointer-events-none" : ""
-                  }`}>
-                    <HomeIcon className="w-4.5 h-4.5 text-indigo flex-shrink-0" />
-                    <div className="flex flex-col flex-1 text-left min-w-0">
-                      <span className="text-[9px] font-black text-charcoal/40 uppercase tracking-widest leading-none mb-1">
-                        Type
-                      </span>
+                  {/* TYPE */}
+                  <div className="flex items-center gap-3 px-4 border-r border-gray-200 last:border-r-0">
+                    <div className="w-9 h-9 rounded-full border-2 border-indigo/20 flex items-center justify-center flex-shrink-0">
+                      <HomeIcon className="w-4 h-4 text-indigo" />
+                    </div>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none mb-1">Type</span>
                       <CustomSelect
                         options={PROPERTY_TYPES}
                         value={searchType}
                         onChange={setSearchType}
                         placeholder="All Types"
-                        className="w-full text-xs font-black text-charcoal"
-                        buttonClassName="bg-transparent border-none p-0 text-xs font-black text-charcoal"
+                        buttonClassName="text-sm font-bold text-charcoal py-0 cursor-pointer"
+                        inlineChevron
                       />
                     </div>
                   </div>
 
-                  {/* Budget Dropdown */}
-                  <div className="lg:col-span-3 flex items-center gap-2 border border-sand bg-sand/10 hover:border-indigo/35 rounded-xl px-3 py-2 transition-colors relative">
-                    <span className="w-4.5 h-4.5 text-indigo flex-shrink-0 text-center font-bold text-xs">₹</span>
-                    <div className="flex flex-col flex-1 text-left min-w-0">
-                      <span className="text-[9px] font-black text-charcoal/40 uppercase tracking-widest leading-none mb-1">
-                        Budget Limit
-                      </span>
+                  {/* BUDGET LIMIT */}
+                  <div className="flex items-center gap-3 pl-4">
+                    <div className="w-9 h-9 rounded-full border-2 border-indigo/20 flex items-center justify-center flex-shrink-0">
+                      <span className="text-indigo font-bold text-sm">₹</span>
+                    </div>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none mb-1">Budget Limit</span>
                       <CustomSelect
                         options={heroTab === "rent" ? BUDGET_OPTIONS_RENT : BUDGET_OPTIONS_BUY}
                         value={searchBudget}
                         onChange={setSearchBudget}
                         placeholder="Any Price"
-                        className="w-full text-xs font-black text-charcoal"
-                        buttonClassName="bg-transparent border-none p-0 text-xs font-black text-charcoal"
+                        buttonClassName="text-sm font-bold text-charcoal py-0 cursor-pointer"
+                        inlineChevron
                       />
                     </div>
                   </div>
 
-                  {/* Submit Button */}
+                </div>
+
+                {/* CTA Button */}
+                <div className="px-6 sm:px-8 pb-6 pt-1">
                   <button
                     type="submit"
-                    className="sm:col-span-2 lg:col-span-12 py-3 bg-terracotta hover:bg-terracotta-hover text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-300 shadow-md shadow-terracotta/20 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                    className="w-full bg-terracotta hover:bg-terracotta-hover text-white font-extrabold text-sm uppercase tracking-wider py-4 rounded-xl shadow-lg transition-all duration-200 cursor-pointer active:scale-[0.98] flex items-center justify-center gap-2.5 border-none"
                   >
                     <span>Find Properties</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
-
-                </form>
-              </div>
-
-            </div>
-
-            {/* Right: Modern Asymmetric Image Frame Collage */}
-            <div className="hidden lg:col-span-5 lg:flex items-center justify-center relative w-full h-[500px]">
-              
-              {/* Tilted Main Visual Frame */}
-              <div className="absolute w-[85%] h-[380px] rounded-[36px] overflow-hidden shadow-2xl border-[6px] border-white/10 rotate-6 hover:rotate-2 hover:scale-[1.02] transition-all duration-500 z-10">
-                <img
-                  src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80"
-                  alt="Elite Rajasthan Residence"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              {/* Smaller Overlapping Visual Frame */}
-              <div className="absolute w-[60%] h-[230px] rounded-[24px] overflow-hidden shadow-2xl border-[4px] border-white/10 bottom-6 right-2 -rotate-3 hover:rotate-0 hover:scale-[1.03] transition-all duration-500 z-20">
-                <img
-                  src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80"
-                  alt="Restored Palace Patio"
-                  className="w-full h-full object-cover"
-                />
-                
-                {/* Floating Rating Badge */}
-                <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md px-3 py-1 rounded-lg border border-sand/50 text-[9px] text-charcoal font-black uppercase tracking-widest flex items-center gap-1.5 shadow-md">
-                  <Star className="w-3 h-3 text-gold fill-gold" />
-                  <span>RERA CERTIFIED</span>
                 </div>
-              </div>
 
+              </form>
             </div>
 
+            {/* Professional Trust Stats Counter */}
+            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-4 mt-4 pt-6 border-t border-white/10 w-full max-w-3xl">
+              {[
+                { value: "1,200+", label: "Verified Listings" },
+                { value: "100%", label: "RERA Certified" },
+                { value: "₹4,200 Cr+", label: "Property Managed" },
+                { value: "24/7", label: "Relocation Help" }
+              ].map((stat, i) => (
+                <div key={i} className="flex flex-col items-center gap-1 min-w-[120px]">
+                  <span className="text-lg sm:text-xl font-serif font-black text-white leading-none">
+                    {stat.value}
+                  </span>
+                  <span className="text-[8px] font-bold text-white/50 uppercase tracking-widest leading-none">
+                    {stat.label}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-
       </section>
 
       {/* 2. SVREPL'S TOP PICKS SECTION (Housing's Top Picks Style) */}
@@ -1114,202 +1098,58 @@ export default function Home() {
           initial={{ opacity: 0, scale: 0.98 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-terracotta to-orange-600 text-white p-8 md:p-12 shadow-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-8 border-2 border-white/10"
+          className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-terracotta to-orange-600 text-white p-8 md:p-12 shadow-2xl lg:grid lg:grid-cols-12 lg:items-center lg:gap-12 gap-8 border-2 border-white/10 group"
         >
           {/* Subtle Back Decor */}
           <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-white/5 rounded-full blur-[80px] pointer-events-none" />
           
-          <div className="flex flex-col gap-4 max-w-2xl text-left relative z-10">
+          <div className="lg:col-span-7 flex flex-col gap-6 text-left relative z-10">
             <span className="px-3 py-1 bg-white/20 border border-white/10 text-white text-[9px] font-black uppercase tracking-widest rounded w-fit">
               Owner services
             </span>
-            <h2 className="text-2xl sm:text-3xl font-serif font-black tracking-tight leading-tight text-white">
-              Have a property to sell or rent? <br />
-              List it with SVREPL completely free.
-            </h2>
-            <p className="text-slate-100 text-xs sm:text-sm leading-relaxed font-semibold">
-              Connect with genuine RERA-compliant buyers, agents, and brokers in Rajasthan. Reach out to our verified active database of thousands of clients looking for heritage villas and luxury houses.
-            </p>
+            <div className="flex flex-col gap-3">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-black tracking-tight leading-tight text-white">
+                Have a property to sell or rent? <br />
+                List it with SVREPL completely free.
+              </h2>
+              <p className="text-slate-100 text-xs sm:text-sm leading-relaxed font-semibold max-w-xl">
+                Connect with genuine RERA-compliant buyers, agents, and brokers in Rajasthan. Reach out to our verified active database of thousands of clients looking for heritage villas and luxury houses.
+              </p>
+            </div>
+            
+            <div className="w-fit">
+              <Link
+                href="/post-property"
+                className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white hover:bg-cream text-terracotta hover:text-terracotta-hover font-black text-xs uppercase tracking-widest shadow-lg transition-all duration-200"
+              >
+                <span>List Property Now</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
 
-          <div className="flex-shrink-0 relative z-10">
-            <Link
-              href="/post-property"
-              className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white hover:bg-cream text-terracotta hover:text-terracotta-hover font-black text-xs uppercase tracking-widest shadow-lg transition-all duration-200"
-            >
-              <span>List Property Now</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+          {/* Stylized Image Column */}
+          <div className="hidden lg:flex lg:col-span-5 justify-center items-center relative z-10 min-h-[380px]">
+            <div className="relative w-[300px] h-[360px]">
+              {/* Peach Background Card (Tilted) */}
+              <div className="absolute inset-0 bg-[#ffd6cc] rounded-[32px] shadow-2xl transform -rotate-6 group-hover:rotate-0 transition-all duration-500" />
+              
+              {/* Offset Tilted White Outline Border */}
+              <div className="absolute inset-0 border-2 border-white/80 rounded-[32px] transform rotate-3 group-hover:rotate-0 transition-all duration-500 pointer-events-none" />
+              
+              {/* Image Container (Tilted slightly differently) */}
+              <div className="absolute inset-3 rounded-[24px] overflow-hidden bg-white shadow-lg transform -rotate-2 group-hover:rotate-0 transition-all duration-500">
+                <img
+                  src="/services_hero.png"
+                  alt="Couple using tablet for listing a property"
+                  className="w-full h-full object-cover object-center"
+                />
+              </div>
+            </div>
           </div>
         </motion.div>
       </section>
 
-      {/* 10. INTERACTIVE MATCHMAKING QUIZ */}
-      <section className="relative py-20 bg-sand/35 border-t border-sand/40 w-full px-6">
-        <div className="max-w-4xl mx-auto w-full text-center">
-          
-          <div className="flex flex-col items-center mb-10 gap-2">
-            <span className="text-terracotta font-black text-xs uppercase tracking-wider">
-              Smart Curation Agent
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-serif font-black text-indigo tracking-tight">
-              Find Your Perfect Heritage Home
-            </h2>
-            <p className="text-charcoal/70 text-xs sm:text-sm max-w-xl">
-              Answer 3 simple questions and our Rajasthan real estate leads will shortlist custom properties fitting your requirements.
-            </p>
-          </div>
-
-          <div className="bg-white border border-sand p-6 sm:p-10 rounded-3xl shadow-xl text-left relative min-h-[300px] flex flex-col justify-between">
-            {!quizSubmitted ? (
-              <>
-                {/* Step Indicators */}
-                <div className="flex items-center justify-between mb-8">
-                  {[0, 1, 2, 3].map((stepNum) => (
-                    <div key={stepNum} className="flex-1 flex items-center">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-colors duration-300 ${quizStep >= stepNum ? 'bg-terracotta text-white' : 'bg-sand/40 text-charcoal/40'}`}>
-                        {stepNum + 1}
-                      </div>
-                      {stepNum < 3 && (
-                        <div className={`flex-1 h-0.5 mx-2 transition-colors duration-300 ${quizStep > stepNum ? 'bg-terracotta' : 'bg-sand/30'}`} />
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Step 1: City Selection */}
-                {quizStep === 0 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-5">
-                    <h3 className="font-serif font-black text-lg text-indigo">1. Choose your preferred destination city:</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      {["Udaipur", "Jaipur", "Jodhpur", "Other"].map((c) => (
-                        <button
-                          key={c}
-                          type="button"
-                          onClick={() => { setQuizCity(c); setQuizStep(1); }}
-                          className={`py-4 rounded-xl border font-bold text-sm text-left px-5 transition-all cursor-pointer ${quizCity === c ? 'border-terracotta bg-terracotta/5 text-terracotta' : 'border-sand hover:border-indigo/40 text-charcoal'}`}
-                        >
-                          {c}
-                        </button>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Step 2: Property Style */}
-                {quizStep === 1 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-5">
-                    <h3 className="font-serif font-black text-lg text-indigo">2. Select your heritage property style:</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      {["Heritage Haveli", "Lakeside Villa", "Modern Penthouse", "Raw Land/Plot"].map((t) => (
-                        <button
-                          key={t}
-                          type="button"
-                          onClick={() => { setQuizType(t); setQuizStep(2); }}
-                          className={`py-4 rounded-xl border font-bold text-sm text-left px-5 transition-all cursor-pointer ${quizType === t ? 'border-terracotta bg-terracotta/5 text-terracotta' : 'border-sand hover:border-indigo/40 text-charcoal'}`}
-                        >
-                          {t}
-                        </button>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Step 3: Budget range */}
-                {quizStep === 2 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-5">
-                    <h3 className="font-serif font-black text-lg text-indigo">3. Select your budget range:</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      {["Under 1 Crore", "1 to 3 Crores", "3 to 5 Crores", "5+ Crores"].map((b) => (
-                        <button
-                          key={b}
-                          type="button"
-                          onClick={() => { setQuizBudget(b); setQuizStep(3); }}
-                          className={`py-4 rounded-xl border font-bold text-sm text-left px-5 transition-all cursor-pointer ${quizBudget === b ? 'border-terracotta bg-terracotta/5 text-terracotta' : 'border-sand hover:border-indigo/40 text-charcoal'}`}
-                        >
-                          {b}
-                        </button>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Step 4: Submission */}
-                {quizStep === 3 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-4">
-                    <h3 className="font-serif font-black text-lg text-indigo">4. Where should we send your custom matches?</h3>
-                    <div className="flex flex-col gap-3 text-xs sm:text-sm font-semibold">
-                      <input
-                        type="text"
-                        placeholder="Your Name"
-                        value={quizName}
-                        onChange={(e) => setQuizName(e.target.value)}
-                        className="w-full bg-white border border-sand rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-terracotta text-charcoal"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Your Phone Number / Email"
-                        value={quizContact}
-                        onChange={(e) => setQuizContact(e.target.value)}
-                        className="w-full bg-white border border-sand rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-terracotta text-charcoal"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (quizName && quizContact) {
-                            setQuizSubmitted(true);
-                          } else {
-                            alert("Please fill in both fields.");
-                          }
-                        }}
-                        className="mt-2 py-3 bg-terracotta hover:bg-terracotta-hover text-white font-bold rounded-xl shadow-md cursor-pointer"
-                      >
-                        Submit Custom Match Request
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Back button */}
-                {quizStep > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setQuizStep((prev) => prev - 1)}
-                    className="mt-6 text-xs text-charcoal/50 hover:text-indigo font-bold cursor-pointer text-left w-fit"
-                  >
-                    ← Back to previous question
-                  </button>
-                )}
-              </>
-            ) : (
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center justify-center py-10 gap-4">
-                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl font-bold">
-                  ✓
-                </div>
-                <h3 className="font-serif font-black text-xl text-indigo">Matches Found & Sent!</h3>
-                <p className="text-xs sm:text-sm text-charcoal/70 max-w-md">
-                  Thank you, <strong>{quizName}</strong>. Our city lead in <strong>{quizCity}</strong> will contact you at <strong>{quizContact}</strong> shortly with verified <strong>{quizType}</strong> listings matching the <strong>{quizBudget}</strong> range.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuizStep(0);
-                    setQuizCity("");
-                    setQuizType("");
-                    setQuizBudget("");
-                    setQuizName("");
-                    setQuizContact("");
-                    setQuizSubmitted(false);
-                  }}
-                  className="mt-4 text-xs text-terracotta font-bold hover:underline cursor-pointer"
-                >
-                  Restart Curation Quiz
-                </button>
-              </motion.div>
-            )}
-          </div>
-        </div>
-      </section>
 
       {/* 11. PRICE TRENDS MODAL */}
       <AnimatePresence>

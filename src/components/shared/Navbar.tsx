@@ -6,13 +6,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { MapPin, Plus, ChevronDown, User, Users, LogOut, Home, Search, MessageSquare, Briefcase } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { CitySelectorDropdown } from "@/components/ui/CitySelectorDropdown";
+import { UserDropdown } from "@/components/ui/UserDropdown";
 
-const RAJASTHAN_CITIES = [
-  "Udaipur", "Jaipur", "Jodhpur", "Kota", "Bikaner", 
-  "Jaisalmer", "Rajsamand", "Pali", "Pushkar", "Alwar", 
-  "Ahmedabad", "Surat", "Gandhinagar", "Kutch", "Anand", 
-  "Rajkot", "Shimla", "Chandigarh", "Dharamshala", "Agra"
-];
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
@@ -21,6 +17,7 @@ export const Navbar: React.FC = () => {
   
   const [isScrolled, setIsScrolled] = useState(false);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
 
   const isAuthPage = pathname === "/login" || pathname === "/signup";
 
@@ -74,8 +71,8 @@ export const Navbar: React.FC = () => {
       <header
         className={`fixed top-1 left-0 right-0 mx-auto w-[96%] max-w-7xl rounded-2xl transition-all duration-300 z-40 ${
           isScrolled
-            ? "glassmorphism shadow-lg py-3 mt-2"
-            : "bg-transparent py-5 mt-3 border-transparent"
+            ? "glassmorphism shadow-lg py-2 mt-1.5"
+            : "bg-transparent py-3 mt-1.5 border-transparent"
         }`}
       >
         <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
@@ -144,25 +141,14 @@ export const Navbar: React.FC = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 mt-2 w-48 rounded-xl glassmorphism text-charcoal shadow-xl py-2 z-50 border border-sand"
+                      className="absolute right-0 z-50"
                     >
-                      <div className="px-3 py-1 text-[10px] font-bold text-charcoal/40 tracking-wider uppercase border-b border-sand mb-1">
-                        Select City
-                      </div>
-                      {RAJASTHAN_CITIES.map((city) => (
-                        <button
-                          key={city}
-                          onClick={() => handleCityChange(city)}
-                          className={`w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center justify-between ${
-                            selectedCity === city
-                              ? "bg-terracotta/10 text-terracotta font-bold"
-                              : "hover:bg-sand/40 text-charcoal/85"
-                          }`}
-                        >
-                          {city}
-                          {selectedCity === city && <span className="w-1.5 h-1.5 rounded-full bg-terracotta" />}
-                        </button>
-                      ))}
+                      <CitySelectorDropdown
+                        selectedCity={selectedCity}
+                        onSelectCity={handleCityChange}
+                        onClose={() => setShowCityDropdown(false)}
+                        align="right"
+                      />
                     </motion.div>
                   </>
                 )}
@@ -173,21 +159,43 @@ export const Navbar: React.FC = () => {
             <div className="hidden md:flex items-center gap-3">
               {/* User Login/Dashboard Control */}
               {isLoggedIn ? (
-                <div className="flex items-center gap-2">
-                  <Link
-                    href="/post-property"
-                    className="w-9 h-9 rounded-xl bg-sand flex items-center justify-center text-indigo hover:bg-sand/80 transition-colors duration-200"
-                    title={userEmail}
-                  >
-                    <User className="w-4 h-4" />
-                  </Link>
+                <div className="relative">
                   <button
-                    onClick={() => setIsLoggedIn(false)}
-                    className="w-9 h-9 rounded-xl bg-sand hover:bg-red-50 flex items-center justify-center text-charcoal/65 hover:text-red-500 transition-colors duration-200"
-                    title="Logout"
+                    onClick={() => setShowUserDropdown(!showUserDropdown)}
+                    className="flex items-center gap-2 px-3 py-2 text-xs md:text-sm font-bold text-charcoal bg-sand hover:bg-sand/80 rounded-xl transition-all duration-200 shadow-sm"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <div className="w-5 h-5 rounded-md bg-indigo text-white flex items-center justify-center font-extrabold text-[10px]">
+                      {userEmail ? userEmail.charAt(0).toUpperCase() : "U"}
+                    </div>
+                    <span className="max-w-[100px] truncate text-charcoal">{userEmail}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 text-charcoal/50 transition-transform duration-200 ${showUserDropdown ? "rotate-180" : ""}`} />
                   </button>
+
+                  <AnimatePresence>
+                    {showUserDropdown && (
+                      <>
+                        {/* Backdrop */}
+                        <div
+                          className="fixed inset-0 z-40"
+                          onClick={() => setShowUserDropdown(false)}
+                        />
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute right-0 z-50"
+                        >
+                          <UserDropdown
+                            userEmail={userEmail}
+                            onClose={() => setShowUserDropdown(false)}
+                            onLogout={() => setIsLoggedIn(false)}
+                            align="right"
+                          />
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
                 </div>
               ) : (
                 <Link

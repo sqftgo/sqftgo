@@ -30,6 +30,7 @@ interface FilterPanelProps {
 }
 
 const CITIES = [
+  "All India",
   "Udaipur", "Jaipur", "Jodhpur", "Kota", "Bikaner", 
   "Jaisalmer", "Rajsamand", "Pali", "Pushkar", "Alwar", 
   "Ahmedabad", "Surat", "Gandhinagar", "Kutch", "Anand", 

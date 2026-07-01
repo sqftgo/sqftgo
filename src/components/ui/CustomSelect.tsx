@@ -18,6 +18,7 @@ interface CustomSelectProps {
   className?: string;
   align?: "left" | "right";
   buttonClassName?: string;
+  inlineChevron?: boolean;
 }
 
 export default function CustomSelect({
@@ -29,6 +30,7 @@ export default function CustomSelect({
   className = "",
   align = "left",
   buttonClassName = "",
+  inlineChevron = false,
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,15 +60,18 @@ export default function CustomSelect({
           setIsOpen(!isOpen);
           setSearchQuery("");
         }}
-        className={`w-full flex items-center justify-between text-left focus:outline-none ${buttonClassName}`}
+        className={inlineChevron
+          ? `flex items-center gap-1.5 text-left focus:outline-none ${buttonClassName}`
+          : `w-full flex items-center justify-between text-left focus:outline-none ${buttonClassName}`
+        }
       >
         <span className="truncate">
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown
-          className={`w-4 h-4 ml-2 text-charcoal/40 transition-transform duration-200 flex-shrink-0 ${
+          className={`text-charcoal/40 transition-transform duration-200 flex-shrink-0 ${
             isOpen ? "rotate-180" : ""
-          }`}
+          } ${inlineChevron ? "w-3.5 h-3.5 ml-0.5" : "w-4 h-4 ml-2"}`}
         />
       </button>
 

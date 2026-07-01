@@ -27,7 +27,8 @@ import {
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import RelocationMap from "@/components/ui/RelocationMap";
 
-const RAJASTHAN_CITIES = [
+const CITIES = [
+  "All India",
   "Udaipur", "Jaipur", "Jodhpur", "Kota", "Bikaner", 
   "Jaisalmer", "Rajsamand", "Pali", "Pushkar", "Alwar", 
   "Ahmedabad", "Surat", "Gandhinagar", "Kutch", "Anand", 
@@ -295,7 +296,7 @@ export default function GetAssistancePage() {
                                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                                   className="bg-slate-50 border border-slate-200 text-slate-900 rounded-xl px-3.5 py-3 outline-none cursor-pointer"
                                 >
-                                  {RAJASTHAN_CITIES.map((c) => (
+                                  {CITIES.map((c) => (
                                     <option key={c} value={c}>{c}</option>
                                   ))}
                                 </select>

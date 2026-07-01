@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useApp, Property, AssistanceRequest, GeneralEnquiry, DirectoryProfile } from "@/context/AppContext";
 import {
   Building,
@@ -33,8 +33,9 @@ import { PostPropertyWizard } from "@/components/admin/PostPropertyWizard";
 
 type TabType = "overview" | "properties" | "relocation" | "enquiries" | "directory" | "post-property";
 
-export default function AdminDashboardPage() {
+function AdminDashboardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     properties,
     setProperties,
@@ -53,6 +54,14 @@ export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [propertySearch, setPropertySearch] = useState("");
   const [propertyFilterCity, setPropertyFilterCity] = useState("All");
+
+  // Sync activeTab with URL tab parameter if valid
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam && ["overview", "properties", "relocation", "enquiries", "directory", "post-property"].includes(tabParam)) {
+      setActiveTab(tabParam as TabType);
+    }
+  }, [searchParams]);
 
   const isAdmin = isLoggedIn && userEmail === "admin@svrepl.com";
 
@@ -257,7 +266,10 @@ export default function AdminDashboardPage() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as TabType)}
+              onClick={() => {
+                setActiveTab(tab.id as TabType);
+                router.replace(`/admin?tab=${tab.id}`);
+              }}
               className={`flex items-center gap-2 px-5 py-3 border-b-2 font-bold text-xs transition-colors cursor-pointer ${
                 isActive
                   ? "border-terracotta text-terracotta"
@@ -727,5 +739,13 @@ export default function AdminDashboardPage() {
       </div>
 
     </div>
+  );
+}
+
+export default function AdminDashboardPage() {
+  return (
+    <Suspense fallback={<div className="container mx-auto px-4 py-20 text-center font-bold text-charcoal/50">Loading Admin Dashboard...</div>}>
+      <AdminDashboardContent />
+    </Suspense>
   );
 }

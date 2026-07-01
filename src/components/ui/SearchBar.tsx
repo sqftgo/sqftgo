@@ -7,6 +7,7 @@ import { Search, MapPin, Home, IndianRupee } from "lucide-react";
 import CustomSelect from "@/components/ui/CustomSelect";
 
 const CITIES = [
+  "All India",
   "Udaipur", "Jaipur", "Jodhpur", "Kota", "Bikaner", 
   "Jaisalmer", "Rajsamand", "Pali", "Pushkar", "Alwar", 
   "Ahmedabad", "Surat", "Gandhinagar", "Kutch", "Anand", 
