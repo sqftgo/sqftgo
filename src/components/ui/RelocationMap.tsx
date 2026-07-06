@@ -20,6 +20,16 @@ interface CityRelocationData {
 }
 
 const CITY_RELOCATION_INFO: Record<string, CityRelocationData> = {
+  "All India": {
+    coordinates: "20° 35′ 52″ N / 78° 57′ 39″ E",
+    office: "National Relocation Bureau, Delhi NCR",
+    agents: "120+ Active Coordinators",
+    relocations: "2,480+ Successful Inter-State Moves",
+    duration: "5-10 Days Avg.",
+    corridor: "National Golden Quadrilateral Expressway Network",
+    landmarks: ["National Highway Grid", "State Border Hubs", "Transit Checkpoints"],
+    zones: ["North Zone Sourcing", "West Corridor Transit", "South Connect Hub"]
+  },
   Udaipur: {
     coordinates: "24° 35′ 12″ N / 73° 41′ 08″ E",
     office: "Lake City Hub, Panchwati",
@@ -80,6 +90,56 @@ const CITY_RELOCATION_INFO: Record<string, CityRelocationData> = {
     landmarks: ["Junagarh Fort", "Rampuria Havelis", "Karni Nagar Park"],
     zones: ["Karni Nagar Elite", "Rani Bazar Hub", "Sardul Colony"]
   },
+  Jaisalmer: {
+    coordinates: "26° 54′ 40″ N / 70° 54′ 46″ E",
+    office: "Thar Fort Sourcing Unit",
+    agents: "5 Active Agents",
+    relocations: "38 Successful Moves",
+    duration: "6-8 Days Avg.",
+    corridor: "Thar Desert Express Link",
+    landmarks: ["Jaisalmer Fort", "Sam Sand Dunes", "Patwon Ki Haveli"],
+    zones: ["Fort Road Residential", "Sam Dunes Tourism Zone", "Dedansar Suburbs"]
+  },
+  Rajsamand: {
+    coordinates: "25° 04′ 00″ N / 73° 53′ 00″ E",
+    office: "Marble Arch Office, Nathdwara Rd",
+    agents: "6 Active Agents",
+    relocations: "44 Successful Moves",
+    duration: "4-6 Days Avg.",
+    corridor: "NH-8 Industrial Route",
+    landmarks: ["Rajsamand Lake", "Dwarkadheesh Temple", "Kankroli Hill"],
+    zones: ["Kankroli Residential", "Nathdwara Sourcing Corridor", "Jalchakri Extension"]
+  },
+  Pali: {
+    coordinates: "25° 46′ 00″ N / 73° 19′ 00″ E",
+    office: "Industrial Transit Bureau",
+    agents: "5 Active Agents",
+    relocations: "29 Successful Moves",
+    duration: "5-7 Days Avg.",
+    corridor: "Jodhpur-Pali-Marwar Bypass Route",
+    landmarks: ["Lakhotiya Lake", "Bangur Museum", "Pali Fort Ridge"],
+    zones: ["Industrial Area Housing", "Suraj Pole Sourcing", "Marwar Junction Area"]
+  },
+  Pushkar: {
+    coordinates: "26° 29′ 20″ N / 74° 33′ 22″ E",
+    office: "Pushkar Ghats Sourcing Center",
+    agents: "4 Active Agents",
+    relocations: "31 Successful Moves",
+    duration: "4-6 Days Avg.",
+    corridor: "Ajmer-Pushkar Hill Pass Route",
+    landmarks: ["Brahma Temple", "Pushkar Lake Ghats", "Savitri Temple Hill"],
+    zones: ["Pushkar Lake Circle", "Choti Basti", "Budha Pushkar Dev. Area"]
+  },
+  Alwar: {
+    coordinates: "27° 34′ 00″ N / 76° 36′ 00″ E",
+    office: "Sariska Gateway Hub",
+    agents: "8 Active Agents",
+    relocations: "58 Successful Moves",
+    duration: "3-5 Days Avg.",
+    corridor: "Delhi-Jaipur Expressway Corridor",
+    landmarks: ["Bala Quila", "Sariska National Park", "Siliserh Lake"],
+    zones: ["Manu Marg Housing", "NEB Housing Board", "Shivaji Park Elite"]
+  },
   Ahmedabad: {
     coordinates: "23° 01′ 28″ N / 72° 34′ 57″ E",
     office: "SG Highway Hub, Bodakdev",
@@ -99,6 +159,36 @@ const CITY_RELOCATION_INFO: Record<string, CityRelocationData> = {
     corridor: "Mumbai Transit & Coastal Link",
     landmarks: ["Tapi Riverfront", "Dumas Beach", "Sarthana Nature Park"],
     zones: ["Adajan Residential", "Vesu Elite Housing", "Varachha Commercial"]
+  },
+  Gandhinagar: {
+    coordinates: "23° 13′ 00″ N / 72° 41′ 00″ E",
+    office: "Capital City Sourcing Plaza",
+    agents: "11 Active Agents",
+    relocations: "95 Successful Moves",
+    duration: "3-5 Days Avg.",
+    corridor: "Ahmedabad-Gandhinagar Expressway",
+    landmarks: ["Akshardham Temple", "Sarita Udyan", "Gift City Tower"],
+    zones: ["Sector 21 Residential", "Gift City Special Zone", "Sector 30 Housing"]
+  },
+  Kutch: {
+    coordinates: "23° 15′ 00″ N / 69° 40′ 00″ E",
+    office: "Rann Gateway Bureau, Bhuj",
+    agents: "6 Active Agents",
+    relocations: "41 Successful Moves",
+    duration: "6-9 Days Avg.",
+    corridor: "West Gujarat Coastal Expressway",
+    landmarks: ["Rann of Kutch", "Aina Mahal Bhuj", "Mandvi Beach"],
+    zones: ["Bhuj Residential", "Mandvi Port Area", "Anjar Housing Sector"]
+  },
+  Anand: {
+    coordinates: "22° 34′ 00″ N / 72° 57′ 00″ E",
+    office: "Milk Capital Office, Amul Dairy Rd",
+    agents: "7 Active Agents",
+    relocations: "53 Successful Moves",
+    duration: "3-5 Days Avg.",
+    corridor: "NE-1 Vadodara-Ahmedabad Link",
+    landmarks: ["Amul Dairy Museum", "Shastri Ground", "Sardar Patel Memorial"],
+    zones: ["Vallabh Vidyanagar Housing", "Amul Dairy Road", "Karamsad Residential"]
   },
   Vadodara: {
     coordinates: "22° 18′ 00″ N / 73° 11′ 24″ E",
@@ -159,6 +249,26 @@ const CITY_RELOCATION_INFO: Record<string, CityRelocationData> = {
     corridor: "Himalayan Expressway Route",
     landmarks: ["The Ridge", "Jakhoo Hill", "Kalka-Shimla Railway"],
     zones: ["Chhota Shimla", "Mall Road Sector", "New Shimla Residential"]
+  },
+  Dharamshala: {
+    coordinates: "32° 13′ 00″ N / 76° 19′ 00″ E",
+    office: "Dhauladhar Sourcing Station",
+    agents: "7 Active Agents",
+    relocations: "61 Successful Moves",
+    duration: "5-8 Days Avg.",
+    corridor: "Pathankot-Kangra Hill Route",
+    landmarks: ["McLeod Ganj Monasteries", "HPCA Stadium", "Bhagsunag Waterfall"],
+    zones: ["McLeod Ganj Zen Sector", "Dharamkot Meadows", "Sidhbari Elite Area"]
+  },
+  Agra: {
+    coordinates: "27° 11′ 00″ N / 78° 01′ 00″ E",
+    office: "Taj Heritage Office",
+    agents: "12 Active Agents",
+    relocations: "134 Successful Moves",
+    duration: "3-5 Days Avg.",
+    corridor: "Yamuna Expressway Northern Corridor",
+    landmarks: ["Taj Mahal Gate", "Agra Fort", "Sikandra Tomb"],
+    zones: ["Taj Ganj Tourist Sector", "Sanjay Place Office Hub", "Dayal Bagh Residential"]
   }
 };
 

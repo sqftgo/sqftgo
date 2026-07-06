@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Property, useApp } from "@/context/AppContext";
-import { Send, CheckCircle2, User, Mail, Phone, MessageSquare, CheckCircle } from "lucide-react";
+import { Send, CheckCircle2, User, Mail, Phone, MessageSquare, CheckCircle, ShieldAlert } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface InquiryFormProps {
@@ -19,9 +19,11 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ property }) => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [agreeToTrustTerms, setAgreeToTrustTerms] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreeToTrustTerms) return;
     setIsSubmitting(true);
 
     // Simulate network latency
@@ -29,6 +31,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ property }) => {
       submitInquiry(property.id, formData);
       setIsSubmitting(false);
       setIsSuccess(true);
+      setAgreeToTrustTerms(false);
       setFormData({
         name: "",
         email: "",
@@ -158,10 +161,33 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ property }) => {
               </div>
             </div>
 
+            {/* Vetting Disclaimer */}
+            <div className="p-3.5 rounded-2xl bg-indigo/5 border border-sand/50 text-[10.5px] text-indigo/90 leading-relaxed flex items-start gap-2.5">
+              <ShieldAlert className="w-4 h-4 text-terracotta shrink-0 mt-0.5" />
+              <span>
+                <strong>Vetting Pledge:</strong> Sun Valley requires physical premise inspections and RERA registry verification before any lease or sale agreements are signed. Do not pay advance deposits.
+              </span>
+            </div>
+
+            {/* Vetting Consent Checkbox */}
+            <div className="flex items-start gap-2.5 text-[11px] text-charcoal/75 font-semibold select-none cursor-pointer">
+              <input
+                id="agreeToTrustTerms"
+                type="checkbox"
+                required
+                checked={agreeToTrustTerms}
+                onChange={(e) => setAgreeToTrustTerms(e.target.checked)}
+                className="mt-0.5 w-4 h-4 accent-terracotta shrink-0 cursor-pointer"
+              />
+              <label htmlFor="agreeToTrustTerms" className="cursor-pointer leading-tight text-left">
+                I agree to verify all RERA credentials and deeds, and accept data terms. *
+              </label>
+            </div>
+
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !agreeToTrustTerms}
               className="mt-2 w-full py-3 bg-terracotta hover:bg-terracotta-hover text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-2 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-55 disabled:pointer-events-none transition-all duration-200"
             >
               {isSubmitting ? (

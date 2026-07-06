@@ -13,11 +13,26 @@ import DestinationCard from "@/components/destinations/DestinationCard";
 import DestinationDrawer from "@/components/destinations/DestinationDrawer";
 
 export default function DestinationsPage() {
-  const { properties } = useApp();
+  const { properties, selectedCity } = useApp();
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [limitToSelectedCityRegion, setLimitToSelectedCityRegion] = useState(true);
+
+  // Identify the region of the selected city
+  const selectedCityRegion = useMemo(() => {
+    const found = DESTINATIONS.find(d => d.name.toLowerCase() === selectedCity.toLowerCase());
+    if (found) return found.tag;
+    
+    const rajasthanFallback = ["pali", "alwar"];
+    const gujaratFallback = ["gandhinagar", "kutch", "anand"];
+    const nameLower = selectedCity.toLowerCase();
+    
+    if (rajasthanFallback.includes(nameLower)) return "Rajasthan";
+    if (gujaratFallback.includes(nameLower)) return "Gujarat";
+    return "All";
+  }, [selectedCity]);
 
   // Compute property counts dynamically per city
   const cityPropertiesMap = useMemo(() => {
@@ -43,18 +58,19 @@ export default function DestinationsPage() {
     return stats;
   }, [cityPropertiesMap]);
 
-  // Filtered list of destinations based on tag and search query
+  // Filtered list of destinations based on tag, search query, and navbar selected city region
   const filteredDestinations = useMemo(() => {
     return DESTINATIONS.filter(d => {
+      const matchesRegion = !limitToSelectedCityRegion || selectedCityRegion === "All" || d.tag === selectedCityRegion;
       const matchesTag = activeFilter === "All" || d.tag === activeFilter;
       const matchesSearch = searchQuery.trim() === "" ||
         d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         d.vibe.toLowerCase().includes(searchQuery.toLowerCase()) ||
         d.tag.toLowerCase().includes(searchQuery.toLowerCase()) ||
         d.title.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesTag && matchesSearch;
+      return matchesRegion && matchesTag && matchesSearch;
     });
-  }, [activeFilter, searchQuery]);
+  }, [activeFilter, searchQuery, selectedCityRegion, limitToSelectedCityRegion]);
 
   // Get autocomplete suggestions
   const autocompleteSuggestions = useMemo(() => {
@@ -94,9 +110,31 @@ export default function DestinationsPage() {
         <DestinationsFilter
           tags={TAGS}
           activeFilter={activeFilter}
-          setActiveFilter={setActiveFilter}
+          setActiveFilter={(val) => {
+            setActiveFilter(val);
+            if (val !== "All") {
+              setLimitToSelectedCityRegion(false);
+            }
+          }}
           tagStats={tagStats}
         />
+
+        {limitToSelectedCityRegion && selectedCityRegion !== "All" && (
+          <div className="mb-8 p-4 rounded-2xl bg-indigo/5 border border-indigo/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs md:text-sm font-semibold text-indigo animate-fade-in">
+            <div className="flex items-center gap-2">
+              <Compass className="w-5 h-5 text-terracotta animate-spin" style={{ animationDuration: '4s' }} />
+              <span>
+                Showing cities in <strong className="text-terracotta">{selectedCityRegion}</strong> (relevant to your selected city <strong className="text-terracotta">{selectedCity}</strong>)
+              </span>
+            </div>
+            <button
+              onClick={() => setLimitToSelectedCityRegion(false)}
+              className="px-4 py-1.5 rounded-xl bg-white border border-sand hover:bg-sand/30 text-xs font-bold text-charcoal transition-all shadow-sm cursor-pointer shrink-0"
+            >
+              Show all regions
+            </button>
+          </div>
+        )}
 
         {/* Dynamic Cards Grid */}
         <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">

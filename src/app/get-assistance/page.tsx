@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import { 
@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import RelocationMap from "@/components/ui/RelocationMap";
+import { DESTINATIONS } from "@/data/destinations";
 
 const CITIES = [
   "All India",
@@ -72,6 +73,74 @@ export default function GetAssistancePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [formError, setFormError] = useState("");
+  const [agreeToAssistanceTerms, setAgreeToAssistanceTerms] = useState(false);
+
+  // Sync selectedCity from Navbar
+  useEffect(() => {
+    if (selectedCity && CITIES.includes(selectedCity)) {
+      setFormData((prev) => ({ ...prev, city: selectedCity }));
+    }
+  }, [selectedCity]);
+
+  // Handle locality tag chip selection
+  const handleLocalityClick = (locality: string) => {
+    const currentAreas = localAreas.split(",").map(a => a.trim()).filter(a => a.length > 0);
+    if (currentAreas.map(a => a.toLowerCase()).includes(locality.toLowerCase())) {
+      setLocalAreas(currentAreas.filter(a => a.toLowerCase() !== locality.toLowerCase()).join(", "));
+    } else {
+      setLocalAreas([...currentAreas, locality].join(", "));
+    }
+  };
+
+  // Cost estimator based on target city, BHK, and family size
+  const estimates = useMemo(() => {
+    let minPacking = 0;
+    let maxPacking = 0;
+    let depositAdvice = "";
+    
+    switch (formData.bhk) {
+      case "1 BHK":
+        minPacking = 6500;
+        maxPacking = 9500;
+        depositAdvice = "₹15,000 - ₹30,000";
+        break;
+      case "2 BHK":
+        minPacking = 10000;
+        maxPacking = 15000;
+        depositAdvice = "₹30,000 - ₹60,000";
+        break;
+      case "3 BHK":
+        minPacking = 15000;
+        maxPacking = 22000;
+        depositAdvice = "₹50,000 - ₹1,00,000";
+        break;
+      case "4+ BHK":
+      case "Independent Villa":
+        minPacking = 22000;
+        maxPacking = 35000;
+        depositAdvice = "₹80,000 - ₹1,50,000";
+        break;
+      default:
+        minPacking = 0;
+        maxPacking = 0;
+        depositAdvice = "Varies by deal";
+    }
+    
+    // Extra inter-state transit cost
+    const interStateCities = ["Ahmedabad", "Surat", "Gandhinagar", "Kutch", "Anand", "Rajkot", "Shimla", "Chandigarh", "Dharamshala", "Agra", "All India"];
+    if (interStateCities.includes(formData.city)) {
+      minPacking += 8000;
+      maxPacking += 15000;
+    }
+    
+    // Scale slightly with family size
+    if (formData.familySize > 3) {
+      minPacking += (formData.familySize - 3) * 1500;
+      maxPacking += (formData.familySize - 3) * 2500;
+    }
+    
+    return { minPacking, maxPacking, depositAdvice };
+  }, [formData.bhk, formData.city, formData.familySize]);
 
   const handleNext = () => {
     setFormError("");
@@ -102,6 +171,11 @@ export default function GetAssistancePage() {
     
     if (!formData.name || !formData.phone || !formData.email) {
       setFormError("All contact information details are required.");
+      return;
+    }
+
+    if (!agreeToAssistanceTerms) {
+      setFormError("You must agree to the relocation sourcing terms and conditions.");
       return;
     }
 
@@ -193,12 +267,119 @@ export default function GetAssistancePage() {
         {!isSuccess ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            {/* 2. LEFT COLUMN: INTERACTIVE ROUTE MAP & HELP DESK */}
-            <div className="lg:col-span-5 flex flex-col gap-6 lg:sticky lg:top-28">
+            {/* 2. LEFT COLUMN: INTERACTIVE ROUTE MAP, ESTIMATOR, ROADMAP, & SUPPORT */}
+            <div className="lg:col-span-5 flex flex-col gap-6 lg:sticky lg:top-24 max-h-[90vh] overflow-y-auto pr-1 no-scrollbar pb-6">
               
               {/* Relocation Map wrapper */}
               <div className="w-full">
                 <RelocationMap city={formData.city} />
+              </div>
+
+              {/* Relocation Budget & Advisory Estimator */}
+              {estimates.minPacking > 0 && (
+                <div className="rounded-2xl border border-sand bg-cream p-5 text-left shadow-sm flex flex-col gap-3.5 animate-fade-in">
+                  <h3 className="font-serif font-black text-sm text-indigo pb-2.5 border-b border-sand/40 flex items-center gap-2">
+                    <Briefcase className="w-4 h-4 text-terracotta" />
+                    <span>Cost Estimator & Advisory</span>
+                  </h3>
+                  
+                  <div className="flex flex-col gap-3 text-xs font-semibold text-charcoal/70">
+                    <div className="flex justify-between border-b border-sand/30 pb-2">
+                      <span className="text-charcoal/50">Est. Shifting & Packing:</span>
+                      <span className="font-extrabold text-indigo text-right">
+                        ₹{estimates.minPacking.toLocaleString()} - ₹{estimates.maxPacking.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between border-b border-sand/30 pb-2">
+                      <span className="text-charcoal/50">Advised Rental Deposit:</span>
+                      <span className="font-extrabold text-indigo text-right">{estimates.depositAdvice}</span>
+                    </div>
+                    <div className="flex justify-between pb-1">
+                      <span className="text-charcoal/50">Sourcing & Legal Vetting:</span>
+                      <span className="font-extrabold text-emerald-600 text-right">₹0 (Free / Concierge Benefit)</span>
+                    </div>
+                    <div className="text-[10px] text-charcoal/40 font-semibold leading-relaxed bg-white/60 p-2.5 rounded-lg border border-sand/30">
+                      💡 Estimates are based on average regional transport tariffs and deposit norms. Shifting rates vary with distance and volume.
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Relocation Roadmap Checklist */}
+              <div className="rounded-2xl border border-sand bg-white p-5 text-left shadow-sm flex flex-col gap-4">
+                <h3 className="font-serif font-black text-sm text-indigo pb-2.5 border-b border-sand flex items-center gap-2">
+                  <Compass className="w-4 h-4 text-terracotta" />
+                  <span>Your Relocation Journey</span>
+                </h3>
+                
+                <div className="flex flex-col gap-4 text-xs font-semibold text-charcoal/70">
+                  <div className="flex gap-3">
+                    <div className="w-6 h-6 rounded-full bg-indigo/5 border border-indigo/20 flex items-center justify-center flex-shrink-0 font-bold text-indigo text-[10px]">1</div>
+                    <div className="flex flex-col">
+                      <span className="font-black text-indigo">Coordinator Assignment</span>
+                      <span className="text-[10px] text-charcoal/50 leading-normal mt-0.5">A dedicated sourcing coordinator checks your specifications within 2 hours.</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="w-6 h-6 rounded-full bg-indigo/5 border border-indigo/20 flex items-center justify-center flex-shrink-0 font-bold text-indigo text-[10px]">2</div>
+                    <div className="flex flex-col">
+                      <span className="font-black text-indigo">Curated Shortlisting</span>
+                      <span className="text-[10px] text-charcoal/50 leading-normal mt-0.5">We scan properties in your chosen localities to short-list 3 high-vibe options.</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="w-6 h-6 rounded-full bg-indigo/5 border border-indigo/20 flex items-center justify-center flex-shrink-0 font-bold text-indigo text-[10px]">3</div>
+                    <div className="flex flex-col">
+                      <span className="font-black text-indigo">Video or Guided Tours</span>
+                      <span className="text-[10px] text-charcoal/50 leading-normal mt-0.5">Our agent verifies property sanitation, layout, water, and drafts RERA leases.</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="w-6 h-6 rounded-full bg-indigo/5 border border-indigo/20 flex items-center justify-center flex-shrink-0 font-bold text-indigo text-[10px]">4</div>
+                    <div className="flex flex-col">
+                      <span className="font-black text-indigo">Packing Shifting & Key Handover</span>
+                      <span className="text-[10px] text-charcoal/50 leading-normal mt-0.5">Sync with premium logistics and deep cleaning to step into your new home stress-free.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Relocation Sourcing Feed */}
+              <div className="rounded-2xl border border-sand bg-white p-5 text-left shadow-sm flex flex-col gap-3.5">
+                <h3 className="font-serif font-black text-sm text-indigo pb-2.5 border-b border-sand flex items-center gap-2">
+                  <Users className="w-4 h-4 text-emerald-500 animate-pulse" />
+                  <span>Active Relocation Requests</span>
+                </h3>
+                
+                <div className="flex flex-col gap-3">
+                  {[
+                    { client: "Rohan M.", from: "Mumbai", to: "Jaipur", details: "3 BHK Apartment", time: "3 hrs ago", status: "Agent Assigned" },
+                    { client: "Priya S.", from: "Ahmedabad", to: "Udaipur", details: "2 BHK Villa", time: "1 day ago", status: "Matching Listings" },
+                    { client: "Vikram K.", from: "Delhi NCR", to: "Jodhpur", details: "4 BHK Bungalow", time: "2 days ago", status: "Completed" }
+                  ].map((move, idx) => (
+                    <div key={idx} className="flex justify-between items-start text-xs border-b border-sand/30 pb-2.5 last:border-0 last:pb-0 font-semibold text-charcoal/70">
+                      <div className="flex flex-col text-left">
+                        <span className="font-extrabold text-indigo">{move.client}</span>
+                        <span className="text-[10px] text-charcoal/45 mt-0.5">
+                          {move.from} &rarr; <span className="text-terracotta">{move.to}</span>
+                        </span>
+                        <span className="text-[9px] text-charcoal/40 font-bold mt-0.5">{move.details}</span>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${
+                          move.status === "Completed"
+                            ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                            : move.status === "Matching Listings"
+                            ? "bg-blue-50 text-blue-600 border border-blue-100"
+                            : "bg-amber-50 text-amber-600 border border-amber-100"
+                        }`}>
+                          {move.status}
+                        </span>
+                        <span className="text-[9px] text-charcoal/40 mt-1">{move.time}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Local Support Callout */}
@@ -207,7 +388,7 @@ export default function GetAssistancePage() {
                   <div className="w-9 h-9 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center flex-shrink-0">
                     <Users className="w-4.5 h-4.5" />
                   </div>
-                  <div className="flex flex-col">
+                  <div className="flex flex-col text-left">
                     <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest">Regional Coordinator</span>
                     <span className="text-xs font-black text-indigo">Vikram Singh Rathore</span>
                   </div>
@@ -216,7 +397,7 @@ export default function GetAssistancePage() {
                 <p className="text-[11px] text-charcoal/60 leading-relaxed font-semibold">
                   Need custom logistics or commercial warehouse listings during transition? Speak directly with our Rajasthan relocation head.
                 </p>
-
+ 
                 <a
                   href="tel:+919876543210"
                   className="w-full py-2.5 rounded-xl border border-sand hover:border-terracotta/35 text-indigo hover:text-terracotta flex items-center justify-center gap-2 text-xs font-black transition-all shadow-sm bg-white"
@@ -316,6 +497,39 @@ export default function GetAssistancePage() {
                                   className="bg-slate-50 border border-slate-200 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:border-indigo"
                                 />
                               </div>
+
+                              {/* Popular Localities suggestions */}
+                              {(() => {
+                                const currentCityDest = DESTINATIONS.find(d => d.name.toLowerCase() === formData.city.toLowerCase());
+                                const localitiesToSuggest = currentCityDest ? currentCityDest.topLocalities : [];
+                                if (localitiesToSuggest.length === 0) return null;
+                                return (
+                                  <div className="flex flex-col gap-1.5 sm:col-span-2 mt-1 animate-fade-in">
+                                    <span className="text-[10px] font-bold text-charcoal/40 uppercase tracking-widest text-left">
+                                      Click to Add Popular Neighborhoods:
+                                    </span>
+                                    <div className="flex flex-wrap gap-1.5 justify-start">
+                                      {localitiesToSuggest.map((loc) => {
+                                        const isSelected = localAreas.split(",").map(a => a.trim().toLowerCase()).includes(loc.toLowerCase());
+                                        return (
+                                          <button
+                                            key={loc}
+                                            type="button"
+                                            onClick={() => handleLocalityClick(loc)}
+                                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                                              isSelected
+                                                ? "bg-indigo text-white border-indigo shadow-sm"
+                                                : "bg-sand/30 hover:bg-sand/65 text-charcoal/70 border-sand"
+                                            }`}
+                                          >
+                                            {loc}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
 
                               {/* Move-in Date */}
                               <div className="flex flex-col gap-1.5 sm:col-span-2">
@@ -417,7 +631,7 @@ export default function GetAssistancePage() {
                               <h3 className="font-serif font-black text-lg text-indigo">Your Contact details</h3>
                               <p className="text-[11px] text-charcoal/50 font-bold mt-0.5">Let our lead coordinators know how to reach you directly.</p>
                             </div>
-
+ 
                             <div className="flex flex-col gap-4 text-sm font-semibold">
                               {/* Name */}
                               <div className="flex flex-col gap-1.5">
@@ -433,7 +647,7 @@ export default function GetAssistancePage() {
                                   <User className="absolute left-3 top-3.5 w-4.5 h-4.5 text-slate-400" />
                                 </div>
                               </div>
-
+ 
                               {/* Phone */}
                               <div className="flex flex-col gap-1.5">
                                 <div className="relative">
@@ -448,7 +662,7 @@ export default function GetAssistancePage() {
                                   <Phone className="absolute left-3 top-3.5 w-4.5 h-4.5 text-slate-400" />
                                 </div>
                               </div>
-
+ 
                               {/* Email */}
                               <div className="flex flex-col gap-1.5">
                                 <div className="relative">
@@ -463,13 +677,36 @@ export default function GetAssistancePage() {
                                   <Mail className="absolute left-3 top-3.5 w-4.5 h-4.5 text-slate-400" />
                                 </div>
                               </div>
+
+                              {/* Sourcing Escrow Notice */}
+                              <div className="p-3.5 rounded-2xl bg-indigo/5 border border-sand text-left text-xs font-semibold text-charcoal/80 flex flex-col gap-1.5 mt-2">
+                                <span className="text-[10px] font-black text-indigo uppercase tracking-wider block">Relocation Escrow & Title Vetting Guarantee</span>
+                                <p className="text-[10.5px] text-charcoal/65 leading-relaxed font-medium">
+                                  Sun Valley vets all registry cards and keeps property lease token deposits in partner escrow accounts. Capital is only disbursed to verified owners upon physical key delivery and signed RERA verification certificates.
+                                </p>
+                              </div>
+
+                              {/* Vetting Consent Checkbox */}
+                              <div className="flex items-start gap-2.5 text-xs font-semibold select-none cursor-pointer mt-1">
+                                <input
+                                  id="agreeToAssistanceTerms"
+                                  type="checkbox"
+                                  required
+                                  checked={agreeToAssistanceTerms}
+                                  onChange={(e) => setAgreeToAssistanceTerms(e.target.checked)}
+                                  className="mt-0.5 w-4 h-4 accent-terracotta shrink-0 cursor-pointer"
+                                />
+                                <label htmlFor="agreeToAssistanceTerms" className="cursor-pointer leading-tight text-left text-charcoal/75">
+                                  I agree to share my moving details with verified local coordinators, and accept the Assured Sourcing terms. *
+                                </label>
+                              </div>
                             </div>
                           </div>
                         )}
                       </motion.div>
                     </AnimatePresence>
                   </div>
-
+ 
                   {/* Form Error Banner */}
                   {formError && (
                     <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 text-xs font-bold flex items-center gap-2">
@@ -477,7 +714,7 @@ export default function GetAssistancePage() {
                       <span>{formError}</span>
                     </div>
                   )}
-
+ 
                   {/* Navigation Panel */}
                   <div className="flex items-center justify-between pt-6 border-t border-sand mt-2">
                     {formStep > 0 ? (
@@ -492,7 +729,7 @@ export default function GetAssistancePage() {
                     ) : (
                       <div />
                     )}
-
+ 
                     {formStep < 2 ? (
                       <button
                         type="button"
@@ -505,7 +742,7 @@ export default function GetAssistancePage() {
                     ) : (
                       <button
                         type="submit"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || !agreeToAssistanceTerms}
                         className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50 disabled:pointer-events-none transition-all cursor-pointer shadow-sm shadow-emerald-500/10"
                       >
                         {isSubmitting ? (

@@ -56,8 +56,8 @@ export const Navbar: React.FC = () => {
     setSelectedCity(city);
     setShowCityDropdown(false);
     
-    // If on homepage or search page, it updates context and results filter
-    if (pathname !== "/listings" && pathname !== "/") {
+    // If not on one of the main interactive regional pages, redirect to search listings
+    if (pathname !== "/listings" && pathname !== "/" && pathname !== "/services" && pathname !== "/destinations") {
       router.push("/listings");
     }
   };

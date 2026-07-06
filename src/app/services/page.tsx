@@ -43,25 +43,45 @@ const CATEGORY_METADATA = [
 ];
 
 export default function ServicesPage() {
-  const { directoryProfiles } = useApp();
+  const { directoryProfiles, selectedCity } = useApp();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterBySelectedCity, setFilterBySelectedCity] = useState(true);
+
+  const profilesForSelectedCity = useMemo(() => {
+    if (!selectedCity) return directoryProfiles;
+    return directoryProfiles.filter(p => p.city.toLowerCase() === selectedCity.toLowerCase());
+  }, [directoryProfiles, selectedCity]);
+
+  const activeProfilesForCount = useMemo(() => {
+    return filterBySelectedCity ? profilesForSelectedCity : directoryProfiles;
+  }, [filterBySelectedCity, profilesForSelectedCity, directoryProfiles]);
 
   const filteredProfiles = useMemo(() => {
-    let profiles = selectedCategory === "all" 
-      ? directoryProfiles
-      : directoryProfiles.filter(p => p.category === selectedCategory);
+    let profiles = directoryProfiles;
+
+    // Filter by selected city if active
+    if (filterBySelectedCity && selectedCity) {
+      profiles = profiles.filter(p => p.city.toLowerCase() === selectedCity.toLowerCase());
+    }
+
+    // Filter by category
+    if (selectedCategory !== "all") {
+      profiles = profiles.filter(p => p.category === selectedCategory);
+    }
     
+    // Filter by search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       profiles = profiles.filter(p => 
         p.firmName.toLowerCase().includes(q) || 
         p.ownerName.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q)
+        p.description.toLowerCase().includes(q) ||
+        (p.city && p.city.toLowerCase().includes(q))
       );
     }
     return profiles;
-  }, [directoryProfiles, selectedCategory, searchQuery]);
+  }, [directoryProfiles, selectedCategory, searchQuery, selectedCity, filterBySelectedCity]);
 
   return (
     <div className="w-full flex flex-col items-center bg-cream/30 min-h-screen">
@@ -197,8 +217,52 @@ export default function ServicesPage() {
       <section className="w-full max-w-7xl mx-auto px-6 pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Sidebar Column: Categories List */}
-          <div className="lg:col-span-3 flex flex-col gap-4 sticky top-24">
+          {/* Sidebar Column: Location & Categories List */}
+          <div className="lg:col-span-3 flex flex-col gap-5 sticky top-24">
+            
+            {/* Regional Location Filter */}
+            <div className="bg-white border border-sand rounded-3xl p-5 shadow-sm text-left flex flex-col gap-3">
+              <h2 className="font-serif font-black text-sm text-indigo pb-3 border-b border-sand flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-terracotta" />
+                <span>Regional Filter</span>
+              </h2>
+
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => setFilterBySelectedCity(false)}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl border-none text-xs font-bold transition-all cursor-pointer ${
+                    !filterBySelectedCity
+                      ? "bg-indigo text-white shadow-md"
+                      : "bg-transparent hover:bg-sand/30 text-charcoal/70"
+                  }`}
+                >
+                  <span className="text-left">All Cities</span>
+                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-black ${
+                    !filterBySelectedCity ? "bg-white/20 text-white" : "bg-sand/50 text-charcoal/50"
+                  }`}>
+                    {directoryProfiles.length}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setFilterBySelectedCity(true)}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl border-none text-xs font-bold transition-all cursor-pointer ${
+                    filterBySelectedCity
+                      ? "bg-indigo text-white shadow-md"
+                      : "bg-transparent hover:bg-sand/30 text-charcoal/70"
+                  }`}
+                >
+                  <span className="truncate text-left">Only {selectedCity}</span>
+                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-black ${
+                    filterBySelectedCity ? "bg-white/20 text-white" : "bg-sand/50 text-charcoal/50"
+                  }`}>
+                    {profilesForSelectedCity.length}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Categories Box */}
             <div className="bg-white border border-sand rounded-3xl p-5 shadow-sm text-left">
               <h2 className="font-serif font-black text-lg text-indigo pb-4 border-b border-sand mb-4">
                 Categories
@@ -225,7 +289,7 @@ export default function ServicesPage() {
                   <span className={`px-2 py-0.5 rounded-md text-[10px] font-black ${
                     selectedCategory === "all" ? "bg-white/20 text-white" : "bg-sand/50 text-charcoal/50"
                   }`}>
-                    {directoryProfiles.length}
+                    {activeProfilesForCount.length}
                   </span>
                 </button>
 
@@ -233,7 +297,7 @@ export default function ServicesPage() {
                 {CATEGORY_METADATA.map((cat) => {
                   const IconComponent = cat.icon;
                   const isSelected = selectedCategory === cat.name;
-                  const count = directoryProfiles.filter(p => p.category === cat.name).length;
+                  const count = activeProfilesForCount.filter(p => p.category === cat.name).length;
 
                   return (
                     <button
@@ -333,7 +397,7 @@ export default function ServicesPage() {
 
                       <div className="flex items-center gap-2 text-xs font-bold text-charcoal/70 bg-cream p-3 rounded-xl border border-sand/50">
                         <MapPin className="w-4 h-4 text-terracotta flex-shrink-0" />
-                        <span className="truncate">{profile.address}</span>
+                        <span className="truncate">{profile.address} <span className="text-indigo/80 font-black">({profile.city})</span></span>
                       </div>
 
                       {/* Contact Action Buttons */}

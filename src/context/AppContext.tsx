@@ -22,6 +22,22 @@ export interface Property {
   status: "Active" | "Pending Review" | "Sold" | "Rented";
   featured?: boolean;
   reraApproved?: boolean;
+  reraId?: string;
+  verifiedDate?: string;
+  verificationChecks?: {
+    titleDeed: boolean;
+    taxClearance: boolean;
+    utilitiesCheck: boolean;
+    physicalVerification: boolean;
+    structuralVetted: boolean;
+  };
+  priceBreakdown?: {
+    basePrice: number;
+    securityDeposit?: number;
+    maintenance: number;
+    registrationFees?: number;
+    gst?: number;
+  };
 }
 
 export interface AssistanceRequest {
@@ -63,12 +79,14 @@ export interface DirectoryProfile {
   firmName: string;
   ownerName: string;
   category: "Agent & Broker" | "Builder & Developer" | "Interior Decorator" | "Architect" | "Building Contractor" | "Property Consultant" | "Vastu Consultant" | "Home Valuation/Inspection" | "Home Shifting/Deep Cleaning";
+  city: string;
   address: string;
   email: string;
   website: string;
   mobile: string;
   description: string;
 }
+
 
 interface AppContextType {
   selectedCity: string;
@@ -101,19 +119,19 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const mockImages = {
   villas: [
-    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=24.5764,73.6836",
-    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=24.5925,73.6791",
-    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=24.6000,73.6800",
+    "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
   ],
   apartments: [
-    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.9239,75.8267",
-    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.8530,75.7600",
-    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.9100,75.8000",
+    "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80",
   ],
   houses: [
-    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.2700,73.0100",
-    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=25.1800,75.8300",
-    "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.4500,74.6300",
+    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
   ],
 };
 
@@ -138,6 +156,21 @@ const initialProperties: Property[] = [
     status: "Active",
     featured: true,
     reraApproved: true,
+    reraId: "RAJ/RERA/P/2023/1204",
+    verifiedDate: "2026-06-25",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: true,
+    },
+    priceBreakdown: {
+      basePrice: 37500000,
+      maintenance: 12000,
+      registrationFees: 2250000,
+      gst: 1875000,
+    },
   },
   {
     id: "prop-2",
@@ -159,6 +192,21 @@ const initialProperties: Property[] = [
     status: "Active",
     featured: true,
     reraApproved: true,
+    reraId: "RAJ/RERA/P/2024/0932",
+    verifiedDate: "2026-06-28",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: true,
+    },
+    priceBreakdown: {
+      basePrice: 8500000,
+      maintenance: 3500,
+      registrationFees: 510000,
+      gst: 425000,
+    },
   },
   {
     id: "prop-3",
@@ -180,6 +228,20 @@ const initialProperties: Property[] = [
     status: "Active",
     featured: true,
     reraApproved: true,
+    reraId: "RAJ/RERA/P/2023/0481",
+    verifiedDate: "2026-06-29",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: true,
+    },
+    priceBreakdown: {
+      basePrice: 22000,
+      securityDeposit: 44000,
+      maintenance: 2000,
+    },
   },
   {
     id: "prop-4",
@@ -201,6 +263,21 @@ const initialProperties: Property[] = [
     status: "Active",
     featured: true,
     reraApproved: true,
+    reraId: "RAJ/RERA/P/2022/1199",
+    verifiedDate: "2026-06-18",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: true,
+    },
+    priceBreakdown: {
+      basePrice: 85000000,
+      maintenance: 25000,
+      registrationFees: 5100000,
+      gst: 4250000,
+    },
   },
   {
     id: "prop-5",
@@ -220,6 +297,19 @@ const initialProperties: Property[] = [
     ownerPhone: "+91 94142 54321",
     inquiryCount: 3,
     status: "Active",
+    verifiedDate: "2026-07-02",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: false,
+    },
+    priceBreakdown: {
+      basePrice: 32000,
+      securityDeposit: 64000,
+      maintenance: 1500,
+    },
   },
   {
     id: "prop-6",
@@ -233,11 +323,25 @@ const initialProperties: Property[] = [
     furnished: "Unfurnished",
     description: "East-facing commercial plot measuring 40x60 in the upscale Sadul Ganj expansion, Bikaner. Features 40ft wide internal tar roads, underground electricity grid, municipal water connections, and a green park boundary. Ready for immediate construction.",
     amenities: ["Park view", "Corner Plot", "Water Supply", "Gated Boundary"],
-    images: ["https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=28.0229,73.3119"],
+    images: ["https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80"],
     ownerName: "Vikram Chauhan",
     ownerPhone: "+91 98281 12233",
     inquiryCount: 2,
     status: "Active",
+    verifiedDate: "2026-06-20",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: false,
+    },
+    priceBreakdown: {
+      basePrice: 4500000,
+      maintenance: 0,
+      registrationFees: 270000,
+      gst: 225000,
+    },
   },
   {
     id: "prop-7",
@@ -258,6 +362,20 @@ const initialProperties: Property[] = [
     inquiryCount: 7,
     status: "Active",
     reraApproved: true,
+    reraId: "RAJ/RERA/P/2024/1608",
+    verifiedDate: "2026-07-04",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: true,
+    },
+    priceBreakdown: {
+      basePrice: 12000,
+      securityDeposit: 36000,
+      maintenance: 1000,
+    },
   },
   {
     id: "prop-8",
@@ -279,6 +397,21 @@ const initialProperties: Property[] = [
     status: "Active",
     featured: true,
     reraApproved: true,
+    reraId: "RAJ/RERA/P/2023/0744",
+    verifiedDate: "2026-06-11",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: true,
+    },
+    priceBreakdown: {
+      basePrice: 18000000,
+      maintenance: 6500,
+      registrationFees: 1080000,
+      gst: 900000,
+    },
   },
   {
     id: "prop-9",
@@ -292,13 +425,27 @@ const initialProperties: Property[] = [
     furnished: "Semi-Furnished",
     description: "Modern, ready-to-move corporate office space on SG Highway, Ahmedabad. Features 25 workstations, 2 private cabins, a conference room, and server room infrastructure. Located in a premium grade-A business park.",
     amenities: ["Security", "Power Backup", "Elevator", "Parking", "Gym"],
-    images: ["https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=23.0258,72.5074"],
+    images: ["https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80"],
     ownerName: "Parth Patel",
     ownerPhone: "+91 99112 99112",
     inquiryCount: 5,
     status: "Active",
     featured: true,
     reraApproved: true,
+    reraId: "GJ/RERA/AHD/2024/2904",
+    verifiedDate: "2026-06-30",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: true,
+    },
+    priceBreakdown: {
+      basePrice: 75000,
+      securityDeposit: 225000,
+      maintenance: 8000,
+    },
   },
   {
     id: "prop-10",
@@ -312,13 +459,28 @@ const initialProperties: Property[] = [
     furnished: "Furnished",
     description: "An outstanding retail opportunity with a double-height glass frontage in one of Surat's highest footfall commercial markets in Vesu. Best suited for fashion apparel, electronics, or premium jewelry brands.",
     amenities: ["Security", "Parking", "Modular Kitchen"],
-    images: ["https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=21.2089,72.8634"],
+    images: ["https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80"],
     ownerName: "Harshil Mehta",
     ownerPhone: "+91 98112 98112",
     inquiryCount: 8,
     status: "Active",
     featured: true,
     reraApproved: true,
+    reraId: "GJ/RERA/SUR/2023/1109",
+    verifiedDate: "2026-06-25",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: true,
+    },
+    priceBreakdown: {
+      basePrice: 6500000,
+      maintenance: 2500,
+      registrationFees: 390000,
+      gst: 325000,
+    },
   },
   {
     id: "prop-11",
@@ -339,6 +501,21 @@ const initialProperties: Property[] = [
     status: "Active",
     featured: true,
     reraApproved: true,
+    reraId: "CH/RERA/CHD/2022/0831",
+    verifiedDate: "2026-05-15",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: true,
+    },
+    priceBreakdown: {
+      basePrice: 120000000,
+      maintenance: 85000,
+      registrationFees: 7200000,
+      gst: 6000000,
+    },
   },
   {
     id: "prop-12",
@@ -358,6 +535,19 @@ const initialProperties: Property[] = [
     ownerPhone: "+91 94180 94180",
     inquiryCount: 6,
     status: "Active",
+    verifiedDate: "2026-07-01",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: false,
+    },
+    priceBreakdown: {
+      basePrice: 45000,
+      securityDeposit: 90000,
+      maintenance: 3000,
+    },
   },
   {
     id: "prop-13",
@@ -372,8 +562,8 @@ const initialProperties: Property[] = [
     description: "Operational premium luxury resort near Sam Sand Dunes, Jaisalmer. Features 20 premium cottages, central dining courtyard, swimming pool, event stage, and corporate retreat packages. Excellent high-yield commercial hotspot.",
     amenities: ["Heritage Courtyard", "Private Garden", "Power Backup", "Security", "Parking"],
     images: [
-      "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.8981,70.5015",
-      "https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=26.8985,70.5020"
+      "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80"
     ],
     ownerName: "Sumer Singh Bhati",
     ownerPhone: "+91 98292 22222",
@@ -381,6 +571,21 @@ const initialProperties: Property[] = [
     status: "Active",
     featured: true,
     reraApproved: true,
+    reraId: "RAJ/RERA/P/2024/0489",
+    verifiedDate: "2026-06-05",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: true,
+    },
+    priceBreakdown: {
+      basePrice: 85000000,
+      maintenance: 50000,
+      registrationFees: 5100000,
+      gst: 4250000,
+    },
   },
   {
     id: "prop-14",
@@ -400,6 +605,19 @@ const initialProperties: Property[] = [
     ownerPhone: "+91 94143 33333",
     inquiryCount: 5,
     status: "Active",
+    verifiedDate: "2026-07-02",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: false,
+    },
+    priceBreakdown: {
+      basePrice: 18000,
+      securityDeposit: 36000,
+      maintenance: 1200,
+    },
   },
   {
     id: "prop-15",
@@ -413,11 +631,25 @@ const initialProperties: Property[] = [
     furnished: "Unfurnished",
     description: "Premium industrial plot measuring 5000 sq ft situated in the busy Kalawad Road zone in Rajkot. Equipped with high-power industrial grid connections, municipal water channels, and direct container truck accessibility.",
     amenities: ["Water Supply", "Power Backup", "Gated Boundary"],
-    images: ["https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=22.2573,70.7388"],
+    images: ["https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80"],
     ownerName: "Ketan Bhai Patel",
     ownerPhone: "+91 98251 44444",
     inquiryCount: 3,
     status: "Active",
+    verifiedDate: "2026-06-25",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: false,
+    },
+    priceBreakdown: {
+      basePrice: 12500000,
+      maintenance: 0,
+      registrationFees: 750000,
+      gst: 625000,
+    },
   },
   {
     id: "prop-16",
@@ -439,6 +671,21 @@ const initialProperties: Property[] = [
     status: "Active",
     featured: true,
     reraApproved: true,
+    reraId: "CH/RERA/CHD/2024/1210",
+    verifiedDate: "2026-06-29",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: true,
+    },
+    priceBreakdown: {
+      basePrice: 9500000,
+      maintenance: 3800,
+      registrationFees: 570000,
+      gst: 475000,
+    },
   },
   {
     id: "prop-17",
@@ -460,6 +707,21 @@ const initialProperties: Property[] = [
     status: "Active",
     featured: true,
     reraApproved: true,
+    reraId: "HP/RERA/DHM/2023/0388",
+    verifiedDate: "2026-06-15",
+    verificationChecks: {
+      titleDeed: true,
+      taxClearance: true,
+      utilitiesCheck: true,
+      physicalVerification: true,
+      structuralVetted: true,
+    },
+    priceBreakdown: {
+      basePrice: 32000000,
+      maintenance: 15000,
+      registrationFees: 1920000,
+      gst: 1600000,
+    },
   },
   {
     id: "prop-18",
@@ -473,7 +735,7 @@ const initialProperties: Property[] = [
     furnished: "Unfurnished",
     description: "Scenic premium residential farm land in Rajsamand near Kankroli. Features fertile soil, close proximity to Rajsamand Lake, municipal irrigation pipelines, and direct road connectivity. Best suited for organic farming or building a private leisure farmhouse.",
     amenities: ["Water Supply", "Private Garden", "Lake View"],
-    images: ["https://maps.google.com/cbk?output=thumbnail&w=1200&h=800&ll=25.0715,73.8824"],
+    images: ["https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80"],
     ownerName: "Devendra Singh Gohil",
     ownerPhone: "+91 98293 77777",
     inquiryCount: 6,
@@ -549,6 +811,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       firmName: "Mewar Heritage Architects",
       ownerName: "Abhinav Vyas",
       category: "Architect",
+      city: "Udaipur",
       address: "Lake Palace Road, Udaipur",
       email: "info@mewararchitects.in",
       website: "www.mewararchitects.in",
@@ -560,11 +823,72 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       firmName: "Royal Jaipur Interiors",
       ownerName: "Kriti Sharma",
       category: "Interior Decorator",
+      city: "Jaipur",
       address: "C-Scheme, Jaipur",
       email: "kriti@royaljaipurinteriors.com",
       website: "www.royaljaipurinteriors.com",
       mobile: "+91 94140 33333",
       description: "Premium interior decorators blend modern luxury with Rajasthan's traditional color palettes, block prints, and handcrafted furniture.",
+    },
+    {
+      id: "dir-3",
+      firmName: "Marwar Elite Builders",
+      ownerName: "Gajendra Rathore",
+      category: "Builder & Developer",
+      city: "Jodhpur",
+      address: "Ratanada, Jodhpur",
+      email: "contact@marwarbuilders.in",
+      website: "www.marwarbuilders.in",
+      mobile: "+91 98888 77777",
+      description: "Developing modern villa townships and luxury apartment complexes keeping Jodhpur's signature blue accents and red sandstone aesthetics.",
+    },
+    {
+      id: "dir-4",
+      firmName: "Desert Vastu Foundations",
+      ownerName: "Sumer Singh Bhati",
+      category: "Vastu Consultant",
+      city: "Jaisalmer",
+      address: "Sam Sand Dunes Road, Jaisalmer",
+      email: "bhati@desertvastu.com",
+      website: "www.desertvastu.com",
+      mobile: "+91 98292 22222",
+      description: "Providing expert Vedic layout consulting for residential structures in extreme climates, ensuring peace, prosperity, and ecological harmony.",
+    },
+    {
+      id: "dir-5",
+      firmName: "Udaipur Packers & Shifters",
+      ownerName: "Rajendra Joshi",
+      category: "Home Shifting/Deep Cleaning",
+      city: "Udaipur",
+      address: "Hiran Magri Sector 4, Udaipur",
+      email: "joshishifting@gmail.com",
+      website: "www.udaipurpackers.com",
+      mobile: "+91 94142 54321",
+      description: "Local and interstate relocation assistance, deep heritage haveli sanitation, pest control, and elite art handling logistics.",
+    },
+    {
+      id: "dir-6",
+      firmName: "Sabarmati Tech Architects",
+      ownerName: "Parth Patel",
+      category: "Architect",
+      city: "Ahmedabad",
+      address: "SG Highway, Ahmedabad",
+      email: "parth@sabarmatiarchs.com",
+      website: "www.sabarmatiarchs.com",
+      mobile: "+91 99112 99112",
+      description: "Sustainable urban blueprints, LEED certification consultants, and grade-A commercial architecture on SG Highway.",
+    },
+    {
+      id: "dir-7",
+      firmName: "Surat Diamond Decorators",
+      ownerName: "Harshil Mehta",
+      category: "Interior Decorator",
+      city: "Surat",
+      address: "Vesu, Surat",
+      email: "mehta@suratdecor.in",
+      website: "www.suratdecor.in",
+      mobile: "+91 98112 98112",
+      description: "Stunning glassmorphic offices, upscale diamond merchant lounges, and state-of-the-art modular kitchen installations.",
     }
   ]);
 

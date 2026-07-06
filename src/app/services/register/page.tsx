@@ -15,7 +15,8 @@ import {
   FileText, 
   CheckCircle2, 
   ChevronLeft, 
-  Plus 
+  Plus,
+  AlertCircle 
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -31,6 +32,26 @@ const CATEGORIES = [
   "Home Shifting/Deep Cleaning"
 ];
 
+const CITIES = [
+  "Udaipur",
+  "Jaipur",
+  "Jodhpur",
+  "Kota",
+  "Bikaner",
+  "Jaisalmer",
+  "Rajsamand",
+  "Pali",
+  "Pushkar",
+  "Alwar",
+  "Ahmedabad",
+  "Surat",
+  "Rajkot",
+  "Shimla",
+  "Dharamshala",
+  "Chandigarh",
+  "Agra"
+];
+
 export default function RegisterServicePage() {
   const router = useRouter();
   const { addDirectoryProfile } = useApp();
@@ -39,6 +60,7 @@ export default function RegisterServicePage() {
     firmName: "",
     ownerName: "",
     category: CATEGORIES[0] as DirectoryProfile["category"],
+    city: "Udaipur",
     address: "",
     email: "",
     website: "",
@@ -48,15 +70,18 @@ export default function RegisterServicePage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [agreeToVettingPledge, setAgreeToVettingPledge] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreeToVettingPledge) return;
     setIsSubmitting(true);
 
     setTimeout(() => {
       addDirectoryProfile(formData);
       setIsSubmitting(false);
       setIsSuccess(true);
+      setAgreeToVettingPledge(false);
     }, 1200);
   };
 
@@ -98,6 +123,14 @@ export default function RegisterServicePage() {
               <h2 className="font-serif font-black text-lg text-indigo pb-2 border-b border-sand">
                 Business Information
               </h2>
+
+              {/* Credential Vetting Notice */}
+              <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/15 text-xs text-indigo leading-relaxed flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-terracotta shrink-0 mt-0.5" />
+                <div>
+                  <strong className="text-terracotta">Verification Notice:</strong> All registered profiles must upload or email supporting credentials (GST registration document, PAN, or RERA license certificate) to <span className="underline">verify@svrepl.com</span>. Listings will remain hidden on the search feed until vetted by our verification team.
+                </div>
+              </div>
 
               <div className="flex flex-col gap-5 text-sm font-semibold">
                 
@@ -153,20 +186,40 @@ export default function RegisterServicePage() {
                   </div>
                 </div>
 
-                {/* Address */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-indigo flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4 text-terracotta" />
-                    <span>Business Address *</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Sector 11, Hiran Magri, Udaipur, Rajasthan"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    className="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-terracotta text-charcoal font-medium"
-                  />
+                {/* City & Address */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* City Selection */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-indigo flex items-center gap-1.5">
+                      <MapPin className="w-4 h-4 text-terracotta" />
+                      <span>City *</span>
+                    </label>
+                    <select
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      className="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm font-semibold outline-none cursor-pointer focus:border-terracotta text-charcoal"
+                    >
+                      {CITIES.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  {/* Address */}
+                  <div className="md:col-span-2 flex flex-col gap-1.5">
+                    <label className="text-indigo flex items-center gap-1.5">
+                      <MapPin className="w-4 h-4 text-terracotta" />
+                      <span>Business Address *</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Sector 11, Hiran Magri, Udaipur, Rajasthan"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      className="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-terracotta text-charcoal font-medium"
+                    />
+                  </div>
                 </div>
 
                 {/* Email, Website, Mobile */}
@@ -238,10 +291,25 @@ export default function RegisterServicePage() {
 
               </div>
 
+              {/* Vetting Pledge Checkbox */}
+              <div className="flex items-start gap-2.5 text-xs font-semibold select-none cursor-pointer mt-1">
+                <input
+                  id="agreeToVettingPledge"
+                  type="checkbox"
+                  required
+                  checked={agreeToVettingPledge}
+                  onChange={(e) => setAgreeToVettingPledge(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 accent-terracotta shrink-0 cursor-pointer"
+                />
+                <label htmlFor="agreeToVettingPledge" className="cursor-pointer leading-tight text-left text-charcoal/70">
+                  I pledge that all provided business credentials are legally accurate and agree to submit matching verification proofs to the Sun Valley vetting coordinators. *
+                </label>
+              </div>
+
               {/* Submit button */}
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !agreeToVettingPledge}
                 className="mt-2 py-3 w-full bg-indigo hover:bg-indigo-hover text-white font-extrabold rounded-xl shadow-md flex items-center justify-center gap-2 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-55 disabled:pointer-events-none transition-all duration-200 cursor-pointer"
               >
                 {isSubmitting ? (
