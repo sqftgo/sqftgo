@@ -42,7 +42,7 @@ export default function HubPage() {
         >
           {/* Card 1: Post Property */}
           <motion.div variants={itemVariants}>
-            <Link href="/admin/post-property" className="group block relative h-full bg-white rounded-3xl border border-sand shadow-sm hover:shadow-xl hover:border-terracotta/40 transition-all duration-300 overflow-hidden p-8 flex flex-col justify-center text-center">
+            <Link href="/post-property" className="group block relative h-full bg-white rounded-3xl border border-sand shadow-sm hover:shadow-xl hover:border-terracotta/40 transition-all duration-300 overflow-hidden p-8 flex flex-col justify-center text-center">
               <div className="absolute top-4 right-4">
                 <div className="bg-terracotta/10 text-terracotta border border-terracotta/20 text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />

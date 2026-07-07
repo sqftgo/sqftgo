@@ -278,7 +278,7 @@ function GetAssistanceContent() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* 2. LEFT COLUMN: INTERACTIVE ROUTE MAP, ESTIMATOR, ROADMAP, & SUPPORT */}
-            <div className="lg:col-span-5 flex flex-col gap-6 lg:sticky lg:top-24 max-h-[90vh] overflow-y-auto pr-1 no-scrollbar pb-6">
+            <div className="lg:col-span-5 order-2 lg:order-1 flex flex-col gap-6 lg:sticky lg:top-24 lg:max-h-[90vh] lg:overflow-y-auto pr-1 no-scrollbar pb-6">
               
               {/* Relocation Map wrapper */}
               <div className="w-full">
@@ -419,7 +419,7 @@ function GetAssistanceContent() {
             </div>
 
             {/* 3. RIGHT COLUMN: MULTI-STEP REQUIREMENTS WIZARD */}
-            <div className="lg:col-span-7">
+            <div className="lg:col-span-7 order-1 lg:order-2">
               <div className="bg-white border border-sand rounded-3xl p-6 md:p-8 shadow-sm flex flex-col gap-6 relative">
                 
                 {/* Wizard Tab Tracker */}

@@ -282,7 +282,7 @@ export default function Home() {
                 <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 px-6 sm:px-8 py-5">
                   
                   {/* SELECT CITY */}
-                  <div className="flex items-center gap-3 pr-4 border-r border-gray-200 last:border-r-0">
+                  <div className="flex items-center gap-3 pb-3 mb-3 border-b border-gray-100 lg:border-b-0 lg:border-r lg:border-gray-200 lg:pb-0 lg:mb-0 lg:pr-4">
                     <div className="w-9 h-9 rounded-full border-2 border-terracotta/30 flex items-center justify-center flex-shrink-0">
                       <MapPin className="w-4 h-4 text-terracotta" />
                     </div>
@@ -301,7 +301,7 @@ export default function Home() {
                   </div>
 
                   {/* LOCALITY */}
-                  <div className="flex items-center gap-3 px-4 border-r border-gray-200 last:border-r-0">
+                  <div className="flex items-center gap-3 pb-3 mb-3 border-b border-gray-100 lg:border-b-0 lg:border-r lg:border-gray-200 lg:pb-0 lg:mb-0 lg:px-4">
                     <div className="w-9 h-9 rounded-full border-2 border-indigo/20 flex items-center justify-center flex-shrink-0">
                       <Compass className="w-4 h-4 text-indigo" />
                     </div>
@@ -318,7 +318,7 @@ export default function Home() {
                   </div>
 
                   {/* TYPE */}
-                  <div className="flex items-center gap-3 px-4 border-r border-gray-200 last:border-r-0">
+                  <div className="flex items-center gap-3 pb-3 mb-3 border-b border-gray-100 lg:border-b-0 lg:border-r lg:border-gray-200 lg:pb-0 lg:mb-0 lg:px-4">
                     <div className="w-9 h-9 rounded-full border-2 border-indigo/20 flex items-center justify-center flex-shrink-0">
                       <HomeIcon className="w-4 h-4 text-indigo" />
                     </div>
@@ -336,7 +336,7 @@ export default function Home() {
                   </div>
 
                   {/* BUDGET LIMIT */}
-                  <div className="flex items-center gap-3 pl-4">
+                  <div className="flex items-center gap-3 lg:pl-4">
                     <div className="w-9 h-9 rounded-full border-2 border-indigo/20 flex items-center justify-center flex-shrink-0">
                       <span className="text-indigo font-bold text-sm">₹</span>
                     </div>
@@ -458,7 +458,7 @@ export default function Home() {
         {/* Top Picks Horizontal Carousel */}
         <div
           ref={topPicksScrollRef}
-          className="flex overflow-x-auto gap-6 pb-6 pt-2 scrollbar-none snap-x snap-mandatory scroll-smooth items-stretch"
+          className="flex overflow-x-auto gap-6 pb-6 pt-2 no-scrollbar snap-x snap-mandatory scroll-smooth items-stretch"
         >
           {displayTopPicks.map((property) => (
             <div key={property.id} className="w-[300px] sm:w-[360px] flex-shrink-0 snap-start relative group flex flex-col bg-white border border-sand rounded-2xl shadow-sm hover:shadow-xl hover:border-terracotta/30 transition-all duration-300 overflow-hidden">
@@ -586,7 +586,7 @@ export default function Home() {
           {/* Projects Horizontal Carousel */}
           <div
             ref={prominentProjectsScrollRef}
-            className="flex overflow-x-auto gap-6 pb-6 pt-2 scrollbar-none snap-x snap-mandatory scroll-smooth items-stretch"
+            className="flex overflow-x-auto gap-6 pb-6 pt-2 no-scrollbar snap-x snap-mandatory scroll-smooth items-stretch"
           >
             {mockProjects.map((project) => (
               <div key={project.id} className="w-[300px] sm:w-[380px] flex-shrink-0 snap-start bg-white border border-sand rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group overflow-hidden">
@@ -749,7 +749,7 @@ export default function Home() {
           {/* Developers Carousel */}
           <div
             ref={developersScrollRef}
-            className="flex overflow-x-auto gap-6 pb-6 pt-2 scrollbar-none snap-x snap-mandatory scroll-smooth items-stretch"
+            className="flex overflow-x-auto gap-6 pb-6 pt-2 no-scrollbar snap-x snap-mandatory scroll-smooth items-stretch"
           >
             {builders.map((profile) => (
               <div key={profile.id} className="w-[280px] sm:w-[320px] flex-shrink-0 snap-start bg-white border border-sand p-6 rounded-2xl shadow-sm hover:shadow-xl hover:border-indigo/25 transition-all duration-300 flex flex-col justify-between group">
@@ -936,7 +936,7 @@ export default function Home() {
           {/* Recommended Sellers Carousel */}
           <div
             ref={sellersScrollRef}
-            className="flex overflow-x-auto gap-6 pb-6 pt-2 scrollbar-none snap-x snap-mandatory scroll-smooth items-stretch"
+            className="flex overflow-x-auto gap-6 pb-6 pt-2 no-scrollbar snap-x snap-mandatory scroll-smooth items-stretch"
           >
             {sellers.map((profile) => (
               <div key={profile.id} className="w-[280px] sm:w-[320px] flex-shrink-0 snap-start bg-white border border-sand p-6 rounded-2xl shadow-sm hover:shadow-xl hover:border-terracotta/30 transition-all duration-300 flex flex-col justify-between group">
@@ -1041,7 +1041,7 @@ export default function Home() {
         {/* Newly Added Properties Carousel */}
         <div
           ref={newlyAddedScrollRef}
-          className="flex overflow-x-auto gap-6 pb-6 pt-2 scrollbar-none snap-x snap-mandatory scroll-smooth items-stretch"
+          className="flex overflow-x-auto gap-6 pb-6 pt-2 no-scrollbar snap-x snap-mandatory scroll-smooth items-stretch"
         >
           {newlyAddedProperties.map((property) => (
             <div key={property.id} className="w-[280px] sm:w-[320px] flex-shrink-0 snap-start bg-white border border-sand rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col group overflow-hidden">

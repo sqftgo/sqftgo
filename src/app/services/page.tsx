@@ -218,7 +218,7 @@ export default function ServicesPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Sidebar Column: Location & Categories List */}
-          <div className="lg:col-span-3 flex flex-col gap-5 sticky top-24">
+          <div className="hidden lg:flex lg:col-span-3 flex-col gap-5 sticky top-24">
             
             {/* Regional Location Filter */}
             <div className="bg-white border border-sand rounded-3xl p-5 shadow-sm text-left flex flex-col gap-3">
@@ -331,10 +331,47 @@ export default function ServicesPage() {
           </div>
 
           {/* Directory Column: Profiles Grid */}
-          <div className="lg:col-span-9 flex flex-col gap-6">
+          <div className="lg:col-span-9 flex flex-col gap-6 w-full">
+            
+            {/* Mobile Categories Bar */}
+            <div className="lg:hidden w-full overflow-x-auto no-scrollbar py-2 mb-2 -mx-4 px-4">
+              <div className="flex gap-2 w-max">
+                {/* All Categories Button */}
+                <button
+                  onClick={() => setSelectedCategory("all")}
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    selectedCategory === "all"
+                      ? "bg-indigo text-white shadow-md"
+                      : "bg-white border border-sand text-charcoal/70 hover:bg-sand/30"
+                  }`}
+                >
+                  <span>All ({activeProfilesForCount.length})</span>
+                </button>
+
+                {/* Individual Category Buttons */}
+                {CATEGORY_METADATA.map((cat) => {
+                  const isSelected = selectedCategory === cat.name;
+                  const count = activeProfilesForCount.filter(p => p.category === cat.name).length;
+
+                  return (
+                    <button
+                      key={cat.name}
+                      onClick={() => setSelectedCategory(isSelected ? "all" : cat.name)}
+                      className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                        isSelected
+                          ? "bg-indigo text-white shadow-md"
+                          : "bg-white border border-sand text-charcoal/70 hover:bg-sand/30"
+                      }`}
+                    >
+                      <span>{cat.title} ({count})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             
             {/* List Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-sand text-left">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-sand text-left">
               <div className="flex flex-col">
                 <h2 className="font-serif font-black text-2xl text-indigo">
                   {selectedCategory === "all" ? "All Professionals" : `${selectedCategory}s`}
@@ -350,9 +387,31 @@ export default function ServicesPage() {
                 )}
               </div>
               
-              <span className="text-[11px] text-charcoal/60 font-black bg-sand/50 border border-sand px-3 py-1.5 rounded-lg">
-                {filteredProfiles.length} Profiles
-              </span>
+              <div className="flex items-center gap-3">
+                {/* Mobile Regional switcher */}
+                <div className="flex items-center gap-1 bg-sand/35 p-1 rounded-xl border border-sand/60 lg:hidden">
+                  <button
+                    onClick={() => setFilterBySelectedCity(false)}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                      !filterBySelectedCity ? "bg-white text-indigo shadow-sm" : "text-charcoal/60"
+                    }`}
+                  >
+                    All Cities
+                  </button>
+                  <button
+                    onClick={() => setFilterBySelectedCity(true)}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                      filterBySelectedCity ? "bg-white text-indigo shadow-sm" : "text-charcoal/60"
+                    }`}
+                  >
+                    Only {selectedCity}
+                  </button>
+                </div>
+
+                <span className="text-[11px] text-charcoal/60 font-black bg-sand/50 border border-sand px-3 py-1.5 rounded-lg shrink-0">
+                  {filteredProfiles.length} Profiles
+                </span>
+              </div>
             </div>
 
             {/* Profile Cards */}

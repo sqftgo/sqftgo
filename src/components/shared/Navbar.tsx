@@ -170,20 +170,20 @@ export const Navbar: React.FC = () => {
               </AnimatePresence>
             </div>
 
-            {/* Desktop-only Actions */}
-            <div className="hidden md:flex items-center gap-3">
+            {/* Responsive Actions */}
+            <div className="flex items-center gap-2 sm:gap-3">
               {/* User Login/Dashboard Control */}
               {isLoggedIn ? (
                 <div className="relative">
                   <button
                     onClick={() => setShowUserDropdown(!showUserDropdown)}
-                    className="flex items-center gap-2 px-3 py-2 text-xs md:text-sm font-bold text-charcoal bg-sand hover:bg-sand/80 rounded-xl transition-all duration-200 shadow-sm"
+                    className="flex items-center gap-2 px-2 py-2 sm:px-3 text-xs sm:text-sm font-bold text-charcoal bg-sand hover:bg-sand/80 rounded-xl transition-all duration-200 shadow-sm"
                   >
-                    <div className="w-5 h-5 rounded-md bg-indigo text-white flex items-center justify-center font-extrabold text-[10px]">
+                    <div className="w-5 h-5 rounded-md bg-indigo text-white flex items-center justify-center font-extrabold text-[10px] shrink-0">
                       {userEmail ? userEmail.charAt(0).toUpperCase() : "U"}
                     </div>
-                    <span className="max-w-[100px] truncate text-charcoal">{userEmail}</span>
-                    <ChevronDown className={`w-3.5 h-3.5 text-charcoal/50 transition-transform duration-200 ${showUserDropdown ? "rotate-180" : ""}`} />
+                    <span className="hidden sm:inline max-w-[100px] truncate text-charcoal">{userEmail}</span>
+                    <ChevronDown className={`hidden sm:inline w-3.5 h-3.5 text-charcoal/50 transition-transform duration-200 ${showUserDropdown ? "rotate-180" : ""}`} />
                   </button>
 
                   <AnimatePresence>
@@ -215,9 +215,10 @@ export const Navbar: React.FC = () => {
               ) : (
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-sm font-bold text-indigo hover:bg-sand/50 rounded-xl transition-colors duration-200 border border-sand"
+                  className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold text-indigo hover:bg-sand/50 rounded-xl transition-colors duration-200 border border-sand flex items-center gap-1.5"
                 >
-                  Sign In
+                  <User className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Sign In</span>
                 </Link>
               )}
             </div>

@@ -357,7 +357,7 @@ function ListingsContent() {
       </div>
 
       {/* Horizontal Filter Header Bar (99acres / Housing.com inspired) */}
-      <div className="w-full bg-white border border-sand rounded-3xl p-4 md:p-5 shadow-md flex flex-wrap lg:flex-nowrap gap-4 items-center mb-4 z-20 relative text-left">
+      <div className="w-full bg-white border border-sand rounded-3xl p-4 md:p-5 shadow-md grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-nowrap gap-4 items-end mb-4 z-20 relative text-left">
         {/* City Filter */}
         <div className="flex flex-col gap-1.5 min-w-[130px] flex-grow md:flex-grow-0">
           <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none">City</span>
@@ -436,7 +436,7 @@ function ListingsContent() {
         </div>
 
         {/* Filter Toggle Mobile Button / Desktop Action */}
-        <div className="flex lg:hidden gap-2 items-stretch pt-2 lg:pt-0 self-end w-full flex-shrink-0">
+        <div className="flex lg:hidden gap-2 items-stretch pt-2 lg:pt-0 self-end w-full sm:col-span-2 lg:col-span-1">
           <button
             onClick={() => setMobileFiltersOpen(true)}
             className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-sand bg-white text-charcoal text-xs font-bold flex-grow cursor-pointer"

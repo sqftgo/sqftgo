@@ -174,6 +174,31 @@ export default function PropertyDetailPage({ params }: PageProps) {
             </div>
           </div>
 
+          {/* Mobile-only Action Row */}
+          <div className="lg:hidden mt-2">
+            <div className="flex gap-3">
+              <button
+                onClick={() => toggleFavorite(property.id)}
+                className={`flex-1 py-3 px-4 rounded-xl border font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+                  isSaved
+                    ? "bg-red-500/10 border-red-500/20 text-red-500"
+                    : "bg-white border-sand hover:border-terracotta/20 text-charcoal"
+                }`}
+              >
+                <Bookmark className={`w-4.5 h-4.5 ${isSaved ? "fill-red-500" : ""}`} />
+                <span>{isSaved ? "Saved Listing" : "Save Listing"}</span>
+              </button>
+              
+              <button
+                onClick={handleShare}
+                className="py-3 px-4 rounded-xl border border-sand bg-white text-charcoal font-bold text-sm flex items-center justify-center gap-2 hover:border-terracotta/20 transition-colors"
+              >
+                <Share2 className="w-4.5 h-4.5" />
+                <span>{isCopied ? "Link Copied!" : "Share"}</span>
+              </button>
+            </div>
+          </div>
+
           {/* Specifications Grid */}
           <div className="grid grid-cols-3 gap-4 py-1">
             {property.bhk && (
@@ -415,7 +440,7 @@ export default function PropertyDetailPage({ params }: PageProps) {
         <div className="lg:col-span-4 flex flex-col gap-6 lg:sticky lg:top-28">
           
           {/* Action Row */}
-          <div className="flex gap-3">
+          <div className="hidden lg:flex gap-3">
             <button
               onClick={() => toggleFavorite(property.id)}
               className={`flex-1 py-3 px-4 rounded-xl border font-bold text-sm flex items-center justify-center gap-2 transition-all ${
