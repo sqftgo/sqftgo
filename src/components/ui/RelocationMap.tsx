@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface RelocationMapProps {
   city: string;
+  className?: string;
+  fullHeight?: boolean;
 }
 
 interface CityRelocationData {
@@ -235,7 +237,7 @@ const CITY_RELOCATION_INFO: Record<string, CityRelocationData> = {
   }
 };
 
-export default function RelocationMap({ city }: RelocationMapProps) {
+export default function RelocationMap({ city, className = "", fullHeight = false }: RelocationMapProps) {
   const [isScanning, setIsScanning] = useState(false);
   const data = CITY_RELOCATION_INFO[city] || CITY_RELOCATION_INFO["Udaipur"];
 
@@ -247,7 +249,7 @@ export default function RelocationMap({ city }: RelocationMapProps) {
   }, [city]);
 
   return (
-    <div className="w-full rounded-2xl overflow-hidden border border-sand glassmorphism shadow-md flex flex-col relative">
+    <div className={`w-full overflow-hidden border border-sand glassmorphism shadow-md flex flex-col relative ${fullHeight ? "h-full rounded-none border-y-0 border-r-0" : "rounded-2xl"} ${className}`}>
       
       {/* Map Header Panel */}
       <div className="bg-indigo text-white p-3 px-4 flex items-center justify-between text-xs font-bold border-b border-sand/10 relative z-10">
@@ -265,7 +267,7 @@ export default function RelocationMap({ city }: RelocationMapProps) {
       </div>
 
       {/* Map Canvas */}
-      <div className="h-64 md:h-72 bg-[#faf8f5]/40 relative overflow-hidden border-b border-sand">
+      <div className={`bg-[#faf8f5]/40 relative overflow-hidden border-b border-sand ${fullHeight ? "flex-1 min-h-[300px]" : "h-64 md:h-72"}`}>
         
         {/* Google Maps Embed iframe */}
         <iframe

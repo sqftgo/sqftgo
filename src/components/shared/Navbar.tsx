@@ -57,7 +57,13 @@ export const Navbar: React.FC = () => {
     setShowCityDropdown(false);
     
     // If not on one of the main interactive regional pages, redirect to search listings
-    if (pathname !== "/listings" && pathname !== "/" && pathname !== "/services" && pathname !== "/destinations") {
+    if (
+      pathname !== "/listings" &&
+      pathname !== "/" &&
+      pathname !== "/services" &&
+      pathname !== "/destinations" &&
+      pathname !== "/dealers"
+    ) {
       router.push("/listings");
     }
   };
@@ -79,7 +85,7 @@ export const Navbar: React.FC = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <div className="flex flex-col">
-              <span className="font-extrabold text-lg leading-none tracking-tight text-indigo">
+              <span className="font-logo text-xl leading-none text-indigo">
                 Sun Valley
               </span>
               <span className="text-[10px] text-charcoal/60 font-bold tracking-widest uppercase mt-0.5">

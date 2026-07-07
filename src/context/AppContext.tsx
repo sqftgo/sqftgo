@@ -85,6 +85,11 @@ export interface DirectoryProfile {
   website: string;
   mobile: string;
   description: string;
+  reraId?: string;
+  experience?: string;
+  specialties?: string[];
+  teamSize?: number;
+  listingsCount?: number;
 }
 
 
@@ -889,6 +894,91 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       website: "www.suratdecor.in",
       mobile: "+91 98112 98112",
       description: "Stunning glassmorphic offices, upscale diamond merchant lounges, and state-of-the-art modular kitchen installations.",
+    },
+    {
+      id: "dir-dealer-1",
+      firmName: "Lake City Brokerage",
+      ownerName: "Rajesh Mehta",
+      category: "Agent & Broker",
+      city: "Udaipur",
+      address: "Panchwati, Udaipur",
+      email: "rajesh@lakecitybrokerage.com",
+      website: "www.lakecitybrokerage.com",
+      mobile: "+91 98290 12345",
+      description: "Trusted broker specializing in lakefront villas, luxury apartments, and commercial lease verification in Shobhagpura & Panchwati.",
+      reraId: "RAJ/A/UDZ/2021/0492",
+      experience: "8+ Years",
+      specialties: ["Heritage Havelis", "Lakefront Villas", "Agricultural Lands"],
+      teamSize: 5,
+      listingsCount: 12,
+    },
+    {
+      id: "dir-dealer-2",
+      firmName: "Mewar Property Consultants",
+      ownerName: "Vikram Singh Rathore",
+      category: "Property Consultant",
+      city: "Udaipur",
+      address: "Shobhagpura Circle, Udaipur",
+      email: "vikram@mewarproperty.in",
+      website: "www.mewarproperty.in",
+      mobile: "+91 94141 56789",
+      description: "Professional property consultant for heritage land title checks, agricultural conversions, and Udaipur RERA verification services.",
+      reraId: "RAJ/A/UDZ/2023/1188",
+      experience: "5+ Years",
+      specialties: ["RERA Clearances", "Commercial Leases", "Title Checks"],
+      teamSize: 3,
+      listingsCount: 8,
+    },
+    {
+      id: "dir-dealer-3",
+      firmName: "Pink City Realty",
+      ownerName: "Amit Sharma",
+      category: "Agent & Broker",
+      city: "Jaipur",
+      address: "Malviya Nagar, Jaipur",
+      email: "amit@pinkcityrealty.com",
+      website: "www.pinkcityrealty.com",
+      mobile: "+91 98290 98765",
+      description: "Leading agent for high-end residential deals in C-Scheme, Vaishali Nagar, and Malviya Nagar.",
+      reraId: "RAJ/A/JPR/2019/0082",
+      experience: "12+ Years",
+      specialties: ["Luxury Apartments", "Heritage Hotels", "Bungalows"],
+      teamSize: 8,
+      listingsCount: 24,
+    },
+    {
+      id: "dir-dealer-4",
+      firmName: "Marwar Property Hub",
+      ownerName: "Sunil Bhati",
+      category: "Property Consultant",
+      city: "Jodhpur",
+      address: "Shastri Nagar, Jodhpur",
+      email: "sunil@marwarproperty.com",
+      website: "www.marwarproperty.com",
+      mobile: "+91 98291 11122",
+      description: "Expert consultant in Jodhpur for sandstone havelis, heritage hotel leaseholds, and RERA property acquisition.",
+      reraId: "RAJ/A/JDH/2022/0744",
+      experience: "6+ Years",
+      specialties: ["Haveli Restoration Projects", "Plots & Land", "Office Leases"],
+      teamSize: 4,
+      listingsCount: 15,
+    },
+    {
+      id: "dir-dealer-5",
+      firmName: "Thar Desert Brokers",
+      ownerName: "Karan Singh",
+      category: "Agent & Broker",
+      city: "Jaisalmer",
+      address: "Fort Road, Jaisalmer",
+      email: "karan@thardesertbrokers.com",
+      website: "www.thardesertbrokers.com",
+      mobile: "+91 99887 65432",
+      description: "Specialized brokers for resort land plots, sandstone villa listings, and heritage homestay rentals around Jaisalmer Fort.",
+      reraId: "RAJ/A/JSM/2024/1820",
+      experience: "4+ Years",
+      specialties: ["Desert Camps & Resort Plots", "Sandstone Havelis", "Homestay Renting"],
+      teamSize: 2,
+      listingsCount: 6,
     }
   ]);
 

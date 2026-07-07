@@ -31,12 +31,10 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 const CATEGORY_METADATA = [
-  { name: "Agent & Broker", title: "Agents & Brokers", desc: "Verified local dealers to buy, sell, rent, or lease heritage and modern spaces.", icon: UserCheck, textClass: "text-amber-600 bg-amber-50" },
   { name: "Builder & Developer", title: "Builders & Developers", desc: "Developing premium residential townships, villas, and industrial projects.", icon: Building2, textClass: "text-indigo-600 bg-indigo-50" },
   { name: "Interior Decorator", title: "Interior Decorators", desc: "Renovate spaces with traditional Rajasthani blocks, carving work, and modern layouts.", icon: Paintbrush, textClass: "text-rose-600 bg-rose-50" },
   { name: "Architect", title: "Architects", desc: "Preserve heritage havelis or build state-of-the-art luxury lakeside villas.", icon: Map, textClass: "text-blue-600 bg-blue-50" },
   { name: "Building Contractor", title: "Building Contractors", desc: "Quality raw materials, local stone craftsmanship, and structural engineering expertise.", icon: Hammer, textClass: "text-emerald-600 bg-emerald-50" },
-  { name: "Property Consultant", title: "Property Consultants", desc: "Assisted title screening, lease drafting, and regional RERA validation support.", icon: Users, textClass: "text-purple-600 bg-purple-50" },
   { name: "Vastu Consultant", title: "Vastu Consultants", desc: "Align your home plans with Vedic guidelines to bring peace, health, and prosperity.", icon: Compass, textClass: "text-amber-600 bg-amber-50" },
   { name: "Home Valuation/Inspection", title: "Valuation & Inspection", desc: "Verify structural sanitation, water grids, and get fair value market estimations.", icon: Calculator, textClass: "text-cyan-600 bg-cyan-50" },
   { name: "Home Shifting/Deep Cleaning", title: "Shifting & Deep Cleaning", desc: "Hassle-free interstate relocation, logistics, deep cleaning, and pest control.", icon: Truck, textClass: "text-orange-600 bg-orange-50" }
@@ -48,17 +46,24 @@ export default function ServicesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterBySelectedCity, setFilterBySelectedCity] = useState(true);
 
+  // Filter out real estate dealers (Agent & Broker and Property Consultant)
+  const serviceProfiles = useMemo(() => {
+    return directoryProfiles.filter(
+      p => p.category !== "Agent & Broker" && p.category !== "Property Consultant"
+    );
+  }, [directoryProfiles]);
+
   const profilesForSelectedCity = useMemo(() => {
-    if (!selectedCity) return directoryProfiles;
-    return directoryProfiles.filter(p => p.city.toLowerCase() === selectedCity.toLowerCase());
-  }, [directoryProfiles, selectedCity]);
+    if (!selectedCity) return serviceProfiles;
+    return serviceProfiles.filter(p => p.city.toLowerCase() === selectedCity.toLowerCase());
+  }, [serviceProfiles, selectedCity]);
 
   const activeProfilesForCount = useMemo(() => {
-    return filterBySelectedCity ? profilesForSelectedCity : directoryProfiles;
-  }, [filterBySelectedCity, profilesForSelectedCity, directoryProfiles]);
+    return filterBySelectedCity ? profilesForSelectedCity : serviceProfiles;
+  }, [filterBySelectedCity, profilesForSelectedCity, serviceProfiles]);
 
   const filteredProfiles = useMemo(() => {
-    let profiles = directoryProfiles;
+    let profiles = serviceProfiles;
 
     // Filter by selected city if active
     if (filterBySelectedCity && selectedCity) {
@@ -81,7 +86,7 @@ export default function ServicesPage() {
       );
     }
     return profiles;
-  }, [directoryProfiles, selectedCategory, searchQuery, selectedCity, filterBySelectedCity]);
+  }, [serviceProfiles, selectedCategory, searchQuery, selectedCity, filterBySelectedCity]);
 
   return (
     <div className="w-full flex flex-col items-center bg-cream/30 min-h-screen">
@@ -240,7 +245,7 @@ export default function ServicesPage() {
                   <span className={`px-2 py-0.5 rounded-md text-[10px] font-black ${
                     !filterBySelectedCity ? "bg-white/20 text-white" : "bg-sand/50 text-charcoal/50"
                   }`}>
-                    {directoryProfiles.length}
+                    {serviceProfiles.length}
                   </span>
                 </button>
 

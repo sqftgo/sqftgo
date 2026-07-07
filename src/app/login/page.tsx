@@ -112,7 +112,7 @@ function AuthForm() {
         {/* logo and Header */}
         <div className="flex flex-col items-center mb-8">
           <Link href="/" className="flex flex-col items-center group mb-4">
-            <span className="font-serif font-black text-2xl leading-none tracking-tight text-indigo hover:text-[#5741e0] transition-colors select-none">
+            <span className="font-logo text-2xl leading-none text-indigo hover:text-[#5741e0] transition-colors select-none">
               Sun Valley
             </span>
           </Link>
@@ -128,11 +128,8 @@ function AuthForm() {
           onClick={() => alert("Google Sign-In is not configured for this demo.")}
           className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl border border-sand hover:border-indigo/35 bg-white text-charcoal hover:bg-slate-50/50 shadow-sm active:scale-[0.99] transition-all font-bold text-xs tracking-wide cursor-pointer"
         >
-          <svg className="w-4.5 h-4.5 flex-shrink-0" viewBox="0 0 24 24">
-            <path fill="#EA4335" d="M12 5.04c1.62 0 3.08.56 4.22 1.66l3.15-3.15C17.45 1.71 14.94 1 12 1 7.35 1 3.39 3.65 1.45 7.55l3.77 2.92C6.12 7.07 8.84 5.04 12 5.04z" />
-            <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.47h6.44c-.28 1.47-1.11 2.72-2.36 3.56l3.66 2.84c2.14-1.97 3.39-4.87 3.39-8.51z" />
-            <path fill="#FBBC05" d="M5.22 14.53c-.23-.69-.36-1.43-.36-2.2s.13-1.51.36-2.2L1.45 7.21C.53 9.07 0 11.13 0 13.3c0 2.17.53 4.23 1.45 6.09l3.77-2.86z" />
-            <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.66-2.84c-1.01.68-2.31 1.09-3.9 1.09-3.16 0-5.88-2.03-6.84-4.99l-3.77 2.92C3.39 20.35 7.35 23 12 23z" />
+          <svg className="w-4.5 h-4.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
           </svg>
           <span>{activeTab === "login" ? "Sign in with Google" : "Sign up with Google"}</span>
         </button>

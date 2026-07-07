@@ -126,7 +126,7 @@ export const Footer: React.FC = () => {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group w-fit">
               <div className="flex flex-col">
-                <span className="font-serif font-black text-2xl leading-none tracking-tight text-indigo">
+                <span className="font-logo text-2xl leading-none text-indigo">
                   Sun Valley
                 </span>
                 <span className="text-[10px] text-terracotta font-extrabold tracking-widest uppercase mt-1">
@@ -200,9 +200,9 @@ export const Footer: React.FC = () => {
             <span className="text-sand">|</span>
             <Link href="/get-assistance" className="hover:text-terracotta transition-colors">Requirement Enquiry</Link>
             <span className="text-sand">|</span>
-            <a href="#" className="hover:text-terracotta transition-colors">Privacy Policy</a>
+            <Link href="/privacy" className="hover:text-terracotta transition-colors">Privacy Policy</Link>
             <span className="text-sand">|</span>
-            <a href="#" className="hover:text-terracotta transition-colors">Terms of Service</a>
+            <Link href="/terms" className="hover:text-terracotta transition-colors">Terms of Service</Link>
           </div>
         </div>
 
