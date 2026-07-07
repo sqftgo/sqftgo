@@ -330,7 +330,7 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
               </div>
             ) : (
               <div className="py-8 text-center text-xs text-gray-400 font-medium">
-                No cities matching "{searchQuery}"
+                {`No cities matching "${searchQuery}"`}
               </div>
             )}
           </div>

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
+import { useSearchParams } from "next/navigation";
 import { 
   Briefcase, 
   MapPin, 
@@ -52,8 +53,9 @@ const TRUST_METRICS = [
   { icon: Clock, label: "Response timeline", value: "Within 2 Hours", desc: "Local sourcing agent assignment" }
 ];
 
-export default function GetAssistancePage() {
+function GetAssistanceContent() {
   const { addAssistanceRequest, selectedCity } = useApp();
+  const searchParams = useSearchParams();
   
   const [formData, setFormData] = useState({
     name: "",
@@ -74,6 +76,14 @@ export default function GetAssistancePage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [formError, setFormError] = useState("");
   const [agreeToAssistanceTerms, setAgreeToAssistanceTerms] = useState(false);
+
+  // Sync selectedCity from URL parameter or Navbar
+  useEffect(() => {
+    const queryCity = searchParams.get("city");
+    if (queryCity && CITIES.includes(queryCity)) {
+      setFormData((prev) => ({ ...prev, city: queryCity }));
+    }
+  }, [searchParams]);
 
   // Sync selectedCity from Navbar
   useEffect(() => {
@@ -851,5 +861,13 @@ export default function GetAssistancePage() {
       </AnimatePresence>
 
     </div>
+  );
+}
+
+export default function GetAssistancePage() {
+  return (
+    <Suspense fallback={<div className="flex-1 flex items-center justify-center py-20 bg-cream/30"><div className="w-8 h-8 rounded-full border-2 border-indigo border-t-transparent animate-spin"></div></div>}>
+      <GetAssistanceContent />
+    </Suspense>
   );
 }

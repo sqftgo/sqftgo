@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { MapPin, Compass, Shield, Users, Clock, Navigation } from "lucide-react";
+import { Shield, Users, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface RelocationMapProps {
@@ -70,16 +70,7 @@ const CITY_RELOCATION_INFO: Record<string, CityRelocationData> = {
     landmarks: ["Chambal River", "Seven Wonders Park", "Kota Barrage"],
     zones: ["Talwandi Residential", "Vigyan Nagar", "Kunhari Sourcing Hub"]
   },
-  Ajmer: {
-    coordinates: "26° 27′ 00″ N / 74° 38′ 00″ E",
-    office: "Ana Sagar Boulevard Complex",
-    agents: "7 Active Agents",
-    relocations: "48 Successful Moves",
-    duration: "5-7 Days Avg.",
-    corridor: "Jaipur Highway & Pushkar Link",
-    landmarks: ["Ana Sagar Lake", "Taragarh Fort", "Adhai Din Ka Jhonpra"],
-    zones: ["Civil Lines Sector", "Shastri Nagar Ajmer", "Vaishali Nagar"]
-  },
+
   Bikaner: {
     coordinates: "28° 01′ 00″ N / 73° 18′ 00″ E",
     office: "Junagarh Rampuria Sourcing Center",
@@ -190,16 +181,7 @@ const CITY_RELOCATION_INFO: Record<string, CityRelocationData> = {
     landmarks: ["Amul Dairy Museum", "Shastri Ground", "Sardar Patel Memorial"],
     zones: ["Vallabh Vidyanagar Housing", "Amul Dairy Road", "Karamsad Residential"]
   },
-  Vadodara: {
-    coordinates: "22° 18′ 00″ N / 73° 11′ 24″ E",
-    office: "Alkapuri Business Boulevard",
-    agents: "12 Active Agents",
-    relocations: "112 Successful Moves",
-    duration: "4-7 Days Avg.",
-    corridor: "Ahmedabad-Mumbai Trunk Line",
-    landmarks: ["Laxmi Vilas Palace", "Sayaji Baug", "Sardar Patel Planetarium"],
-    zones: ["Alkapuri Elite", "Gotri Residential", "Vasna Road Development"]
-  },
+
   Rajkot: {
     coordinates: "22° 18′ 00″ N / 70° 48′ 00″ E",
     office: "Kalawad Road Sourcing Center",
@@ -220,26 +202,7 @@ const CITY_RELOCATION_INFO: Record<string, CityRelocationData> = {
     landmarks: ["Sukhna Lake", "Rock Garden", "Sector 17 Plaza"],
     zones: ["Sector 8 & 9 Elite", "Sector 35 Residential", "Mohali Tech Sector"]
   },
-  "Delhi NCR": {
-    coordinates: "28° 37′ 00″ N / 77° 12′ 30″ E",
-    office: "Connaught Place Executive Hub",
-    agents: "38 Active Agents",
-    relocations: "512 Successful Moves",
-    duration: "3-5 Days Avg.",
-    corridor: "National Expressway Link",
-    landmarks: ["India Gate", "Connaught Place", "Cyber City"],
-    zones: ["Gurugram Phase 5", "Noida Sector 62", "South Delhi Elite"]
-  },
-  Amritsar: {
-    coordinates: "31° 38′ 00″ N / 74° 52′ 00″ E",
-    office: "Ranjit Avenue Sourcing Hub",
-    agents: "9 Active Agents",
-    relocations: "76 Successful Moves",
-    duration: "4-7 Days Avg.",
-    corridor: "GT Road Northern Corridor",
-    landmarks: ["Golden Temple", "Jallianwala Bagh", "Wagah Border Ridge"],
-    zones: ["Ranjit Avenue Elite", "Mall Road Amritsar", "Albert Road District"]
-  },
+
   Shimla: {
     coordinates: "31° 06′ 12″ N / 77° 10′ 20″ E",
     office: "Mall Road Heritage Center",

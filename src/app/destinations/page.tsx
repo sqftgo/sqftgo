@@ -3,7 +3,6 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { Compass, ShieldCheck, ArrowRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useApp } from "@/context/AppContext";
 
 import { DESTINATIONS, TAGS, Destination } from "@/data/destinations";
@@ -137,28 +136,26 @@ export default function DestinationsPage() {
         )}
 
         {/* Dynamic Cards Grid */}
-        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
-          <AnimatePresence mode="popLayout">
-            {filteredDestinations.length > 0 ? (
-              filteredDestinations.map((dest) => (
-                <DestinationCard
-                  key={dest.name}
-                  dest={dest}
-                  propertyCount={cityPropertiesMap[dest.name.toLowerCase()] || 0}
-                  onSelect={setSelectedDestination}
-                />
-              ))
-            ) : (
-              <div className="col-span-full py-16 text-center bg-white border border-sand rounded-3xl p-8">
-                <Compass className="w-12 h-12 text-charcoal/30 mx-auto mb-4 animate-bounce" />
-                <h3 className="font-serif font-black text-xl text-indigo mb-1">No matching destinations</h3>
-                <p className="text-xs font-semibold text-charcoal/50">
-                  Try adjusting filters or searching for another keyword.
-                </p>
-              </div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+          {filteredDestinations.length > 0 ? (
+            filteredDestinations.map((dest) => (
+              <DestinationCard
+                key={dest.name}
+                dest={dest}
+                propertyCount={cityPropertiesMap[dest.name.toLowerCase()] || 0}
+                onSelect={setSelectedDestination}
+              />
+            ))
+          ) : (
+            <div className="col-span-full py-16 text-center bg-white border border-sand rounded-3xl p-8">
+              <Compass className="w-12 h-12 text-charcoal/30 mx-auto mb-4 animate-bounce" />
+              <h3 className="font-serif font-black text-xl text-indigo mb-1">No matching destinations</h3>
+              <p className="text-xs font-semibold text-charcoal/50">
+                Try adjusting filters or searching for another keyword.
+              </p>
+            </div>
+          )}
+        </div>
       </section>
 
       {/* 3. VIP CONCIERGE RELOCATION CTA */}

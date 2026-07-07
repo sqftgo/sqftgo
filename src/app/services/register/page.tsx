@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useApp, DirectoryProfile } from "@/context/AppContext";
 import { 
   Building, 
@@ -45,6 +44,9 @@ const CITIES = [
   "Alwar",
   "Ahmedabad",
   "Surat",
+  "Gandhinagar",
+  "Kutch",
+  "Anand",
   "Rajkot",
   "Shimla",
   "Dharamshala",
@@ -53,7 +55,6 @@ const CITIES = [
 ];
 
 export default function RegisterServicePage() {
-  const router = useRouter();
   const { addDirectoryProfile } = useApp();
 
   const [formData, setFormData] = useState<Omit<DirectoryProfile, "id">>({

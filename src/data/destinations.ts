@@ -72,18 +72,32 @@ export const DESTINATIONS: Destination[] = [
     history: "Jodhpur was founded in 1459 by Rao Jodha, a chief of the Rathore clan. The city is celebrated for its majestic blue-walled houses and the towering Mehrangarh Fort that dominates the skyline."
   },
   {
-    name: "Mount Abu",
-    title: "Hill Station Oasis",
-    desc: "Aravalli range hill retreat showcasing Nakki Lake views and Dilwara Jain stone carvings.",
-    image: "https://images.unsplash.com/photo-1621245595913-9114dce1fbd3?q=80&w=800&auto=format&fit=crop",
+    name: "Pali",
+    title: "Heritage & Craft Hub",
+    desc: "Famous for its textile industries, traditional craftsmanship, and historic temples.",
+    image: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?q=80&w=800&auto=format&fit=crop",
     tag: "Rajasthan",
-    vibe: "Mountain Retreat",
-    investmentIndex: "8.7/10",
-    topLocalities: ["Dilwara Road", "Nakki Lake Circle", "Sunset Road", "Aarna"],
-    averagePrice: "₹60 Lakhs - ₹5 Crores",
+    vibe: "Heritage & Craft",
+    investmentIndex: "8.5/10",
+    topLocalities: ["Industrial Area Housing", "Suraj Pole", "Marwar Junction Area"],
+    averagePrice: "₹15 Lakhs - ₹3.5 Crores",
     agentName: "Vijay Sood Kothari",
-    agentPhone: "+91 94180 94180",
-    history: "Mount Abu, the only hill station in Rajasthan, serves as a green oasis. It is historically significant as the summer retreat for royal families and for the famous Dilwara temples."
+    agentPhone: "+91 94140 12345",
+    history: "Pali, located on the banks of the Bandi River, has been a historic trading post since ancient times, renowned for its textile mills and proximity to famous heritage temples like Ranakpur."
+  },
+  {
+    name: "Alwar",
+    title: "Expressway Gateway",
+    desc: "Historic gateway of Rajasthan near Delhi NCR with palaces and proximity to Sariska National Park.",
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=800&auto=format&fit=crop",
+    tag: "Rajasthan",
+    vibe: "Expressway Proximity",
+    investmentIndex: "8.9/10",
+    topLocalities: ["Manu Marg", "NEB Housing Board", "Shivaji Park"],
+    averagePrice: "₹20 Lakhs - ₹4.5 Crores",
+    agentName: "Rajesh Kumar Singh",
+    agentPhone: "+91 94140 12345",
+    history: "Alwar was founded in 1770 by Pratap Singh. It is home to magnificent heritage structures like the City Palace, Moosi Maharani ki Chhatri, and the tiger sanctuary of Sariska."
   },
   {
     name: "Pushkar",
@@ -183,6 +197,48 @@ export const DESTINATIONS: Destination[] = [
     agentName: "Ketan Bhai Patel",
     agentPhone: "+91 98251 44444",
     history: "Rajkot was the former capital of the princely state of Saurashtra. It holds historical importance as the place where Mahatma Gandhi spent his childhood years at the Alfred High School."
+  },
+  {
+    name: "Gandhinagar",
+    title: "Planned Green Capital",
+    desc: "The tree-lined planned capital of Gujarat, housing the high-tech GIFT City financial zone.",
+    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=800&auto=format&fit=crop",
+    tag: "Gujarat",
+    vibe: "Planned Greenery",
+    investmentIndex: "9.2/10",
+    topLocalities: ["Sector 21", "Gift City", "Sector 30"],
+    averagePrice: "₹40 Lakhs - ₹9 Crores",
+    agentName: "Ketan Bhai Patel",
+    agentPhone: "+91 98251 44444",
+    history: "Gandhinagar, named after Mahatma Gandhi, was established in 1970 as the capital of Gujarat. Designed by H.K. Mewada, it is one of India's greenest and most systematically laid-out cities."
+  },
+  {
+    name: "Kutch",
+    title: "Salt Desert Oasis",
+    desc: "Vast white salt desert plains, historical Bhuj palaces, and scenic coastal port towns.",
+    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=800&auto=format&fit=crop",
+    tag: "Gujarat",
+    vibe: "Salt Desert Oasis",
+    investmentIndex: "8.6/10",
+    topLocalities: ["Bhuj", "Mandvi Port Area", "Anjar"],
+    averagePrice: "₹15 Lakhs - ₹3.5 Crores",
+    agentName: "Parth Patel Shah",
+    agentPhone: "+91 99112 99112",
+    history: "Kutch is the largest district in India, historically a self-governed state famous for the Great Rann of Kutch (a seasonal salt desert), exquisite handicrafts, and Kutchi heritage."
+  },
+  {
+    name: "Anand",
+    title: "Milk Capital of India",
+    desc: "The milk capital of India and prominent educational hub with clean residential suburbs.",
+    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=800&auto=format&fit=crop",
+    tag: "Gujarat",
+    vibe: "Cooperative Capital",
+    investmentIndex: "8.7/10",
+    topLocalities: ["Vallabh Vidyanagar", "Amul Dairy Road", "Karamsad"],
+    averagePrice: "₹25 Lakhs - ₹5 Crores",
+    agentName: "Harshil Mehta Kumar",
+    agentPhone: "+91 98112 98112",
+    history: "Anand is globally renowned for hosting the head office of AMUL dairy and triggering the White Revolution (Operation Flood). It is also a thriving educational and agricultural hub."
   },
   // Himachal Pradesh
   {

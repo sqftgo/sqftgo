@@ -221,15 +221,17 @@ export default function Home() {
 
       {/* 1. HERO SECTION WITH INTEGRATED SEARCH BANNER */}
       <section className="relative pt-2 pb-12 text-charcoal overflow-hidden z-10 px-4 md:px-6 bg-[#faf8f5]">
-        <div className="max-w-7xl mx-auto w-full relative overflow-hidden rounded-[36px] bg-[#0c1b33] min-h-[480px] md:min-h-[520px] flex items-center justify-center p-6 sm:p-8 shadow-xl border border-white/5">
-          {/* Background Image */}
-          <img
-            src="/indian_heritage_hero_bg.png"
-            alt="Luxury Rajasthan Heritage Lake Palace Background"
-            className="absolute inset-0 w-full h-full object-cover object-center select-none pointer-events-none"
-          />
-          {/* Dark overlay for readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#09152b]/65 via-[#09152b]/55 to-[#09152b]/75" />
+        <div className="max-w-7xl mx-auto w-full relative rounded-[36px] bg-[#0c1b33] min-h-[480px] md:min-h-[520px] flex items-center justify-center p-6 sm:p-8 shadow-xl border border-white/5">
+          {/* Background Image Wrapper with Rounded Clip */}
+          <div className="absolute inset-0 overflow-hidden rounded-[36px] select-none pointer-events-none">
+            <img
+              src="/indian_heritage_hero_bg.png"
+              alt="Luxury Rajasthan Heritage Lake Palace Background"
+              className="w-full h-full object-cover object-center"
+            />
+            {/* Dark overlay for readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#09152b]/65 via-[#09152b]/55 to-[#09152b]/75" />
+          </div>
           
           <div className="w-full relative z-20 flex flex-col items-center justify-center text-center gap-5 py-4">
             <div className="flex flex-col items-center gap-2">
@@ -238,7 +240,7 @@ export default function Home() {
               </h1>
               
               <p className="text-white/80 text-sm sm:text-base md:text-lg font-medium max-w-2xl leading-relaxed mt-1 text-center">
-                with India's largest choice of luxury & heritage homes
+                {"with India's largest choice of luxury & heritage homes"}
               </p>
             </div>
 
@@ -248,17 +250,17 @@ export default function Home() {
                 
                 {/* Tab Row */}
                 <div className="flex items-center gap-6 px-6 sm:px-8 pt-5 pb-4">
-                  {[
+                  {([
                     { key: "buy", label: "BUY" },
                     { key: "rent", label: "RENT" },
                     { key: "plots", label: "PLOTS" },
                     { key: "commercial", label: "COMMERCIAL" }
-                  ].map((tab) => (
+                  ] as const).map((tab) => (
                     <button
                       key={tab.key}
                       type="button"
                       onClick={() => {
-                        setHeroTab(tab.key as any);
+                        setHeroTab(tab.key);
                         setSearchType("any");
                         setSearchBudget("any");
                       }}
@@ -409,15 +411,15 @@ export default function Home() {
             
             {/* Filter Tabs */}
             <div className="flex bg-sand/35 border border-sand/50 p-1 rounded-xl">
-              {[
+              {([
                 { key: "buy", label: "For Sale" },
                 { key: "rent", label: "For Rent" },
                 { key: "plots", label: "Land/Plots" }
-              ].map((pickTab) => (
+              ] as const).map((pickTab) => (
                 <button
                   key={pickTab.key}
                   type="button"
-                  onClick={() => setTopPicksTab(pickTab.key as any)}
+                  onClick={() => setTopPicksTab(pickTab.key)}
                   className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                     topPicksTab === pickTab.key
                       ? "bg-white text-indigo shadow-sm border border-sand/30"

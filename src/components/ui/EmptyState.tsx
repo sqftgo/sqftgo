@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Info, HelpCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 
 interface EmptyStateProps {
   title: string;

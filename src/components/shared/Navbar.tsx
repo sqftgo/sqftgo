@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
-import { MapPin, Plus, ChevronDown, User, Users, LogOut, Home, Search, MessageSquare, Briefcase } from "lucide-react";
+import { MapPin, Plus, ChevronDown, User, Users, LogOut, Home, Search, MessageSquare, Briefcase, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CitySelectorDropdown } from "@/components/ui/CitySelectorDropdown";
 import { UserDropdown } from "@/components/ui/UserDropdown";
@@ -13,7 +13,7 @@ import { UserDropdown } from "@/components/ui/UserDropdown";
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const { selectedCity, setSelectedCity, isLoggedIn, setIsLoggedIn, userEmail } = useApp();
+  const { selectedCity, setSelectedCity, isLoggedIn, setIsLoggedIn, userEmail, favorites } = useApp();
   
   const [isScrolled, setIsScrolled] = useState(false);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
@@ -115,8 +115,23 @@ export const Navbar: React.FC = () => {
             })}
           </nav>
 
-          {/* Right actions: City Selector, Auth / Create Listing, Mobile Toggle */}
+          {/* Right actions: Shortlist, City Selector, Auth */}
           <div className="flex items-center gap-3">
+            {/* Shortlist Link */}
+            <Link
+              href="/favorites"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs md:text-sm font-bold text-charcoal bg-sand hover:bg-sand/80 rounded-xl transition-all duration-200"
+              title="Shortlisted Properties"
+            >
+              <Heart className={`w-3.5 h-3.5 text-terracotta ${favorites?.length > 0 ? "fill-current" : ""}`} />
+              <span className="hidden sm:inline">Shortlist</span>
+              {favorites?.length > 0 && (
+                <span className="bg-terracotta text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center flex-shrink-0">
+                  {favorites.length}
+                </span>
+              )}
+            </Link>
+
             {/* City Selector */}
             <div className="relative">
               <button
