@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "@fortawesome/fontawesome-svg-core/styles.css";
+import { config } from "@fortawesome/fontawesome-svg-core";
 import { AppProvider } from "@/context/AppContext";
 import Navbar from "@/components/shared/Navbar";
+
+// Prevent Font Awesome from dynamically adding its CSS since we imported it above
+config.autoAddCss = false;
 import Footer from "@/components/shared/Footer";
 import DepthBackground from "@/components/shared/DepthBackground";
 import DreamProjectButton from "@/components/shared/DreamProjectButton";

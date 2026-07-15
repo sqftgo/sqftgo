@@ -220,23 +220,14 @@ export default function DestinationDrawer({
           )}
 
           {/* Drawer Footer Actions */}
-          <div className="grid grid-cols-2 gap-3.5 mt-auto border-t border-sand pt-6">
+          <div className="mt-auto border-t border-sand pt-6 flex flex-col">
             <Link
               href={`/listings?city=${selectedDestination.name}`}
               onClick={() => setSelectedDestination(null)}
-              className="flex items-center justify-center gap-2 p-3.5 bg-indigo hover:bg-indigo-hover text-white font-extrabold text-xs tracking-wider uppercase rounded-2xl shadow-md transition-colors text-center cursor-pointer"
+              className="flex items-center justify-center gap-2 p-3.5 bg-indigo hover:bg-indigo-hover text-white font-extrabold text-xs tracking-wider uppercase rounded-2xl shadow-md transition-colors text-center cursor-pointer w-full"
             >
               <span>View Listings</span>
               <ExternalLink className="w-4 h-4" />
-            </Link>
-
-            <Link
-              href={`/get-assistance?city=${selectedDestination.name}`}
-              onClick={() => setSelectedDestination(null)}
-              className="flex items-center justify-center gap-2 p-3.5 border border-sand bg-white text-charcoal hover:border-terracotta/40 hover:text-terracotta font-extrabold text-xs tracking-wider uppercase rounded-2xl transition-colors text-center cursor-pointer"
-            >
-              <span>Concierge Link</span>
-              <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>

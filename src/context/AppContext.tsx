@@ -118,6 +118,8 @@ interface AppContextType {
   setIsLoggedIn: (val: boolean) => void;
   userEmail: string;
   setUserEmail: (email: string) => void;
+  userRole: "user" | "broker" | "admin" | null;
+  setUserRole: (role: "user" | "broker" | "admin" | null) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -984,6 +986,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const [userRole, setUserRole] = useState<"user" | "broker" | "admin" | null>(null);
 
   const toggleFavorite = (id: string) => {
     setFavorites((prev) =>
@@ -1086,6 +1089,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsLoggedIn,
         userEmail,
         setUserEmail,
+        userRole,
+        setUserRole,
       }}
     >
       {children}

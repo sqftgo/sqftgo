@@ -20,6 +20,7 @@ import { motion } from "framer-motion";
 
 interface UserDropdownProps {
   userEmail: string;
+  userRole: "user" | "broker" | "admin" | null;
   onClose: () => void;
   onLogout: () => void;
   align?: "left" | "right";
@@ -27,12 +28,14 @@ interface UserDropdownProps {
 
 export const UserDropdown: React.FC<UserDropdownProps> = ({
   userEmail,
+  userRole,
   onClose,
   onLogout,
   align = "right"
 }) => {
   const router = useRouter();
-  const isAdmin = userEmail === "admin@svrepl.com";
+  const isAdmin = userRole === "admin" || userEmail === "admin@svrepl.com";
+  const isBroker = userRole === "broker";
   
   // Create email initials (e.g. "AD" for admin, or first letter of user email)
   const initial = userEmail ? userEmail.charAt(0).toUpperCase() : "U";
@@ -70,14 +73,22 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
           <span className="text-xs font-bold text-charcoal truncate" title={userEmail}>
             {userEmail}
           </span>
-          <span className="text-[9px] font-black tracking-wider uppercase text-terracotta mt-0.5 flex items-center gap-1">
+          <span className="text-[9px] font-black tracking-wider uppercase mt-0.5 flex items-center gap-1">
             {isAdmin ? (
               <>
                 <span className="w-1.5 h-1.5 rounded-full bg-terracotta animate-pulse" />
-                <span>Administrator</span>
+                <span className="text-terracotta">Superadmin</span>
+              </>
+            ) : isBroker ? (
+              <>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-emerald-600">Verified Broker</span>
               </>
             ) : (
-              <span>Client Partner</span>
+              <>
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo animate-pulse" />
+                <span className="text-indigo">Verified Client</span>
+              </>
             )}
           </span>
         </div>
@@ -108,15 +119,6 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             >
               <Building className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
               <span>Properties Database</span>
-            </Link>
-
-            <Link
-              href="/admin?tab=relocation"
-              onClick={handleItemClick}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-charcoal/80 hover:text-indigo hover:bg-sand/30 transition-all group"
-            >
-              <Users className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
-              <span>Relocation Concierge</span>
             </Link>
 
             <Link
@@ -151,11 +153,11 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
               <Sparkles className="w-3.5 h-3.5 text-white/80 animate-pulse" />
             </Link>
           </>
-        ) : (
-          /* Client / Partner Regular User Navigation */
+        ) : isBroker ? (
+          /* Broker Specific Navigation */
           <>
             <div className="px-3 py-1.5 text-[9px] font-black text-charcoal/40 uppercase tracking-widest">
-              Broker Sourcing
+              Broker Console
             </div>
 
             <Link
@@ -177,12 +179,51 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             </Link>
 
             <Link
-              href="/get-assistance"
+              href="/services"
               onClick={handleItemClick}
               className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-charcoal/80 hover:text-indigo hover:bg-sand/30 transition-all group"
             >
-              <Search className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
-              <span>concierge Assistance</span>
+              <Briefcase className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
+              <span>Services Directory</span>
+            </Link>
+
+            <div className="border-t border-sand/40 my-1" />
+
+            <Link
+              href="/post-property"
+              onClick={handleItemClick}
+              className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-white bg-indigo hover:bg-[#5741e0] transition-colors shadow-sm"
+            >
+              <div className="flex items-center gap-2.5">
+                <Plus className="w-4 h-4 text-white" />
+                <span>Add Property Listing</span>
+              </div>
+              <Sparkles className="w-3.5 h-3.5 text-white/80 animate-pulse" />
+            </Link>
+          </>
+        ) : (
+          /* Client / Partner Regular User Navigation */
+          <>
+            <div className="px-3 py-1.5 text-[9px] font-black text-charcoal/40 uppercase tracking-widest">
+              Client Portal
+            </div>
+
+            <Link
+              href="/hub"
+              onClick={handleItemClick}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-charcoal/80 hover:text-indigo hover:bg-sand/30 transition-all group"
+            >
+              <Compass className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
+              <span>Explore Sourcing Hub</span>
+            </Link>
+
+            <Link
+              href="/listings"
+              onClick={handleItemClick}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-charcoal/80 hover:text-indigo hover:bg-sand/30 transition-all group"
+            >
+              <Building className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
+              <span>Browse Properties</span>
             </Link>
 
             <Link

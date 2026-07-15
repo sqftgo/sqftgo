@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
-import { Compass, ShieldCheck, ArrowRight } from "lucide-react";
+import { Compass } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 import { DESTINATIONS, TAGS, Destination } from "@/data/destinations";
@@ -158,37 +158,7 @@ export default function DestinationsPage() {
         </div>
       </section>
 
-      {/* 3. VIP CONCIERGE RELOCATION CTA */}
-      <section className="relative z-20 py-16 px-4 max-w-5xl mx-auto w-full">
-        <div className="relative rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-indigo to-charcoal text-white p-8 md:p-14 border border-indigo/20 shadow-2xl flex flex-col items-center text-center gap-6">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-gold/5 rounded-full blur-[80px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-terracotta/10 rounded-full blur-[80px] pointer-events-none" />
-          <div className="absolute top-4 left-4 right-4 bottom-4 border border-white/5 rounded-[2rem] pointer-events-none" />
-          
-          <div className="flex flex-col items-center gap-4 relative z-10">
-            <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-1 shadow-inner">
-              <ShieldCheck className="w-7 h-7 text-gold" />
-            </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-black tracking-tight leading-tight">
-              Fell in love with a city? <br />
-              Let Our Concierge Handle Your Move.
-            </h2>
-            <p className="text-white/70 text-xs md:text-sm leading-relaxed font-semibold max-w-xl">
-              Relocating from another state or city can be overwhelming. Let us know your specifications, and our local city leads will secure premium properties, negotiate contract terms, and seamlessly support your move-in.
-            </p>
-          </div>
 
-          <div className="relative z-10 mt-2">
-            <Link
-              href="/get-assistance"
-              className="group flex items-center justify-center gap-3 px-7 py-3.5 rounded-xl bg-gold hover:bg-gold-hover text-charcoal font-black text-xs uppercase tracking-widest shadow-xl shadow-gold/20 hover:-translate-y-0.5 transition-all duration-300"
-            >
-              <span>Request VIP Assistance</span>
-              <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-        </div>
-      </section>
 
       {/* 4. IMMERSIVE DETAIL DRAWER PANEL */}
       <DestinationDrawer

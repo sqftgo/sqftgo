@@ -7,7 +7,7 @@ import PropertyCard, { formatIndianCurrency } from "@/components/ui/PropertyCard
 import FilterPanel, { FilterState } from "@/components/ui/FilterPanel";
 import CustomSelect from "@/components/ui/CustomSelect";
 import EmptyState from "@/components/ui/EmptyState";
-import RelocationMap from "@/components/ui/RelocationMap";
+import CityMap from "@/components/ui/CityMap";
 import { SlidersHorizontal, Info, MapPin, Grid, Map, X, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -562,7 +562,7 @@ function ListingsContent() {
               {/* Sticky Relocation Map */}
               {viewMode === "split" && (
                 <div className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-24 z-10 transition-all duration-300">
-                  <RelocationMap city={activeMapCity} />
+                  <CityMap city={activeMapCity} />
                 </div>
               )}
             </div>

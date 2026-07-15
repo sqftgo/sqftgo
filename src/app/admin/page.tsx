@@ -31,7 +31,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { PostPropertyWizard } from "@/components/admin/PostPropertyWizard";
 
-type TabType = "overview" | "properties" | "relocation" | "enquiries" | "directory" | "post-property";
+type TabType = "overview" | "properties" | "enquiries" | "directory" | "post-property";
 
 function AdminDashboardContent() {
   const router = useRouter();
@@ -48,7 +48,9 @@ function AdminDashboardContent() {
     isLoggedIn,
     setIsLoggedIn,
     userEmail,
-    setUserEmail
+    setUserEmail,
+    userRole,
+    setUserRole
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<TabType>("overview");
@@ -58,16 +60,17 @@ function AdminDashboardContent() {
   // Sync activeTab with URL tab parameter if valid
   useEffect(() => {
     const tabParam = searchParams.get("tab");
-    if (tabParam && ["overview", "properties", "relocation", "enquiries", "directory", "post-property"].includes(tabParam)) {
+    if (tabParam && ["overview", "properties", "enquiries", "directory", "post-property"].includes(tabParam)) {
       setActiveTab(tabParam as TabType);
     }
   }, [searchParams]);
 
-  const isAdmin = isLoggedIn && userEmail === "admin@svrepl.com";
+  const isAdmin = isLoggedIn && (userRole === "admin" || userEmail === "admin@svrepl.com");
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserEmail("");
+    if (setUserRole) setUserRole(null);
     router.push("/login");
   };
 
@@ -186,7 +189,7 @@ function AdminDashboardContent() {
       </div>
 
       {/* 2. Overview Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-8">
         
         {/* Properties Stat */}
         <div className="bg-white/90 border border-sand rounded-2xl p-5 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden group hover:border-indigo/35 transition-colors">
@@ -204,20 +207,6 @@ function AdminDashboardContent() {
                 <span>{pendingPropertiesCount} Pending Review</span>
               </span>
             )}
-          </div>
-        </div>
-
-        {/* Relocation Concierge Stat */}
-        <div className="bg-white/90 border border-sand rounded-2xl p-5 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden group hover:border-terracotta/35 transition-colors">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-charcoal/40 uppercase tracking-wider">Relocation Leads</span>
-            <div className="w-8 h-8 rounded-lg bg-terracotta/10 text-terracotta flex items-center justify-center">
-              <Users className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-serif font-black text-indigo">{assistanceRequests.length}</h3>
-            <span className="text-[9px] text-charcoal/40 font-bold block mt-1">Assisted Move-in Portal</span>
           </div>
         </div>
 
@@ -256,7 +245,6 @@ function AdminDashboardContent() {
         {[
           { id: "overview", label: "Overview Hub", icon: Sliders },
           { id: "properties", label: `Properties (${properties.length})`, icon: Building },
-          { id: "relocation", label: `Relocation (${assistanceRequests.length})`, icon: Users },
           { id: "enquiries", label: `Enquiries (${enquiries.length})`, icon: MessageSquare },
           { id: "directory", label: `Businesses (${directoryProfiles.length})`, icon: Briefcase },
           { id: "post-property", label: "Add Listing", icon: Plus }
@@ -331,13 +319,7 @@ function AdminDashboardContent() {
                       <span>Manage Listings</span>
                       <ArrowUpRight className="w-4 h-4" />
                     </button>
-                    <button
-                      onClick={() => setActiveTab("relocation")}
-                      className="w-full py-2.5 px-4 bg-terracotta hover:bg-terracotta-hover text-white text-xs font-bold rounded-xl flex items-center justify-between transition-colors cursor-pointer"
-                    >
-                      <span>Check Relocation Leads</span>
-                      <ArrowUpRight className="w-4 h-4" />
-                    </button>
+
                     <button
                       onClick={() => setActiveTab("enquiries")}
                       className="w-full py-2.5 px-4 border border-sand bg-white text-charcoal text-xs font-bold rounded-xl flex items-center justify-between hover:bg-sand/10 transition-colors cursor-pointer"
@@ -464,102 +446,6 @@ function AdminDashboardContent() {
                       <tr>
                         <td colSpan={6} className="text-center py-10 text-charcoal/40 font-bold">
                           No matching properties found in catalog.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </motion.div>
-          )}
-
-          {/* TAB: RELOCATION */}
-          {activeTab === "relocation" && (
-            <motion.div
-              key="relocation-tab"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="flex flex-col gap-6"
-            >
-              <h3 className="font-serif font-black text-lg text-indigo border-b border-sand pb-3">Assisted Relocation Requests</h3>
-              
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left text-charcoal/80">
-                  <thead className="text-[10px] uppercase bg-sand/20 border-b border-sand font-bold text-indigo">
-                    <tr>
-                      <th className="px-4 py-3">Client</th>
-                      <th className="px-4 py-3">Details</th>
-                      <th className="px-4 py-3">Preferences</th>
-                      <th className="px-4 py-3">Move Date</th>
-                      <th className="px-4 py-3">Pipeline Status</th>
-                      <th className="px-4 py-3 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {assistanceRequests.length > 0 ? (
-                      assistanceRequests.map((req) => (
-                        <tr key={req.id} className="border-b border-sand/50 hover:bg-slate-50/50">
-                          <td className="px-4 py-4 font-bold text-indigo">
-                            <div className="flex flex-col gap-0.5">
-                              <span>{req.name}</span>
-                              <span className="text-[10px] text-charcoal/40 font-mono">{req.phone}</span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-4 font-semibold text-charcoal/60">
-                            <div className="flex flex-col gap-0.5">
-                              <span>Email: {req.email}</span>
-                              <span>Family size: {req.familySize}</span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-4 font-semibold max-w-[250px]">
-                            <div className="flex flex-col gap-1">
-                              <span>Budget: <span className="text-indigo font-bold">{req.budget}</span></span>
-                              <span className="text-[10px] text-charcoal/50 leading-normal">
-                                Areas: {req.areas.join(", ")}
-                              </span>
-                              {req.notes && (
-                                <span className="text-[10px] text-terracotta leading-normal italic">
-                                  Notes: &ldquo;{req.notes}&rdquo;
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-4 py-4 font-bold font-mono text-indigo">
-                            {req.moveInDate}
-                          </td>
-                          <td className="px-4 py-4 font-bold">
-                            <select
-                              value={req.status}
-                              onChange={(e) => handleRelocationStatusChange(req.id, e.target.value as AssistanceRequest["status"])}
-                              className={`rounded-lg border px-2 py-1 text-[11px] font-bold outline-none cursor-pointer ${
-                                req.status === "Received"
-                                  ? "bg-slate-100 border-slate-300 text-slate-700"
-                                  : req.status === "Assigned to Agent"
-                                  ? "bg-amber-50 border-amber-300 text-amber-700"
-                                  : "bg-emerald-50 border-emerald-300 text-emerald-700"
-                              }`}
-                            >
-                              <option value="Received">Received</option>
-                              <option value="Assigned to Agent">Assigned to Agent</option>
-                              <option value="Properties Suggested">Properties Suggested</option>
-                            </select>
-                          </td>
-                          <td className="px-4 py-4 text-right">
-                            <button
-                              onClick={() => handleDeleteRelocation(req.id)}
-                              className="p-1.5 rounded-lg border border-red-100 hover:border-red-300 bg-white text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                              title="Delete Lead"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={6} className="text-center py-10 text-charcoal/40 font-bold">
-                          No relocation concierge requests found.
                         </td>
                       </tr>
                     )}

@@ -97,9 +97,9 @@ export default function HubPage() {
             </div>
           </motion.div>
 
-          {/* Card 4: Post Requirement */}
+          {/* Card 4: Browse Properties */}
           <motion.div variants={itemVariants}>
-            <Link href="/get-assistance" className="group block relative h-full bg-indigo rounded-3xl shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden p-8 flex flex-col justify-center items-center text-center">
+            <Link href="/listings" className="group block relative h-full bg-indigo rounded-3xl shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden p-8 flex flex-col justify-center items-center text-center">
               <div className="absolute inset-0 bg-gradient-to-br from-indigo to-indigo-hover opacity-90"></div>
               
               <div className="relative z-10 w-16 h-16 rounded-2xl bg-white/10 text-white backdrop-blur-sm border border-white/20 mx-auto flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-white group-hover:text-indigo transition-all duration-300">
@@ -108,11 +108,11 @@ export default function HubPage() {
               
               <div className="relative z-10 flex-1 flex flex-col justify-center">
                 <h2 className="text-2xl font-serif font-black text-white mb-2 leading-tight">
-                  Find your <br/> Dream Project
+                  Find your <br/> Dream Home
                 </h2>
                 <div className="w-12 h-1 bg-terracotta mx-auto my-4 rounded-full"></div>
                 <p className="text-white/90 font-black uppercase tracking-widest text-sm">
-                  Post your Requirement
+                  Browse Properties
                 </p>
               </div>
             </Link>

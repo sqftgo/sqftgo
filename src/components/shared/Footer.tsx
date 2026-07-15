@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, ArrowRight } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFacebookF,
@@ -11,11 +11,7 @@ import {
   faYoutube,
   faWhatsapp,
 } from "@fortawesome/free-brands-svg-icons";
-import { config } from "@fortawesome/fontawesome-svg-core";
-import "@fortawesome/fontawesome-svg-core/styles.css";
 
-// Prevent Font Awesome from dynamically adding its CSS since we imported it above
-config.autoAddCss = false;
 
 export const Footer: React.FC = () => {
   const pathname = usePathname();
@@ -24,18 +20,19 @@ export const Footer: React.FC = () => {
   if (pathname === "/login" || pathname === "/signup") {
     return null;
   }
+  
   const socials = [
-    { name: "INSTAGRAM", icon: faInstagram, href: "https://instagram.com/svrepl" },
-    { name: "FACEBOOK", icon: faFacebookF, href: "https://facebook.com/svrepl" },
-    { name: "YOUTUBE", icon: faYoutube, href: "https://youtube.com/svrepl" },
-    { name: "WHATSAPP", icon: faWhatsapp, href: "https://wa.me/919876543210" },
+    { name: "Instagram", icon: faInstagram, href: "https://instagram.com/svrepl" },
+    { name: "Facebook", icon: faFacebookF, href: "https://facebook.com/svrepl" },
+    { name: "YouTube", icon: faYoutube, href: "https://youtube.com/svrepl" },
+    { name: "WhatsApp", icon: faWhatsapp, href: "https://wa.me/919876543210" },
   ];
 
   return (
-    <footer className="relative z-10 bg-[#fbf7f0] text-charcoal/80 pt-16 pb-10 border-t border-sand/40 overflow-hidden select-none">
+    <footer className="relative z-10 bg-[#fbf7f0] text-charcoal/80 pt-20 pb-10 border-t border-sand/40 overflow-hidden select-none">
       
       {/* Background Watermark 1: Elegant Palace Silhouette at bottom right */}
-      <div className="absolute bottom-[-10px] right-[-10px] w-[95%] sm:w-[60%] md:w-[45%] lg:w-[35%] max-w-[500px] aspect-[1.3/1] opacity-[0.06] text-terracotta pointer-events-none z-0">
+      <div className="absolute bottom-[-10px] right-[-10px] w-[95%] sm:w-[60%] md:w-[45%] lg:w-[35%] max-w-[500px] aspect-[1.3/1] opacity-[0.05] text-terracotta pointer-events-none z-0">
         <svg viewBox="0 0 600 500" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
           <path
             d="
@@ -111,22 +108,21 @@ export const Footer: React.FC = () => {
 
       {/* Background Watermark 2: Large "SVREPL" centered text watermark behind content */}
       <div className="absolute bottom-[45px] inset-x-0 flex items-center justify-center pointer-events-none select-none z-0">
-        <span className="text-[12vw] font-sans font-black tracking-[0.2em] text-sand dark:text-white/5 select-none leading-none">
+        <span className="text-[12vw] font-sans font-black tracking-[0.2em] text-sand/30 dark:text-white/5 select-none leading-none">
           SVREPL
         </span>
       </div>
 
       <div className="container mx-auto px-6 lg:px-12 max-w-7xl relative z-10">
         
-        {/* Main 2-Column Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start mb-14">
+        {/* Main 4-Column Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-14 items-start mb-16">
           
-          {/* Left Column: Brand Info + Contacts */}
-          <div className="lg:col-span-6 flex flex-col gap-6 text-left">
-            {/* Logo */}
+          {/* Column 1: Brand & Bios (span 4) */}
+          <div className="lg:col-span-4 flex flex-col gap-5 text-left">
             <Link href="/" className="flex items-center gap-2 group w-fit">
               <div className="flex flex-col">
-                <span className="font-logo text-2xl leading-none text-indigo">
+                <span className="font-logo text-2xl leading-none text-indigo group-hover:text-indigo-hover transition-colors">
                   Sun Valley
                 </span>
                 <span className="text-[10px] text-terracotta font-extrabold tracking-widest uppercase mt-1">
@@ -135,55 +131,117 @@ export const Footer: React.FC = () => {
               </div>
             </Link>
 
-            {/* Description */}
-            <p className="text-charcoal/70 text-sm leading-relaxed max-w-lg font-medium">
-              We have been serving the needs of Real Estate in India since 2008. Finding the right residential, commercial, or agricultural property to fit your needs.
+            <p className="text-charcoal/70 text-xs font-semibold leading-relaxed max-w-sm">
+              Serving the luxury heritage real estate needs in India since 2008. Curating boutique residential, commercial, and agricultural properties across Rajasthan&apos;s historic locations.
             </p>
 
-            {/* Contact Details */}
-            <div className="flex flex-col gap-3.5 text-sm font-semibold text-charcoal/80 mt-2">
-              <a href="tel:+919876543210" className="flex items-center gap-3.5 hover:text-terracotta transition-colors duration-200">
-                <Phone className="w-5 h-5 text-terracotta flex-shrink-0 stroke-[1.8]" />
+            {/* Social Icons Inline */}
+            <div className="flex items-center gap-3 mt-2">
+              {socials.map((social) => (
+                <a
+                  key={social.name}
+                  href={social.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={social.name}
+                  className="w-9 h-9 rounded-full border border-terracotta/20 text-terracotta hover:border-terracotta hover:bg-terracotta/5 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+                >
+                  <FontAwesomeIcon icon={social.icon} className="w-4 h-4" />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Column 2: Discover Links (span 2) */}
+          <div className="lg:col-span-2 flex flex-col gap-5 text-left">
+            <h4 className="text-indigo font-serif font-black text-sm uppercase tracking-wider">
+              Discover
+            </h4>
+            <ul className="flex flex-col gap-3 text-xs font-bold text-charcoal/70">
+              <li>
+                <Link href="/listings" className="hover:text-terracotta hover:translate-x-0.5 transition-all duration-200 inline-block">
+                  Property Listings
+                </Link>
+              </li>
+              <li>
+                <Link href="/destinations" className="hover:text-terracotta hover:translate-x-0.5 transition-all duration-200 inline-block">
+                  Destinations
+                </Link>
+              </li>
+              <li>
+                <Link href="/hub" className="hover:text-terracotta hover:translate-x-0.5 transition-all duration-200 inline-block">
+                  Sourcing Hub
+                </Link>
+              </li>
+              <li>
+                <Link href="/favorites" className="hover:text-terracotta hover:translate-x-0.5 transition-all duration-200 inline-block">
+                  Favorites Stays
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 3: Contacts & Hours (span 3) */}
+          <div className="lg:col-span-3 flex flex-col gap-5 text-left">
+            <h4 className="text-indigo font-serif font-black text-sm uppercase tracking-wider">
+              Contact Details
+            </h4>
+            
+            <div className="flex flex-col gap-4 text-xs font-bold text-charcoal/70">
+              <a href="tel:+919876543210" className="flex items-center gap-3 hover:text-terracotta transition-colors duration-200">
+                <Phone className="w-4 h-4 text-terracotta flex-shrink-0" />
                 <span>+91 98765 43210</span>
               </a>
-              <a href="mailto:contact@svrepl.com" className="flex items-center gap-3.5 hover:text-terracotta transition-colors duration-200">
-                <Mail className="w-5 h-5 text-terracotta flex-shrink-0 stroke-[1.8]" />
+              
+              <a href="mailto:contact@svrepl.com" className="flex items-center gap-3 hover:text-terracotta transition-colors duration-200">
+                <Mail className="w-4 h-4 text-terracotta flex-shrink-0" />
                 <span>contact@svrepl.com</span>
               </a>
-              <div className="flex items-start gap-3.5">
-                <MapPin className="w-5 h-5 text-terracotta flex-shrink-0 stroke-[1.8] mt-0.5" />
-                <span>Lake Palace Road, Udaipur, Rajasthan, 313001</span>
+
+              <div className="flex items-start gap-3">
+                <MapPin className="w-4 h-4 text-terracotta flex-shrink-0 mt-0.5" />
+                <span className="leading-relaxed">Lake Palace Road, Udaipur, Rajasthan, 313001</span>
+              </div>
+
+              <div className="flex items-center gap-3 border-t border-sand/30 pt-3 mt-1">
+                <Clock className="w-4 h-4 text-terracotta flex-shrink-0" />
+                <span>Office: 10:00 AM – 7:00 PM IST</span>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Socials */}
-          <div className="lg:col-span-6 flex flex-col gap-8">
+          {/* Column 4: Newsletter Subscription (span 3) */}
+          <div className="lg:col-span-3 flex flex-col gap-5 text-left">
+            <h4 className="text-indigo font-serif font-black text-sm uppercase tracking-wider">
+              Heritage Club
+            </h4>
             
-            {/* Follow Us Section */}
-            <div className="flex flex-col gap-4 text-left">
-              <h4 className="text-indigo font-serif font-black text-lg">Follow Us</h4>
-              <div className="flex flex-wrap gap-4 items-center">
-                {socials.map((social) => {
-                  return (
-                    <a
-                      key={social.name}
-                      href={social.href}
-                      className="group flex flex-col items-center gap-2"
-                    >
-                      {/* Outlined Circle Container */}
-                      <div className="w-12 h-12 rounded-full border border-terracotta/40 hover:border-terracotta text-terracotta hover:bg-terracotta/5 flex items-center justify-center transition-all duration-200 shadow-sm">
-                        <FontAwesomeIcon icon={social.icon} className="w-5 h-5" />
-                      </div>
-                      <span className="text-[9px] font-extrabold text-charcoal/50 group-hover:text-terracotta tracking-wider uppercase">
-                        {social.name}
-                      </span>
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
+            <p className="text-charcoal/70 text-xs font-semibold leading-relaxed">
+              Subscribe to receive exclusive heritage property briefs and private investment opportunities directly.
+            </p>
 
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                alert("Thank you for subscribing to Sun Valley Heritage Club!");
+                (e.target as HTMLFormElement).reset();
+              }}
+              className="flex flex-col sm:flex-row gap-2 mt-1 w-full"
+            >
+              <input
+                type="email"
+                placeholder="Email address"
+                required
+                className="bg-white border border-sand rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:border-terracotta text-charcoal placeholder-charcoal/30 flex-1 min-w-0"
+              />
+              <button
+                type="submit"
+                className="bg-[#6851f5] hover:bg-[#5741e0] text-white text-xs font-black px-4 py-2.5 rounded-xl shadow-md transition-colors cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98]"
+              >
+                <span>Join</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </form>
           </div>
 
         </div>
@@ -192,13 +250,11 @@ export const Footer: React.FC = () => {
         <div className="h-px bg-sand/40 w-full mb-6" />
 
         {/* Footer Bottom Bar */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-semibold text-charcoal/50 relative z-10">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-bold text-charcoal/50 relative z-10">
           <p>© {new Date().getFullYear()} Sun Valley Real Estate Private Limited (SVREPL.COM). All rights reserved.</p>
           
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs">
             <Link href="/services" className="hover:text-terracotta transition-colors">Services Directory</Link>
-            <span className="text-sand">|</span>
-            <Link href="/get-assistance" className="hover:text-terracotta transition-colors">Requirement Enquiry</Link>
             <span className="text-sand">|</span>
             <Link href="/privacy" className="hover:text-terracotta transition-colors">Privacy Policy</Link>
             <span className="text-sand">|</span>

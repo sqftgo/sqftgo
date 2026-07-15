@@ -13,7 +13,7 @@ import { UserDropdown } from "@/components/ui/UserDropdown";
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const { selectedCity, setSelectedCity, isLoggedIn, setIsLoggedIn, userEmail, favorites } = useApp();
+  const { selectedCity, setSelectedCity, isLoggedIn, setIsLoggedIn, userEmail, favorites, userRole } = useApp();
   
   const [isScrolled, setIsScrolled] = useState(false);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
@@ -41,7 +41,6 @@ export const Navbar: React.FC = () => {
     { name: "Browse Properties", href: "/listings" },
     { name: "Destinations", href: "/destinations" },
     { name: "Dealers", href: "/dealers" },
-    { name: "Relocation Help", href: "/get-assistance" },
     { name: "Services", href: "/services" },
   ];
 
@@ -209,6 +208,7 @@ export const Navbar: React.FC = () => {
                         >
                           <UserDropdown
                             userEmail={userEmail}
+                            userRole={userRole}
                             onClose={() => setShowUserDropdown(false)}
                             onLogout={() => setIsLoggedIn(false)}
                             align="right"

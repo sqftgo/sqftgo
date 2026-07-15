@@ -42,16 +42,16 @@ const STEPS = ["Type & Purpose", "Location", "Specifications", "Photos", "Price 
 
 export default function PostPropertyPage() {
   const router = useRouter();
-  const { addProperty, isLoggedIn, userEmail } = useApp();
-  const isAdmin = isLoggedIn && userEmail === "admin@svrepl.com";
+  const { addProperty, isLoggedIn, userEmail, userRole } = useApp();
+  const canPost = isLoggedIn && (userRole === "admin" || userRole === "broker" || userEmail === "admin@svrepl.com");
   const [mounted, setMounted] = useState(false);
 
   React.useEffect(() => {
     setMounted(true);
-    if (!isAdmin) {
+    if (!canPost) {
       router.push("/");
     }
-  }, [isAdmin, router]);
+  }, [canPost, router]);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -73,14 +73,14 @@ export default function PostPropertyPage() {
     "https://maps.google.com/cbk?output=thumbnail&w=800&h=600&ll=26.2700,73.0100"
   ]);
 
-  if (!mounted || !isAdmin) {
+  if (!mounted || !canPost) {
     return (
       <div className="container mx-auto px-6 py-20 max-w-xl text-center">
         {mounted && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glassmorphism p-8 rounded-3xl border border-sand">
             <h2 className="font-serif font-black text-2xl text-indigo mb-2">Access Denied</h2>
             <p className="text-sm text-charcoal/60 mb-8">
-              Only administrators can list new properties. Redirecting...
+              Only verified brokers and administrators can list new properties. Redirecting...
             </p>
           </motion.div>
         )}
