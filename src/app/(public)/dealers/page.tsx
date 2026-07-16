@@ -140,6 +140,29 @@ export default function DealersPage() {
           )}
         </div>
 
+        {/* Professional Onboarding Banner */}
+        <div className="mt-20 bg-white border border-sand rounded-[2.5rem] p-8 md:p-12 shadow-sm relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-indigo/5 rounded-full blur-[60px] pointer-events-none" />
+          <div className="relative z-10 flex flex-col gap-2 max-w-2xl text-left">
+            <span className="text-terracotta font-extrabold text-[10px] uppercase tracking-widest block">Are you a Real Estate Professional?</span>
+            <h2 className="text-2xl font-serif font-black text-charcoal tracking-tight">
+              Grow Your Business with Sun Valley
+            </h2>
+            <p className="text-charcoal/70 text-sm font-semibold leading-relaxed mt-1">
+              List your residential, commercial, or agricultural properties, manage buyer enquiries in real-time, and get verified in our premium regional business directory.
+            </p>
+          </div>
+          <div className="relative z-10 shrink-0 w-full md:w-auto">
+            <Link
+              href="/dealers/dashboard"
+              className="flex items-center justify-center gap-2 px-8 py-4 bg-indigo hover:bg-indigo-hover text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-md shadow-indigo/15 w-full md:w-auto"
+            >
+              <span>Access Dealers Dashboard</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+
       </div>
     </main>
   );

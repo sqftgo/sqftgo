@@ -16,8 +16,13 @@ import {
 export const Footer: React.FC = () => {
   const pathname = usePathname();
 
-  // Hide Footer on /login and /signup pages
-  if (pathname === "/login" || pathname === "/signup") {
+  // Hide Footer on dashboard and auth pages
+  if (
+    pathname === "/login" || pathname === "/signup" || pathname === "/register" ||
+    pathname === "/forgot-password" || pathname === "/dealer/register" || 
+    pathname === "/admin/login" ||
+    pathname.startsWith("/dealer/dashboard") || pathname.startsWith("/admin")
+  ) {
     return null;
   }
   
@@ -254,6 +259,10 @@ export const Footer: React.FC = () => {
           <p>© {new Date().getFullYear()} Sun Valley Real Estate Private Limited (SVREPL.COM). All rights reserved.</p>
           
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs">
+            <Link href="/dealers/dashboard" className="hover:text-terracotta text-indigo transition-colors font-bold">Dealers Portal</Link>
+            <span className="text-sand">|</span>
+            <Link href="/admin" className="hover:text-terracotta transition-colors">Admin Console</Link>
+            <span className="text-sand">|</span>
             <Link href="/services" className="hover:text-terracotta transition-colors">Services Directory</Link>
             <span className="text-sand">|</span>
             <Link href="/privacy" className="hover:text-terracotta transition-colors">Privacy Policy</Link>

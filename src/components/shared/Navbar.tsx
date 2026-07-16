@@ -19,7 +19,8 @@ export const Navbar: React.FC = () => {
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
-  const isAuthPage = pathname === "/login" || pathname === "/signup";
+  const isDashboardRoute = pathname.startsWith("/dealer/") || pathname.startsWith("/admin");
+  const isAuthPage = pathname === "/login" || pathname === "/signup" || pathname === "/register" || pathname === "/forgot-password" || pathname === "/dealer/register" || pathname === "/admin/login" || isDashboardRoute;
 
   // Monitor scroll for header styling and progress indicator
   useEffect(() => {
@@ -35,6 +36,8 @@ export const Navbar: React.FC = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isAuthPage]);
+
+  if (isDashboardRoute) return null;
 
   const navLinks = [
     { name: "Home", href: "/" },

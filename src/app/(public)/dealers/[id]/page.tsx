@@ -19,6 +19,13 @@ export default function DealerProfilePage() {
 
   const brokerProperties = React.useMemo(() => {
     if (!profile) return [];
+    const directMatches = properties.filter(
+      p => (p.ownerEmail && p.ownerEmail.toLowerCase() === profile.email.toLowerCase()) || 
+           p.ownerPhone === profile.mobile
+    );
+    if (directMatches.length > 0) {
+      return directMatches.filter(p => p.status === "Active");
+    }
     return properties.filter(
       p => p.city.toLowerCase() === profile.city.toLowerCase() && p.status === "Active"
     );

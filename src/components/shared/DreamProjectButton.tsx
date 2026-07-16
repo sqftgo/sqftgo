@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Sparkles, X, ChevronRight, ChevronLeft, Upload, Check, 
@@ -29,6 +30,9 @@ const FEATURES = ["Large Balcony", "Modular Kitchen", "Walk-in Closet", "Home Of
 const MATTERS_MOST = ["Location", "Budget", "Safety", "Schools Nearby", "Public Transport", "Investment Value", "Peaceful Neighborhood", "Luxury Lifestyle", "Green Spaces", "Shopping Nearby", "Hospitals Nearby"];
 
 export default function DreamProjectButton() {
+  const pathname = usePathname();
+  const isDashboardRoute = pathname.startsWith("/dealer/") || pathname.startsWith("/admin");
+  
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -96,6 +100,7 @@ export default function DreamProjectButton() {
     setIsOpen(false);
   };
 
+  if (isDashboardRoute) return null;
   if (!mounted) return null;
 
   return (

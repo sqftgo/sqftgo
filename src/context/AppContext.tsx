@@ -5,25 +5,34 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 export interface Property {
   id: string;
   title: string;
-  price: number; // in Rupees
+  price: number;
   type: "Home" | "Villa" | "Hotel" | "Agricultural Land" | "Apartment" | "Office Space" | "Commercial Space" | "Shop" | "Industrial Plot";
   purpose: "buy" | "sell" | "rent" | "lease";
   bhk?: number;
+  bathrooms?: number;
+  parking?: number;
+  yearBuilt?: number;
   city: string;
+  state?: string;
+  country?: string;
   locality: string;
-  size: number; // in sq.ft.
+  size: number;
   furnished: "Furnished" | "Semi-Furnished" | "Unfurnished";
   description: string;
   amenities: string[];
   images: string[];
+  videoUrl?: string;
   ownerName: string;
   ownerPhone: string;
+  ownerEmail?: string;
   inquiryCount: number;
-  status: "Active" | "Pending Review" | "Sold" | "Rented";
+  status: "Active" | "Pending Review" | "Sold" | "Rented" | "Draft";
   featured?: boolean;
   reraApproved?: boolean;
   reraId?: string;
   verifiedDate?: string;
+  seoTitle?: string;
+  seoDescription?: string;
   verificationChecks?: {
     titleDeed: boolean;
     taxClearance: boolean;
@@ -38,6 +47,63 @@ export interface Property {
     registrationFees?: number;
     gst?: number;
   };
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  avatar?: string;
+  bio?: string;
+  role: "user" | "broker" | "admin";
+  joinedDate: string;
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: "info" | "success" | "warning" | "error";
+  read: boolean;
+  date: string;
+  forRole: "user" | "broker" | "admin" | "all";
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  count: number;
+  active: boolean;
+}
+
+export interface Location {
+  id: string;
+  city: string;
+  state: string;
+  country: string;
+  active: boolean;
+  propertyCount: number;
+}
+
+export interface ActivityLog {
+  id: string;
+  action: string;
+  performedBy: string;
+  role: string;
+  target: string;
+  timestamp: string;
+}
+
+export interface MockUser {
+  id: string;
+  name: string;
+  email: string;
+  role: "user" | "broker" | "admin";
+  status: "active" | "suspended";
+  joinedDate: string;
+  inquiriesCount: number;
 }
 
 export interface AssistanceRequest {
@@ -63,6 +129,7 @@ export interface GeneralEnquiry {
   email: string;
   mobile: string;
   remarks: string;
+  message?: string;
   date: string;
 }
 
@@ -103,7 +170,10 @@ interface AppContextType {
   assistanceRequests: AssistanceRequest[];
   setAssistanceRequests: React.Dispatch<React.SetStateAction<AssistanceRequest[]>>;
   addAssistanceRequest: (req: Omit<AssistanceRequest, "id" | "status">) => void;
-  addProperty: (property: Omit<Property, "id" | "inquiryCount" | "status" | "ownerName" | "ownerPhone">) => void;
+  addProperty: (property: Omit<Property, "id" | "inquiryCount" | "status" | "ownerName" | "ownerPhone" | "ownerEmail">) => void;
+  updateProperty: (propertyId: string, updates: Partial<Property>) => void;
+  deleteProperty: (propertyId: string) => void;
+  deleteInquiry: (propertyId: string, index: number) => void;
   inquiries: { [key: string]: { name: string; email: string; phone: string; message: string; date: string }[] };
   submitInquiry: (propertyId: string, inquiry: { name: string; email: string; phone: string; message: string }) => void;
   enquiries: GeneralEnquiry[];
@@ -120,6 +190,24 @@ interface AppContextType {
   setUserEmail: (email: string) => void;
   userRole: "user" | "broker" | "admin" | null;
   setUserRole: (role: "user" | "broker" | "admin" | null) => void;
+  userName: string;
+  setUserName: (name: string) => void;
+  userProfile: UserProfile | null;
+  setUserProfile: React.Dispatch<React.SetStateAction<UserProfile | null>>;
+  notifications: Notification[];
+  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
+  markNotificationRead: (id: string) => void;
+  categories: Category[];
+  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  locations: Location[];
+  setLocations: React.Dispatch<React.SetStateAction<Location[]>>;
+  activityLogs: ActivityLog[];
+  addLog: (log: Omit<ActivityLog, "id" | "timestamp">) => void;
+  mockUsers: MockUser[];
+  setMockUsers: React.Dispatch<React.SetStateAction<MockUser[]>>;
+  compareList: string[];
+  setCompareList: React.Dispatch<React.SetStateAction<string[]>>;
+  toggleCompare: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -159,6 +247,7 @@ const initialProperties: Property[] = [
     images: [mockImages.villas[0], mockImages.villas[1], mockImages.villas[2]],
     ownerName: "Rajendra Singh Mewar",
     ownerPhone: "+91 98765 43210",
+    ownerEmail: "broker@svrepl.com",
     inquiryCount: 12,
     status: "Active",
     featured: true,
@@ -231,6 +320,7 @@ const initialProperties: Property[] = [
     images: [mockImages.apartments[2], mockImages.apartments[1]],
     ownerName: "Meenakshi Vyas",
     ownerPhone: "+91 98290 87654",
+    ownerEmail: "broker@svrepl.com",
     inquiryCount: 9,
     status: "Active",
     featured: true,
@@ -435,6 +525,7 @@ const initialProperties: Property[] = [
     images: ["https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80"],
     ownerName: "Parth Patel",
     ownerPhone: "+91 99112 99112",
+    ownerEmail: "broker@svrepl.com",
     inquiryCount: 5,
     status: "Active",
     featured: true,
@@ -778,6 +869,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         message: "Hi, I am interested in viewing this lakeview villa this Sunday. Is it available for a visit?",
         date: "2026-06-14",
       }
+    ],
+    "prop-3": [
+      {
+        name: "Aishwarya Sen",
+        email: "aishwarya@sen.com",
+        phone: "+91 98888 12345",
+        message: "Is the rent negotiable? I am looking to move in by next month.",
+        date: "2026-07-12",
+      }
+    ],
+    "prop-9": [
+      {
+        name: "Ramesh Kumar",
+        email: "ramesh@kumar.com",
+        phone: "+91 91234 56789",
+        message: "We want to schedule a visit for our team of 15 people. Please let us know when is convenient.",
+        date: "2026-07-15",
+      }
     ]
   });
 
@@ -904,7 +1013,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       category: "Agent & Broker",
       city: "Udaipur",
       address: "Panchwati, Udaipur",
-      email: "rajesh@lakecitybrokerage.com",
+      email: "broker@svrepl.com",
       website: "www.lakecitybrokerage.com",
       mobile: "+91 98290 12345",
       description: "Trusted broker specializing in lakefront villas, luxury apartments, and commercial lease verification in Shobhagpura & Panchwati.",
@@ -987,6 +1096,66 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [userRole, setUserRole] = useState<"user" | "broker" | "admin" | null>(null);
+  const [userName, setUserName] = useState("");
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+
+  const [notifications, setNotifications] = useState<Notification[]>([
+    { id: "notif-1", title: "Welcome to Sun Valley", message: "Your account has been set up successfully.", type: "success", read: false, date: "2026-07-16", forRole: "all" },
+    { id: "notif-2", title: "New Inquiry Received", message: "Suresh Mehta submitted an inquiry on Ultra Luxury Lake-Facing Villa.", type: "info", read: false, date: "2026-07-15", forRole: "broker" },
+    { id: "notif-3", title: "Property Approved", message: "Your listing 'Luxury Haveli in Jodhpur' has been approved by the admin.", type: "success", read: true, date: "2026-07-14", forRole: "broker" },
+    { id: "notif-4", title: "Pending Approval", message: "2 properties are waiting for admin review.", type: "warning", read: false, date: "2026-07-16", forRole: "admin" },
+  ]);
+
+  const [categories, setCategories] = useState<Category[]>([
+    { id: "cat-1", name: "Villa", icon: "🏡", count: 0, active: true },
+    { id: "cat-2", name: "Apartment", icon: "🏢", count: 0, active: true },
+    { id: "cat-3", name: "Home", icon: "🏠", count: 0, active: true },
+    { id: "cat-4", name: "Office Space", icon: "🏗️", count: 0, active: true },
+    { id: "cat-5", name: "Shop", icon: "🏪", count: 0, active: true },
+    { id: "cat-6", name: "Agricultural Land", icon: "🌾", count: 0, active: true },
+    { id: "cat-7", name: "Hotel", icon: "🏨", count: 0, active: true },
+    { id: "cat-8", name: "Industrial Plot", icon: "🏭", count: 0, active: false },
+  ]);
+
+  const [locations, setLocations] = useState<Location[]>([
+    { id: "loc-1", city: "Udaipur", state: "Rajasthan", country: "India", active: true, propertyCount: 0 },
+    { id: "loc-2", city: "Jaipur", state: "Rajasthan", country: "India", active: true, propertyCount: 0 },
+    { id: "loc-3", city: "Jodhpur", state: "Rajasthan", country: "India", active: true, propertyCount: 0 },
+    { id: "loc-4", city: "Jaisalmer", state: "Rajasthan", country: "India", active: true, propertyCount: 0 },
+    { id: "loc-5", city: "Kota", state: "Rajasthan", country: "India", active: true, propertyCount: 0 },
+    { id: "loc-6", city: "Ahmedabad", state: "Gujarat", country: "India", active: true, propertyCount: 0 },
+    { id: "loc-7", city: "Surat", state: "Gujarat", country: "India", active: true, propertyCount: 0 },
+    { id: "loc-8", city: "Shimla", state: "Himachal Pradesh", country: "India", active: false, propertyCount: 0 },
+  ]);
+
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([
+    { id: "log-1", action: "Property Approved", performedBy: "admin@svrepl.com", role: "Admin", target: "prop-1 — Ultra Luxury Lake-Facing Villa", timestamp: "2026-07-16 14:32:00" },
+    { id: "log-2", action: "User Role Changed", performedBy: "admin@svrepl.com", role: "Admin", target: "broker@svrepl.com → broker", timestamp: "2026-07-15 10:15:00" },
+    { id: "log-3", action: "New Dealer Registered", performedBy: "vikram@mewarproperty.in", role: "Broker", target: "Mewar Property Consultants", timestamp: "2026-07-14 09:45:00" },
+    { id: "log-4", action: "Property Deleted", performedBy: "admin@svrepl.com", role: "Admin", target: "prop-draft-001", timestamp: "2026-07-13 16:22:00" },
+    { id: "log-5", action: "Inquiry Submitted", performedBy: "user@svrepl.com", role: "User", target: "prop-2 — Premium 3 BHK Flat in C-Scheme", timestamp: "2026-07-12 11:05:00" },
+  ]);
+
+  const [compareList, setCompareList] = useState<string[]>([]);
+
+  const toggleCompare = (id: string) => {
+    setCompareList(prev =>
+      prev.includes(id)
+        ? prev.filter(x => x !== id)
+        : prev.length >= 4
+          ? [...prev.slice(1), id]
+          : [...prev, id]
+    );
+  };
+
+  const [mockUsers, setMockUsers] = useState<MockUser[]>([
+    { id: "usr-1", name: "Arjun Sharma", email: "user@svrepl.com", role: "user", status: "active", joinedDate: "2026-01-15", inquiriesCount: 4 },
+    { id: "usr-2", name: "Priya Nair", email: "priya@gmail.com", role: "user", status: "active", joinedDate: "2026-02-20", inquiriesCount: 2 },
+    { id: "usr-3", name: "Sanjay Gupta", email: "sanjay@outlook.com", role: "user", status: "suspended", joinedDate: "2026-03-05", inquiriesCount: 0 },
+    { id: "usr-4", name: "Rajesh Mehta", email: "broker@svrepl.com", role: "broker", status: "active", joinedDate: "2025-11-10", inquiriesCount: 0 },
+    { id: "usr-5", name: "Vikram Singh", email: "vikram@mewarproperty.in", role: "broker", status: "active", joinedDate: "2025-09-01", inquiriesCount: 0 },
+    { id: "usr-6", name: "Admin User", email: "admin@svrepl.com", role: "admin", status: "active", joinedDate: "2025-06-01", inquiriesCount: 0 },
+  ]);
 
   const toggleFavorite = (id: string) => {
     setFavorites((prev) =>
@@ -1003,16 +1172,51 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAssistanceRequests((prev) => [newRequest, ...prev]);
   };
 
-  const addProperty = (prop: Omit<Property, "id" | "inquiryCount" | "status" | "ownerName" | "ownerPhone">) => {
+  const addProperty = (prop: Omit<Property, "id" | "inquiryCount" | "status" | "ownerName" | "ownerPhone" | "ownerEmail">) => {
+    const matchingProfile = isLoggedIn && userRole === "broker"
+      ? directoryProfiles.find(dp => dp.email.toLowerCase() === userEmail.toLowerCase())
+      : null;
+
     const newProperty: Property = {
       ...prop,
       id: `prop-${Date.now()}`,
       inquiryCount: 0,
       status: "Pending Review",
-      ownerName: "Owner User",
-      ownerPhone: "+91 99000 99000",
+      ownerName: matchingProfile ? matchingProfile.ownerName : "Owner User",
+      ownerPhone: matchingProfile ? matchingProfile.mobile : "+91 99000 99000",
+      ownerEmail: isLoggedIn ? userEmail : "owner@example.com",
     };
     setProperties((prev) => [newProperty, ...prev]);
+  };
+
+  const updateProperty = (propertyId: string, updates: Partial<Property>) => {
+    setProperties((prev) =>
+      prev.map((prop) => (prop.id === propertyId ? { ...prop, ...updates } : prop))
+    );
+  };
+
+  const deleteProperty = (propertyId: string) => {
+    setProperties((prev) => prev.filter((prop) => prop.id !== propertyId));
+  };
+
+  const deleteInquiry = (propertyId: string, index: number) => {
+    setInquiries((prev) => {
+      const existing = prev[propertyId] || [];
+      const updated = existing.filter((_, idx) => idx !== index);
+      
+      setProperties((pPrev) =>
+        pPrev.map((prop) =>
+          prop.id === propertyId
+            ? { ...prop, inquiryCount: Math.max(0, prop.inquiryCount - 1) }
+            : prop
+        )
+      );
+
+      return {
+        ...prev,
+        [propertyId]: updated,
+      };
+    });
   };
 
   const submitInquiry = (propertyId: string, inquiry: { name: string; email: string; phone: string; message: string }) => {
@@ -1062,6 +1266,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setDirectoryProfiles((prev) => [newProfile, ...prev]);
   };
 
+  const markNotificationRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+  };
+
+  const addLog = (log: Omit<ActivityLog, "id" | "timestamp">) => {
+    const newLog: ActivityLog = {
+      ...log,
+      id: `log-${Date.now()}`,
+      timestamp: new Date().toLocaleString("en-IN"),
+    };
+    setActivityLogs((prev) => [newLog, ...prev]);
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -1075,6 +1294,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setAssistanceRequests,
         addAssistanceRequest,
         addProperty,
+        updateProperty,
+        deleteProperty,
+        deleteInquiry,
         inquiries,
         submitInquiry,
         enquiries,
@@ -1091,6 +1313,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setUserEmail,
         userRole,
         setUserRole,
+        userName,
+        setUserName,
+        userProfile,
+        setUserProfile,
+        notifications,
+        setNotifications,
+        markNotificationRead,
+        categories,
+        setCategories,
+        locations,
+        setLocations,
+        activityLogs,
+        addLog,
+        mockUsers,
+        setMockUsers,
+        compareList,
+        setCompareList,
+        toggleCompare,
       }}
     >
       {children}
