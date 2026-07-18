@@ -230,14 +230,14 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
 
   return (
     <div
-      className={`absolute z-[100] mt-3 w-[92vw] sm:w-[540px] max-w-[540px] rounded-3xl bg-white text-charcoal shadow-2xl border border-gray-100 overflow-hidden flex flex-col ${
-        align === "right" ? "right-0" : "left-0"
+      className={`fixed sm:absolute z-[100] left-4 right-4 top-[72px] sm:top-auto sm:mt-3 mx-auto sm:mx-0 w-[calc(100vw-32px)] sm:w-[540px] max-w-[540px] rounded-3xl bg-white text-charcoal shadow-2xl border border-gray-100 overflow-hidden flex flex-col ${
+        align === "right" ? "sm:left-auto sm:right-0" : "sm:right-auto sm:left-0"
       }`}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Upward Tooltip Caret */}
       <div 
-        className={`absolute -top-2 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-100 z-[101] ${
+        className={`absolute -top-2 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-100 z-[101] hidden sm:block ${
           align === "right" ? "right-12" : "left-12"
         }`} 
       />

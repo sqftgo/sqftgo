@@ -145,6 +145,7 @@ export const Navbar: React.FC = () => {
               <button
                 onClick={() => setShowCityDropdown(!showCityDropdown)}
                 className="flex items-center gap-1.5 px-3 py-2 text-xs md:text-sm font-bold text-charcoal bg-sand hover:bg-sand/80 rounded-xl transition-all duration-200"
+                suppressHydrationWarning
               >
                 <MapPin className="w-3.5 h-3.5 text-terracotta" />
                 <span>{selectedCity}</span>

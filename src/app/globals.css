@@ -15,6 +15,7 @@
   --brand-charcoal: #1c2530;
   --brand-gold: #dfab34;
   --brand-gold-soft: #f4e8c5;
+  --brand-terracotta-soft: #ffd6cc;
 
   /* Accent Colors mapped to warm earth tones */
   --brand-blue-50: #f4f7fa;
@@ -61,6 +62,7 @@
   --color-charcoal: var(--brand-charcoal);
   --color-gold: var(--brand-gold);
   --color-gold-soft: var(--brand-gold-soft);
+  --color-terracotta-soft: var(--brand-terracotta-soft);
 
   --color-blue-50: var(--brand-blue-50);
   --color-blue-100: var(--brand-blue-100);

@@ -158,7 +158,6 @@ function ListingsContent() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<"grid" | "split">("grid");
   const [activeMapCity, setActiveMapCity] = useState<string>(selectedCity);
-
   // Sync parameters from URL
   useEffect(() => {
     const urlCity = searchParams.get("city") || selectedCity;
@@ -168,6 +167,8 @@ function ListingsContent() {
     const urlBudget = searchParams.get("budget") || "any";
     const urlRera = searchParams.get("rera") === "true";
     const urlFeatured = searchParams.get("featured") === "true";
+    const urlBhkParam = searchParams.get("bhk");
+    const urlBhk = urlBhkParam ? urlBhkParam.split(",") : [];
 
     let min = "";
     let max = "";
@@ -183,7 +184,7 @@ function ListingsContent() {
       locality: urlLocality,
       purpose: urlPurpose,
       type: urlType,
-      bhk: [],
+      bhk: urlBhk,
       furnishing: [],
       minPrice: min,
       maxPrice: max,

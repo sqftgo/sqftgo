@@ -17,6 +17,7 @@ import {
   Phone, 
   Plus, 
   ArrowUpRight,
+  ArrowRight,
   Building2,
   UserCheck,
   Grid,
@@ -31,13 +32,13 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 const CATEGORY_METADATA = [
-  { name: "Builder & Developer", title: "Builders & Developers", desc: "Developing premium residential townships, villas, and industrial projects.", icon: Building2, textClass: "text-indigo-600 bg-indigo-50" },
-  { name: "Interior Decorator", title: "Interior Decorators", desc: "Renovate spaces with traditional Rajasthani blocks, carving work, and modern layouts.", icon: Paintbrush, textClass: "text-rose-600 bg-rose-50" },
-  { name: "Architect", title: "Architects", desc: "Preserve heritage havelis or build state-of-the-art luxury lakeside villas.", icon: Map, textClass: "text-blue-600 bg-blue-50" },
-  { name: "Building Contractor", title: "Building Contractors", desc: "Quality raw materials, local stone craftsmanship, and structural engineering expertise.", icon: Hammer, textClass: "text-emerald-600 bg-emerald-50" },
-  { name: "Vastu Consultant", title: "Vastu Consultants", desc: "Align your home plans with Vedic guidelines to bring peace, health, and prosperity.", icon: Compass, textClass: "text-amber-600 bg-amber-50" },
-  { name: "Home Valuation/Inspection", title: "Valuation & Inspection", desc: "Verify structural sanitation, water grids, and get fair value market estimations.", icon: Calculator, textClass: "text-cyan-600 bg-cyan-50" },
-  { name: "Home Shifting/Deep Cleaning", title: "Shifting & Deep Cleaning", desc: "Hassle-free interstate relocation, logistics, deep cleaning, and pest control.", icon: Truck, textClass: "text-orange-600 bg-orange-50" }
+  { name: "Builder & Developer", title: "Builders & Developers", desc: "Developing premium residential townships, villas, and industrial projects.", icon: Building2, textClass: "text-indigo bg-indigo/5" },
+  { name: "Interior Decorator", title: "Interior Decorators", desc: "Renovate spaces with traditional Rajasthani blocks, carving work, and modern layouts.", icon: Paintbrush, textClass: "text-terracotta bg-terracotta/5" },
+  { name: "Architect", title: "Architects", desc: "Preserve heritage havelis or build state-of-the-art luxury lakeside villas.", icon: Map, textClass: "text-indigo bg-indigo/5" },
+  { name: "Building Contractor", title: "Building Contractors", desc: "Quality raw materials, local stone craftsmanship, and structural engineering expertise.", icon: Hammer, textClass: "text-charcoal bg-charcoal/5" },
+  { name: "Vastu Consultant", title: "Vastu Consultants", desc: "Align your home plans with Vedic guidelines to bring peace, health, and prosperity.", icon: Compass, textClass: "text-gold bg-gold/10" },
+  { name: "Home Valuation/Inspection", title: "Valuation & Inspection", desc: "Verify structural sanitation, water grids, and get fair value market estimations.", icon: Calculator, textClass: "text-indigo bg-indigo/5" },
+  { name: "Home Shifting/Deep Cleaning", title: "Shifting & Deep Cleaning", desc: "Hassle-free interstate relocation, logistics, deep cleaning, and pest control.", icon: Truck, textClass: "text-terracotta bg-terracotta/5" }
 ];
 
 export default function ServicesPage() {
@@ -145,6 +146,7 @@ export default function ServicesPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full bg-white border border-sand hover:border-terracotta/30 focus:border-terracotta rounded-2xl py-3.5 pl-12 pr-6 text-sm font-semibold text-charcoal outline-none transition-all shadow-sm focus:shadow-md"
+                    suppressHydrationWarning
                   />
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
                 </div>
@@ -240,6 +242,7 @@ export default function ServicesPage() {
                       ? "bg-indigo text-white shadow-md"
                       : "bg-transparent hover:bg-sand/30 text-charcoal/70"
                   }`}
+                  suppressHydrationWarning
                 >
                   <span className="text-left">All Cities</span>
                   <span className={`px-2 py-0.5 rounded-md text-[10px] font-black ${
@@ -256,6 +259,7 @@ export default function ServicesPage() {
                       ? "bg-indigo text-white shadow-md"
                       : "bg-transparent hover:bg-sand/30 text-charcoal/70"
                   }`}
+                  suppressHydrationWarning
                 >
                   <span className="truncate text-left">Only {selectedCity}</span>
                   <span className={`px-2 py-0.5 rounded-md text-[10px] font-black ${
@@ -282,6 +286,7 @@ export default function ServicesPage() {
                       ? "bg-indigo text-white shadow-md"
                       : "bg-transparent hover:bg-sand/30 text-charcoal/70"
                   }`}
+                  suppressHydrationWarning
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
@@ -313,6 +318,7 @@ export default function ServicesPage() {
                           ? "bg-indigo text-white shadow-md"
                           : "bg-transparent hover:bg-sand/30 text-charcoal/70"
                       }`}
+                      suppressHydrationWarning
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
@@ -349,6 +355,7 @@ export default function ServicesPage() {
                       ? "bg-indigo text-white shadow-md"
                       : "bg-white border border-sand text-charcoal/70 hover:bg-sand/30"
                   }`}
+                  suppressHydrationWarning
                 >
                   <span>All ({activeProfilesForCount.length})</span>
                 </button>
@@ -367,6 +374,7 @@ export default function ServicesPage() {
                           ? "bg-indigo text-white shadow-md"
                           : "bg-white border border-sand text-charcoal/70 hover:bg-sand/30"
                       }`}
+                      suppressHydrationWarning
                     >
                       <span>{cat.title} ({count})</span>
                     </button>
@@ -400,6 +408,7 @@ export default function ServicesPage() {
                     className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
                       !filterBySelectedCity ? "bg-white text-indigo shadow-sm" : "text-charcoal/60"
                     }`}
+                    suppressHydrationWarning
                   >
                     All Cities
                   </button>
@@ -408,6 +417,7 @@ export default function ServicesPage() {
                     className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
                       filterBySelectedCity ? "bg-white text-indigo shadow-sm" : "text-charcoal/60"
                     }`}
+                    suppressHydrationWarning
                   >
                     Only {selectedCity}
                   </button>
@@ -435,7 +445,7 @@ export default function ServicesPage() {
                     >
                       {/* Top Section: Avatar & Name */}
                       <div className="flex items-start gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo to-charcoal flex items-center justify-center text-white font-black text-xl shadow-md flex-shrink-0 relative">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo to-indigo-hover text-[#D4AF37] border border-[#D4AF37]/20 flex items-center justify-center font-black text-xl shadow-md flex-shrink-0 relative">
                           {profile.ownerName.charAt(0)}
                           <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 bg-emerald-500 border-[3px] border-white rounded-full flex items-center justify-center shadow-sm">
                             <CheckCircle className="w-3.5 h-3.5 text-white" />
@@ -469,7 +479,8 @@ export default function ServicesPage() {
                         {/* Primary Contact (Phone) */}
                         <a
                           href={`tel:${profile.mobile}`}
-                          className="flex-1 py-3 rounded-xl bg-indigo hover:bg-indigo/90 text-white flex items-center justify-center gap-2 text-sm font-bold shadow-md transition-all hover:-translate-y-0.5"
+                          className="flex-1 py-3 rounded-xl bg-indigo hover:bg-indigo-hover text-white flex items-center justify-center gap-2 text-sm font-bold shadow-md transition-all hover:-translate-y-0.5"
+                          suppressHydrationWarning
                         >
                           <Phone className="w-4 h-4" />
                           <span>Contact</span>
@@ -479,7 +490,8 @@ export default function ServicesPage() {
                         <a
                           href={`mailto:${profile.email}`}
                           title="Email"
-                          className="w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-sand hover:border-blue-500 hover:bg-blue-50 text-charcoal hover:text-blue-600 transition-colors shadow-sm"
+                          className="w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-sand hover:border-indigo hover:bg-indigo/5 text-charcoal hover:text-indigo transition-colors shadow-sm"
+                          suppressHydrationWarning
                         >
                           <Mail className="w-4.5 h-4.5" />
                         </a>
@@ -489,6 +501,7 @@ export default function ServicesPage() {
                           rel="noreferrer"
                           title="Website"
                           className="w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-sand hover:border-terracotta hover:bg-terracotta/5 text-charcoal hover:text-terracotta transition-colors shadow-sm"
+                          suppressHydrationWarning
                         >
                           <Globe className="w-4.5 h-4.5" />
                         </a>
@@ -521,26 +534,63 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* 4. CTA BANNER */}
-      <section className="w-full bg-indigo text-white py-20 px-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-terracotta/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="max-w-4xl mx-auto text-center flex flex-col items-center gap-8 relative z-10">
-          <div className="flex flex-col gap-3">
-            <h2 className="text-3xl md:text-5xl font-serif font-black tracking-tight">
-              Are you a Real Estate Professional?
-            </h2>
-            <p className="text-sm md:text-lg text-white/70 font-semibold max-w-2xl mx-auto">
-              Join the most trusted property network in Rajasthan. Connect with high-value clients, showcase your portfolio, and grow your local presence.
-            </p>
+      {/* 4. PREMIUM CTA BANNER SECTION */}
+      <section className="relative z-20 pb-20 px-6 max-w-7xl mx-auto w-full">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-indigo to-slate-900 text-white p-8 md:p-12 shadow-2xl lg:grid lg:grid-cols-12 lg:items-center lg:gap-12 gap-8 border-2 border-white/10 group"
+        >
+          {/* Ambient Back Decor */}
+          <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-white/5 rounded-full blur-[80px] pointer-events-none" />
+          
+          <div className="lg:col-span-7 flex flex-col gap-6 text-left relative z-10">
+            <span className="px-3 py-1 bg-white/20 border border-white/10 text-white text-[9px] font-black uppercase tracking-widest rounded w-fit">
+              Partner Services
+            </span>
+            <div className="flex flex-col gap-3">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-black tracking-tight leading-tight text-white">
+                Are you a Real Estate Professional? <br />
+                List your business with SVREPL today.
+              </h2>
+              <p className="text-slate-200 text-xs sm:text-sm leading-relaxed font-semibold max-w-xl">
+                Join the most trusted property network in Rajasthan. Connect with high-value clients, showcase your portfolio, and grow your local presence entirely free.
+              </p>
+            </div>
+            
+            <div className="w-fit">
+              <Link
+                href="/services/register"
+                className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white hover:bg-cream text-indigo hover:text-indigo-hover font-black text-xs uppercase tracking-widest shadow-lg transition-all duration-200"
+                suppressHydrationWarning
+              >
+                <span>List Your Business Today</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
-          <Link
-            href="/services/register"
-            className="group flex items-center justify-center gap-2 px-8 py-4 mt-2 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white font-bold text-sm shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1"
-          >
-            <Plus className="w-5 h-5 transition-transform group-hover:rotate-90" />
-            <span>List Your Business Today</span>
-          </Link>
-        </div>
+
+          {/* Stylized Collage Column */}
+          <div className="hidden lg:flex lg:col-span-5 justify-center items-center relative z-10 min-h-[380px]">
+            <div className="relative w-[300px] h-[360px]">
+              {/* Terracotta Accent Card (Tilted) */}
+              <div className="absolute inset-0 bg-terracotta rounded-[32px] shadow-2xl transform -rotate-6 group-hover:rotate-0 transition-all duration-500" />
+              
+              {/* Offset Tilted White Outline Border */}
+              <div className="absolute inset-0 border-2 border-white/80 rounded-[32px] transform rotate-3 group-hover:rotate-0 transition-all duration-500 pointer-events-none" />
+              
+              {/* Image Container (Tilted slightly differently) */}
+              <div className="absolute inset-3 rounded-[24px] overflow-hidden bg-white shadow-lg transform -rotate-2 group-hover:rotate-0 transition-all duration-500">
+                <img
+                  src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=600&auto=format&fit=crop"
+                  alt="Luxury Interior Design Sketch Work"
+                  className="w-full h-full object-cover object-center"
+                />
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </section>
 
     </div>

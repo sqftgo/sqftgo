@@ -28,7 +28,10 @@ import {
   UserCheck,
   FileText,
   HelpCircle,
-  X
+  X,
+  Search,
+  Bed,
+  IndianRupee
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -303,7 +306,7 @@ export default function Home() {
                   {/* LOCALITY */}
                   <div className="flex items-center gap-3 pb-3 mb-3 border-b border-gray-100 lg:border-b-0 lg:border-r lg:border-gray-200 lg:pb-0 lg:mb-0 lg:px-4">
                     <div className="w-9 h-9 rounded-full border-2 border-indigo/20 flex items-center justify-center flex-shrink-0">
-                      <Compass className="w-4 h-4 text-indigo" />
+                      <Compass className="w-4.5 h-4.5 text-indigo" />
                     </div>
                     <div className="flex flex-col min-w-0 flex-1">
                       <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none mb-1">Locality</span>
@@ -461,87 +464,8 @@ export default function Home() {
           className="flex overflow-x-auto gap-6 pb-6 pt-2 no-scrollbar snap-x snap-mandatory scroll-smooth items-stretch"
         >
           {displayTopPicks.map((property) => (
-            <div key={property.id} className="w-[300px] sm:w-[360px] flex-shrink-0 snap-start relative group flex flex-col bg-white border border-sand rounded-2xl shadow-sm hover:shadow-xl hover:border-terracotta/30 transition-all duration-300 overflow-hidden">
-              
-              {/* Image & Badges */}
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-sand/30">
-                <img
-                  src={property.images[0]}
-                  alt={property.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                
-                {/* Overlay Badge */}
-                <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
-                  <span className={`px-3 py-1 rounded text-[8px] font-black uppercase tracking-wider text-white shadow-sm w-fit ${
-                    property.purpose === "buy" || property.purpose === "sell" 
-                      ? "bg-indigo" 
-                      : "bg-terracotta"
-                  }`}>
-                    {property.purpose === "buy" || property.purpose === "sell" ? "For Sale" : "For Rent"}
-                  </span>
-                  
-                  {property.reraApproved && (
-                    <span className="px-2.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider text-emerald-800 bg-white/95 border border-emerald-200 shadow-sm">
-                      RERA Registered
-                    </span>
-                  )}
-                </div>
-
-                {/* Shortlist Button */}
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleShortlist();
-                  }}
-                  className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-white/95 hover:bg-white text-charcoal hover:text-terracotta flex items-center justify-center shadow-md active:scale-90 transition-all duration-200 cursor-pointer"
-                  title="Shortlist"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4.5 h-4.5 hover:fill-terracotta">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Card Details */}
-              <div className="p-5 flex flex-col flex-grow text-left justify-between">
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-xl font-serif font-black text-terracotta">
-                      {formatIndianCurrency(property.price, property.purpose)}
-                    </span>
-                    <span className="text-[9px] font-black text-indigo bg-indigo/5 border border-indigo/10 px-2 py-0.5 rounded uppercase">
-                      {property.type}
-                    </span>
-                  </div>
-
-                  <h3 className="font-serif font-black text-base text-charcoal line-clamp-1 group-hover:text-indigo transition-colors duration-200">
-                    {property.title}
-                  </h3>
-
-                  <div className="flex items-center gap-1 text-charcoal/60 text-xs">
-                    <MapPin className="w-3.5 h-3.5 text-terracotta/80 shrink-0" />
-                    <span className="font-semibold truncate">{property.locality}, {property.city}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between border-t border-sand pt-4 mt-4">
-                  <div className="flex items-center gap-3 text-[10px] text-charcoal/50 font-bold uppercase tracking-wider">
-                    {property.bhk && <span>{property.bhk} BHK</span>}
-                    <span>{property.size} SQFT</span>
-                  </div>
-                  
-                  <Link
-                    href={`/property/${property.id}`}
-                    className="flex items-center gap-1 px-4 py-2 bg-indigo hover:bg-indigo-hover text-white rounded-xl font-bold text-[10px] uppercase tracking-wider transition-colors"
-                  >
-                    <span>Details</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </Link>
-                </div>
-              </div>
-
+            <div key={property.id} className="w-[300px] sm:w-[360px] flex-shrink-0 snap-start">
+              <PropertyCard property={property} />
             </div>
           ))}
         </div>
@@ -752,52 +676,69 @@ export default function Home() {
             className="flex overflow-x-auto gap-6 pb-6 pt-2 no-scrollbar snap-x snap-mandatory scroll-smooth items-stretch"
           >
             {builders.map((profile) => (
-              <div key={profile.id} className="w-[280px] sm:w-[320px] flex-shrink-0 snap-start bg-white border border-sand p-6 rounded-2xl shadow-sm hover:shadow-xl hover:border-indigo/25 transition-all duration-300 flex flex-col justify-between group">
+              <div 
+                key={profile.id} 
+                className="w-[290px] sm:w-[340px] flex-shrink-0 snap-start bg-white border border-sand hover:border-indigo/25 p-6 rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(12,27,51,0.08)] hover:-translate-y-1.5 transition-all duration-250 ease-out flex flex-col justify-between group"
+              >
                 
                 <div className="flex flex-col gap-4 text-left">
                   {/* Builder Header Logo/Avatar */}
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-indigo/5 border border-indigo/10 flex items-center justify-center text-indigo group-hover:scale-110 group-hover:bg-indigo/10 transition-all duration-300">
-                      <Building2 className="w-6 h-6" />
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-indigo/5 border border-indigo/10 flex items-center justify-center text-indigo group-hover:scale-105 group-hover:bg-indigo/10 transition-all duration-300 shrink-0">
+                      <Building2 className="w-7 h-7 stroke-[1.75]" />
                     </div>
-                    <div className="flex flex-col min-w-0">
-                      <h4 className="font-serif font-black text-sm text-charcoal truncate">{profile.firmName}</h4>
-                      <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-0.5">
-                        <Check className="w-2.5 h-2.5" />
-                        <span>RERA Registered Builder</span>
-                      </span>
+                    <div className="flex flex-col min-w-0 gap-1">
+                      <h4 className="text-[18px] font-bold text-charcoal leading-tight truncate group-hover:text-indigo transition-colors duration-200" title={profile.firmName}>
+                        {profile.firmName}
+                      </h4>
+                      <div>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-bold uppercase tracking-wider border border-emerald-100/50">
+                          <Check className="w-2.5 h-2.5 text-emerald-600 stroke-[3]" />
+                          <span>Verified Developer</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <p className="text-[11px] text-charcoal/60 leading-relaxed font-semibold line-clamp-3">
+                  {/* Subtle Divider */}
+                  <div className="h-px bg-sand/35 w-full" />
+
+                  {/* Description */}
+                  <p className="text-[14px] font-medium text-charcoal/70 leading-relaxed line-clamp-2">
                     {profile.description}
                   </p>
 
-                  {/* Micro Stats */}
-                  <div className="grid grid-cols-2 gap-4 border-y border-sand/40 py-3.5 my-1">
-                    <div className="flex flex-col">
-                      <span className="text-[8px] font-black text-charcoal/40 uppercase">Owner</span>
-                      <span className="text-[11px] font-black text-charcoal truncate">{profile.ownerName}</span>
+                  {/* Evenly aligned information grid with subtle borders */}
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-4 py-4 border-y border-sand/40 my-1">
+                    <div className="flex flex-col gap-0.5 text-left">
+                      <span className="text-[11px] font-medium text-charcoal/45 uppercase tracking-wider">Owner</span>
+                      <span className="text-[15px] font-semibold text-charcoal truncate" title={profile.ownerName}>
+                        {profile.ownerName}
+                      </span>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-[8px] font-black text-charcoal/40 uppercase">Category</span>
-                      <span className="text-[11px] font-black text-terracotta truncate">{profile.category.split("&")[0]}</span>
+                    <div className="flex flex-col gap-0.5 text-left">
+                      <span className="text-[11px] font-medium text-charcoal/45 uppercase tracking-wider">Category</span>
+                      <span className="text-[15px] font-semibold text-terracotta truncate">
+                        {profile.category.split("&")[0].trim()}
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2 mt-4">
-                  <div className="flex items-center gap-2 text-xs text-charcoal/50 font-bold">
-                    <MapPin className="w-3.5 h-3.5 text-terracotta/75 shrink-0" />
-                    <span className="truncate">{profile.address}</span>
+                <div className="flex flex-col gap-4 mt-5">
+                  {/* Location with outline map pin icon and muted text */}
+                  <div className="flex items-center gap-2 text-xs text-charcoal/50 font-bold px-0.5">
+                    <MapPin className="w-4 h-4 text-terracotta/75 shrink-0 stroke-[1.75]" />
+                    <span className="truncate text-charcoal/60 font-medium text-[13px]">{profile.address}</span>
                   </div>
 
+                  {/* Full width premium CTA button */}
                   <Link
                     href={`/dealers/${profile.id}`}
-                    className="w-full py-2.5 mt-2 bg-indigo/5 hover:bg-indigo border border-indigo/10 hover:border-indigo text-indigo hover:text-white rounded-xl text-center font-bold text-[10px] uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5"
+                    className="w-full h-12 bg-indigo hover:bg-indigo-hover text-white rounded-[14px] font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-md hover:shadow-lg shadow-indigo/15 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer border-none"
                   >
-                    <span>View Projects</span>
-                    <ArrowRight className="w-3 h-3" />
+                    <span>Explore Projects</span>
+                    <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 stroke-[2]" />
                   </Link>
                 </div>
 
@@ -939,61 +880,77 @@ export default function Home() {
             className="flex overflow-x-auto gap-6 pb-6 pt-2 no-scrollbar snap-x snap-mandatory scroll-smooth items-stretch"
           >
             {sellers.map((profile) => (
-              <div key={profile.id} className="w-[280px] sm:w-[320px] flex-shrink-0 snap-start bg-white border border-sand p-6 rounded-2xl shadow-sm hover:shadow-xl hover:border-terracotta/30 transition-all duration-300 flex flex-col justify-between group">
+              <div 
+                key={profile.id} 
+                onClick={() => router.push(`/dealers/${profile.id}`)}
+                className="w-[300px] sm:w-[350px] flex-shrink-0 snap-start bg-white border border-sand hover:border-terracotta/30 p-6 rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(12,27,51,0.08)] hover:-translate-y-1.5 transition-all duration-250 ease-out flex flex-col justify-between group cursor-pointer"
+              >
                 
                 <div className="flex flex-col gap-4 text-left">
                   
                   {/* Seller Header */}
                   <div className="flex items-start justify-between">
-                    <div className="w-12 h-12 rounded-xl bg-terracotta/5 border border-terracotta/10 flex items-center justify-center text-terracotta font-bold">
-                      <User className="w-6 h-6" />
+                    <div className="w-14 h-14 rounded-2xl bg-terracotta/5 border border-terracotta/10 flex items-center justify-center text-terracotta font-serif font-black text-lg shrink-0 group-hover:scale-105 transition-all duration-300">
+                      {profile.ownerName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
                     </div>
                     
-                    <span className="inline-flex items-center gap-1 bg-gold/15 text-gold border border-gold/30 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider">
-                      <Award className="w-2.5 h-2.5" />
-                      <span>RECOMMENDED</span>
+                    <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-100/50 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider">
+                      <Award className="w-3 h-3 text-amber-600 stroke-[2]" />
+                      <span>Recommended</span>
                     </span>
                   </div>
 
-                  <div className="flex flex-col">
-                    <h3 className="font-serif font-black text-base text-charcoal line-clamp-1 group-hover:text-indigo transition-colors duration-200">
+                  <div className="flex flex-col gap-0.5">
+                    <h3 className="text-[20px] font-bold text-charcoal leading-tight truncate group-hover:text-indigo transition-colors duration-200" title={profile.firmName}>
                       {profile.firmName}
                     </h3>
-                    <span className="text-[10px] text-charcoal/50 font-bold uppercase tracking-wider">{profile.ownerName}</span>
+                    <span className="text-[13px] font-medium text-charcoal/50 uppercase tracking-wider">{profile.ownerName}</span>
                   </div>
 
-                  <p className="text-[11px] text-charcoal/60 leading-relaxed font-semibold line-clamp-2">
+                  {/* Subtle Divider */}
+                  <div className="h-px bg-sand/35 w-full" />
+
+                  {/* Description */}
+                  <p className="text-[14px] font-normal text-charcoal/70 leading-relaxed line-clamp-2">
                     {profile.description}
                   </p>
 
-                  <div className="flex items-center gap-1 text-[10px] font-bold text-amber-500 bg-amber-50 border border-amber-200 px-2 py-1 rounded w-fit">
-                    <Star className="w-3 h-3 fill-amber-500" />
-                    <span>4.9 / 5.0 Rated Agent</span>
+                  {/* Trust Badge */}
+                  <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100/50 px-3 py-1 rounded-full text-[11px] font-medium w-fit">
+                    <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                    <span>Verified Broker</span>
                   </div>
 
                 </div>
 
-                <div className="flex flex-col gap-3 mt-5 pt-4 border-t border-sand">
+                <div className="flex flex-col gap-4 mt-5 pt-4 border-t border-sand/40">
                   
                   {/* Address & Contacts */}
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-2 text-xs text-charcoal/50 font-bold">
-                      <MapPin className="w-3.5 h-3.5 text-terracotta/75 shrink-0" />
+                  <div className="flex flex-col gap-2 px-0.5">
+                    <div className="flex items-center gap-2.5 text-[14px] font-medium text-charcoal/65">
+                      <MapPin className="w-4.5 h-4.5 text-terracotta/75 shrink-0 stroke-[1.75]" />
                       <span className="truncate">{profile.address}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-charcoal/50 font-bold">
-                      <Phone className="w-3.5 h-3.5 text-indigo/70 shrink-0" />
+                    <div className="flex items-center gap-2.5 text-[14px] font-medium text-charcoal/65">
+                      <Phone className="w-4.5 h-4.5 text-indigo/70 shrink-0 stroke-[1.75]" />
                       <span>{profile.mobile}</span>
                     </div>
                   </div>
 
-                  <Link
-                    href={`/dealers/${profile.id}`}
-                    className="w-full py-2.5 bg-indigo hover:bg-indigo-hover text-white rounded-xl text-center font-bold text-[10px] uppercase tracking-wider transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+
+
+                  {/* Primary Full Width CTA */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/dealers/${profile.id}`);
+                    }}
+                    className="w-full h-12 bg-indigo hover:bg-indigo-hover text-white rounded-[14px] font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-md hover:shadow-lg shadow-indigo/15 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer border-none"
                   >
-                    <Phone className="w-3.5 h-3.5" />
-                    <span>Contact Seller</span>
-                  </Link>
+                    <Phone className="w-4 h-4 stroke-[2]" />
+                    <span>Contact Broker</span>
+                  </button>
 
                 </div>
 
@@ -1044,50 +1001,8 @@ export default function Home() {
           className="flex overflow-x-auto gap-6 pb-6 pt-2 no-scrollbar snap-x snap-mandatory scroll-smooth items-stretch"
         >
           {newlyAddedProperties.map((property) => (
-            <div key={property.id} className="w-[280px] sm:w-[320px] flex-shrink-0 snap-start bg-white border border-sand rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col group overflow-hidden">
-              
-              {/* Thumbnail */}
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-sand/35">
-                <img
-                  src={property.images[0]}
-                  alt={property.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                
-                <div className="absolute top-2.5 left-2.5 bg-indigo/95 px-2 py-0.5 rounded text-[8px] font-black uppercase text-white tracking-wider">
-                  New Listing
-                </div>
-              </div>
-
-              {/* Info Details */}
-              <div className="p-4 flex flex-col text-left justify-between flex-grow">
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[10px] font-black text-terracotta uppercase">{formatIndianCurrency(property.price, property.purpose)}</span>
-                  <h3 className="font-serif font-black text-sm text-charcoal line-clamp-1 group-hover:text-indigo transition-colors duration-200">
-                    {property.title}
-                  </h3>
-                  <div className="flex items-center gap-1 text-[11px] text-charcoal/50 font-bold uppercase truncate">
-                    <MapPin className="w-3.5 h-3.5 text-terracotta/75 shrink-0" />
-                    <span>{property.locality}, {property.city}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between border-t border-sand pt-3.5 mt-4">
-                  <div className="flex items-center gap-2 text-[9px] text-charcoal/40 font-bold uppercase">
-                    {property.bhk && <span>{property.bhk} BHK</span>}
-                    <span>{property.size} SQFT</span>
-                  </div>
-                  
-                  <Link
-                    href={`/property/${property.id}`}
-                    className="text-[9px] font-black uppercase tracking-wider text-indigo hover:text-terracotta font-sans flex items-center gap-0.5 transition-colors"
-                  >
-                    <span>View</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </div>
-
+            <div key={property.id} className="w-[280px] sm:w-[320px] flex-shrink-0 snap-start">
+              <PropertyCard property={property} />
             </div>
           ))}
         </div>
@@ -1428,10 +1343,10 @@ export default function Home() {
       <AnimatePresence>
         {showToast && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-6 right-6 z-50 bg-indigo text-white px-5 py-3 rounded-2xl shadow-2xl border border-sand/20 flex items-center gap-3"
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+            className="fixed top-20 right-6 md:top-auto md:bottom-6 md:right-6 z-50 bg-indigo text-white px-5 py-3 rounded-2xl shadow-2xl border border-sand/20 flex items-center gap-3"
           >
             <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center text-gold">
               ★

@@ -201,7 +201,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             <Link
               href="/post-property"
               onClick={handleItemClick}
-              className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-white bg-indigo hover:bg-[#5741e0] transition-colors shadow-sm"
+              className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-white bg-indigo hover:bg-indigo-hover transition-colors shadow-sm"
             >
               <div className="flex items-center gap-2.5">
                 <Plus className="w-4 h-4 text-white" />

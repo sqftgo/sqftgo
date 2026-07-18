@@ -468,7 +468,7 @@ function AuthForm() {
       </div>
 
       {/* RIGHT COLUMN: GRAPHICS & PROMO SLIDESHOW */}
-      <div className="hidden lg:flex w-full lg:w-[58%] xl:w-[62%] h-full bg-[#0a0a0c] border-l border-sand/40 relative overflow-hidden items-center justify-center min-h-full">
+      <div className="hidden lg:flex w-full lg:w-[58%] xl:w-[62%] h-full bg-charcoal border-l border-sand/40 relative overflow-hidden items-center justify-center min-h-full">
         
         {/* Carousel Background Slide Image */}
         <div className="absolute inset-0 w-full h-full z-0 select-none pointer-events-none transition-all duration-700 ease-in-out">
@@ -492,7 +492,7 @@ function AuthForm() {
 
         {/* Modern Typography Overlay */}
         <div className="absolute left-12 bottom-28 right-12 z-10 flex flex-col gap-3.5 text-left select-none pointer-events-none max-w-xl">
-          <div className="w-fit bg-white/20 text-[#f5ba68] border border-white/20 font-black text-[9px] tracking-widest uppercase py-1 px-3.5 rounded-full mb-1">
+          <div className="w-fit bg-white/20 text-gold border border-white/20 font-black text-[9px] tracking-widest uppercase py-1 px-3.5 rounded-full mb-1">
             Heritage Portal
           </div>
           
@@ -521,7 +521,7 @@ function AuthForm() {
                       initial={{ width: "0%" }}
                       animate={{ width: "100%" }}
                       transition={{ duration: 5, ease: "linear" }}
-                      className="absolute inset-y-0 left-0 bg-[#ffd899]"
+                      className="absolute inset-y-0 left-0 bg-gold"
                     />
                   )}
                   {!isActive && idx < activeSlide && (
@@ -529,7 +529,7 @@ function AuthForm() {
                   )}
                 </div>
                 <span className={`text-[9px] font-black tracking-wider transition-colors uppercase ${
-                  isActive ? "text-[#ffd899]" : "text-white/40 group-hover:text-white"
+                  isActive ? "text-gold" : "text-white/40 group-hover:text-white"
                 }`}>
                   {slide.label}
                 </span>

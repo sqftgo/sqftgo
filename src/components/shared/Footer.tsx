@@ -238,10 +238,12 @@ export const Footer: React.FC = () => {
                 placeholder="Email address"
                 required
                 className="bg-white border border-sand rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:border-terracotta text-charcoal placeholder-charcoal/30 flex-1 min-w-0"
+                suppressHydrationWarning
               />
               <button
                 type="submit"
-                className="bg-[#6851f5] hover:bg-[#5741e0] text-white text-xs font-black px-4 py-2.5 rounded-xl shadow-md transition-colors cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                className="bg-indigo hover:bg-indigo-hover text-white text-xs font-black px-4 py-2.5 rounded-xl shadow-md transition-colors cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                suppressHydrationWarning
               >
                 <span>Join</span>
                 <ArrowRight className="w-3.5 h-3.5" />

@@ -29,6 +29,7 @@ export default function DestinationsFilter({
                   ? "bg-indigo text-white shadow-md shadow-indigo/25"
                   : "text-charcoal/70 hover:text-indigo hover:bg-sand/30"
                 }`}
+              suppressHydrationWarning
             >
               <span>{tag}</span>
               <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-black ${isActive ? "bg-white/20 text-white" : "bg-sand text-charcoal/50"

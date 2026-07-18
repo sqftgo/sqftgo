@@ -90,7 +90,7 @@ export default function DealersPage() {
                   <div className="flex flex-col items-end gap-1.5">
                     <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-wider border ${
                       profile.category === "Agent & Broker" 
-                        ? "bg-[#faf6e8] text-[#9b7216] border-[#dfab34]/20" 
+                        ? "bg-gold-soft text-gold border-gold/20" 
                         : "bg-[#f4f7fb] text-indigo border-indigo/10"
                     }`}>
                       {profile.category}

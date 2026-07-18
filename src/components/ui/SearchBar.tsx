@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
-import { Search, MapPin, Home, IndianRupee } from "lucide-react";
+import { Search, MapPin, Home, IndianRupee, Compass } from "lucide-react";
 import CustomSelect from "@/components/ui/CustomSelect";
 
 const CITIES = [
@@ -113,7 +113,7 @@ export const SearchBar: React.FC = () => {
 
         {/* Field 2: Locality Input */}
         <div className="lg:col-span-3 flex items-center gap-3 border border-sand bg-white/70 hover:border-terracotta/25 rounded-2xl px-4 py-2.5 transition-colors relative group">
-          <MapPin className="w-5 h-5 text-terracotta/75 flex-shrink-0" />
+          <Compass className="w-5 h-5 text-terracotta/75 flex-shrink-0" />
           <div className="flex flex-col flex-1 text-left min-w-0">
             <span className="text-[10px] font-bold text-charcoal/50 tracking-wide uppercase leading-none mb-1">
               Locality

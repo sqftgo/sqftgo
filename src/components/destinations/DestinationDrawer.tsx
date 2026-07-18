@@ -154,7 +154,7 @@ export default function DestinationDrawer({
               </div>
 
               {/* Designated City Concierge Agent Lead */}
-              <div className="bg-[#111827] border border-white/5 rounded-3xl p-5 flex items-center gap-4 text-white mt-auto relative overflow-hidden shadow-lg">
+              <div className="bg-charcoal border border-white/5 rounded-3xl p-5 flex items-center gap-4 text-white mt-auto relative overflow-hidden shadow-lg">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo/10 rounded-full blur-2xl pointer-events-none" />
                 
                 {/* Initials Avatar */}
@@ -163,7 +163,7 @@ export default function DestinationDrawer({
                 </div>
                 
                 <div className="flex-1 flex flex-col min-w-0">
-                  <span className="text-[8px] font-black text-[#ffd899] uppercase tracking-widest">Designated Concierge Lead</span>
+                  <span className="text-[8px] font-black text-gold uppercase tracking-widest">Designated Concierge Lead</span>
                   <span className="text-sm font-serif font-black text-white truncate">{selectedDestination.agentName}</span>
                   <span className="text-[10px] text-white/50 font-semibold">{selectedDestination.agentPhone}</span>
                 </div>
