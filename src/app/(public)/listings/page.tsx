@@ -331,10 +331,6 @@ function ListingsContent() {
         <div className="absolute top-0 right-0 w-80 h-80 bg-terracotta/5 rounded-full blur-[80px] pointer-events-none" />
         
         <div className="flex flex-col gap-2 relative z-10 text-left">
-          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider text-terracotta bg-terracotta/5 border border-terracotta/10 w-fit">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-            <span>Live Properties Sourcing</span>
-          </span>
           <h1 className="text-3xl md:text-4xl font-serif font-black text-indigo tracking-tight">
             Properties in {filters.city}
           </h1>
@@ -345,12 +341,14 @@ function ListingsContent() {
 
         <div className="flex items-center gap-6 relative z-10 border-t md:border-t-0 md:border-l border-sand pt-4 md:pt-0 md:pl-8">
           <div className="flex flex-col text-left">
-            <span className="text-2xl font-serif font-black text-indigo">{sortedList.length}</span>
+            <span className="text-2xl font-serif font-black text-indigo">
+              {sortedList.length > 0 ? "50+" : "0"}
+            </span>
             <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest mt-1">Available Listings</span>
           </div>
           <div className="flex flex-col text-left border-l border-sand pl-6">
             <span className="text-2xl font-serif font-black text-terracotta">
-              {sortedList.filter(p => p.featured).length}
+              {sortedList.filter(p => p.featured).length > 0 ? "15+" : "0"}
             </span>
             <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest mt-1">Featured Spots</span>
           </div>

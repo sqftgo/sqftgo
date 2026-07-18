@@ -170,7 +170,7 @@ interface AppContextType {
   assistanceRequests: AssistanceRequest[];
   setAssistanceRequests: React.Dispatch<React.SetStateAction<AssistanceRequest[]>>;
   addAssistanceRequest: (req: Omit<AssistanceRequest, "id" | "status">) => void;
-  addProperty: (property: Omit<Property, "id" | "inquiryCount" | "status" | "ownerName" | "ownerPhone" | "ownerEmail">) => void;
+  addProperty: (property: Omit<Property, "id" | "inquiryCount" | "status" | "ownerName" | "ownerPhone" | "ownerEmail"> & { status?: Property["status"] }) => void;
   updateProperty: (propertyId: string, updates: Partial<Property>) => void;
   deleteProperty: (propertyId: string) => void;
   deleteInquiry: (propertyId: string, index: number) => void;
@@ -1172,7 +1172,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAssistanceRequests((prev) => [newRequest, ...prev]);
   };
 
-  const addProperty = (prop: Omit<Property, "id" | "inquiryCount" | "status" | "ownerName" | "ownerPhone" | "ownerEmail">) => {
+  const addProperty = (prop: Omit<Property, "id" | "inquiryCount" | "status" | "ownerName" | "ownerPhone" | "ownerEmail"> & { status?: Property["status"] }) => {
     const matchingProfile = isLoggedIn && userRole === "broker"
       ? directoryProfiles.find(dp => dp.email.toLowerCase() === userEmail.toLowerCase())
       : null;
@@ -1181,7 +1181,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prop,
       id: `prop-${Date.now()}`,
       inquiryCount: 0,
-      status: "Pending Review",
+      status: prop.status || "Pending Review",
       ownerName: matchingProfile ? matchingProfile.ownerName : "Owner User",
       ownerPhone: matchingProfile ? matchingProfile.mobile : "+91 99000 99000",
       ownerEmail: isLoggedIn ? userEmail : "owner@example.com",
