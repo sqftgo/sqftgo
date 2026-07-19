@@ -21,6 +21,7 @@ export const Navbar: React.FC = () => {
 
   const isDashboardRoute = pathname.startsWith("/dealer/") || pathname.startsWith("/admin");
   const isAuthPage = pathname === "/login" || pathname === "/signup" || pathname === "/register" || pathname === "/forgot-password" || pathname === "/dealer/register" || pathname === "/admin/login" || isDashboardRoute;
+  const isPropertyDetailPage = pathname.startsWith("/property/");
 
   // Monitor scroll for header styling and progress indicator
   useEffect(() => {
@@ -237,36 +238,38 @@ export const Navbar: React.FC = () => {
       </header>
 
       {/* Mobile Floating Bottom Navigation Bar */}
-      <div className="fixed bottom-5 inset-x-4 md:hidden z-50">
-        <div className="glassmorphism rounded-2xl shadow-xl border border-sand/50 py-2.5 px-4 flex items-center justify-between mx-auto max-w-lg">
-          {mobileTabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = pathname === tab.href;
+      {!isPropertyDetailPage && (
+        <div className="fixed bottom-5 inset-x-4 md:hidden z-50">
+          <div className="glassmorphism rounded-2xl shadow-xl border border-sand/50 py-2.5 px-4 flex items-center justify-between mx-auto max-w-lg">
+            {mobileTabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = pathname === tab.href;
 
-            return (
-              <Link
-                key={tab.name}
-                href={tab.href}
-                className={`flex flex-col items-center justify-center w-12 py-1 transition-colors duration-200 relative ${
-                  isActive ? "text-terracotta font-extrabold" : "text-charcoal/60 font-semibold hover:text-indigo"
-                }`}
-              >
-                <Icon className={`w-5 h-5 ${isActive ? "stroke-[2.5]" : "stroke-[2]"}`} />
-                <span className="text-[9px] mt-1 tracking-tight">
-                  {tab.name}
-                </span>
-                {isActive && (
-                  <motion.div
-                    layoutId="activeMobileIndicator"
-                    className="absolute -bottom-1.5 w-1 h-1 rounded-full bg-terracotta"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  />
-                )}
-              </Link>
-            );
-          })}
+              return (
+                <Link
+                  key={tab.name}
+                  href={tab.href}
+                  className={`flex flex-col items-center justify-center w-12 py-1 transition-colors duration-200 relative ${
+                    isActive ? "text-terracotta font-extrabold" : "text-charcoal/60 font-semibold hover:text-indigo"
+                  }`}
+                >
+                  <Icon className={`w-5 h-5 ${isActive ? "stroke-[2.5]" : "stroke-[2]"}`} />
+                  <span className="text-[9px] mt-1 tracking-tight">
+                    {tab.name}
+                  </span>
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeMobileIndicator"
+                      className="absolute -bottom-1.5 w-1 h-1 rounded-full bg-terracotta"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 };

@@ -140,28 +140,61 @@ export default function DealersPage() {
           )}
         </div>
 
-        {/* Professional Onboarding Banner */}
-        <div className="mt-20 bg-white border border-sand rounded-[2.5rem] p-8 md:p-12 shadow-sm relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-indigo/5 rounded-full blur-[60px] pointer-events-none" />
-          <div className="relative z-10 flex flex-col gap-2 max-w-2xl text-left">
-            <span className="text-terracotta font-extrabold text-[10px] uppercase tracking-widest block">Are you a Real Estate Professional?</span>
-            <h2 className="text-2xl font-serif font-black text-charcoal tracking-tight">
-              Grow Your Business with Sun Valley
-            </h2>
-            <p className="text-charcoal/70 text-sm font-semibold leading-relaxed mt-1">
-              List your residential, commercial, or agricultural properties, manage buyer enquiries in real-time, and get verified in our premium regional business directory.
-            </p>
+        {/* Professional Onboarding Banner (Premium Design System) */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-indigo to-slate-900 text-white p-8 md:p-12 shadow-2xl lg:grid lg:grid-cols-12 lg:items-center lg:gap-12 gap-8 border-2 border-white/10 group mt-20"
+        >
+          {/* Ambient Back Decor */}
+          <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-white/5 rounded-full blur-[80px] pointer-events-none" />
+          
+          <div className="lg:col-span-7 flex flex-col gap-6 text-left relative z-10">
+            <span className="px-3 py-1 bg-white/20 border border-white/10 text-white text-[9px] font-black uppercase tracking-widest rounded w-fit">
+              Partner Registry
+            </span>
+            <div className="flex flex-col gap-3">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-black tracking-tight leading-tight text-white">
+                Are you a Real Estate Professional? <br />
+                Grow Your Business with Sun Valley.
+              </h2>
+              <p className="text-slate-200 text-xs sm:text-sm leading-relaxed font-semibold max-w-xl">
+                List your residential, commercial, or agricultural properties, manage buyer enquiries in real-time, and get verified in our premium regional business directory.
+              </p>
+            </div>
+            
+            <div className="w-fit">
+              <Link
+                href="/dealers/dashboard"
+                className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white hover:bg-cream text-indigo hover:text-indigo-hover font-black text-xs uppercase tracking-widest shadow-lg transition-all duration-200"
+              >
+                <span>Access Dealers Dashboard</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
-          <div className="relative z-10 shrink-0 w-full md:w-auto">
-            <Link
-              href="/dealers/dashboard"
-              className="flex items-center justify-center gap-2 px-8 py-4 bg-indigo hover:bg-indigo-hover text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-md shadow-indigo/15 w-full md:w-auto"
-            >
-              <span>Access Dealers Dashboard</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+
+          {/* Stylized Collage Column */}
+          <div className="hidden lg:flex lg:col-span-5 justify-center items-center relative z-10 min-h-[360px]">
+            <div className="relative w-[300px] h-[360px]">
+              {/* Terracotta Accent Card (Tilted) */}
+              <div className="absolute inset-0 bg-terracotta rounded-[32px] shadow-2xl transform -rotate-6 group-hover:rotate-0 transition-all duration-500" />
+              
+              {/* Offset Tilted White Outline Border */}
+              <div className="absolute inset-0 border-2 border-white/80 rounded-[32px] transform rotate-3 group-hover:rotate-0 transition-all duration-500 pointer-events-none" />
+              
+              {/* Image Container (Tilted slightly differently) */}
+              <div className="absolute inset-3 rounded-[24px] overflow-hidden bg-white shadow-lg transform -rotate-2 group-hover:rotate-0 transition-all duration-500">
+                <img
+                  src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=600&auto=format&fit=crop"
+                  alt="Grow your business with Sun Valley"
+                  className="w-full h-full object-cover object-center"
+                />
+              </div>
+            </div>
           </div>
-        </div>
+        </motion.div>
 
       </div>
     </main>
