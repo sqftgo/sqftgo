@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Building, TrendingUp, ArrowRight, MapPin, IndianRupee } from "lucide-react";
 import { Destination } from "@/data/destinations";
@@ -13,9 +15,18 @@ export default function DestinationCard({ dest, propertyCount, onSelect, classNa
   const isHighGrowth = parseFloat(dest.investmentIndex) >= 9.0;
 
   return (
-    <div 
+    <div
+      role="button"
+      tabIndex={0}
       className={`group relative flex flex-col rounded-3xl overflow-hidden bg-[#0F172A] border border-white/10 shadow-lg hover:shadow-2xl hover:border-white/20 transition-all duration-300 hover:-translate-y-2 cursor-pointer h-[460px] ${className}`}
       onClick={() => onSelect(dest)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect(dest);
+        }
+      }}
+      aria-label={`Explore ${dest.name}`}
     >
       {/* Cover Photo with Sunset luxury filter grading */}
       <div className="absolute inset-0 z-0 bg-[#0F172A] overflow-hidden">

@@ -106,7 +106,7 @@ function AuthForm() {
       // Add new registered user
       const isBrokerEmail = email.toLowerCase().includes("broker") || email.toLowerCase().includes("dealer");
       finalRole = isBrokerEmail ? "broker" : "user";
-      
+
       const newUser = {
         id: `usr-${Date.now()}`,
         name: finalName,
@@ -151,7 +151,7 @@ function AuthForm() {
     }
 
     setIsSubmitting(true);
-    
+
     // Simulate auth network delay
     setTimeout(() => {
       setIsLoggedIn(true);
@@ -159,7 +159,7 @@ function AuthForm() {
       setUserRole(finalRole);
       if (setUserName) setUserName(finalName);
       setIsSubmitting(false);
-      
+
       // Navigate dynamically based on role
       if (finalRole === "admin") {
         router.push("/admin");
@@ -174,7 +174,7 @@ function AuthForm() {
   const handleTabToggle = () => {
     const nextTab = activeTab === "login" ? "signup" : "login";
     setActiveTab(nextTab);
-    
+
     // Update URL query parameters for consistency without reloading
     const params = new URLSearchParams(window.location.search);
     if (nextTab === "signup") {
@@ -187,10 +187,10 @@ function AuthForm() {
 
   return (
     <div className="fixed inset-0 w-full h-full min-h-screen bg-white text-charcoal z-50 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden select-none font-sans">
-      
+
       {/* LEFT COLUMN: AUTH FORM */}
       <div className="w-full lg:w-[42%] xl:w-[38%] bg-white flex flex-col justify-center px-6 sm:px-12 xl:px-16 py-12 relative z-10 min-h-full border-r border-sand">
-        
+
         {/* Back Button */}
         <button
           type="button"
@@ -206,7 +206,7 @@ function AuthForm() {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform stroke-[2.5]" />
           <span>Back</span>
         </button>
-        
+
         <div className="max-w-md w-full mx-auto flex flex-col justify-center">
           {/* Logo and Header */}
           <div className="flex flex-col items-center mb-6">
@@ -215,7 +215,7 @@ function AuthForm() {
                 Sun Valley
               </span>
             </Link>
-            
+
             <h1 className="text-3xl font-black tracking-tight text-charcoal mt-1 text-center">
               Welcome to Sun Valley
             </h1>
@@ -227,7 +227,7 @@ function AuthForm() {
           {/* Forms Section */}
           <div className="flex flex-col gap-4">
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-xs font-bold text-slate-700">
-              
+
               <AnimatePresence mode="wait">
                 {activeTab === "signup" ? (
                   <motion.div
@@ -458,18 +458,13 @@ function AuthForm() {
               </>
             )}
           </p>
-
-          <span className="text-center text-[10px] text-slate-400 font-medium mt-16 select-none leading-normal">
-            SSO available for institutional partners. <br/>
-            Sun Valley Sourcing Security Desk © {new Date().getFullYear()}
-          </span>
         </div>
 
       </div>
 
       {/* RIGHT COLUMN: GRAPHICS & PROMO SLIDESHOW */}
       <div className="hidden lg:flex w-full lg:w-[58%] xl:w-[62%] h-full bg-charcoal border-l border-sand/40 relative overflow-hidden items-center justify-center min-h-full">
-        
+
         {/* Carousel Background Slide Image */}
         <div className="absolute inset-0 w-full h-full z-0 select-none pointer-events-none transition-all duration-700 ease-in-out">
           <img
@@ -495,7 +490,7 @@ function AuthForm() {
           <div className="w-fit bg-white/20 text-gold border border-white/20 font-black text-[9px] tracking-widest uppercase py-1 px-3.5 rounded-full mb-1">
             Heritage Portal
           </div>
-          
+
           <h2 className="text-4xl xl:text-5xl font-serif font-black text-white leading-tight tracking-tight drop-shadow-xl">
             {SLIDES[activeSlide].title}
           </h2>
@@ -509,14 +504,14 @@ function AuthForm() {
           {SLIDES.map((slide, idx) => {
             const isActive = idx === activeSlide;
             return (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 onClick={() => setActiveSlide(idx)}
                 className="flex-1 flex flex-col gap-1 cursor-pointer group"
               >
                 <div className="h-1 bg-white/20 rounded-full overflow-hidden relative transition-all duration-300 group-hover:bg-white/30">
                   {isActive && (
-                    <motion.div 
+                    <motion.div
                       key={activeSlide}
                       initial={{ width: "0%" }}
                       animate={{ width: "100%" }}
@@ -528,9 +523,8 @@ function AuthForm() {
                     <div className="absolute inset-0 bg-white" />
                   )}
                 </div>
-                <span className={`text-[9px] font-black tracking-wider transition-colors uppercase ${
-                  isActive ? "text-gold" : "text-white/40 group-hover:text-white"
-                }`}>
+                <span className={`text-[9px] font-black tracking-wider transition-colors uppercase ${isActive ? "text-gold" : "text-white/40 group-hover:text-white"
+                  }`}>
                   {slide.label}
                 </span>
               </div>

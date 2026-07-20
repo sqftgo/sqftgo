@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { Bell, CheckCheck } from "lucide-react";
 import { motion } from "framer-motion";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function DealerNotificationsPage() {
   const { notifications, setNotifications, markNotificationRead } = useApp();
@@ -34,10 +35,11 @@ export default function DealerNotificationsPage() {
       </div>
 
       {myNotifs.length === 0 ? (
-        <div className="bg-white/80 border border-indigo/10 rounded-3xl p-16 text-center shadow-sm">
-          <Bell className="w-12 h-12 text-indigo/20 mx-auto mb-4" />
-          <p className="text-charcoal/50 font-semibold text-sm">No notifications yet.</p>
-        </div>
+        <EmptyState
+          title="No notifications yet"
+          description="Approvals, inquiry alerts, and account updates will show up here."
+          icon={<Bell className="w-8 h-8" />}
+        />
       ) : (
         <div className="space-y-3">
           {myNotifs.map((notif, i) => (

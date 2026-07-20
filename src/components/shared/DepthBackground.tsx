@@ -21,7 +21,7 @@ export const DepthBackground: React.FC = () => {
   const cloudsY = useTransform(scrollY, [0, 2000], [0, -60]);
 
   return (
-    <div className="fixed inset-0 -z-50 overflow-hidden pointer-events-none select-none bg-[#faf8f5] transition-colors duration-500">
+    <div className="fixed inset-0 -z-50 overflow-hidden pointer-events-none select-none bg-cream transition-colors duration-500">
       
       {/* Layer 1: Subtle traditional Rajasthani geometric Jaali background watermark (High top) */}
       <div className="absolute top-0 inset-x-0 h-[40vh] opacity-[0.03] dark:opacity-[0.01] pointer-events-none bg-[radial-gradient(#1b3864_1.2px,transparent_1.2px)] [background-size:16px_16px]" />

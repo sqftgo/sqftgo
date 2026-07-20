@@ -23,6 +23,7 @@ export default function CityMap({ city, className = "" }: CityMapProps) {
 
       <div className="flex-1 rounded-2xl overflow-hidden bg-slate-100 border border-sand relative">
         <iframe
+          title={`Map of properties in ${city}`}
           width="100%"
           height="100%"
           style={{ border: 0, filter: "contrast(1.02) brightness(0.98)" }}

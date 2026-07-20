@@ -21,24 +21,24 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ property }) => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [agreeToTrustTerms, setAgreeToTrustTerms] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!agreeToTrustTerms) return;
+    if (!agreeToTrustTerms || isSubmitting) return;
     setIsSubmitting(true);
-
-    // Simulate network latency
-    setTimeout(() => {
-      submitInquiry(property.id, formData);
-      setIsSubmitting(false);
+    try {
+      await Promise.resolve(submitInquiry(property.id, formData));
       setIsSuccess(true);
       setAgreeToTrustTerms(false);
       setFormData({
         name: "",
         email: "",
         phone: "",
-        message: "Hi, I am interested in this property and would like to receive more details. Please contact me.",
+        message:
+          "Hi, I am interested in this property and would like to receive more details. Please contact me.",
       });
-    }, 1200);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

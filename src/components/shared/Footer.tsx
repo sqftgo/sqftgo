@@ -34,7 +34,7 @@ export const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="relative z-10 bg-[#fbf7f0] text-charcoal/80 pt-20 pb-10 border-t border-sand/40 overflow-hidden select-none">
+    <footer className="relative z-10 bg-sand/50 text-charcoal/80 pt-20 pb-10 border-t border-sand/40 overflow-hidden select-none">
       
       {/* Background Watermark 1: Elegant Palace Silhouette at bottom right */}
       <div className="absolute bottom-[-10px] right-[-10px] w-[95%] sm:w-[60%] md:w-[45%] lg:w-[35%] max-w-[500px] aspect-[1.3/1] opacity-[0.05] text-terracotta pointer-events-none z-0">
@@ -261,7 +261,7 @@ export const Footer: React.FC = () => {
           <p>© {new Date().getFullYear()} Sun Valley Real Estate Private Limited (SVREPL.COM). All rights reserved.</p>
           
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs">
-            <Link href="/dealers/dashboard" className="hover:text-terracotta text-indigo transition-colors font-bold">Dealers Portal</Link>
+            <Link href="/dealer/dashboard" className="hover:text-terracotta text-indigo transition-colors font-bold">Dealers Portal</Link>
             <span className="text-sand">|</span>
             <Link href="/admin" className="hover:text-terracotta transition-colors">Admin Console</Link>
             <span className="text-sand">|</span>

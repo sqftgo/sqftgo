@@ -166,7 +166,7 @@ export default function DealersPage() {
             
             <div className="w-fit">
               <Link
-                href="/dealers/dashboard"
+                href="/dealer/dashboard"
                 className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white hover:bg-cream text-indigo hover:text-indigo-hover font-black text-xs uppercase tracking-widest shadow-lg transition-all duration-200"
               >
                 <span>Access Dealers Dashboard</span>

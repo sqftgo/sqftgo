@@ -1,10 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { Heart, MapPin, BedDouble, Square, CheckCircle, ChevronLeft, ChevronRight, Phone, UserCheck, Sparkles, ShieldCheck } from "lucide-react";
+import { Heart, MapPin, ChevronLeft, ChevronRight, Phone, UserCheck } from "lucide-react";
 import { Property, useApp } from "@/context/AppContext";
-import { motion, AnimatePresence } from "framer-motion";
+import { formatIndianCurrency } from "@/lib/format";
+import { motion } from "framer-motion";
+
+export { formatIndianCurrency } from "@/lib/format";
 
 interface PropertyCardProps {
   property: Property;
@@ -12,28 +16,12 @@ interface PropertyCardProps {
   layout?: "grid" | "list";
 }
 
-// Helper to format prices into Indian Lakh/Crore conventions
-export const formatIndianCurrency = (price: number, purpose: "buy" | "sell" | "rent" | "lease"): string => {
-  if (purpose === "rent" || purpose === "lease") {
-    return `₹${price.toLocaleString("en-IN")} / mo`;
-  }
-  
-  if (price >= 10000000) {
-    const cr = price / 10000000;
-    return `₹${cr.toFixed(2).replace(/\.00$/, "")} Crore`;
-  } else if (price >= 100000) {
-    const lakh = price / 100000;
-    return `₹${lakh.toFixed(2).replace(/\.00$/, "")} Lakh`;
-  }
-  return `₹${price.toLocaleString("en-IN")}`;
-};
-
 export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, layout = "grid" }) => {
   const { favorites, toggleFavorite } = useApp();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [hovered, setHovered] = useState(false);
 
   const isFavorite = favorites.includes(property.id);
+  const imageSrc = property.images[currentImageIndex] || "/indian_heritage_hero_bg.png";
 
   const nextImage = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -55,39 +43,40 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, 
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       className={`group relative flex flex-col w-full rounded-2xl bg-white border border-sand hover:border-terracotta/30 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden ${
         isListLayout ? "md:flex-row md:h-64" : ""
       }`}
     >
-      {/* Thumbnail Carousel Section */}
-      <div className={`relative overflow-hidden bg-sand/30 ${
-        isListLayout ? "w-full md:w-80 h-48 md:h-full flex-shrink-0" : "aspect-video w-full"
-      }`}>
-        <img
-          src={property.images[currentImageIndex]}
+      <div
+        className={`relative overflow-hidden bg-sand/30 ${
+          isListLayout ? "w-full md:w-80 h-48 md:h-full flex-shrink-0" : "aspect-video w-full"
+        }`}
+      >
+        <Image
+          src={imageSrc}
           alt={property.title}
-          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          fill
+          sizes={isListLayout ? "(max-width: 768px) 100vw, 320px" : "(max-width: 768px) 100vw, 33vw"}
+          className="object-cover transition-transform duration-700 group-hover:scale-105"
         />
 
-        {/* Solid Overlay */}
         <div className="absolute inset-0 bg-charcoal/20 pointer-events-none" />
 
-        {/* Purpose Badge & Featured Tag */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
-          <span className={`px-3 py-1 rounded text-[9px] font-bold uppercase tracking-[0.15em] text-white shadow-sm w-fit ${
-            property.purpose === "buy" || property.purpose === "sell" 
-              ? "bg-indigo" 
+          <span
+            className={`px-3 py-1 rounded text-[9px] font-bold uppercase tracking-[0.15em] text-white shadow-sm w-fit ${
+              property.purpose === "buy" || property.purpose === "sell"
+                ? "bg-indigo"
+                : property.purpose === "rent"
+                  ? "bg-terracotta"
+                  : "bg-emerald-700"
+            }`}
+          >
+            {property.purpose === "buy" || property.purpose === "sell"
+              ? "For Sale"
               : property.purpose === "rent"
-              ? "bg-terracotta"
-              : "bg-emerald-700"
-          }`}>
-            {property.purpose === "buy" || property.purpose === "sell" 
-              ? "For Sale" 
-              : property.purpose === "rent"
-              ? "For Rent"
-              : "For Lease"}
+                ? "For Rent"
+                : "For Lease"}
           </span>
           {property.featured && (
             <span className="px-3 py-1 rounded text-[9px] font-bold uppercase tracking-[0.15em] text-white bg-charcoal shadow-sm w-fit">
@@ -96,36 +85,37 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, 
           )}
         </div>
 
-        {/* RERA Verification Badge */}
         <div className="absolute bottom-3 left-3 z-10">
           {property.reraApproved ? (
             <span className="flex items-center px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-[0.15em] text-emerald-800 bg-white/95 border border-emerald-200 shadow-sm backdrop-blur-sm">
-              <span>RERA Registered</span>
+              RERA Registered
             </span>
           ) : (
             <span className="flex items-center px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-[0.15em] text-charcoal/70 bg-white/95 border border-sand shadow-sm backdrop-blur-sm">
-              <span>Verification Pending</span>
+              Verification Pending
             </span>
           )}
         </div>
 
-        {/* Show on Map Button (if callback provided) */}
         {onSelect && (
           <button
+            type="button"
+            aria-label="Show on map"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               onSelect(property);
             }}
-            className="absolute top-3 right-13 p-2 rounded-xl border border-sand bg-white text-charcoal hover:bg-white hover:text-terracotta shadow-sm z-10 transition-all duration-200 cursor-pointer"
-            title="Center on Map"
+            className="absolute top-3 right-13 p-2 rounded-xl border border-sand bg-white text-charcoal hover:text-terracotta shadow-sm z-10 transition-all duration-200 cursor-pointer"
           >
             <MapPin className="w-4 h-4 text-terracotta" />
           </button>
         )}
 
-        {/* Favorite Heart Button */}
         <button
+          type="button"
+          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          aria-pressed={isFavorite}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -134,7 +124,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, 
           className={`absolute top-3 right-3 p-2 rounded-xl border shadow-sm z-10 transition-all duration-200 cursor-pointer ${
             isFavorite
               ? "bg-red-500/20 border-red-500/30 text-red-500"
-              : "bg-white border-sand text-charcoal hover:bg-white hover:text-red-500"
+              : "bg-white border-sand text-charcoal hover:text-red-500"
           }`}
         >
           <motion.div whileTap={{ scale: 1.3 }}>
@@ -142,16 +132,19 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, 
           </motion.div>
         </button>
 
-        {/* Arrow Controls */}
         {property.images.length > 1 && (
           <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
             <button
+              type="button"
+              aria-label="Previous image"
               onClick={prevImage}
               className="p-1 rounded-lg bg-white/80 hover:bg-white border border-sand text-charcoal transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
+              type="button"
+              aria-label="Next image"
               onClick={nextImage}
               className="p-1 rounded-lg bg-white/80 hover:bg-white border border-sand text-charcoal transition-colors cursor-pointer"
             >
@@ -159,53 +152,28 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, 
             </button>
           </div>
         )}
-
-        {/* Carousel Slide Indicators */}
-        {property.images.length > 1 && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
-            {property.images.map((_, idx) => (
-              <span
-                key={idx}
-                className={`h-1.5 rounded-full transition-all duration-200 ${
-                  currentImageIndex === idx ? "w-4 bg-white" : "w-1.5 bg-white/50"
-                }`}
-              />
-            ))}
-          </div>
-        )}
       </div>
 
-      {/* Details Section */}
       <div className={`flex flex-col md:flex-row flex-grow bg-white ${isListLayout ? "md:divide-x md:divide-sand" : ""}`}>
-        
-        {/* Info Area (Middle Section) */}
         <Link href={`/property/${property.id}`} className="flex flex-col flex-grow p-5 text-left justify-between min-w-0">
           <div className="flex flex-col gap-1.5">
-            {/* Header: Property Type */}
             <span className="text-[9px] font-bold text-indigo bg-indigo/5 border border-indigo/10 px-2.5 py-0.5 rounded-md tracking-wider uppercase w-fit">
               {property.type}
             </span>
-
-            {/* Title */}
             <h3 className="font-serif font-black text-lg text-charcoal line-clamp-1 group-hover:text-terracotta transition-colors duration-200 mt-1">
               {property.title}
             </h3>
-
-            {/* Location */}
             <div className="flex items-center gap-1 text-charcoal/60 text-xs mb-1.5">
               <MapPin className="w-3.5 h-3.5 text-terracotta/80 flex-shrink-0" />
-              <span className="font-semibold truncate">{property.locality}, {property.city}</span>
+              <span className="font-semibold truncate">
+                {property.locality}, {property.city}
+              </span>
             </div>
-
-            {/* Description Snippet (Only for list layout) */}
             {isListLayout && (
-              <p className="text-charcoal/60 text-xs line-clamp-2 leading-relaxed mb-3">
-                {property.description}
-              </p>
+              <p className="text-charcoal/60 text-xs line-clamp-2 leading-relaxed mb-3">{property.description}</p>
             )}
           </div>
 
-          {/* Specs Footer Row */}
           <div className="flex items-center gap-3.5 text-[10px] text-charcoal/50 font-bold uppercase tracking-widest pt-3 border-t border-sand">
             {property.bhk && (
               <>
@@ -219,11 +187,11 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, 
           </div>
         </Link>
 
-        {/* Action & Pricing Panel (Right Section - List Layout Only) */}
-        <div className={`p-5 flex flex-col justify-between items-stretch text-left md:w-56 bg-cream/10 ${
-          isListLayout ? "flex-shrink-0 border-t md:border-t-0 border-sand" : "hidden"
-        }`}>
-          {/* Price Header */}
+        <div
+          className={`p-5 flex flex-col justify-between items-stretch text-left md:w-56 bg-cream/10 ${
+            isListLayout ? "flex-shrink-0 border-t md:border-t-0 border-sand" : "hidden"
+          }`}
+        >
           <div className="flex flex-col gap-0.5">
             <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none">
               Guide Price
@@ -233,7 +201,6 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, 
             </span>
           </div>
 
-          {/* Owner/Dealer Info Block */}
           <div className="flex items-center gap-2.5 py-3.5 border-y border-sand/50 my-2">
             <div className="w-8 h-8 rounded-full bg-indigo/5 border border-sand flex items-center justify-center text-indigo text-xs font-black">
               {property.ownerName.charAt(0)}
@@ -247,19 +214,17 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, 
             </div>
           </div>
 
-          {/* Direct CTA Buttons */}
-          <div className="flex flex-col gap-1.5">
-            <Link
-              href={`/property/${property.id}`}
-              className="w-full py-2 px-3.5 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white text-center font-bold text-xs shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5"
-            >
-              <Phone className="w-3.5 h-3.5" />
-              <span>Contact Owner</span>
-            </Link>
-          </div>
+          <Link
+            href={`/property/${property.id}`}
+            className="w-full py-2 px-3.5 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white text-center font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5"
+          >
+            <Phone className="w-3.5 h-3.5" />
+            <span>Contact Owner</span>
+          </Link>
         </div>
       </div>
     </motion.div>
   );
 };
+
 export default PropertyCard;

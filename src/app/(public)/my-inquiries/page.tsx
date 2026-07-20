@@ -3,8 +3,11 @@ import React, { useMemo } from "react";
 import { useApp } from "@/context/AppContext";
 import Link from "next/link";
 import { MessageSquare, MapPin, ArrowRight } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { useRouter } from "next/navigation";
 
 export default function MyInquiriesPage() {
+  const router = useRouter();
   const { isLoggedIn, userEmail, properties, inquiries } = useApp();
 
   const myInquiries = useMemo(() =>
@@ -17,12 +20,14 @@ export default function MyInquiriesPage() {
   );
 
   if (!isLoggedIn) return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="text-center p-8">
-        <MessageSquare className="w-14 h-14 text-indigo/20 mx-auto mb-4" />
-        <h1 className="text-2xl font-serif font-black text-charcoal mb-2">Sign In Required</h1>
-        <Link href="/login" className="inline-block mt-3 px-6 py-3 bg-indigo text-white font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-indigo-hover transition-colors">Sign In</Link>
-      </div>
+    <div className="min-h-[60vh] flex items-center justify-center px-4">
+      <EmptyState
+        title="Sign In Required"
+        description="Sign in to view inquiries you’ve sent to dealers."
+        actionLabel="Sign In"
+        onAction={() => router.push("/login")}
+        icon={<MessageSquare className="w-8 h-8" />}
+      />
     </div>
   );
 
@@ -31,11 +36,13 @@ export default function MyInquiriesPage() {
       <h1 className="text-3xl font-serif font-black text-charcoal mb-2">My Inquiries</h1>
       <p className="text-charcoal/50 text-sm font-semibold mb-8">{myInquiries.length} messages sent to dealers</p>
       {myInquiries.length === 0 ? (
-        <div className="text-center py-16">
-          <MessageSquare className="w-12 h-12 text-indigo/20 mx-auto mb-4" />
-          <p className="text-charcoal/50 font-semibold">No inquiries sent yet.</p>
-          <Link href="/listings" className="inline-block mt-4 text-indigo text-sm font-bold hover:underline">Browse Properties →</Link>
-        </div>
+        <EmptyState
+          title="No inquiries yet"
+          description="Browse listings and message dealers when you find a property you like."
+          actionLabel="Browse Properties"
+          onAction={() => router.push("/listings")}
+          icon={<MessageSquare className="w-8 h-8" />}
+        />
       ) : (
         <div className="space-y-4">
           {myInquiries.map((inq, i) => (

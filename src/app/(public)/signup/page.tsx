@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
+import { ROUTES } from "@/constants/routes";
 
 export default function SignupPage() {
-  redirect("/login?tab=signup");
+  redirect(`${ROUTES.login}?tab=signup`);
 }

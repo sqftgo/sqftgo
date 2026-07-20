@@ -221,3 +221,18 @@ body {
   border: 4px double rgba(201, 91, 60, 0.4);
   box-shadow: 0 10px 30px -10px rgba(27, 56, 100, 0.15);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-ticker {
+    animation: none !important;
+  }
+}

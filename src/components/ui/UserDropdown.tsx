@@ -161,7 +161,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             </div>
 
             <Link
-              href="/dealers/dashboard"
+              href="/dealer/dashboard"
               onClick={handleItemClick}
               className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-extrabold text-indigo bg-indigo/5 hover:bg-indigo/10 border border-indigo/20 transition-all group mb-1.5"
             >

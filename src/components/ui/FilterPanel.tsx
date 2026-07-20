@@ -3,6 +3,18 @@
 import React from "react";
 import { Filter, X, RefreshCw } from "lucide-react";
 import CustomSelect from "@/components/ui/CustomSelect";
+import {
+  CITIES,
+  PROPERTY_TYPES,
+  BUDGET_BUY_MIN_OPTIONS,
+  BUDGET_BUY_MAX_OPTIONS,
+  BUDGET_RENT_MIN_OPTIONS,
+  BUDGET_RENT_MAX_OPTIONS,
+  SIZE_MIN_OPTIONS,
+  SIZE_MAX_OPTIONS,
+  BHK_OPTIONS,
+  AMENITIES as AMENITY_OPTIONS,
+} from "@/constants";
 
 export interface FilterState {
   city: string;
@@ -28,87 +40,6 @@ interface FilterPanelProps {
   onClose?: () => void;
   showBasicFilters?: boolean;
 }
-
-const CITIES = [
-  "All India",
-  "Udaipur", "Jaipur", "Jodhpur", "Kota", "Bikaner", 
-  "Jaisalmer", "Rajsamand", "Pali", "Pushkar", "Alwar", 
-  "Ahmedabad", "Surat", "Gandhinagar", "Kutch", "Anand", 
-  "Rajkot", "Shimla", "Chandigarh", "Dharamshala", "Agra"
-];
-
-const PROPERTY_TYPES = [
-  "Home", "Villa", "Hotel", "Agricultural Land", "Apartment", 
-  "Office Space", "Commercial Space", "Shop", "Industrial Plot"
-];
-
-const BUDGET_BUY_MIN_OPTIONS = [
-  { label: "Min Price", value: "" },
-  { label: "₹10 Lakhs", value: "1000000" },
-  { label: "₹25 Lakhs", value: "2500000" },
-  { label: "₹50 Lakhs", value: "5000000" },
-  { label: "₹75 Lakhs", value: "7500000" },
-  { label: "₹1 Crore", value: "10000000" },
-  { label: "₹2 Crores", value: "20000000" },
-  { label: "₹5 Crores", value: "50000000" },
-  { label: "₹10 Crores", value: "100000000" }
-];
-
-const BUDGET_BUY_MAX_OPTIONS = [
-  { label: "Max Price", value: "" },
-  { label: "₹25 Lakhs", value: "2500000" },
-  { label: "₹50 Lakhs", value: "5000000" },
-  { label: "₹75 Lakhs", value: "7500000" },
-  { label: "₹1 Crore", value: "10000000" },
-  { label: "₹2 Crores", value: "20000000" },
-  { label: "₹5 Crores", value: "50000000" },
-  { label: "₹10 Crores", value: "100000000" },
-  { label: "₹15 Crores", value: "150000000" }
-];
-
-const BUDGET_RENT_MIN_OPTIONS = [
-  { label: "Min Rent", value: "" },
-  { label: "₹5,000", value: "5000" },
-  { label: "₹10,000", value: "10000" },
-  { label: "₹15,000", value: "15000" },
-  { label: "₹20,000", value: "20000" },
-  { label: "₹30,000", value: "30000" },
-  { label: "₹50,000", value: "50000" },
-  { label: "₹1 Lakh", value: "100000" }
-];
-
-const BUDGET_RENT_MAX_OPTIONS = [
-  { label: "Max Rent", value: "" },
-  { label: "₹10,000", value: "10000" },
-  { label: "₹15,000", value: "15000" },
-  { label: "₹20,000", value: "20000" },
-  { label: "₹30,000", value: "30000" },
-  { label: "₹50,000", value: "50000" },
-  { label: "₹1 Lakh", value: "100000" },
-  { label: "₹2 Lakhs", value: "200000" }
-];
-
-const SIZE_MIN_OPTIONS = [
-  { label: "Min Size (sq.ft.)", value: "" },
-  { label: "500 sq.ft.", value: "500" },
-  { label: "1000 sq.ft.", value: "1000" },
-  { label: "1500 sq.ft.", value: "1500" },
-  { label: "2000 sq.ft.", value: "2000" },
-  { label: "3000 sq.ft.", value: "3000" }
-];
-
-const SIZE_MAX_OPTIONS = [
-  { label: "Max Size (sq.ft.)", value: "" },
-  { label: "1000 sq.ft.", value: "1000" },
-  { label: "1500 sq.ft.", value: "1500" },
-  { label: "2000 sq.ft.", value: "2000" },
-  { label: "3000 sq.ft.", value: "3000" },
-  { label: "5000 sq.ft.", value: "5000" }
-];
-
-const AMENITY_OPTIONS = [
-  "Swimming Pool", "Gym", "Garden", "Parking", "EV Charging", "Power Backup", "Security"
-];
 
 export const FilterPanel: React.FC<FilterPanelProps> = ({
   filters,
@@ -273,7 +204,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           <div className="flex flex-col gap-2">
             <span className="text-xs font-bold text-indigo uppercase tracking-wide">BHK Size</span>
             <div className="flex flex-wrap gap-2">
-              {["1", "2", "3", "4"].map((bhkVal) => {
+              {BHK_OPTIONS.map((bhkVal) => {
                 const selected = filters.bhk.includes(bhkVal);
                 return (
                   <button

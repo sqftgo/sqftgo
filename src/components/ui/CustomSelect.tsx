@@ -56,13 +56,16 @@ export default function CustomSelect({
     <div className={`relative ${className}`} ref={dropdownRef}>
       <button
         type="button"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-label={placeholder}
         onClick={() => {
           setIsOpen(!isOpen);
           setSearchQuery("");
         }}
         className={inlineChevron
-          ? `flex items-center gap-1.5 text-left focus:outline-none ${buttonClassName}`
-          : `w-full flex items-center justify-between text-left focus:outline-none ${buttonClassName}`
+          ? `flex items-center gap-1.5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/40 rounded-lg ${buttonClassName}`
+          : `w-full flex items-center justify-between text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/40 rounded-xl ${buttonClassName}`
         }
       >
         <span className="truncate">

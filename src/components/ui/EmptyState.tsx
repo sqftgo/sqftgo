@@ -19,7 +19,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   icon,
 }) => {
   return (
-    <div className="w-full flex flex-col items-center justify-center text-center py-16 px-6 rounded-3xl bg-cream/80 border border-sand shadow-sm max-w-xl mx-auto relative overflow-hidden">
+    <div
+      role="status"
+      className="w-full flex flex-col items-center justify-center text-center py-16 px-6 rounded-3xl bg-cream/80 border border-sand shadow-sm max-w-xl mx-auto relative overflow-hidden"
+    >
       {/* Decorative Blur Elements */}
       <div className="absolute -top-10 -right-10 w-40 h-40 bg-terracotta/5 rounded-full blur-[40px] pointer-events-none" />
       <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo/5 rounded-full blur-[40px] pointer-events-none" />
