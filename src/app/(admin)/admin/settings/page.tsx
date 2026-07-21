@@ -1,99 +1,297 @@
 "use client";
+
 import React, { useState } from "react";
-import { Save, CheckCircle2, Globe, Bell, Shield, CreditCard } from "lucide-react";
+import {
+  Save,
+  Globe,
+  Bell,
+  Shield,
+  CreditCard,
+  AlertTriangle,
+  Sliders,
+} from "lucide-react";
+import {
+  DashboardPageHeader,
+  Button,
+  Alert,
+  ConfirmDialog,
+  Panel,
+  SettingsRow,
+  Switch,
+  FormField,
+  TextInput,
+  CustomSelect,
+} from "@/components/ui";
 
 export default function AdminSettingsPage() {
   const [saved, setSaved] = useState(false);
+  const [maintenanceConfirmOpen, setMaintenanceConfirmOpen] = useState(false);
+
   const [form, setForm] = useState({
-    siteName: "Sun Valley Real Estate", tagline: "Rajasthan's Premier Property Marketplace",
-    supportEmail: "support@svrepl.com", phone: "+91 294 2400000",
-    requireApproval: true, allowDealerRegistration: true, maintenanceMode: false,
-    maxImagesPerListing: 10, maxListingsPerDealer: 25, inquiryNotifications: true,
-    googleAnalyticsId: "UA-XXXXXXXXX", razorpayEnabled: true,
+    siteName: "Sun Valley Real Estate",
+    tagline: "Rajasthan's Premier Property Marketplace",
+    supportEmail: "support@svrepl.com",
+    phone: "+91 294 2400000",
+    requireApproval: true,
+    allowDealerRegistration: true,
+    maintenanceMode: false,
+    maxImagesPerListing: "10",
+    maxListingsPerDealer: "25",
+    inquiryNotifications: true,
+    googleAnalyticsId: "UA-XXXXXXXXX",
+    razorpayEnabled: true,
+    defaultCurrency: "INR",
   });
 
-  const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
-  const handleSave = (e: React.FormEvent) => { e.preventDefault(); setSaved(true); setTimeout(() => setSaved(false), 2000); };
+  const set = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
 
-  const Toggle = ({ label, desc, k }: any) => (
-    <div className="flex items-start justify-between gap-4">
-      <div>
-        <p className="text-xs font-bold text-charcoal">{label}</p>
-        <p className="text-[10px] text-charcoal/40 mt-0.5">{desc}</p>
-      </div>
-      <button type="button" onClick={() => set(k, !(form as any)[k])} className={`relative w-10 h-5 rounded-full transition-colors shrink-0 cursor-pointer ${(form as any)[k] ? "bg-terracotta" : "bg-indigo/10"}`}>
-        <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${(form as any)[k] ? "translate-x-5" : "translate-x-0.5"}`} />
-      </button>
-    </div>
-  );
+  const handleSave = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
 
-  const Section = ({ title, icon: Icon, children }: any) => (
-    <div className="bg-white/80 border border-indigo/10 rounded-2xl p-6 space-y-4 shadow-sm">
-      <div className="flex items-center gap-2.5 pb-4 border-b border-indigo/5">
-        <Icon className="w-4 h-4 text-terracotta" />
-        <h2 className="text-sm font-serif font-black text-charcoal">{title}</h2>
-      </div>
-      {children}
-    </div>
-  );
+  const handleMaintenanceToggle = (checked: boolean) => {
+    if (checked && !form.maintenanceMode) {
+      setMaintenanceConfirmOpen(true);
+    } else if (!checked) {
+      set("maintenanceMode", false);
+    }
+  };
+
+  const confirmMaintenanceMode = () => {
+    set("maintenanceMode", true);
+    setMaintenanceConfirmOpen(false);
+  };
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-serif font-black text-charcoal">Platform Settings</h1>
-          <p className="text-charcoal/40 text-sm font-semibold mt-1">Configure global platform behavior</p>
-        </div>
-        {saved && (
-          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-            <span className="text-emerald-600 text-sm font-bold">Settings saved!</span>
+    <div className="p-6 md:p-8 bg-[#faf8f5] min-h-screen text-charcoal w-full space-y-6">
+      <DashboardPageHeader
+        title="Platform Settings"
+        description="Configure system configurations, listing requirements, payment pathways, and site parameters."
+        className="rounded-3xl"
+        actions={
+          <Button type="button" onClick={() => handleSave()} size="md">
+            <Save className="w-4 h-4" /> Save Configurations
+          </Button>
+        }
+      />
+
+      {saved && (
+        <Alert
+          variant="success"
+          title="Configurations Saved"
+          description="System preferences updated and live across all nodes."
+          onDismiss={() => setSaved(false)}
+        />
+      )}
+
+      <form onSubmit={handleSave} className="space-y-6">
+        <Panel padding="lg" rounded="3xl" className="space-y-4">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-indigo/5">
+            <Globe className="w-4 h-4 text-terracotta" />
+            <h2 className="text-sm font-serif font-black text-charcoal">General Parameters</h2>
           </div>
-        )}
 
-        <form onSubmit={handleSave} className="space-y-5">
-          <Section title="General" icon={Globe}>
-            {[{ l: "Site Name", k: "siteName" }, { l: "Tagline", k: "tagline" }, { l: "Support Email", k: "supportEmail" }, { l: "Phone", k: "phone" }].map(({ l, k }) => (
-              <div key={k} className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-black text-charcoal/40 uppercase tracking-widest">{l}</label>
-                <input value={(form as any)[k]} onChange={e => set(k, e.target.value)} className="bg-sand/35 border border-indigo/5 focus:border-terracotta/50 text-charcoal text-sm font-semibold px-4 py-3 rounded-xl focus:outline-none transition-colors" />
-              </div>
-            ))}
-          </Section>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <FormField label="Site Brand Title">
+              <TextInput
+                type="text"
+                value={form.siteName}
+                onChange={(e) => set("siteName", e.target.value)}
+              />
+            </FormField>
 
-          <Section title="Listing Controls" icon={Shield}>
-            <Toggle label="Require Admin Approval" desc="New listings go to Pending Review before going live" k="requireApproval" />
-            <Toggle label="Allow Dealer Registration" desc="Dealers can self-register on the platform" k="allowDealerRegistration" />
-            <Toggle label="Maintenance Mode" desc="Take the platform offline for maintenance" k="maintenanceMode" />
-            <div className="grid grid-cols-2 gap-4 pt-2">
-              {[{ l: "Max Images Per Listing", k: "maxImagesPerListing" }, { l: "Max Listings Per Dealer", k: "maxListingsPerDealer" }].map(({ l, k }) => (
-                <div key={k} className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-black text-charcoal/40 uppercase tracking-widest">{l}</label>
-                  <input type="number" value={(form as any)[k]} onChange={e => set(k, parseInt(e.target.value))} className="bg-sand/35 border border-indigo/5 text-charcoal text-sm font-semibold px-4 py-3 rounded-xl focus:outline-none transition-colors" />
-                </div>
-              ))}
-            </div>
-          </Section>
+            <FormField label="Support Helpline Email">
+              <TextInput
+                type="email"
+                value={form.supportEmail}
+                onChange={(e) => set("supportEmail", e.target.value)}
+              />
+            </FormField>
 
-          <Section title="Notifications" icon={Bell}>
-            <Toggle label="Inquiry Notifications" desc="Send email alerts on new inquiries" k="inquiryNotifications" />
-          </Section>
+            <FormField label="Tagline Slogan">
+              <TextInput
+                type="text"
+                value={form.tagline}
+                onChange={(e) => set("tagline", e.target.value)}
+              />
+            </FormField>
 
-          <Section title="Integrations" icon={CreditCard}>
-            <Toggle label="Razorpay Payments" desc="Enable subscription payments via Razorpay" k="razorpayEnabled" />
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-black text-charcoal/40 uppercase tracking-widest">Google Analytics ID</label>
-              <input value={form.googleAnalyticsId} onChange={e => set("googleAnalyticsId", e.target.value)} className="bg-sand/35 border border-indigo/5 text-charcoal text-sm font-semibold px-4 py-3 rounded-xl focus:outline-none transition-colors" />
-            </div>
-          </Section>
-
-          <div className="flex justify-end">
-            <button type="submit" className="flex items-center gap-2 px-6 py-2.5 bg-terracotta hover:bg-terracotta-hover text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-md shadow-terracotta/15">
-              <Save className="w-4 h-4" /> Save Settings
-            </button>
+            <FormField label="Helpline Phone">
+              <TextInput
+                type="text"
+                value={form.phone}
+                onChange={(e) => set("phone", e.target.value)}
+              />
+            </FormField>
           </div>
-        </form>
-      </div>
+        </Panel>
+
+        <Panel padding="lg" rounded="3xl">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-indigo/5 mb-2">
+            <Shield className="w-4 h-4 text-terracotta" />
+            <h2 className="text-sm font-serif font-black text-charcoal">
+              Listing Approval & Registration Rules
+            </h2>
+          </div>
+
+          <SettingsRow
+            label="Require Admin Review"
+            description="Force newly added or edited listings into Pending Review state before going live."
+            icon={<Sliders className="w-4 h-4" />}
+            accent="terracotta"
+          >
+            <Switch
+              accent="terracotta"
+              checked={form.requireApproval}
+              onCheckedChange={(v) => set("requireApproval", v)}
+              aria-label="Require Admin Review"
+            />
+          </SettingsRow>
+
+          <SettingsRow
+            label="Enable Dealer Registration"
+            description="Allow prospective real estate brokers to sign up on the public interface."
+            icon={<Sliders className="w-4 h-4" />}
+            accent="terracotta"
+          >
+            <Switch
+              accent="terracotta"
+              checked={form.allowDealerRegistration}
+              onCheckedChange={(v) => set("allowDealerRegistration", v)}
+              aria-label="Enable Dealer Registration"
+            />
+          </SettingsRow>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-indigo/5 mt-3">
+            <FormField label="Max Images Per Listing">
+              <TextInput
+                type="number"
+                value={form.maxImagesPerListing}
+                onChange={(e) => set("maxImagesPerListing", e.target.value)}
+              />
+            </FormField>
+
+            <FormField label="Max Listings Per Dealer Limit">
+              <TextInput
+                type="number"
+                value={form.maxListingsPerDealer}
+                onChange={(e) => set("maxListingsPerDealer", e.target.value)}
+              />
+            </FormField>
+          </div>
+        </Panel>
+
+        <Panel padding="lg" rounded="3xl">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-indigo/5 mb-2">
+            <Bell className="w-4 h-4 text-terracotta" />
+            <h2 className="text-sm font-serif font-black text-charcoal">
+              Global Notifications Preference
+            </h2>
+          </div>
+
+          <SettingsRow
+            label="Platform Enquiry Email Notifications"
+            description="Send direct email copies to administrator on new user inquiries, reports, and feedback."
+            icon={<Bell className="w-4 h-4" />}
+            accent="terracotta"
+          >
+            <Switch
+              accent="terracotta"
+              checked={form.inquiryNotifications}
+              onCheckedChange={(v) => set("inquiryNotifications", v)}
+              aria-label="Platform Enquiry Email Notifications"
+            />
+          </SettingsRow>
+        </Panel>
+
+        <Panel padding="lg" rounded="3xl" className="space-y-4">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-indigo/5">
+            <CreditCard className="w-4 h-4 text-terracotta" />
+            <h2 className="text-sm font-serif font-black text-charcoal">
+              Payment & Analytics Integrations
+            </h2>
+          </div>
+
+          <SettingsRow
+            label="Razorpay Payment Gateway"
+            description="Allow dealers to purchase subscriptions online using the integrated Razorpay SDK."
+            icon={<CreditCard className="w-4 h-4" />}
+            accent="terracotta"
+          >
+            <Switch
+              accent="terracotta"
+              checked={form.razorpayEnabled}
+              onCheckedChange={(v) => set("razorpayEnabled", v)}
+              aria-label="Razorpay Payment Gateway"
+            />
+          </SettingsRow>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-indigo/5">
+            <FormField label="Google Analytics Measurement ID">
+              <TextInput
+                type="text"
+                value={form.googleAnalyticsId}
+                onChange={(e) => set("googleAnalyticsId", e.target.value)}
+                placeholder="G-XXXXXXXXXX"
+              />
+            </FormField>
+
+            <FormField label="Payment Settlements Currency">
+              <CustomSelect
+                options={[
+                  { label: "Indian Rupee (INR)", value: "INR" },
+                  { label: "US Dollar (USD)", value: "USD" },
+                  { label: "Euro (EUR)", value: "EUR" },
+                ]}
+                value={form.defaultCurrency}
+                onChange={(v) => set("defaultCurrency", v)}
+                accent="terracotta"
+                buttonClassName="bg-sand/30 border border-indigo/10 text-xs font-semibold px-4 py-3 rounded-xl text-charcoal"
+              />
+            </FormField>
+          </div>
+        </Panel>
+
+        <Panel
+          padding="lg"
+          rounded="3xl"
+          className="bg-amber-500/[0.02] border-amber-500/15 space-y-4"
+        >
+          <div className="flex items-center gap-2.5 pb-3 border-b border-amber-500/10">
+            <AlertTriangle className="w-4 h-4 text-amber-600" />
+            <h2 className="text-sm font-serif font-black text-amber-700">Platform Maintenance</h2>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="max-w-lg">
+              <h3 className="text-xs font-bold text-amber-700">Toggle Maintenance Offline Mode</h3>
+              <p className="text-[10px] text-amber-600/60 font-semibold mt-0.5 leading-relaxed">
+                When active, public users will see a maintenance message, and non-admin logins will be
+                blocked.
+              </p>
+            </div>
+
+            <Switch
+              accent="terracotta"
+              checked={form.maintenanceMode}
+              onCheckedChange={handleMaintenanceToggle}
+              aria-label="Toggle Maintenance Offline Mode"
+            />
+          </div>
+        </Panel>
+      </form>
+
+      <ConfirmDialog
+        open={maintenanceConfirmOpen}
+        onClose={() => setMaintenanceConfirmOpen(false)}
+        onConfirm={confirmMaintenanceMode}
+        title="Activate Maintenance Mode?"
+        description="This will take the entire marketplace offline for regular users immediately. Only administrators will be able to access portal panels."
+        confirmLabel="Yes, Go Offline"
+        tone="warning"
+      />
     </div>
   );
 }

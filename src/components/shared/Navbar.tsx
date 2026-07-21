@@ -6,8 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { MapPin, Plus, ChevronDown, User, Users, LogOut, Home, Search, MessageSquare, Briefcase, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CitySelectorDropdown } from "@/components/ui/CitySelectorDropdown";
-import { UserDropdown } from "@/components/ui/UserDropdown";
+import { CitySelectorDropdown, UserDropdown, Avatar } from "@/components/ui";
 
 
 export const Navbar: React.FC = () => {
@@ -189,9 +188,13 @@ export const Navbar: React.FC = () => {
                     onClick={() => setShowUserDropdown(!showUserDropdown)}
                     className="flex items-center gap-2 px-2 py-2 sm:px-3 text-xs sm:text-sm font-bold text-charcoal bg-sand hover:bg-sand/80 rounded-xl transition-all duration-200 shadow-sm"
                   >
-                    <div className="w-5 h-5 rounded-md bg-indigo text-white flex items-center justify-center font-extrabold text-[10px] shrink-0">
-                      {userEmail ? userEmail.charAt(0).toUpperCase() : "U"}
-                    </div>
+                    <Avatar
+                      name={userEmail || "U"}
+                      size="xs"
+                      shape="square"
+                      tone="indigo"
+                      className="w-5 h-5 text-[10px] bg-indigo text-white border-0"
+                    />
                     <span className="hidden sm:inline max-w-[100px] truncate text-charcoal">{userEmail}</span>
                     <ChevronDown className={`hidden sm:inline w-3.5 h-3.5 text-charcoal/50 transition-transform duration-200 ${showUserDropdown ? "rotate-180" : ""}`} />
                   </button>

@@ -9,6 +9,7 @@ interface EmptyStateProps {
   actionLabel?: string;
   onAction?: () => void;
   icon?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
@@ -17,6 +18,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   actionLabel,
   onAction,
   icon,
+  children,
 }) => {
   return (
     <div
@@ -49,6 +51,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           {actionLabel}
         </button>
       )}
+      {children && <div className="relative z-10">{children}</div>}
     </div>
   );
 };

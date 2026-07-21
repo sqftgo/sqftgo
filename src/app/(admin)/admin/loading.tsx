@@ -1,9 +1,5 @@
-import { PageLoader } from "@/components/ui/Skeleton";
+import { PageLoader } from "@/components/ui";
 
-export default function AdminLoading() {
-  return (
-    <div className="min-h-screen bg-cream">
-      <PageLoader label="Loading admin…" />
-    </div>
-  );
+export default function Loading() {
+  return <PageLoader />;
 }

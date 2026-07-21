@@ -3,11 +3,15 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useApp, Property } from "@/context/AppContext";
-import PropertyCard, { formatIndianCurrency } from "@/components/ui/PropertyCard";
-import FilterPanel, { FilterState } from "@/components/ui/FilterPanel";
-import CustomSelect from "@/components/ui/CustomSelect";
-import EmptyState from "@/components/ui/EmptyState";
-import CityMap from "@/components/ui/CityMap";
+import {
+  PropertyCard,
+  formatIndianCurrency,
+  FilterPanel,
+  type FilterState,
+  CustomSelect,
+  EmptyState,
+  CityMap,
+} from "@/components/ui";
 import { SlidersHorizontal, Info, MapPin, Grid, Map, X, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 

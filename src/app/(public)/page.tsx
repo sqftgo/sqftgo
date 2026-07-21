@@ -4,8 +4,7 @@ import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp, Property } from "@/context/AppContext";
-import PropertyCard, { formatIndianCurrency } from "@/components/ui/PropertyCard";
-import CustomSelect from "@/components/ui/CustomSelect";
+import { PropertyCard, formatIndianCurrency, CustomSelect } from "@/components/ui";
 import {
   Compass,
   MapPin,

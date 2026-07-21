@@ -1,9 +1,5 @@
-import { PageLoader } from "@/components/ui/Skeleton";
+import { PageLoader } from "@/components/ui";
 
-export default function ListingsLoading() {
-  return (
-    <div className="min-h-[60vh] bg-cream">
-      <PageLoader label="Loading listings…" />
-    </div>
-  );
+export default function Loading() {
+  return <PageLoader />;
 }

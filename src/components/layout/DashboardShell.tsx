@@ -3,10 +3,10 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ExternalLink, LogOut, Menu, Search, X, type LucideIcon } from "lucide-react";
+import { ExternalLink, LogOut, Menu, X, type LucideIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/cn";
-import { PageLoader } from "@/components/ui/Skeleton";
+import { PageLoader, SearchInput, Avatar } from "@/components/ui";
 
 export interface DashboardNavItem {
   href: string;
@@ -115,9 +115,13 @@ export function DashboardShell({
 
       <div className="px-6 py-5 border-b border-indigo/5 shrink-0 bg-white/20">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl overflow-hidden border border-indigo/10 shrink-0 bg-white shadow-sm flex items-center justify-center text-terracotta font-serif font-black text-sm">
-            {profileInitial || profileName.charAt(0) || "U"}
-          </div>
+          <Avatar
+            name={profileName}
+            size="md"
+            shape="rounded"
+            tone={accent === "terracotta" ? "terracotta" : "indigo"}
+            className="shadow-sm bg-white"
+          />
           <div className="min-w-0">
             <p className="text-charcoal font-bold text-xs truncate leading-tight">{profileName}</p>
             <p className="text-charcoal/40 text-[10px] font-semibold truncate mt-0.5">{profileEmail}</p>
@@ -250,15 +254,13 @@ export function DashboardShell({
             >
               <Menu className="w-5 h-5" />
             </button>
-            <div className="relative hidden sm:block">
-              <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-charcoal/30" aria-hidden />
-              <input
-                type="search"
-                placeholder={searchPlaceholder}
-                aria-label={searchPlaceholder}
-                className="bg-sand/35 border border-indigo/5 focus:border-indigo/35 text-charcoal text-xs font-semibold px-4 py-2 pl-9 rounded-xl focus:outline-none w-56 transition-all"
-              />
-            </div>
+            <SearchInput
+              placeholder={searchPlaceholder}
+              aria-label={searchPlaceholder}
+              accent={accent === "terracotta" ? "terracotta" : "indigo"}
+              containerClassName="hidden sm:block flex-none min-w-0 w-56"
+              className="py-2"
+            />
           </div>
           {topBarExtra}
         </header>

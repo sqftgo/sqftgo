@@ -1,9 +1,5 @@
-import { PageLoader } from "@/components/ui/Skeleton";
+import { PageLoader } from "@/components/ui";
 
-export default function DealerLoading() {
-  return (
-    <div className="min-h-screen bg-cream">
-      <PageLoader label="Loading dealer portal…" />
-    </div>
-  );
+export default function Loading() {
+  return <PageLoader />;
 }

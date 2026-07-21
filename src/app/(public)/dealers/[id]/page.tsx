@@ -20,7 +20,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PropertyCard } from "@/components/ui/PropertyCard";
+import { PropertyCard } from "@/components/ui";
 
 export default function DealerProfilePage() {
   const params = useParams();

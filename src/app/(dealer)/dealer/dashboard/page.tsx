@@ -1,14 +1,23 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import {
-  Building2, MessageSquare, TrendingUp, Eye, Plus, ArrowUpRight,
-  Clock, CheckCircle2, AlertCircle, Bell, Heart, CreditCard,
-  Calendar, Send, MessageCircle
+  Building2, MessageSquare, Eye, Plus, ArrowUpRight,
+  CheckCircle2, Heart, CreditCard, Calendar, MessageCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
+import {
+  DashboardPageHeader,
+  StatCard,
+  KpiGrid,
+  Badge,
+  Avatar,
+  ProgressBar,
+  Panel,
+  Button,
+} from "@/components/ui";
 
 export default function DealerDashboardPage() {
   const { properties, inquiries, notifications, userEmail, directoryProfiles } = useApp();
@@ -17,8 +26,6 @@ export default function DealerDashboardPage() {
   const myProperties = properties.filter(p => p.ownerEmail?.toLowerCase() === userEmail.toLowerCase());
 
   const activeProps = myProperties.filter(p => p.status === "Active");
-  const pendingProps = myProperties.filter(p => p.status === "Pending Review");
-  const draftProps = myProperties.filter(p => p.status === "Draft");
 
   const totalInquiries = myProperties.reduce((a, p) => a + (inquiries[p.id]?.length || 0), 0);
   const recentInquiries = myProperties
@@ -26,46 +33,39 @@ export default function DealerDashboardPage() {
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 4);
 
-  const myNotifs = notifications.filter(n => n.forRole === "broker" || n.forRole === "all").slice(0, 3);
-
-  // Stats definition
   const stats = [
-    { label: "Active Listings", value: activeProps.length, icon: Building2, color: "text-indigo", bg: "bg-indigo/10", border: "border-indigo/10" },
-    { label: "Total Views", value: activeProps.length * 142 + 258, icon: Eye, color: "text-purple-600", bg: "bg-purple-500/10", border: "border-purple-500/10" },
-    { label: "New Leads", value: totalInquiries, icon: MessageSquare, color: "text-terracotta", bg: "bg-terracotta/10", border: "border-terracotta/10" },
-    { label: "Saved Properties", value: activeProps.length * 12 + 4, icon: Heart, color: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/10" },
-    { label: "Monthly Revenue", value: "₹45,000", icon: CreditCard, color: "text-emerald-600", bg: "bg-emerald-500/10", border: "border-emerald-500/10" },
-    { label: "Subscription Status", value: "Pro Plan", icon: CheckCircle2, color: "text-indigo", bg: "bg-indigo/10", border: "border-indigo/10" }
+    { label: "Active Listings", value: activeProps.length, icon: Building2, tone: "indigo" as const },
+    { label: "Total Views", value: activeProps.length * 142 + 258, icon: Eye, tone: "default" as const },
+    { label: "New Leads", value: totalInquiries, icon: MessageSquare, tone: "terracotta" as const },
+    { label: "Saved Properties", value: activeProps.length * 12 + 4, icon: Heart, tone: "default" as const },
+    { label: "Monthly Revenue", value: "₹45,000", icon: CreditCard, tone: "success" as const },
+    { label: "Subscription Status", value: "Pro Plan", icon: CheckCircle2, tone: "indigo" as const }
   ];
 
   const formatPrice = (v: number) => "₹" + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(v);
 
+  const conversionItems = [
+    { label: "Direct Inquiries", percentage: 78, tone: "indigo" as const },
+    { label: "Platform Calls", percentage: 54, tone: "terracotta" as const },
+    { label: "Site Visits Schedule", percentage: 32, tone: "purple" as const },
+  ];
+
   return (
     <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
-
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 border border-indigo/10 rounded-3xl p-6 md:p-8 shadow-sm backdrop-blur-sm">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-serif font-black text-charcoal leading-tight">
-            Welcome back, {brokerProfile?.ownerName?.split(" ")[0] || "Dealer"}
-          </h1>
-          <p className="text-charcoal/50 text-xs md:text-sm font-semibold mt-1.5">
-            Here is a comprehensive summary of your property listings and buyer actions.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Link
-            href="/dealer/dashboard/add-property"
-            className="flex items-center gap-2 px-5 py-2.5 bg-indigo hover:bg-indigo-hover text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md shadow-indigo/15"
-          >
-            <Plus className="w-4 h-4" />
-            <span>List New Property</span>
+      <DashboardPageHeader
+        title={`Welcome back, ${brokerProfile?.ownerName?.split(" ")[0] || "Dealer"}`}
+        description="Here is a comprehensive summary of your property listings and buyer actions."
+        actions={
+          <Link href="/dealer/dashboard/add-property">
+            <Button variant="secondary" size="md" className="shadow-md shadow-indigo/15">
+              <Plus className="w-4 h-4" />
+              List New Property
+            </Button>
           </Link>
-        </div>
-      </div>
+        }
+      />
 
-      {/* 6-Column Key Statistics Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <KpiGrid className="lg:grid-cols-3 xl:grid-cols-6">
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
@@ -74,30 +74,22 @@ export default function DealerDashboardPage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="bg-white/80 border border-indigo/10 rounded-2xl p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className={`w-8 h-8 rounded-xl ${stat.bg} flex items-center justify-center`}>
-                <Icon className={`w-4 h-4 ${stat.color}`} />
-              </div>
-              <div>
-                <p className="text-xl md:text-2xl font-serif font-black text-charcoal">{stat.value}</p>
-                <p className="text-[9px] font-black text-charcoal/40 uppercase tracking-widest mt-1">{stat.label}</p>
-              </div>
+              <StatCard
+                label={stat.label}
+                value={stat.value}
+                tone={stat.tone}
+                icon={<Icon className="w-4 h-4" />}
+                className="p-4"
+              />
             </motion.div>
           );
         })}
-      </div>
+      </KpiGrid>
 
-      {/* Performance Charts Section (CSS Visualizations to match public theme) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        {/* Chart 1: Property Views */}
-        <div className="bg-white/80 border border-indigo/10 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
-          <div>
-            <span className="text-[9px] font-black text-indigo/40 uppercase tracking-widest">Listing Views</span>
-            <h3 className="text-sm font-serif font-black text-charcoal mt-1">Property Views (Weekly)</h3>
-          </div>
-          <div className="flex items-end gap-3 h-32 mt-6">
+        <Panel title="Property Views (Weekly)" description="Listing Views" padding="lg">
+          <div className="flex items-end gap-3 h-32 mt-2">
             {[35, 52, 48, 70, 62, 85, 95].map((val, idx) => (
               <div key={idx} className="flex-1 flex flex-col items-center gap-1.5">
                 <div className="w-full bg-indigo/10 rounded-t-lg relative group transition-all" style={{ height: `${val}%` }}>
@@ -108,39 +100,23 @@ export default function DealerDashboardPage() {
               </div>
             ))}
           </div>
-        </div>
+        </Panel>
 
-        {/* Chart 2: Lead Conversion */}
-        <div className="bg-white/80 border border-indigo/10 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
-          <div>
-            <span className="text-[9px] font-black text-indigo/40 uppercase tracking-widest">Performance</span>
-            <h3 className="text-sm font-serif font-black text-charcoal mt-1">Lead Conversion</h3>
-          </div>
-          <div className="space-y-4 mt-6">
-            {[
-              { label: "Direct Inquiries", percentage: 78, color: "bg-indigo" },
-              { label: "Platform Calls", percentage: 54, color: "bg-terracotta" },
-              { label: "Site Visits Schedule", percentage: 32, color: "bg-purple-600" },
-            ].map(item => (
+        <Panel title="Lead Conversion" description="Performance" padding="lg">
+          <div className="space-y-4 mt-2">
+            {conversionItems.map(item => (
               <div key={item.label} className="space-y-1">
                 <div className="flex justify-between items-center text-[10px] font-bold">
                   <span className="text-charcoal/65">{item.label}</span>
                   <span className="text-charcoal">{item.percentage}%</span>
                 </div>
-                <div className="h-2 bg-indigo/5 rounded-full overflow-hidden">
-                  <div className={`h-full ${item.color} rounded-full`} style={{ width: `${item.percentage}%` }} />
-                </div>
+                <ProgressBar value={item.percentage} tone={item.tone} label={item.label} />
               </div>
             ))}
           </div>
-        </div>
+        </Panel>
 
-        {/* Chart 3: Performance Target */}
-        <div className="bg-white/80 border border-indigo/10 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
-          <div>
-            <span className="text-[9px] font-black text-indigo/40 uppercase tracking-widest">Overview</span>
-            <h3 className="text-sm font-serif font-black text-charcoal mt-1">Monthly Conversion Rate</h3>
-          </div>
+        <Panel title="Monthly Conversion Rate" description="Overview" padding="lg">
           <div className="flex flex-col items-center justify-center py-4">
             <div className="relative w-24 h-24 rounded-full border-[10px] border-indigo/5 flex items-center justify-center">
               <div className="absolute inset-0 rounded-full border-[10px] border-t-terracotta border-r-terracotta border-b-indigo border-l-indigo animate-spin-slow opacity-80" />
@@ -150,20 +126,20 @@ export default function DealerDashboardPage() {
               </div>
             </div>
           </div>
-        </div>
+        </Panel>
       </div>
 
-      {/* Main Content Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
-        {/* Recent Listings */}
-        <div className="xl:col-span-2 bg-white/80 border border-indigo/10 rounded-3xl overflow-hidden shadow-sm">
-          <div className="flex items-center justify-between p-5 border-b border-indigo/5 bg-white/40">
-            <h2 className="text-sm font-serif font-black text-charcoal">My Recent Listings</h2>
+        <Panel
+          className="xl:col-span-2"
+          title="My Recent Listings"
+          padding="none"
+          actions={
             <Link href="/dealer/dashboard/properties" className="text-[9px] font-black text-indigo uppercase tracking-wider flex items-center gap-1 hover:underline">
               View All <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
+          }
+        >
           <div className="divide-y divide-indigo/5">
             {myProperties.slice(0, 4).length > 0 ? (
               myProperties.slice(0, 4).map(prop => (
@@ -179,12 +155,9 @@ export default function DealerDashboardPage() {
                     <p className="text-sm font-serif font-black text-indigo">
                       {formatPrice(prop.price)}
                     </p>
-                    <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border mt-1.5 inline-block ${prop.status === "Active" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" :
-                        prop.status === "Pending Review" ? "bg-amber-500/10 text-amber-600 border-amber-500/20" :
-                          "bg-white/10 text-charcoal/40 border-indigo/5"
-                      }`}>
+                    <Badge status={prop.status} size="sm" className="mt-1.5">
                       {prop.status}
-                    </span>
+                    </Badge>
                   </div>
                 </div>
               ))
@@ -196,14 +169,10 @@ export default function DealerDashboardPage() {
               </div>
             )}
           </div>
-        </div>
+        </Panel>
 
-        {/* Notifications and Visits */}
         <div className="space-y-6">
-
-          {/* Quick Actions Card */}
-          <div className="bg-white/80 border border-indigo/10 rounded-3xl p-5 shadow-sm space-y-3">
-            <h4 className="text-[9px] font-black text-indigo/40 uppercase tracking-widest mb-1.5">Quick Actions</h4>
+          <Panel title="Quick Actions" padding="md">
             <div className="grid grid-cols-2 gap-2">
               <Link href="/dealer/dashboard/add-property" className="p-3 bg-indigo/5 border border-indigo/10 rounded-2xl hover:bg-indigo hover:text-white transition-all text-center flex flex-col items-center gap-1.5 group">
                 <Plus className="w-4 h-4 text-indigo group-hover:text-white" />
@@ -214,11 +183,9 @@ export default function DealerDashboardPage() {
                 <span className="text-[10px] font-black uppercase tracking-wide">Check Leads</span>
               </Link>
             </div>
-          </div>
+          </Panel>
 
-          {/* Upcoming Visits */}
-          <div className="bg-white/80 border border-indigo/10 rounded-3xl p-5 shadow-sm">
-            <h4 className="text-[9px] font-black text-indigo/40 uppercase tracking-widest mb-4">Upcoming Property Visits</h4>
+          <Panel title="Upcoming Property Visits" padding="md">
             <div className="space-y-3">
               {[
                 { name: "Rahul Verma", time: "Today at 04:00 PM", property: "Lake-Facing Villa" },
@@ -234,38 +201,36 @@ export default function DealerDashboardPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </Panel>
         </div>
-
       </div>
 
-      {/* Recent Inquiries inbox section */}
       {recentInquiries.length > 0 && (
-        <div className="bg-white/80 border border-indigo/10 rounded-3xl overflow-hidden shadow-sm">
-          <div className="flex items-center justify-between p-5 border-b border-indigo/5 bg-white/40">
-            <h2 className="text-sm font-serif font-black text-charcoal">Latest Messages</h2>
+        <Panel
+          title="Latest Messages"
+          padding="none"
+          actions={
             <Link href="/dealer/dashboard/inquiries" className="text-[9px] font-black text-indigo uppercase tracking-wider flex items-center gap-1 hover:underline">
               View All Inquiries <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
+          }
+        >
           <div className="divide-y divide-indigo/5">
             {recentInquiries.map((inq, i) => (
               <div key={i} className="flex items-start gap-4 p-4 hover:bg-indigo/5 transition-colors">
-                <div className="w-9 h-9 rounded-2xl bg-indigo/10 border border-indigo/20 flex items-center justify-center text-indigo font-black text-xs shrink-0">
-                  {inq.name.charAt(0)}
-                </div>
+                <Avatar name={inq.name} size="md" shape="rounded" tone="indigo" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-bold text-charcoal">{inq.name}</p>
                     <p className="text-[9px] text-charcoal/30 font-semibold">{inq.date}</p>
                   </div>
                   <p className="text-[9px] font-bold text-charcoal/50 mt-0.5 uppercase tracking-wide">Re: {inq.propertyTitle}</p>
-                  <p className="text-xs text-charcoal/70 font-semibold mt-1 truncate">"{inq.message}"</p>
+                  <p className="text-xs text-charcoal/70 font-semibold mt-1 truncate">&ldquo;{inq.message}&rdquo;</p>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </Panel>
       )}
     </div>
   );

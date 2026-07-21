@@ -1,61 +1,63 @@
 "use client";
-import React, { useState } from "react";
+
+import React from "react";
 import { useApp } from "@/context/AppContext";
-import { Bell, CheckCheck } from "lucide-react";
-import { motion } from "framer-motion";
+import {
+  NotificationsPageShell,
+  type DashboardNotification,
+} from "@/components/ui";
+
+const ADMIN_PREFERENCES = [
+  {
+    key: "registrations",
+    label: "Dealer Self-Registration",
+    description: "Alert when a new dealer registers.",
+  },
+  {
+    key: "approvals",
+    label: "Listing Approval Requests",
+    description: "Notify when reviews are pending.",
+  },
+  {
+    key: "payments",
+    label: "Payment & Settlements",
+    description: "Confirm invoices and checkout events.",
+  },
+  {
+    key: "system",
+    label: "Server Log Warnings",
+    description: "Urgent notifications on DB failures.",
+  },
+];
 
 export default function AdminNotificationsPage() {
   const { notifications, setNotifications, markNotificationRead } = useApp();
-  const adminNotifs = notifications.filter(n => n.forRole === "admin" || n.forRole === "all");
-  const unread = adminNotifs.filter(n => !n.read).length;
-  const markAll = () => setNotifications(prev => prev.map(n => (n.forRole === "admin" || n.forRole === "all") ? { ...n, read: true } : n));
-
-  const typeColor: Record<string, string> = {
-    success: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-    warning: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-    error: "bg-rose-500/10 text-rose-500 border-rose-500/20",
-    info: "bg-terracotta/10 text-terracotta border-terracotta/20",
-  };
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-serif font-black text-charcoal">Notifications</h1>
-          <p className="text-charcoal/40 text-sm font-semibold mt-1">{unread} unread</p>
-        </div>
-        {unread > 0 && (
-          <button onClick={markAll} className="flex items-center gap-2 px-4 py-2 bg-indigo/5 hover:bg-indigo/10 text-charcoal/60 text-xs font-bold rounded-xl transition-all cursor-pointer">
-            <CheckCheck className="w-4 h-4" /> Mark All Read
-          </button>
-        )}
-      </div>
-      {adminNotifs.length === 0 ? (
-        <div className="bg-white/80 border border-indigo/10 rounded-2xl p-16 text-center shadow-sm">
-          <Bell className="w-12 h-12 text-charcoal/10 mx-auto mb-4" />
-          <p className="text-charcoal/40">No notifications.</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {adminNotifs.map((notif, i) => (
-            <motion.div key={notif.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-              onClick={() => markNotificationRead(notif.id)}
-              className={`bg-white/80 border rounded-2xl p-5 cursor-pointer transition-all hover:shadow-md ${notif.read ? "border-indigo/5 opacity-60" : "border-indigo/10"}`}>
-              <div className="flex items-start gap-4">
-                <div className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${!notif.read ? "bg-terracotta animate-pulse" : "bg-indigo/10"}`} />
-                <div className="flex-1">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm font-bold text-charcoal">{notif.title}</p>
-                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded border shrink-0 ${typeColor[notif.type]}`}>{notif.type}</span>
-                  </div>
-                  <p className="text-xs text-charcoal/50 font-semibold mt-1 leading-relaxed">{notif.message}</p>
-                  <p className="text-[9px] font-bold text-charcoal/30 mt-2">{notif.date}</p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      )}
-    </div>
+    <NotificationsPageShell
+      accent="terracotta"
+      roleFilter="admin"
+      notifications={notifications as DashboardNotification[]}
+      preferences={ADMIN_PREFERENCES}
+      initialPrefs={{
+        registrations: true,
+        approvals: true,
+        payments: true,
+        system: true,
+      }}
+      unreadLabel={(n) => `${n} system alerts awaiting action`}
+      preferencesTitle="System Dispatch Rules"
+      preferencesDescription="Toggle live alerts for standard operational flows."
+      preferencesButtonLabel="Configs"
+      onMarkRead={markNotificationRead}
+      onMarkAll={() =>
+        setNotifications((prev) =>
+          prev.map((n) =>
+            n.forRole === "admin" || n.forRole === "all" ? { ...n, read: true } : n
+          )
+        )
+      }
+      onDelete={(id) => setNotifications((prev) => prev.filter((n) => n.id !== id))}
+    />
   );
 }

@@ -19,6 +19,7 @@ interface CustomSelectProps {
   align?: "left" | "right";
   buttonClassName?: string;
   inlineChevron?: boolean;
+  accent?: "indigo" | "terracotta";
 }
 
 export default function CustomSelect({
@@ -31,6 +32,7 @@ export default function CustomSelect({
   align = "left",
   buttonClassName = "",
   inlineChevron = false,
+  accent = "terracotta",
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,8 +66,12 @@ export default function CustomSelect({
           setSearchQuery("");
         }}
         className={inlineChevron
-          ? `flex items-center gap-1.5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/40 rounded-lg ${buttonClassName}`
-          : `w-full flex items-center justify-between text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/40 rounded-xl ${buttonClassName}`
+          ? `flex items-center gap-1.5 text-left focus:outline-none focus-visible:ring-2 rounded-lg ${
+              accent === "indigo" ? "focus-visible:ring-indigo/40" : "focus-visible:ring-terracotta/40"
+            } ${buttonClassName}`
+          : `w-full flex items-center justify-between text-left focus:outline-none focus-visible:ring-2 rounded-xl ${
+              accent === "indigo" ? "focus-visible:ring-indigo/40" : "focus-visible:ring-terracotta/40"
+            } ${buttonClassName}`
         }
       >
         <span className="truncate">
@@ -99,7 +105,9 @@ export default function CustomSelect({
                     placeholder="Search..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 text-xs text-charcoal bg-white border border-sand rounded-lg focus:outline-none focus:border-terracotta transition-colors"
+                    className={`w-full pl-8 pr-3 py-1.5 text-xs text-charcoal bg-white border border-sand rounded-lg focus:outline-none transition-colors ${
+                      accent === "indigo" ? "focus:border-indigo" : "focus:border-terracotta"
+                    }`}
                     onClick={(e) => e.stopPropagation()}
                   />
                 </div>
@@ -117,7 +125,11 @@ export default function CustomSelect({
                       setIsOpen(false);
                     }}
                     className={`w-full text-left px-3.5 py-2 text-sm flex items-center justify-between hover:bg-sand/30 transition-colors ${
-                      value === opt.value ? "text-terracotta font-bold bg-terracotta/5" : "text-charcoal font-medium"
+                      value === opt.value
+                        ? accent === "indigo"
+                          ? "text-indigo font-bold bg-indigo/5"
+                          : "text-terracotta font-bold bg-terracotta/5"
+                        : "text-charcoal font-medium"
                     }`}
                   >
                     <span className="truncate">{opt.label}</span>

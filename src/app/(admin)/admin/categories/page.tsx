@@ -1,13 +1,24 @@
 "use client";
 import React, { useState } from "react";
 import { useApp, Category } from "@/context/AppContext";
-import { Plus, Trash2, Edit2, ToggleLeft, ToggleRight, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
+import {
+  DashboardPageHeader,
+  Alert,
+  Switch,
+  Badge,
+  ConfirmDialog,
+  Button,
+  TextInput,
+  Panel,
+} from "@/components/ui";
 
 export default function AdminCategoriesPage() {
   const { categories, setCategories, addLog, userEmail } = useApp();
   const [newName, setNewName] = useState("");
   const [newIcon, setNewIcon] = useState("🏠");
   const [saved, setSaved] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
 
   const handleAdd = () => {
     if (!newName.trim()) return;
@@ -19,40 +30,36 @@ export default function AdminCategoriesPage() {
   };
 
   const toggleActive = (id: string) => setCategories(prev => prev.map(c => c.id === id ? { ...c, active: !c.active } : c));
-  const handleDelete = (id: string, name: string) => {
-    if (!confirm(`Delete category "${name}"?`)) return;
-    setCategories(prev => prev.filter(c => c.id !== id));
-    addLog({ action: "Category Deleted", performedBy: userEmail, role: "Admin", target: name });
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    setCategories(prev => prev.filter(c => c.id !== pendingDelete.id));
+    addLog({ action: "Category Deleted", performedBy: userEmail, role: "Admin", target: pendingDelete.name });
+    setPendingDelete(null);
   };
 
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-serif font-black text-charcoal">Categories</h1>
-        <p className="text-charcoal/40 text-sm font-semibold mt-1">Manage property type categories</p>
-      </div>
+      <DashboardPageHeader
+        title="Categories"
+        description="Manage property type categories"
+      />
 
       {saved && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-3">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-          <span className="text-emerald-600 text-sm font-bold">Category added!</span>
-        </div>
+        <Alert variant="success" title="Category added!" onDismiss={() => setSaved(false)} />
       )}
 
-      {/* Add New */}
-      <div className="bg-white/80 border border-indigo/10 rounded-2xl p-5 shadow-sm">
-        <h2 className="text-sm font-serif font-black text-charcoal mb-4">Add Category</h2>
+      <Panel title="Add Category">
         <div className="flex gap-3 flex-wrap">
-          <input value={newIcon} onChange={e => setNewIcon(e.target.value)} placeholder="Icon (emoji)" className="bg-sand/35 border border-indigo/5 text-charcoal text-center text-xl w-16 px-3 py-2.5 rounded-xl focus:outline-none" maxLength={2} />
-          <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Category name" className="flex-1 min-w-[200px] bg-sand/35 border border-indigo/5 focus:border-terracotta/50 text-charcoal placeholder-charcoal/40 text-sm font-semibold px-4 py-2.5 rounded-xl focus:outline-none" />
-          <button onClick={handleAdd} className="flex items-center gap-2 px-5 py-2.5 bg-terracotta hover:bg-terracotta-hover text-white text-xs font-black rounded-xl transition-all cursor-pointer shadow-md shadow-terracotta/15">
+          <TextInput value={newIcon} onChange={e => setNewIcon(e.target.value)} placeholder="Icon" className="text-center text-xl w-16" maxLength={2} />
+          <TextInput value={newName} onChange={e => setNewName(e.target.value)} placeholder="Category name" className="flex-1 min-w-[200px]" />
+          <Button onClick={handleAdd} size="md">
             <Plus className="w-4 h-4" /> Add
-          </button>
+          </Button>
         </div>
-      </div>
+      </Panel>
 
-      {/* List */}
-      <div className="bg-white/80 border border-indigo/10 rounded-2xl overflow-hidden shadow-sm">
+      <Panel padding="none">
         <div className="divide-y divide-indigo/5">
           {categories.map(cat => (
             <div key={cat.id} className="flex items-center gap-4 px-5 py-4 hover:bg-indigo/5 transition-colors">
@@ -61,21 +68,39 @@ export default function AdminCategoriesPage() {
                 <p className="text-sm font-bold text-charcoal">{cat.name}</p>
                 <p className="text-[10px] text-charcoal/40 font-semibold">{cat.count} properties</p>
               </div>
-              <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded border ${cat.active ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "bg-white/10 text-charcoal/40 border-indigo/5"}`}>
+              <Badge status={cat.active ? "active" : "inactive"} size="sm">
                 {cat.active ? "Active" : "Inactive"}
-              </span>
+              </Badge>
               <div className="flex items-center gap-2">
-                <button onClick={() => toggleActive(cat.id)} className="p-2 bg-indigo/5 hover:bg-indigo/10 text-charcoal/40 hover:text-indigo rounded-lg transition-all cursor-pointer" title="Toggle">
-                  {cat.active ? <ToggleRight className="w-4 h-4 text-emerald-600" /> : <ToggleLeft className="w-4 h-4" />}
-                </button>
-                <button onClick={() => handleDelete(cat.id, cat.name)} className="p-2 bg-indigo/5 hover:bg-rose-500/10 text-charcoal/40 hover:text-rose-500 rounded-lg transition-all cursor-pointer">
+                <Switch
+                  checked={cat.active}
+                  onCheckedChange={() => toggleActive(cat.id)}
+                  size="sm"
+                  accent="terracotta"
+                  aria-label={`Toggle ${cat.name}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setPendingDelete({ id: cat.id, name: cat.name })}
+                  className="p-2 bg-indigo/5 hover:bg-rose-500/10 text-charcoal/40 hover:text-rose-500 rounded-lg transition-all cursor-pointer"
+                >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </Panel>
+
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        onClose={() => setPendingDelete(null)}
+        onConfirm={confirmDelete}
+        title="Delete category?"
+        description={pendingDelete ? `Delete category "${pendingDelete.name}"?` : undefined}
+        confirmLabel="Delete"
+        tone="danger"
+      />
     </div>
   );
 }

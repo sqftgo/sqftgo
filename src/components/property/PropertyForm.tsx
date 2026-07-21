@@ -9,8 +9,16 @@ import {
   FURNISHING_OPTIONS,
   AMENITIES,
 } from "@/constants";
-import CustomSelect from "@/components/ui/CustomSelect";
-import PropertyCard from "@/components/ui/PropertyCard";
+import {
+  CustomSelect,
+  FormField,
+  TextInput,
+  TextArea,
+  Alert,
+  Button,
+  SearchInput,
+  PropertyCard,
+} from "@/components/ui";
 import {
   ChevronRight,
   ChevronLeft,
@@ -195,10 +203,6 @@ export type PropertyFormProps = {
   onSubmit: (data: PropertyFormSubmitData) => void;
 };
 
-const inputClassName =
-  "w-full bg-sand/20 border border-indigo/10 focus:border-indigo/40 hover:border-indigo/25 text-charcoal placeholder-charcoal/30 text-xs font-semibold px-4 py-3 rounded-xl focus:outline-none transition-all duration-200";
-const textareaClassName =
-  "w-full bg-sand/20 border border-indigo/10 focus:border-indigo/40 hover:border-indigo/25 text-charcoal placeholder-charcoal/30 text-xs font-semibold px-4 py-3 rounded-xl focus:outline-none resize-none transition-all duration-200";
 const labelClassName = "text-[9px] font-black text-charcoal/45 uppercase tracking-widest";
 const selectBtnClass =
   "bg-sand/20 border border-indigo/10 text-charcoal text-xs font-semibold rounded-xl px-4 py-3 hover:border-indigo/25 transition-colors cursor-pointer w-full text-left flex items-center justify-between";
@@ -433,13 +437,14 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                 Complete the wizard to publish your listing or save as draft.
               </p>
             </div>
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => setIsPreviewOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo/5 border border-indigo/10 hover:bg-indigo/15 text-indigo text-xs font-bold rounded-xl transition-all cursor-pointer shadow-sm"
             >
               <Eye className="w-4 h-4" /> Preview both formats
-            </button>
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -517,72 +522,57 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                     </div>
 
                     <div className="space-y-4 text-left">
-                      <div className="flex flex-col gap-1.5">
-                        <label className={labelClassName}>
-                          Property Title <span className="text-rose-500">*</span>
-                        </label>
-                        <input
+                      <FormField
+                        label="Property Title"
+                        required
+                        hint="Make it descriptive and highlight key selling points."
+                      >
+                        <TextInput
                           value={form.title}
                           onChange={(e) => set("title", e.target.value)}
                           placeholder="e.g. Ultra Luxury Lake-Facing Villa"
-                          className={inputClassName}
                         />
-                        <span className="text-[10px] text-charcoal/40 font-semibold">
-                          Make it descriptive and highlight key selling points.
-                        </span>
-                      </div>
+                      </FormField>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1.5">
-                          <label className={labelClassName}>
-                            Property Type <span className="text-rose-500">*</span>
-                          </label>
+                        <FormField label="Property Type" required>
                           <CustomSelect
                             options={PROPERTY_TYPES.map((t) => ({ label: t, value: t }))}
                             value={form.type}
                             onChange={(val) => set("type", val)}
                             buttonClassName={selectBtnClass}
                           />
-                        </div>
+                        </FormField>
 
-                        <div className="flex flex-col gap-1.5">
-                          <label className={labelClassName}>
-                            Listing Purpose <span className="text-rose-500">*</span>
-                          </label>
+                        <FormField label="Listing Purpose" required>
                           <CustomSelect
                             options={PURPOSES}
                             value={form.purpose}
                             onChange={(val) => set("purpose", val)}
                             buttonClassName={selectBtnClass}
                           />
-                        </div>
+                        </FormField>
                       </div>
 
-                      <div className="flex flex-col gap-1.5">
-                        <label className={labelClassName}>
-                          Description <span className="text-rose-500">*</span>
-                        </label>
-                        <textarea
+                      <FormField label="Description" required>
+                        <TextArea
                           value={form.description}
                           onChange={(e) => set("description", e.target.value)}
                           rows={5}
                           placeholder="Describe the property, architecture, ventilation, location perks, and design details..."
-                          className={textareaClassName}
                         />
-                      </div>
+                      </FormField>
 
-                      <div className="flex flex-col gap-1.5">
-                        <label className={labelClassName}>RERA ID (Optional)</label>
-                        <input
+                      <FormField
+                        label="RERA ID (Optional)"
+                        hint="Properties with a valid RERA ID are flagged as verified."
+                      >
+                        <TextInput
                           value={form.reraId}
                           onChange={(e) => set("reraId", e.target.value)}
                           placeholder="e.g. RAJ/RERA/P/2023/1204"
-                          className={inputClassName}
                         />
-                        <span className="text-[10px] text-charcoal/40 font-semibold">
-                          Properties with a valid RERA ID are flagged as verified.
-                        </span>
-                      </div>
+                      </FormField>
                     </div>
                   </motion.div>
                 )}
@@ -606,10 +596,7 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
 
                     <div className="space-y-5 text-left">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1.5">
-                          <label className={labelClassName}>
-                            City <span className="text-rose-500">*</span>
-                          </label>
+                        <FormField label="City" required>
                           <CustomSelect
                             options={CITIES_WITHOUT_ALL.map((c) => ({ label: c, value: c }))}
                             value={form.city}
@@ -617,56 +604,45 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                             searchable
                             buttonClassName={selectBtnClass}
                           />
-                        </div>
+                        </FormField>
 
-                        <div className="flex flex-col gap-1.5">
-                          <label className={labelClassName}>
-                            Locality / Area <span className="text-rose-500">*</span>
-                          </label>
-                          <input
+                        <FormField label="Locality / Area" required>
+                          <SearchInput
                             value={form.locality}
-                            onChange={(e) => set("locality", e.target.value)}
+                            onChange={(val) => set("locality", val)}
                             placeholder="e.g. Lake Palace Road, Fatehsagar"
-                            className={inputClassName}
+                            accent="terracotta"
+                            containerClassName="w-full min-w-0"
                           />
-                        </div>
+                        </FormField>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="flex flex-col gap-1.5">
-                          <label className={labelClassName}>State</label>
-                          <input
+                        <FormField label="State">
+                          <TextInput
                             value={form.state}
                             onChange={(e) => set("state", e.target.value)}
                             placeholder="e.g. Rajasthan"
-                            className={inputClassName}
                           />
-                        </div>
+                        </FormField>
 
-                        <div className="flex flex-col gap-1.5">
-                          <label className={labelClassName}>
-                            Area (sq.ft.) <span className="text-rose-500">*</span>
-                          </label>
-                          <input
+                        <FormField label="Area (sq.ft.)" required>
+                          <TextInput
                             type="number"
                             value={form.size}
                             onChange={(e) => set("size", e.target.value)}
                             placeholder="e.g. 2400"
-                            className={inputClassName}
                           />
-                        </div>
+                        </FormField>
 
-                        <div className="flex flex-col gap-1.5">
-                          <label className={labelClassName}>
-                            Furnishing <span className="text-rose-500">*</span>
-                          </label>
+                        <FormField label="Furnishing" required>
                           <CustomSelect
                             options={[...FURNISHING_OPTIONS].map((f) => ({ label: f, value: f }))}
                             value={form.furnished}
                             onChange={(val) => set("furnished", val)}
                             buttonClassName={selectBtnClass}
                           />
-                        </div>
+                        </FormField>
                       </div>
 
                       <div>
@@ -717,29 +693,24 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                     </div>
 
                     <div className="space-y-5 text-left">
-                      <div className="flex flex-col gap-1.5 max-w-sm">
-                        <label className={labelClassName}>
-                          Listed Price (₹) <span className="text-rose-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo/60" />
-                          <input
+                      <div className="max-w-sm space-y-1.5">
+                        <FormField label="Listed Price (₹)" required>
+                          <TextInput
                             type="number"
                             value={form.price}
                             onChange={(e) => set("price", e.target.value)}
                             placeholder="e.g. 15000000"
-                            className="w-full bg-sand/20 border border-indigo/10 focus:border-indigo/40 hover:border-indigo/25 text-charcoal placeholder-charcoal/30 text-xs font-semibold px-4 py-3 pl-10 rounded-xl focus:outline-none transition-all duration-200"
                           />
-                        </div>
-                        {form.price && (
-                          <p className="text-[10px] text-indigo font-bold bg-indigo/5 border border-indigo/10 px-3 py-1.5 rounded-lg w-fit mt-1">
+                        </FormField>
+                        {form.price ? (
+                          <p className="text-[10px] text-indigo font-bold bg-indigo/5 border border-indigo/10 px-3 py-1.5 rounded-lg w-fit">
                             {new Intl.NumberFormat("en-IN", {
                               style: "currency",
                               currency: "INR",
                               maximumFractionDigits: 0,
                             }).format(parseInt(form.price))}
                           </p>
-                        )}
+                        ) : null}
                       </div>
 
                       <div className="bg-sand/15 rounded-3xl p-6 border border-indigo/5 space-y-4">
@@ -878,20 +849,22 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                       </div>
 
                       <div className="flex gap-2">
-                        <input
+                        <TextInput
                           type="text"
                           value={newImageUrl}
                           onChange={(e) => setNewImageUrl(e.target.value)}
                           placeholder="Add image URL (e.g. https://images.unsplash.com/...)"
-                          className="flex-1 bg-sand/20 border border-indigo/10 focus:border-indigo/40 hover:border-indigo/25 text-charcoal placeholder-charcoal/30 text-xs font-semibold px-4 py-3 rounded-xl focus:outline-none"
+                          className="flex-1"
                         />
-                        <button
+                        <Button
                           type="button"
+                          variant="secondary"
+                          size="sm"
                           onClick={() => addImageUrl(newImageUrl)}
-                          className="px-4 py-3 bg-indigo hover:bg-indigo-hover text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-1 shadow-sm shrink-0 font-bold"
+                          className="shrink-0"
                         >
                           <Plus className="w-4 h-4" /> Add
-                        </button>
+                        </Button>
                       </div>
 
                       {form.images.length > 0 && (
@@ -920,27 +893,23 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                         </p>
 
                         <div className="grid grid-cols-1 gap-4">
-                          <div className="flex flex-col gap-1.5">
-                            <label className={labelClassName}>SEO Title (Optional)</label>
-                            <input
+                          <FormField label="SEO Title (Optional)">
+                            <TextInput
                               value={form.seoTitle}
                               onChange={(e) => set("seoTitle", e.target.value)}
                               placeholder={form.title || "Auto-filled from property title"}
-                              className={inputClassName}
                             />
-                          </div>
+                          </FormField>
 
-                          <div className="flex flex-col gap-1.5">
-                            <label className={labelClassName}>SEO Description (Optional)</label>
-                            <textarea
+                          <FormField label="SEO Description (Optional)">
+                            <TextArea
                               value={form.seoDescription}
                               onChange={(e) => set("seoDescription", e.target.value)}
                               rows={3}
                               placeholder="Max 160 chars for search engines..."
                               maxLength={160}
-                              className={textareaClassName}
                             />
-                          </div>
+                          </FormField>
                         </div>
 
                         <div className="bg-white border border-sand/60 rounded-3xl p-5 shadow-sm space-y-1.5">
@@ -1041,41 +1010,46 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
               </AnimatePresence>
 
               <div className="flex items-center justify-between border-t border-sand/50 pt-6 mt-8">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => setStep((s) => Math.max(0, s - 1))}
                   disabled={step === 0}
-                  className="flex items-center gap-1.5 px-5 py-3 bg-white border border-sand hover:bg-sand/20 text-charcoal text-xs font-bold rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <ChevronLeft className="w-4 h-4" /> Previous
-                </button>
+                </Button>
 
                 <div className="flex items-center gap-3">
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="sm"
                     onClick={() => handleCreateSubmit("Draft")}
-                    className="flex items-center gap-1.5 px-4 py-3 bg-white border border-sand hover:border-indigo hover:text-indigo text-charcoal/70 text-xs font-bold rounded-xl transition-all cursor-pointer"
                   >
                     <Save className="w-4 h-4" /> Save Draft
-                  </button>
+                  </Button>
 
                   {step < CREATE_STEPS.length - 1 ? (
-                    <button
+                    <Button
                       type="button"
+                      variant="secondary"
+                      size="sm"
                       onClick={() => canNext && setStep((s) => s + 1)}
                       disabled={!canNext}
-                      className="flex items-center gap-1.5 px-6 py-3 bg-indigo hover:bg-indigo-hover text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-md shadow-indigo/15"
                     >
                       Next <ChevronRight className="w-4 h-4" />
-                    </button>
+                    </Button>
                   ) : (
-                    <button
+                    <Button
                       type="button"
+                      variant="primary"
+                      size="sm"
                       onClick={() => handleCreateSubmit("Pending Review")}
-                      className="flex items-center gap-1.5 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-md shadow-emerald-600/15"
+                      className="bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/15"
                     >
                       <Send className="w-4 h-4" /> Publish Listing
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -1094,12 +1068,15 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8 border-b border-sand/40 pb-5 bg-white/60 border border-indigo/10 rounded-3xl p-5 shadow-sm">
           <div className="flex items-center gap-3.5">
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => router.back()}
-              className="p-2 border border-sand bg-white hover:bg-sand/30 text-charcoal rounded-xl transition-colors cursor-pointer"
+              aria-label="Go back"
+              className="px-2.5"
             >
               <ArrowLeft className="w-4 h-4" />
-            </button>
+            </Button>
             <div className="text-left">
               <h1 className="text-2xl font-serif font-black text-indigo">Edit Property</h1>
               <p className="text-charcoal/50 text-xs font-semibold mt-0.5">
@@ -1108,22 +1085,23 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
             </div>
           </div>
 
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => setIsPreviewOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo/5 border border-indigo/10 hover:bg-indigo/15 text-indigo text-xs font-bold rounded-xl transition-all cursor-pointer shadow-sm"
           >
             <Eye className="w-4 h-4" /> Preview both formats
-          </button>
+          </Button>
         </div>
 
         {saved && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3 text-left mb-6">
-            <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-            <span className="text-emerald-700 text-sm font-bold">
-              Changes saved successfully! Redirecting...
-            </span>
-          </div>
+          <Alert
+            variant="success"
+            title="Changes saved successfully!"
+            description="Redirecting..."
+            className="mb-6 text-left"
+          />
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -1137,56 +1115,48 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
               </div>
 
               <div className="space-y-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className={labelClassName}>Property Title *</label>
-                  <input
+                <FormField label="Property Title" required>
+                  <TextInput
                     value={form.title}
                     onChange={(e) => set("title", e.target.value)}
                     placeholder="e.g. Ultra Luxury Lake-Facing Villa"
-                    className={inputClassName}
                   />
-                </div>
+                </FormField>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className={labelClassName}>Property Type</label>
+                  <FormField label="Property Type">
                     <CustomSelect
                       options={PROPERTY_TYPES.map((t) => ({ label: t, value: t }))}
                       value={form.type}
                       onChange={(val) => set("type", val)}
                       buttonClassName={selectBtnClass}
                     />
-                  </div>
+                  </FormField>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label className={labelClassName}>Listing Purpose</label>
+                  <FormField label="Listing Purpose">
                     <CustomSelect
                       options={PURPOSES}
                       value={form.purpose}
                       onChange={(val) => set("purpose", val)}
                       buttonClassName={selectBtnClass}
                     />
-                  </div>
+                  </FormField>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className={labelClassName}>Description *</label>
-                  <textarea
+                <FormField label="Description" required>
+                  <TextArea
                     value={form.description}
                     onChange={(e) => set("description", e.target.value)}
                     rows={5}
-                    className={textareaClassName}
                   />
-                </div>
+                </FormField>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className={labelClassName}>RERA ID (Optional)</label>
-                  <input
+                <FormField label="RERA ID (Optional)">
+                  <TextInput
                     value={form.reraId}
                     onChange={(e) => set("reraId", e.target.value)}
-                    className={inputClassName}
                   />
-                </div>
+                </FormField>
               </div>
             </div>
 
@@ -1202,8 +1172,7 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
 
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className={labelClassName}>City</label>
+                  <FormField label="City">
                     <CustomSelect
                       options={CITIES_WITHOUT_ALL.map((c) => ({ label: c, value: c }))}
                       value={form.city}
@@ -1211,47 +1180,43 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                       searchable
                       buttonClassName={selectBtnClass}
                     />
-                  </div>
+                  </FormField>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label className={labelClassName}>Locality *</label>
-                    <input
+                  <FormField label="Locality" required>
+                    <SearchInput
                       value={form.locality}
-                      onChange={(e) => set("locality", e.target.value)}
-                      className={inputClassName}
+                      onChange={(val) => set("locality", val)}
+                      placeholder="Locality / area"
+                      accent="terracotta"
+                      containerClassName="w-full min-w-0"
                     />
-                  </div>
+                  </FormField>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label className={labelClassName}>State</label>
-                    <input
+                  <FormField label="State">
+                    <TextInput
                       value={form.state}
                       onChange={(e) => set("state", e.target.value)}
-                      className={inputClassName}
                     />
-                  </div>
+                  </FormField>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className={labelClassName}>Size (sq.ft.) *</label>
-                    <input
+                  <FormField label="Size (sq.ft.)" required>
+                    <TextInput
                       type="number"
                       value={form.size}
                       onChange={(e) => set("size", e.target.value)}
-                      className={inputClassName}
                     />
-                  </div>
+                  </FormField>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label className={labelClassName}>Furnishing</label>
+                  <FormField label="Furnishing">
                     <CustomSelect
                       options={[...FURNISHING_OPTIONS].map((f) => ({ label: f, value: f }))}
                       value={form.furnished}
                       onChange={(val) => set("furnished", val)}
                       buttonClassName={selectBtnClass}
                     />
-                  </div>
+                  </FormField>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-sand/10 border border-indigo/5 p-4 rounded-2xl">
@@ -1286,37 +1251,33 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className={labelClassName}>Price (₹) *</label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo/60" />
-                    <input
+                <div className="space-y-1.5">
+                  <FormField label="Price (₹)" required>
+                    <TextInput
                       type="number"
                       value={form.price}
                       onChange={(e) => set("price", e.target.value)}
-                      className="w-full bg-sand/20 border border-indigo/10 focus:border-indigo/40 hover:border-indigo/25 text-charcoal placeholder-charcoal/30 text-xs font-semibold px-4 py-3 pl-10 rounded-xl focus:outline-none transition-all duration-200"
                     />
-                  </div>
-                  {form.price && (
-                    <p className="text-[10px] text-indigo font-bold bg-indigo/5 border border-indigo/10 px-3 py-1 rounded-lg w-fit mt-1">
+                  </FormField>
+                  {form.price ? (
+                    <p className="text-[10px] text-indigo font-bold bg-indigo/5 border border-indigo/10 px-3 py-1 rounded-lg w-fit">
                       {new Intl.NumberFormat("en-IN", {
                         style: "currency",
                         currency: "INR",
                         maximumFractionDigits: 0,
                       }).format(parseInt(form.price))}
                     </p>
-                  )}
+                  ) : null}
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className={labelClassName}>Status</label>
+                <FormField label="Status">
                   <CustomSelect
                     options={STATUSES}
                     value={form.status}
                     onChange={(val) => set("status", val as Property["status"])}
                     buttonClassName={selectBtnClass}
                   />
-                </div>
+                </FormField>
               </div>
             </div>
 
@@ -1367,25 +1328,21 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
               </div>
 
               <div className="space-y-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className={labelClassName}>SEO Title</label>
-                  <input
+                <FormField label="SEO Title">
+                  <TextInput
                     value={form.seoTitle}
                     onChange={(e) => set("seoTitle", e.target.value)}
                     placeholder={form.title}
-                    className={inputClassName}
                   />
-                </div>
+                </FormField>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className={labelClassName}>SEO Description</label>
-                  <textarea
+                <FormField label="SEO Description">
+                  <TextArea
                     value={form.seoDescription}
                     onChange={(e) => set("seoDescription", e.target.value)}
                     rows={3}
-                    className={textareaClassName}
                   />
-                </div>
+                </FormField>
 
                 <div className="bg-white border border-sand/65 rounded-3xl p-5 shadow-sm space-y-1.5">
                   <p className="text-[9px] font-black text-indigo/60 uppercase tracking-widest mb-1.5">
@@ -1408,19 +1365,13 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
             </div>
 
             <div className="flex justify-between items-center bg-white/60 border border-indigo/10 rounded-3xl p-5 shadow-sm">
-              <button
-                onClick={() => router.back()}
-                className="px-5 py-2.5 text-charcoal/50 text-xs font-bold hover:text-charcoal transition-colors cursor-pointer"
-              >
+              <Button variant="ghost" size="sm" onClick={() => router.back()}>
                 Cancel
-              </button>
+              </Button>
 
-              <button
-                onClick={handleEditSave}
-                className="flex items-center gap-1.5 px-6 py-2.5 bg-indigo hover:bg-indigo-hover text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-md shadow-indigo/15"
-              >
+              <Button variant="secondary" size="sm" onClick={handleEditSave}>
                 <Save className="w-4 h-4" /> Save Changes
-              </button>
+              </Button>
             </div>
           </div>
         </div>

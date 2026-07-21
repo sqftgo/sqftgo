@@ -4,9 +4,7 @@ import React, { use, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
-import { formatIndianCurrency } from "@/components/ui/PropertyCard";
-import InquiryForm from "@/components/ui/InquiryForm";
-import PropertyCard from "@/components/ui/PropertyCard";
+import { formatIndianCurrency, InquiryForm, PropertyCard, Avatar } from "@/components/ui";
 import { 
   MapPin, 
   BedDouble, 
@@ -589,9 +587,13 @@ export default function PropertyDetailPage({ params }: PageProps) {
                 <div className="flex flex-col gap-1">
                   <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest block pb-2 border-b border-sand/40">Audit Certificate</span>
                   <div className="flex items-center gap-2.5 mt-2">
-                    <div className="w-8 h-8 rounded-lg bg-indigo text-white flex items-center justify-center font-bold text-sm">
-                      {property.ownerName.charAt(0)}
-                    </div>
+                    <Avatar
+                      name={property.ownerName}
+                      size="sm"
+                      shape="square"
+                      tone="indigo"
+                      className="w-8 h-8 bg-indigo text-white border-0"
+                    />
                     <div className="flex flex-col text-left">
                       <span className="font-extrabold text-indigo">Inspected by Sun Valley</span>
                       <span className="text-[9px] text-charcoal/50">Verified on {property.verifiedDate || "2026-06-25"}</span>

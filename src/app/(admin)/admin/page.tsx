@@ -4,6 +4,14 @@ import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import { Users, Briefcase, Building2, CheckSquare, TrendingUp, MessageSquare, ArrowUpRight, Clock } from "lucide-react";
 import { motion } from "framer-motion";
+import {
+  DashboardPageHeader,
+  StatCard,
+  KpiGrid,
+  Badge,
+  Panel,
+  Alert,
+} from "@/components/ui";
 
 export default function AdminDashboardPage() {
   const { properties, mockUsers, directoryProfiles, inquiries, enquiries, activityLogs } = useApp();
@@ -16,58 +24,50 @@ export default function AdminDashboardPage() {
   const totalInquiries = Object.values(inquiries).reduce((a, b) => a + b.length, 0) + enquiries.length;
 
   const stats = [
-    { label: "Total Users", value: totalUsers, icon: Users, color: "text-indigo", bg: "bg-indigo/10 border-indigo/10", link: "/admin/users" },
-    { label: "Dealers", value: totalDealers, icon: Briefcase, color: "text-purple-600", bg: "bg-purple-500/10 border-purple-500/10", link: "/admin/dealers" },
-    { label: "Properties", value: totalProperties, icon: Building2, color: "text-emerald-600", bg: "bg-emerald-500/10 border-emerald-500/10", link: "/admin/properties" },
-    { label: "Pending Approval", value: pendingApprovals, icon: CheckSquare, color: "text-amber-600", bg: "bg-amber-500/10 border-amber-500/10", link: "/admin/approvals" },
-    { label: "Active Listings", value: activeProperties, icon: TrendingUp, color: "text-sky-600", bg: "bg-sky-500/10 border-sky-500/10", link: "/admin/properties" },
-    { label: "Total Inquiries", value: totalInquiries, icon: MessageSquare, color: "text-terracotta", bg: "bg-terracotta/10 border-terracotta/10", link: "/admin/reports" },
+    { label: "Total Users", value: totalUsers, icon: Users, tone: "indigo" as const, link: "/admin/users" },
+    { label: "Dealers", value: totalDealers, icon: Briefcase, tone: "default" as const, link: "/admin/dealers" },
+    { label: "Properties", value: totalProperties, icon: Building2, tone: "success" as const, link: "/admin/properties" },
+    { label: "Pending Approval", value: pendingApprovals, icon: CheckSquare, tone: "warning" as const, link: "/admin/approvals" },
+    { label: "Active Listings", value: activeProperties, icon: TrendingUp, tone: "indigo" as const, link: "/admin/properties" },
+    { label: "Total Inquiries", value: totalInquiries, icon: MessageSquare, tone: "terracotta" as const, link: "/admin/reports" },
   ];
-
-  const formatPrice = (v: number) => "₹" + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(v);
 
   return (
     <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 border border-indigo/10 rounded-3xl p-6 md:p-8 shadow-sm backdrop-blur-sm">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-serif font-black text-charcoal leading-tight">Admin Dashboard</h1>
-          <p className="text-charcoal/50 text-xs md:text-sm font-semibold mt-1.5">Platform overview and management controls</p>
-        </div>
-      </div>
+      <DashboardPageHeader
+        title="Admin Dashboard"
+        description="Platform overview and management controls"
+      />
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
+      <KpiGrid className="xl:grid-cols-3">
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
             <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
-              <Link href={stat.link} className="bg-white/80 border border-indigo/10 rounded-2xl p-5 flex flex-col gap-3 hover:shadow-md transition-shadow block">
-                <div className={`w-9 h-9 ${stat.bg} border rounded-xl flex items-center justify-center`}>
-                  <Icon className={`w-4 h-4 ${stat.color}`} />
-                </div>
-                <div>
-                  <p className="text-3xl font-serif font-black text-charcoal">{stat.value}</p>
-                  <p className="text-[10px] font-black text-charcoal/40 uppercase tracking-widest mt-1">{stat.label}</p>
-                </div>
+              <Link href={stat.link} className="block">
+                <StatCard
+                  label={stat.label}
+                  value={stat.value}
+                  tone={stat.tone}
+                  icon={<Icon className="w-4 h-4" />}
+                />
               </Link>
             </motion.div>
           );
         })}
-      </div>
+      </KpiGrid>
 
-      {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {pendingApprovals > 0 && (
-          <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-black text-amber-600 uppercase tracking-wider">Action Required</p>
-              <p className="text-base font-serif font-black text-charcoal mt-1">{pendingApprovals} listings awaiting review</p>
-            </div>
-            <Link href="/admin/approvals" className="px-4 py-2 bg-amber-500/10 border border-amber-500/30 text-amber-600 text-xs font-bold rounded-xl hover:bg-amber-500/20 transition-colors">
+          <Alert
+            variant="warning"
+            title="Action Required"
+            description={`${pendingApprovals} listings awaiting review`}
+          >
+            <Link href="/admin/approvals" className="inline-block mt-3 px-4 py-2 bg-amber-500/10 border border-amber-500/30 text-amber-700 text-xs font-bold rounded-xl hover:bg-amber-500/20 transition-colors">
               Review Now
             </Link>
-          </div>
+          </Alert>
         )}
         <Link href="/admin/users" className="bg-white/80 border border-indigo/10 rounded-2xl p-5 flex items-center justify-between hover:shadow-md transition-shadow">
           <div>
@@ -78,16 +78,16 @@ export default function AdminDashboardPage() {
         </Link>
       </div>
 
-      {/* Recent Properties + Activity Log */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* Recent Properties */}
-        <div className="bg-white/80 border border-indigo/10 rounded-3xl overflow-hidden shadow-sm">
-          <div className="flex items-center justify-between p-5 border-b border-indigo/5 bg-white/40">
-            <h2 className="text-sm font-serif font-black text-charcoal">Recent Properties</h2>
+        <Panel
+          title="Recent Properties"
+          padding="none"
+          actions={
             <Link href="/admin/properties" className="text-[10px] font-black text-terracotta/80 hover:text-terracotta uppercase tracking-wider flex items-center gap-1">
               All <ArrowUpRight className="w-3 h-3" />
             </Link>
-          </div>
+          }
+        >
           <div className="divide-y divide-indigo/5">
             {properties.slice(0, 5).map(prop => (
               <div key={prop.id} className="flex items-center gap-3 p-4 hover:bg-indigo/5 transition-colors">
@@ -98,23 +98,21 @@ export default function AdminDashboardPage() {
                   <p className="text-xs font-bold text-charcoal truncate">{prop.title}</p>
                   <p className="text-[10px] text-charcoal/40 font-semibold">{prop.ownerName}</p>
                 </div>
-                <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded border ${
-                  prop.status === "Active" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" :
-                  prop.status === "Pending Review" ? "bg-amber-500/10 text-amber-600 border-amber-500/20" : "bg-white/10 text-charcoal/40 border-indigo/5"
-                }`}>{prop.status}</span>
+                <Badge status={prop.status} size="sm">{prop.status}</Badge>
               </div>
             ))}
           </div>
-        </div>
+        </Panel>
 
-        {/* Activity Log */}
-        <div className="bg-white/80 border border-indigo/10 rounded-3xl overflow-hidden shadow-sm">
-          <div className="flex items-center justify-between p-5 border-b border-indigo/5 bg-white/40">
-            <h2 className="text-sm font-serif font-black text-charcoal">Recent Activity</h2>
+        <Panel
+          title="Recent Activity"
+          padding="none"
+          actions={
             <Link href="/admin/logs" className="text-[10px] font-black text-terracotta/80 hover:text-terracotta uppercase tracking-wider flex items-center gap-1">
               All <ArrowUpRight className="w-3 h-3" />
             </Link>
-          </div>
+          }
+        >
           <div className="divide-y divide-indigo/5">
             {activityLogs.slice(0, 5).map(log => (
               <div key={log.id} className="p-4 flex items-start gap-3 hover:bg-indigo/5 transition-colors">
@@ -129,7 +127,7 @@ export default function AdminDashboardPage() {
               </div>
             ))}
           </div>
-        </div>
+        </Panel>
       </div>
     </div>
   );

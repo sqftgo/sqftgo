@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Property, useApp } from "@/context/AppContext";
 import { Send, CheckCircle2, User, Mail, Phone, MessageSquare, CheckCircle, ShieldAlert } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Avatar } from "./Avatar";
 
 interface InquiryFormProps {
   property: Property;
@@ -50,9 +51,12 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ property }) => {
       <div className="p-6 pb-5 flex flex-col gap-5 relative z-10 border-b border-sand/60">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo to-charcoal flex items-center justify-center text-white font-black text-xl shadow-md border-2 border-white">
-              {property.ownerName.charAt(0)}
-            </div>
+            <Avatar
+              name={property.ownerName}
+              size="lg"
+              tone="indigo"
+              className="w-14 h-14 text-xl shadow-md border-2 border-white bg-indigo text-white"
+            />
             <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center shadow-sm">
               <CheckCircle className="w-3 h-3 text-white" />
             </div>

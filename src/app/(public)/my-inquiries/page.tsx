@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 import { useApp } from "@/context/AppContext";
 import Link from "next/link";
 import { MessageSquare, MapPin, ArrowRight } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/ui";
 import { useRouter } from "next/navigation";
 
 export default function MyInquiriesPage() {

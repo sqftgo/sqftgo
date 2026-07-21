@@ -7,7 +7,7 @@ import {
   Sparkles, X, ChevronRight, ChevronLeft, Upload, Check, 
   Home, MapPin, Building2, Wallet, CalendarDays, UploadCloud 
 } from "lucide-react";
-import StepProgress from "@/components/ui/StepProgress";
+import { StepProgress } from "@/components/ui";
 
 const STEPS = [
   "Basic Details",

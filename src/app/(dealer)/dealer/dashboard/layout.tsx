@@ -1,17 +1,16 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { DEMO_ACCOUNTS } from "@/constants/demoAccounts";
 import { DashboardShell, type DashboardNavSection } from "@/components/layout/DashboardShell";
-import { Button } from "@/components/ui/Button";
+import { Button, DropdownMenu, Avatar } from "@/components/ui";
 import {
   LayoutDashboard, Building2, Plus, MessageSquare, BarChart3,
-  Mail, CreditCard, User, Settings, Bell, ChevronDown, ShieldAlert,
+  Mail, CreditCard, User, Settings, Bell, ChevronDown, ShieldAlert, LogOut,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 export default function DealerDashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -32,8 +31,6 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
     setUserName,
     setUserProfile,
   } = useApp();
-
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   const isBroker = isLoggedIn && (userRole === "broker" || userRole === "admin");
   const brokerProfile = directoryProfiles.find(
@@ -171,72 +168,35 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
         )}
       </Link>
       <div className="h-5 w-px bg-indigo/10" />
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-          className="flex items-center gap-2.5 hover:bg-indigo/5 px-2.5 py-1.5 rounded-xl transition-all cursor-pointer"
-          aria-expanded={profileDropdownOpen}
-          aria-haspopup="menu"
-        >
-          <div className="w-7 h-7 rounded-lg bg-indigo/10 border border-indigo/20 flex items-center justify-center text-indigo font-serif font-black text-xs shrink-0">
-            {brokerProfile?.ownerName?.charAt(0) || "D"}
+      <DropdownMenu
+        accent="indigo"
+        align="right"
+        trigger={
+          <div className="flex items-center gap-2.5 hover:bg-indigo/5 px-2.5 py-1.5 rounded-xl transition-all cursor-pointer">
+            <Avatar
+              name={brokerProfile?.ownerName || userName || "Dealer"}
+              size="xs"
+              shape="square"
+              tone="indigo"
+              className="w-7 h-7 text-xs font-serif"
+            />
+            <div className="hidden md:flex flex-col items-start leading-none text-left">
+              <span className="text-xs font-bold text-charcoal truncate max-w-[100px]">
+                {brokerProfile?.ownerName || userName || "Dealer User"}
+              </span>
+              <span className="text-[9px] text-charcoal/40 font-semibold mt-0.5 uppercase tracking-wide">
+                Broker
+              </span>
+            </div>
+            <ChevronDown className="w-3 h-3 text-charcoal/40" />
           </div>
-          <div className="hidden md:flex flex-col items-start leading-none text-left">
-            <span className="text-xs font-bold text-charcoal">
-              {brokerProfile?.ownerName || userName || "Dealer User"}
-            </span>
-            <span className="text-[9px] text-charcoal/40 font-semibold mt-0.5 uppercase tracking-wide">
-              Broker
-            </span>
-          </div>
-          <ChevronDown className="w-3 h-3 text-charcoal/40" />
-        </button>
-        <AnimatePresence>
-          {profileDropdownOpen && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setProfileDropdownOpen(false)} />
-              <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                transition={{ duration: 0.15 }}
-                className="absolute right-0 mt-2 w-48 bg-white border border-indigo/10 rounded-2xl p-2 shadow-lg z-50 flex flex-col"
-                role="menu"
-              >
-                <Link
-                  href="/dealer/dashboard/profile"
-                  onClick={() => setProfileDropdownOpen(false)}
-                  className="px-3 py-2 text-xs font-semibold text-charcoal/80 hover:text-indigo hover:bg-indigo/5 rounded-xl transition-colors text-left"
-                  role="menuitem"
-                >
-                  My Profile
-                </Link>
-                <Link
-                  href="/dealer/dashboard/settings"
-                  onClick={() => setProfileDropdownOpen(false)}
-                  className="px-3 py-2 text-xs font-semibold text-charcoal/80 hover:text-indigo hover:bg-indigo/5 rounded-xl transition-colors text-left"
-                  role="menuitem"
-                >
-                  Account Settings
-                </Link>
-                <div className="h-px bg-indigo/5 my-1.5" />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProfileDropdownOpen(false);
-                    handleLogout();
-                  }}
-                  className="px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors text-left cursor-pointer"
-                  role="menuitem"
-                >
-                  Log Out
-                </button>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-      </div>
+        }
+        items={[
+          { id: "profile", label: "My Profile", href: "/dealer/dashboard/profile", icon: User },
+          { id: "settings", label: "Account Settings", href: "/dealer/dashboard/settings", icon: Settings },
+          { id: "logout", label: "Log Out", onClick: handleLogout, variant: "danger", icon: LogOut, dividerBefore: true }
+        ]}
+      />
     </div>
   );
 

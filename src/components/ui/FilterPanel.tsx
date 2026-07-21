@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Filter, X, RefreshCw } from "lucide-react";
-import CustomSelect from "@/components/ui/CustomSelect";
+import CustomSelect from "./CustomSelect";
 import {
   CITIES,
   PROPERTY_TYPES,

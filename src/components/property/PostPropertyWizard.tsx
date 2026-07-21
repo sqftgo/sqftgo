@@ -10,8 +10,7 @@ import {
   FURNISHING_OPTIONS,
   AMENITIES,
 } from "@/constants";
-import StepProgress from "@/components/ui/StepProgress";
-import { formatIndianCurrency } from "@/components/ui/PropertyCard";
+import { StepProgress, formatIndianCurrency, ErrorState, Alert } from "@/components/ui";
 import {
   IndianRupee,
   ChevronRight,
@@ -65,18 +64,12 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
 
   if (!mounted || !canPost) {
     return (
-      <div className="container mx-auto px-6 py-20 max-w-xl text-center">
+      <div className="container mx-auto px-6 py-20 max-w-xl">
         {mounted && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="glassmorphism p-8 rounded-3xl border border-sand"
-          >
-            <h2 className="font-serif font-black text-2xl text-indigo mb-2">Access Denied</h2>
-            <p className="text-sm text-charcoal/60 mb-8">
-              Only verified brokers and administrators can list new properties. Redirecting...
-            </p>
-          </motion.div>
+          <ErrorState
+            title="Access Denied"
+            message="Only verified brokers and administrators can list new properties. Redirecting..."
+          />
         )}
       </div>
     );
@@ -555,9 +548,12 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
               <div className="min-h-[260px] relative z-10">{renderStepContent()}</div>
 
               {error && (
-                <p className="relative z-10 text-sm font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-4 py-2.5">
-                  {error}
-                </p>
+                <Alert
+                  variant="danger"
+                  title={error}
+                  className="relative z-10"
+                  onDismiss={() => setError(null)}
+                />
               )}
 
               <div className="flex items-center justify-between pt-6 border-t border-sand mt-4 relative z-10">

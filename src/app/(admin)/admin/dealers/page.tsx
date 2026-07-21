@@ -1,11 +1,20 @@
 "use client";
 import React, { useState } from "react";
 import { useApp } from "@/context/AppContext";
-import { Search, Edit2, Trash2, CheckCircle2, MapPin, Phone, Globe, ExternalLink } from "lucide-react";
+import { Trash2, CheckCircle2, MapPin, Phone, Globe, ExternalLink, MoreVertical } from "lucide-react";
+import {
+  DropdownMenu,
+  DashboardPageHeader,
+  SearchInput,
+  Avatar,
+  Badge,
+  ConfirmDialog,
+} from "@/components/ui";
 
 export default function AdminDealersPage() {
   const { directoryProfiles, setDirectoryProfiles, addLog, userEmail } = useApp();
   const [search, setSearch] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
 
   const dealers = directoryProfiles.filter(p => {
     const isDealerCat = p.category === "Agent & Broker" || p.category === "Property Consultant" || p.category === "Builder & Developer";
@@ -13,39 +22,44 @@ export default function AdminDealersPage() {
     return isDealerCat && matchSearch;
   });
 
-  const handleDelete = (id: string, name: string) => {
-    if (!confirm(`Remove dealer "${name}" from the platform?`)) return;
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    const { id, name } = pendingDelete;
     setDirectoryProfiles(prev => prev.filter(p => p.id !== id));
     addLog({ action: "Dealer Removed", performedBy: userEmail, role: "Admin", target: name });
+    setPendingDelete(null);
   };
 
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <div>
-          <h1 className="text-2xl font-serif font-black text-charcoal">Dealer Management</h1>
-          <p className="text-charcoal/40 text-sm font-semibold mt-1">{dealers.length} registered dealers</p>
-        </div>
-        <div className="relative">
-          <Search className="absolute left-3.5 top-3 w-4 h-4 text-charcoal/30" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search dealers..." className="bg-sand/35 border border-indigo/5 text-charcoal placeholder-charcoal/40 text-xs font-semibold px-4 py-2.5 pl-10 rounded-xl focus:outline-none focus:border-terracotta/50 w-60" />
-        </div>
-      </div>
+      <DashboardPageHeader
+        title="Dealer Management"
+        description={`${dealers.length} registered dealers`}
+        actions={
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search dealers..."
+            accent="terracotta"
+            containerClassName="w-60 flex-none min-w-0"
+          />
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {dealers.map(dealer => (
           <div key={dealer.id} className="bg-white/80 border border-indigo/10 rounded-2xl p-5 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-600 font-black text-sm shrink-0">
-                  {dealer.firmName.charAt(0)}
-                </div>
+                <Avatar name={dealer.firmName} size="md" shape="square" tone="indigo" className="bg-purple-500/10 text-purple-600 border-purple-500/20" />
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-charcoal leading-tight truncate">{dealer.firmName}</p>
                   <p className="text-[10px] text-charcoal/40 font-semibold mt-0.5">{dealer.ownerName}</p>
                 </div>
               </div>
-              <span className="text-[9px] font-black bg-purple-500/10 text-purple-600 border border-purple-500/20 px-2 py-0.5 rounded-lg whitespace-nowrap shrink-0 ml-2">{dealer.category}</span>
+              <Badge tone="primary" size="sm" className="ml-2 shrink-0 whitespace-nowrap">
+                {dealer.category}
+              </Badge>
             </div>
 
             <div className="space-y-2 mb-4">
@@ -65,16 +79,21 @@ export default function AdminDealersPage() {
 
             <div className="flex items-center justify-between pt-3 border-t border-indigo/5">
               <span className="text-[10px] text-charcoal/40 font-semibold">{dealer.experience || "—"} experience</span>
-              <div className="flex items-center gap-2">
-                {dealer.website && (
-                  <a href={`https://${dealer.website}`} target="_blank" className="p-1.5 bg-indigo/5 hover:bg-indigo/10 text-charcoal/40 hover:text-indigo rounded-lg transition-all" title="Website">
-                    <Globe className="w-3.5 h-3.5" />
-                  </a>
-                )}
-                <button onClick={() => handleDelete(dealer.id, dealer.firmName)} className="p-1.5 bg-indigo/5 hover:bg-rose-500/10 text-charcoal/40 hover:text-rose-500 rounded-lg transition-all cursor-pointer" title="Remove">
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              <DropdownMenu
+                accent="terracotta"
+                align="right"
+                trigger={
+                  <button type="button" className="p-1.5 bg-indigo/5 hover:bg-indigo/10 text-charcoal/40 hover:text-terracotta rounded-lg transition-all cursor-pointer">
+                    <MoreVertical className="w-3.5 h-3.5" />
+                  </button>
+                }
+                items={[
+                  { id: "view-public", label: "View Profile Page", href: `/dealers/${dealer.id}`, target: "_blank", icon: ExternalLink },
+                  { id: "website", label: "Visit Website", href: dealer.website ? `https://${dealer.website}` : undefined, disabled: !dealer.website, target: "_blank", icon: Globe },
+                  { id: "call", label: `Call: ${dealer.mobile || "—"}`, href: dealer.mobile ? `tel:${dealer.mobile}` : undefined, disabled: !dealer.mobile, icon: Phone },
+                  { id: "delete", label: "Remove Dealer Account", onClick: () => setPendingDelete({ id: dealer.id, name: dealer.firmName }), icon: Trash2, variant: "danger", dividerBefore: true }
+                ]}
+              />
             </div>
           </div>
         ))}
@@ -85,6 +104,16 @@ export default function AdminDealersPage() {
           <p className="text-charcoal/40 font-semibold">No dealers found matching your search.</p>
         </div>
       )}
+
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        onClose={() => setPendingDelete(null)}
+        onConfirm={confirmDelete}
+        title="Remove dealer?"
+        description={pendingDelete ? `Remove dealer "${pendingDelete.name}" from the platform?` : undefined}
+        confirmLabel="Remove"
+        tone="danger"
+      />
     </div>
   );
 }

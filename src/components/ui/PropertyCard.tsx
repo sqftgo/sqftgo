@@ -7,6 +7,7 @@ import { Heart, MapPin, ChevronLeft, ChevronRight, Phone, UserCheck } from "luci
 import { Property, useApp } from "@/context/AppContext";
 import { formatIndianCurrency } from "@/lib/format";
 import { motion } from "framer-motion";
+import { Avatar } from "./Avatar";
 
 export { formatIndianCurrency } from "@/lib/format";
 
@@ -202,9 +203,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, 
           </div>
 
           <div className="flex items-center gap-2.5 py-3.5 border-y border-sand/50 my-2">
-            <div className="w-8 h-8 rounded-full bg-indigo/5 border border-sand flex items-center justify-center text-indigo text-xs font-black">
-              {property.ownerName.charAt(0)}
-            </div>
+            <Avatar name={property.ownerName} size="sm" tone="indigo" />
             <div className="flex flex-col min-w-0">
               <span className="text-[10px] font-black text-charcoal truncate">{property.ownerName}</span>
               <span className="text-[8px] font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-0.5 mt-0.5">
