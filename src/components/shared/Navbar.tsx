@@ -88,10 +88,10 @@ export const Navbar: React.FC = () => {
           <Link href="/" className="flex items-center gap-2 group">
             <div className="flex flex-col">
               <span className="font-logo text-xl leading-none text-indigo">
-                Sun Valley
+                SqftGo
               </span>
               <span className="text-[10px] text-charcoal/60 font-bold tracking-widest uppercase mt-0.5">
-                SVREPL.com
+                SQFTGO.com
               </span>
             </div>
           </Link>

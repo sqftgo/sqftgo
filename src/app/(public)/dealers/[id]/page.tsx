@@ -203,7 +203,7 @@ export default function DealerProfilePage() {
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div className="flex flex-col text-left">
-                    <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest">Sun Valley Vetted</span>
+                    <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest">SqftGo Vetted</span>
                     <span className="text-xs font-black text-charcoal mt-0.5">{profile.reraId ? "RERA Vetted" : "Clear Records"}</span>
                   </div>
                 </div>

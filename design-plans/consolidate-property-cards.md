@@ -52,7 +52,7 @@ Replacing manual property card code blocks on the home page with the official, r
 ## Validation
 
 - Product: Home page carousels render properties correctly.
-- Interface: Open [http://localhost:3000](http://localhost:3000) on a browser, scroll to "SVREPL's Top Picks" and "Newly-Added Properties", hover over cards, click arrows to cycles images, and toggle shortlists.
+- Interface: Open [http://localhost:3000](http://localhost:3000) on a browser, scroll to "SQFTGO's Top Picks" and "Newly-Added Properties", hover over cards, click arrows to cycles images, and toggle shortlists.
 - System: Verify that no console warnings are generated during rendering and that `<PropertyCard />` is imported correctly.
 - Repository: `npm run build` → exits with 0
 

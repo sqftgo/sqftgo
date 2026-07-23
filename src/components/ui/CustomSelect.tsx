@@ -56,7 +56,7 @@ export default function CustomSelect({
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
-      <button
+      <button suppressHydrationWarning
         type="button"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
@@ -99,7 +99,7 @@ export default function CustomSelect({
               <div className="p-2 border-b border-sand/50 bg-sand/10">
                 <div className="relative">
                   <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-charcoal/40" />
-                  <input
+                  <input suppressHydrationWarning
                     type="text"
                     autoFocus
                     placeholder="Search..."
@@ -117,7 +117,7 @@ export default function CustomSelect({
             <div className="max-h-60 overflow-y-auto no-scrollbar py-1">
               {filteredOptions.length > 0 ? (
                 filteredOptions.map((opt) => (
-                  <button
+                  <button suppressHydrationWarning
                     key={opt.value}
                     type="button"
                     onClick={() => {

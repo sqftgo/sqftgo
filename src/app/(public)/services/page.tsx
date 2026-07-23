@@ -552,7 +552,7 @@ export default function ServicesPage() {
             <div className="flex flex-col gap-3">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-black tracking-tight leading-tight text-white">
                 Are you a Real Estate Professional? <br />
-                List your business with SVREPL today.
+                List your business with SQFTGO today.
               </h2>
               <p className="text-slate-200 text-xs sm:text-sm leading-relaxed font-semibold max-w-xl">
                 Join the most trusted property network in Rajasthan. Connect with high-value clients, showcase your portfolio, and grow your local presence entirely free.

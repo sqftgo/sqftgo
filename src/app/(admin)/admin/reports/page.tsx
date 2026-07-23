@@ -40,7 +40,7 @@ export default function AdminReportsPage() {
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = "sunvalley_properties.csv"; a.click();
+    a.href = url; a.download = "sqftgo_properties.csv"; a.click();
   };
 
   const maxCity = Math.max(1, ...Object.values(cityReport));

@@ -65,7 +65,7 @@ export const initialReviews: CustomerReview[] = [
     {
       id: "rev-1",
       name: "Priyanjali Rathore",
-      feedback: "Khamagani Sa! The service provided by Sun Valley when relocating from Mumbai to Jaipur was outstanding. They verified all haveli deeds thoroughly.",
+      feedback: "Khamagani Sa! The service provided by SqftGo when relocating from Mumbai to Jaipur was outstanding. They verified all haveli deeds thoroughly.",
       rating: 5,
       date: "2026-06-12",
     },

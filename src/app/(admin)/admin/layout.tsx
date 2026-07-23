@@ -36,7 +36,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     (n) => !n.read && (n.forRole === "admin" || n.forRole === "all")
   ).length;
 
-  const isAdmin = isLoggedIn && (userRole === "admin" || userEmail === "admin@svrepl.com");
+  const isAdmin = isLoggedIn && (userRole === "admin" || userEmail === "admin@sqftgo.com");
 
   const enterAsDemoAdmin = () => {
     const demo = DEMO_ACCOUNTS.find((a) => a.role === "admin")!;
@@ -193,7 +193,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       accent="terracotta"
       brandIcon={<Shield className="w-4 h-4 text-white" />}
       profileName={userName || "Super Admin"}
-      profileEmail={userEmail || "admin@svrepl.com"}
+      profileEmail={userEmail || "admin@sqftgo.com"}
       profileInitial="A"
       navSections={navSections}
       getBadgeCount={(badge) => {

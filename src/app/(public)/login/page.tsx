@@ -93,7 +93,7 @@ function AuthForm() {
     const foundUser = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
 
     if (activeTab === "signup") {
-      if (email === "admin@svrepl.com") {
+      if (email === "admin@sqftgo.com") {
         alert("The admin account cannot be registered here.");
         return;
       }
@@ -119,21 +119,21 @@ function AuthForm() {
       setMockUsers(prev => [...prev, newUser]);
     } else {
       // Login check
-      if (email.toLowerCase() === "admin@svrepl.com") {
+      if (email.toLowerCase() === "admin@sqftgo.com") {
         if (password !== "admin2026" && password !== "admin123") {
           alert("Invalid admin credentials! Please use admin2026 or admin123");
           return;
         }
         finalRole = "admin";
         finalName = "Admin User";
-      } else if (email.toLowerCase() === "broker@svrepl.com") {
+      } else if (email.toLowerCase() === "broker@sqftgo.com") {
         if (password !== "broker2026" && password !== "broker123") {
           alert("Invalid broker credentials! Please use broker2026 or broker123");
           return;
         }
         finalRole = "broker";
         finalName = "Rajesh Mehta";
-      } else if (email.toLowerCase() === "user@svrepl.com") {
+      } else if (email.toLowerCase() === "user@sqftgo.com") {
         if (password !== "user2026" && password !== "user123") {
           alert("Invalid client credentials! Please use user2026 or user123");
           return;
@@ -212,12 +212,12 @@ function AuthForm() {
           <div className="flex flex-col items-center mb-6">
             <Link href="/" className="flex items-center justify-center mb-4">
               <span className="font-logo text-3xl leading-none text-indigo hover:text-indigo/80 transition-colors select-none">
-                Sun Valley
+                SqftGo
               </span>
             </Link>
 
             <h1 className="text-3xl font-black tracking-tight text-charcoal mt-1 text-center">
-              Welcome to Sun Valley
+              Welcome to SqftGo
             </h1>
             <p className="text-xs text-slate-500 mt-1.5 text-center font-medium">
               {activeTab === "login" ? "Sign in to access your portal" : "Create an account to search or list properties"}
@@ -380,7 +380,7 @@ function AuthForm() {
                   <button
                     type="button"
                     onClick={() => {
-                      setEmail("user@svrepl.com");
+                      setEmail("user@sqftgo.com");
                       setPassword("user2026");
                     }}
                     className="py-1.5 px-2 bg-white hover:bg-slate-100 border border-sand rounded-lg text-[10px] font-bold text-slate-700 cursor-pointer text-center whitespace-nowrap"
@@ -390,7 +390,7 @@ function AuthForm() {
                   <button
                     type="button"
                     onClick={() => {
-                      setEmail("broker@svrepl.com");
+                      setEmail("broker@sqftgo.com");
                       setPassword("broker2026");
                     }}
                     className="py-1.5 px-2 bg-white hover:bg-slate-100 border border-sand rounded-lg text-[10px] font-bold text-slate-700 cursor-pointer text-center whitespace-nowrap"
@@ -400,7 +400,7 @@ function AuthForm() {
                   <button
                     type="button"
                     onClick={() => {
-                      setEmail("admin@svrepl.com");
+                      setEmail("admin@sqftgo.com");
                       setPassword("admin2026");
                     }}
                     className="py-1.5 px-2 bg-white hover:bg-slate-100 border border-sand rounded-lg text-[10px] font-bold text-slate-700 cursor-pointer text-center whitespace-nowrap"

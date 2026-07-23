@@ -74,7 +74,7 @@ export const mockAuthRepository: AuthRepository = {
     if (!name.trim() || !email.trim() || !password) {
       throw new Error("All fields are required");
     }
-    if (email.toLowerCase() === "admin@svrepl.com") {
+    if (email.toLowerCase() === "admin@sqftgo.com") {
       throw new Error("This email is reserved");
     }
 

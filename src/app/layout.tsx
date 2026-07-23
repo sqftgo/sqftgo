@@ -24,7 +24,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sun Valley | Rajasthan Real Estate Marketplace",
+  title: "SqftGo | Rajasthan Real Estate Marketplace",
   description: "Buy, rent, sell properties in Udaipur, Jaipur, Jodhpur, and across Rajasthan. Find heritage havelis, luxury lakeview villas, modern apartments, and get relocating assistance.",
 };
 

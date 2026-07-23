@@ -110,7 +110,7 @@ export default function DestinationHero({
             {showSuggestions && autocompleteSuggestions.length > 0 && (
               <>
                 <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setShowSuggestions(false)} />
-                <div className="absolute left-4 right-4 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden text-left z-50 p-2 max-h-72 overflow-y-auto">
+                <div className="absolute left-4 right-4 mt-2 bg-white rounded-2xl shadow-2xl border border-indigo/10 overflow-hidden text-left z-50 p-2 max-h-72 overflow-y-auto">
                   <div className="px-3 py-2 text-[9px] font-black text-charcoal/40 uppercase tracking-wider border-b border-sand/30">
                     Destination matches
                   </div>

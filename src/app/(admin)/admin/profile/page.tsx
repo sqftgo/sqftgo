@@ -30,9 +30,9 @@ export default function AdminProfilePage() {
   const [saved, setSaved] = useState(false);
   const [form, setForm] = useState({
     name: "Admin User",
-    email: userEmail || "admin@svrepl.com",
+    email: userEmail || "admin@sqftgo.com",
     phone: "+91 98000 00001",
-    bio: "Platform administrator for Sun Valley Real Estate. Managing listing approvals, dealer registrations, and global system overrides.",
+    bio: "Platform administrator for SqftGo Real Estate. Managing listing approvals, dealer registrations, and global system overrides.",
   });
 
   const handleSave = (e?: React.FormEvent) => {

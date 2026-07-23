@@ -66,9 +66,9 @@ export default function PropertyDetailPage({ params }: PageProps) {
 
   if (!property) {
     return (
-      <div className="container mx-auto px-6 py-20 max-w-xl text-center">
-        <div className="w-16 h-16 rounded-full bg-red-50 dark:bg-red-950/40 text-red-500 flex items-center justify-center mx-auto mb-6">
-          <ShieldAlert className="w-8 h-8" />
+      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#faf8f5]">
+        <div className="w-16 h-16 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 flex items-center justify-center mx-auto mb-6">
+          <AlertCircle className="w-8 h-8" />
         </div>
         <h2 className="font-serif font-black text-2xl text-slate-950 dark:text-white mb-2">Property Not Found</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">
@@ -358,14 +358,14 @@ export default function PropertyDetailPage({ params }: PageProps) {
           <div className="hidden lg:flex items-center gap-2.5 mt-4">
             <button
               onClick={() => toggleFavorite(property.id)}
-              className={`py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${
+              className={`flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl border font-bold text-sm transition-all cursor-pointer ${
                 isSaved
-                  ? "bg-red-500/10 border-red-500/20 text-red-500 hover:bg-red-500/15"
-                  : "bg-white border-sand hover:border-terracotta/30 text-charcoal hover:bg-cream/45"
+                  ? "bg-rose-500/10 border-rose-500/20 text-rose-500 hover:bg-rose-500/15"
+                  : "bg-white border-sand text-charcoal/80 hover:bg-sand/30"
               }`}
             >
-              <Heart className={`w-4 h-4 ${isSaved ? "fill-red-500 text-red-500" : "text-charcoal/70"}`} />
-              <span>{isSaved ? "Saved" : "Save Listing"}</span>
+              <Heart className={`w-4 h-4 ${isSaved ? "fill-rose-500 text-rose-500" : "text-charcoal/70"}`} />
+              <span className="hidden sm:inline">{isSaved ? "Saved" : "Save"}</span>
             </button>
             
             <button
@@ -381,13 +381,13 @@ export default function PropertyDetailPage({ params }: PageProps) {
           <div className="flex lg:hidden items-center gap-2 w-full sm:w-auto mt-1 sm:mt-0 shrink-0">
             <button
               onClick={() => toggleFavorite(property.id)}
-              className={`flex-1 sm:flex-initial py-2.5 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                isSaved
-                  ? "bg-red-500/10 border-red-500/20 text-red-500"
-                  : "bg-white border-sand text-charcoal"
-              }`}
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 p-3.5 rounded-2xl border transition-all ${
+                  isSaved
+                    ? "bg-rose-500/10 border-rose-500/20 text-rose-500"
+                    : "bg-white border-sand text-charcoal/80 hover:bg-sand/30"
+                }`}
             >
-              <Heart className={`w-3.5 h-3.5 ${isSaved ? "fill-red-500" : ""}`} />
+              <Heart className={`w-3.5 h-3.5 ${isSaved ? "fill-rose-500 text-rose-500" : ""}`} />
               <span>{isSaved ? "Saved" : "Save"}</span>
             </button>
             <button
@@ -595,7 +595,7 @@ export default function PropertyDetailPage({ params }: PageProps) {
                       className="w-8 h-8 bg-indigo text-white border-0"
                     />
                     <div className="flex flex-col text-left">
-                      <span className="font-extrabold text-indigo">Inspected by Sun Valley</span>
+                      <span className="font-extrabold text-indigo">Inspected by SqftGo</span>
                       <span className="text-[9px] text-charcoal/50">Verified on {property.verifiedDate || "2026-06-25"}</span>
                     </div>
                   </div>
@@ -604,7 +604,7 @@ export default function PropertyDetailPage({ params }: PageProps) {
                 <div className="p-2.5 bg-indigo/5 border border-indigo/10 rounded-lg flex items-start gap-2 text-[9px] text-indigo leading-relaxed mt-4">
                   <AlertCircle className="w-4 h-4 text-terracotta shrink-0 mt-0.5" />
                   <span>
-                    <strong>Pledge:</strong> Legal checks are complete. Verification references are kept at Sun Valley Udaipur Bureau.
+                    <strong>Pledge:</strong> Legal checks are complete. Verification references are kept at SqftGo Udaipur Bureau.
                   </span>
                 </div>
               </div>

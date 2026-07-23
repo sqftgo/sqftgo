@@ -78,7 +78,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ property }) => {
             <div className="w-8 h-8 rounded-full bg-indigo/10 flex items-center justify-center flex-shrink-0">
               <Mail className="w-4 h-4 text-indigo" />
             </div>
-            <span>contact@svrepl.com</span>
+            <span>contact@sqftgo.com</span>
           </div>
         </div>
       </div>
@@ -169,7 +169,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ property }) => {
             <div className="p-3.5 rounded-2xl bg-indigo/5 border border-sand/50 text-[10.5px] text-indigo/90 leading-relaxed flex items-start gap-2.5">
               <ShieldAlert className="w-4 h-4 text-terracotta shrink-0 mt-0.5" />
               <span>
-                <strong>Vetting Pledge:</strong> Sun Valley requires physical premise inspections and RERA registry verification before any lease or sale agreements are signed. Do not pay advance deposits.
+                <strong>Vetting Pledge:</strong> SqftGo requires physical premise inspections and RERA registry verification before any lease or sale agreements are signed. Do not pay advance deposits.
               </span>
             </div>
 

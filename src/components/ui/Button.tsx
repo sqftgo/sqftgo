@@ -43,6 +43,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
+      suppressHydrationWarning
       type={type}
       disabled={disabled || loading}
       className={cn(

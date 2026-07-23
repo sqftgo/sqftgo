@@ -34,12 +34,12 @@ export default function DealerDashboardPage() {
     .slice(0, 4);
 
   const stats = [
-    { label: "Active Listings", value: activeProps.length, icon: Building2, tone: "indigo" as const },
+    { label: "Active Listings", value: activeProps.length, icon: Building2, tone: "default" as const },
     { label: "Total Views", value: activeProps.length * 142 + 258, icon: Eye, tone: "default" as const },
-    { label: "New Leads", value: totalInquiries, icon: MessageSquare, tone: "terracotta" as const },
+    { label: "New Leads", value: totalInquiries, icon: MessageSquare, tone: "default" as const },
     { label: "Saved Properties", value: activeProps.length * 12 + 4, icon: Heart, tone: "default" as const },
-    { label: "Monthly Revenue", value: "₹45,000", icon: CreditCard, tone: "success" as const },
-    { label: "Subscription Status", value: "Pro Plan", icon: CheckCircle2, tone: "indigo" as const }
+    { label: "Monthly Revenue", value: "₹45,000", icon: CreditCard, tone: "default" as const },
+    { label: "Subscription Status", value: "Pro Plan", icon: CheckCircle2, tone: "default" as const }
   ];
 
   const formatPrice = (v: number) => "₹" + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(v);

@@ -34,7 +34,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
   align = "right"
 }) => {
   const router = useRouter();
-  const isAdmin = userRole === "admin" || userEmail === "admin@svrepl.com";
+  const isAdmin = userRole === "admin" || userEmail === "admin@sqftgo.com";
   const isBroker = userRole === "broker";
   
   // Create email initials (e.g. "AD" for admin, or first letter of user email)
@@ -52,14 +52,14 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
 
   return (
     <div
-      className={`absolute z-[100] mt-3 w-64 rounded-3xl bg-white text-charcoal shadow-2xl border border-gray-100 overflow-hidden flex flex-col ${
+      className={`absolute z-[100] mt-3 w-64 rounded-3xl bg-white text-charcoal shadow-2xl border border-indigo/10 overflow-hidden flex flex-col ${
         align === "right" ? "right-0" : "left-0"
       }`}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Upward Tooltip Caret */}
       <div 
-        className={`absolute -top-2 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-100 z-[101] ${
+        className={`absolute -top-2 w-4 h-4 rotate-45 bg-white border-t border-l border-indigo/10 z-[101] ${
           align === "right" ? "right-6" : "left-6"
         }`} 
       />
@@ -250,11 +250,11 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
         <div className="border-t border-sand/40 my-1" />
 
         {/* Sign Out Action */}
-        <button
+        <button suppressHydrationWarning
           onClick={handleLogoutClick}
-          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-charcoal/70 hover:text-red-600 hover:bg-red-50 transition-colors w-full text-left cursor-pointer group"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-charcoal/70 hover:text-rose-600 hover:bg-rose-50 transition-colors w-full text-left cursor-pointer group"
         >
-          <LogOut className="w-4 h-4 text-charcoal/40 group-hover:text-red-500 transition-colors" />
+          <LogOut className="w-4 h-4 text-charcoal/40 group-hover:text-rose-500 transition-colors" />
           <span>Sign Out</span>
         </button>
       </div>

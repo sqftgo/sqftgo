@@ -28,7 +28,7 @@ export default function TermsPage() {
                 Terms of Service
               </h1>
               <p className="text-xs text-charcoal/50 font-black uppercase tracking-widest">
-                Effective Date: July 7, 2026 • Sun Valley Real Estate Marketplace
+                Effective Date: July 7, 2026 • SqftGo Real Estate Marketplace
               </p>
             </div>
           </div>
@@ -42,7 +42,7 @@ export default function TermsPage() {
               <span>1. Scope and Use of Platform</span>
             </h2>
             <p className="font-semibold text-charcoal/70">
-              Welcome to Sun Valley (SVREPL.COM). These Terms of Service govern your access to and use of our property marketplace, regional directories, and relocation concierge services. By browsing our verified listings or submitting enquiries, you agree to comply with these terms and conditions.
+              Welcome to SqftGo (SQFTGO.COM). These Terms of Service govern your access to and use of our property marketplace, regional directories, and relocation concierge services. By browsing our verified listings or submitting enquiries, you agree to comply with these terms and conditions.
             </p>
           </section>
 
@@ -54,11 +54,11 @@ export default function TermsPage() {
               <span>2. RERA Compliance & Listings Vetting</span>
             </h2>
             <p className="mb-4 font-semibold text-charcoal/70">
-              Sun Valley acts as a vetted regional property directory. While we execute structural checks, title deed inspections, and require RERA certification numbers for listing brokers and developers:
+              SqftGo acts as a vetted regional property directory. While we execute structural checks, title deed inspections, and require RERA certification numbers for listing brokers and developers:
             </p>
             <ul className="list-disc pl-5 flex flex-col gap-2 font-medium text-charcoal/60">
               <li>Users are legally obligated to execute complete independent verification of RERA details and title documents before signing lease tokens or sale deeds.</li>
-              <li>Sun Valley does not charge or handle advance lease tokens for listings unless facilitated under official escrow partner accounts.</li>
+              <li>SqftGo does not charge or handle advance lease tokens for listings unless facilitated under official escrow partner accounts.</li>
               <li>We hold the right to pull listings or purge dealer accounts immediately upon receiving warnings of RERA licensing issues or deed title discrepancy alerts.</li>
             </ul>
           </section>
@@ -83,7 +83,7 @@ export default function TermsPage() {
               <span>4. Liability and Indemnity</span>
             </h2>
             <p className="font-semibold text-charcoal/70">
-              Sun Valley (SVREPL.COM), its parent corporations, and officers hold no liability for transactions, title disputes, construction delays, or service quality concerns arising between listing buyers/tenants and verified brokers/builders. Agreements are strictly bilateral.
+              SqftGo (SQFTGO.COM), its parent corporations, and officers hold no liability for transactions, title disputes, construction delays, or service quality concerns arising between listing buyers/tenants and verified brokers/builders. Agreements are strictly bilateral.
             </p>
           </section>
         </div>

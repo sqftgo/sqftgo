@@ -27,9 +27,9 @@ export const Footer: React.FC = () => {
   }
   
   const socials = [
-    { name: "Instagram", icon: faInstagram, href: "https://instagram.com/svrepl" },
-    { name: "Facebook", icon: faFacebookF, href: "https://facebook.com/svrepl" },
-    { name: "YouTube", icon: faYoutube, href: "https://youtube.com/svrepl" },
+    { name: "Instagram", icon: faInstagram, href: "https://instagram.com/sqftgo" },
+    { name: "Facebook", icon: faFacebookF, href: "https://facebook.com/sqftgo" },
+    { name: "YouTube", icon: faYoutube, href: "https://youtube.com/sqftgo" },
     { name: "WhatsApp", icon: faWhatsapp, href: "https://wa.me/919876543210" },
   ];
 
@@ -111,10 +111,10 @@ export const Footer: React.FC = () => {
         </svg>
       </div>
 
-      {/* Background Watermark 2: Large "SVREPL" centered text watermark behind content */}
+      {/* Background Watermark 2: Large "SQFTGO" centered text watermark behind content */}
       <div className="absolute bottom-[45px] inset-x-0 flex items-center justify-center pointer-events-none select-none z-0">
         <span className="text-[12vw] font-sans font-black tracking-[0.2em] text-sand/30 dark:text-white/5 select-none leading-none">
-          SVREPL
+          SQFTGO
         </span>
       </div>
 
@@ -128,7 +128,7 @@ export const Footer: React.FC = () => {
             <Link href="/" className="flex items-center gap-2 group w-fit">
               <div className="flex flex-col">
                 <span className="font-logo text-2xl leading-none text-indigo group-hover:text-indigo-hover transition-colors">
-                  Sun Valley
+                  SqftGo
                 </span>
                 <span className="text-[10px] text-terracotta font-extrabold tracking-widest uppercase mt-1">
                   Real Estate
@@ -198,9 +198,9 @@ export const Footer: React.FC = () => {
                 <span>+91 98765 43210</span>
               </a>
               
-              <a href="mailto:contact@svrepl.com" className="flex items-center gap-3 hover:text-terracotta transition-colors duration-200">
+              <a href="mailto:contact@sqftgo.com" className="flex items-center gap-3 hover:text-terracotta transition-colors duration-200">
                 <Mail className="w-4 h-4 text-terracotta flex-shrink-0" />
-                <span>contact@svrepl.com</span>
+                <span>contact@sqftgo.com</span>
               </a>
 
               <div className="flex items-start gap-3">
@@ -228,7 +228,7 @@ export const Footer: React.FC = () => {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                alert("Thank you for subscribing to Sun Valley Heritage Club!");
+                alert("Thank you for subscribing to SqftGo Heritage Club!");
                 (e.target as HTMLFormElement).reset();
               }}
               className="flex flex-col sm:flex-row gap-2 mt-1 w-full"
@@ -258,7 +258,7 @@ export const Footer: React.FC = () => {
 
         {/* Footer Bottom Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-bold text-charcoal/50 relative z-10">
-          <p>© {new Date().getFullYear()} Sun Valley Real Estate Private Limited (SVREPL.COM). All rights reserved.</p>
+          <p>© {new Date().getFullYear()} SqftGo Real Estate Private Limited (SQFTGO.COM). All rights reserved.</p>
           
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs">
             <Link href="/dealer/dashboard" className="hover:text-terracotta text-indigo transition-colors font-bold">Dealers Portal</Link>

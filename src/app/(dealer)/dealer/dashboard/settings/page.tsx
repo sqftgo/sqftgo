@@ -38,7 +38,7 @@ export default function DealerSettingsPage() {
   const [confirmPasswordInput, setConfirmPasswordInput] = useState("");
 
   const [form, setForm] = useState({
-    email: userEmail || "dealer@sunvalley.com",
+    email: userEmail || "dealer@sqftgo.com",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
@@ -117,7 +117,7 @@ export default function DealerSettingsPage() {
                 type="email"
                 value={form.email}
                 onChange={(e) => set("email", e.target.value)}
-                placeholder="broker@sunvalley.com"
+                placeholder="broker@sqftgo.com"
                 className="focus:border-indigo/40 focus:ring-indigo/10"
               />
             </FormField>
@@ -232,7 +232,7 @@ export default function DealerSettingsPage() {
 
           <SettingsRow
             label="Marketing & Sourcing Tips"
-            description="Receive curated advice, real estate market insights, and promotional updates from Sun Valley."
+            description="Receive curated advice, real estate market insights, and promotional updates from SqftGo."
             icon={<Globe className="w-4 h-4" />}
             accent="indigo"
           >

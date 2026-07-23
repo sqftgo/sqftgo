@@ -49,7 +49,7 @@ export default function DealerRegisterPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5">
             <div className="w-10 h-10 bg-indigo rounded-xl flex items-center justify-center"><Building2 className="w-5 h-5 text-white" /></div>
-            <span className="font-logo text-xl text-white">Sun Valley</span>
+            <span className="font-logo text-xl text-white">SqftGo</span>
           </Link>
           <h1 className="text-2xl font-serif font-black text-white mt-5">Register as Dealer</h1>
           <p className="text-white/40 text-sm font-semibold mt-2">Join our network of verified real estate professionals</p>

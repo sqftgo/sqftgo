@@ -48,7 +48,7 @@ export default function MyInquiriesPage() {
           {myInquiries.map((inq, i) => (
             <div key={i} className="bg-white/80 border border-indigo/10 rounded-2xl p-5 shadow hover:shadow-md transition-all">
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                <div className="w-16 h-16 rounded-xl overflow-hidden bg-sand/30 shrink-0">
                   <img src={inq.propertyImage} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">

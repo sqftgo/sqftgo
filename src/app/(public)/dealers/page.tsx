@@ -157,7 +157,7 @@ export default function DealersPage() {
             <div className="flex flex-col gap-3">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-black tracking-tight leading-tight text-white">
                 Are you a Real Estate Professional? <br />
-                Grow Your Business with Sun Valley.
+                Grow Your Business with SqftGo.
               </h2>
               <p className="text-slate-200 text-xs sm:text-sm leading-relaxed font-semibold max-w-xl">
                 List your residential, commercial, or agricultural properties, manage buyer enquiries in real-time, and get verified in our premium regional business directory.
@@ -188,7 +188,7 @@ export default function DealersPage() {
               <div className="absolute inset-3 rounded-[24px] overflow-hidden bg-white shadow-lg transform -rotate-2 group-hover:rotate-0 transition-all duration-500">
                 <img
                   src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=600&auto=format&fit=crop"
-                  alt="Grow your business with Sun Valley"
+                  alt="Grow your business with SqftGo"
                   className="w-full h-full object-cover object-center"
                 />
               </div>

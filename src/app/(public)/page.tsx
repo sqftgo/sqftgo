@@ -182,7 +182,7 @@ export default function Home() {
   const mockProjects = [
     {
       id: "proj-1",
-      name: "Sun Valley Royal Vista",
+      name: "SqftGo Royal Vista",
       developer: "Mewar Builders & Developers",
       price: "₹75 Lakh - ₹1.8 Crore",
       location: "Fateh Sagar, Udaipur",
@@ -258,7 +258,7 @@ export default function Home() {
                     { key: "plots", label: "PLOTS" },
                     { key: "commercial", label: "COMMERCIAL" }
                   ] as const).map((tab) => (
-                    <button
+                    <button suppressHydrationWarning
                       key={tab.key}
                       type="button"
                       onClick={() => {
@@ -278,13 +278,13 @@ export default function Home() {
                 </div>
 
                 {/* Divider */}
-                <div className="border-t border-gray-200 mx-6 sm:mx-8" />
+                <div className="border-t border-indigo/10 mx-6 sm:mx-8" />
 
                 {/* 4-Column Filter Row */}
                 <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 px-6 sm:px-8 py-5">
                   
                   {/* SELECT CITY */}
-                  <div className="flex items-center gap-3 pb-3 mb-3 border-b border-gray-100 lg:border-b-0 lg:border-r lg:border-gray-200 lg:pb-0 lg:mb-0 lg:pr-4">
+                  <div className="flex items-center gap-3 pb-3 mb-3 border-b border-indigo/10 lg:border-b-0 lg:border-r lg:border-indigo/10 lg:pb-0 lg:mb-0 lg:pr-4">
                     <div className="w-9 h-9 rounded-full border-2 border-terracotta/30 flex items-center justify-center flex-shrink-0">
                       <MapPin className="w-4 h-4 text-terracotta" />
                     </div>
@@ -303,13 +303,13 @@ export default function Home() {
                   </div>
 
                   {/* LOCALITY */}
-                  <div className="flex items-center gap-3 pb-3 mb-3 border-b border-gray-100 lg:border-b-0 lg:border-r lg:border-gray-200 lg:pb-0 lg:mb-0 lg:px-4">
+                  <div className="flex items-center gap-3 pb-3 mb-3 border-b border-indigo/10 lg:border-b-0 lg:border-r lg:border-indigo/10 lg:pb-0 lg:mb-0 lg:px-4">
                     <div className="w-9 h-9 rounded-full border-2 border-indigo/20 flex items-center justify-center flex-shrink-0">
                       <Compass className="w-4.5 h-4.5 text-indigo" />
                     </div>
                     <div className="flex flex-col min-w-0 flex-1">
                       <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none mb-1">Locality</span>
-                      <input
+                      <input suppressHydrationWarning
                         type="text"
                         placeholder="Search locality..."
                         value={searchLocality}
@@ -320,7 +320,7 @@ export default function Home() {
                   </div>
 
                   {/* TYPE */}
-                  <div className="flex items-center gap-3 pb-3 mb-3 border-b border-gray-100 lg:border-b-0 lg:border-r lg:border-gray-200 lg:pb-0 lg:mb-0 lg:px-4">
+                  <div className="flex items-center gap-3 pb-3 mb-3 border-b border-indigo/10 lg:border-b-0 lg:border-r lg:border-indigo/10 lg:pb-0 lg:mb-0 lg:px-4">
                     <div className="w-9 h-9 rounded-full border-2 border-indigo/20 flex items-center justify-center flex-shrink-0">
                       <HomeIcon className="w-4 h-4 text-indigo" />
                     </div>
@@ -359,7 +359,7 @@ export default function Home() {
 
                 {/* CTA Button */}
                 <div className="px-6 sm:px-8 pb-6 pt-1">
-                  <button
+                  <button suppressHydrationWarning
                     type="submit"
                     className="w-full bg-terracotta hover:bg-terracotta-hover text-white font-extrabold text-sm uppercase tracking-wider py-4 rounded-xl shadow-lg transition-all duration-200 cursor-pointer active:scale-[0.98] flex items-center justify-center gap-2.5 border-none"
                   >
@@ -393,7 +393,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 2. SVREPL'S TOP PICKS SECTION (Housing's Top Picks Style) */}
+      {/* 2. SQFTGO'S TOP PICKS SECTION (Housing's Top Picks Style) */}
       <section className="relative py-20 px-6 max-w-7xl mx-auto w-full">
         
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
@@ -404,7 +404,7 @@ export default function Home() {
               <span>Handpicked Real Estate</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-serif font-black text-charcoal tracking-tight">
-              SVREPL&apos;s Top Picks
+              SQFTGO&apos;s Top Picks
             </h2>
           </div>
 
@@ -418,7 +418,7 @@ export default function Home() {
                 { key: "rent", label: "For Rent" },
                 { key: "plots", label: "Land/Plots" }
               ] as const).map((pickTab) => (
-                <button
+                <button suppressHydrationWarning
                   key={pickTab.key}
                   type="button"
                   onClick={() => setTopPicksTab(pickTab.key)}
@@ -435,7 +435,7 @@ export default function Home() {
 
             {/* Slider Navigation Buttons */}
             <div className="hidden sm:flex items-center gap-2">
-              <button
+              <button suppressHydrationWarning
                 type="button"
                 onClick={() => scrollContainer(topPicksScrollRef, "left")}
                 className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
@@ -443,7 +443,7 @@ export default function Home() {
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <button
+              <button suppressHydrationWarning
                 type="button"
                 onClick={() => scrollContainer(topPicksScrollRef, "right")}
                 className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
@@ -487,7 +487,7 @@ export default function Home() {
 
             {/* Slider Navigation */}
             <div className="hidden sm:flex items-center gap-2">
-              <button
+              <button suppressHydrationWarning
                 type="button"
                 onClick={() => scrollContainer(prominentProjectsScrollRef, "left")}
                 className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
@@ -495,7 +495,7 @@ export default function Home() {
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <button
+              <button suppressHydrationWarning
                 type="button"
                 onClick={() => scrollContainer(prominentProjectsScrollRef, "right")}
                 className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
@@ -548,7 +548,7 @@ export default function Home() {
                       <span className="text-base font-serif font-black text-indigo">{project.price.split("-")[0]}</span>
                     </div>
                     
-                    <button
+                    <button suppressHydrationWarning
                       type="button"
                       onClick={() => router.push(`/listings?city=${project.location.split(",")[1]?.trim() || "Udaipur"}`)}
                       className="px-4 py-2 bg-indigo hover:bg-indigo-hover text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all"
@@ -596,7 +596,7 @@ export default function Home() {
               <p className="text-slate-300 text-xs font-medium leading-relaxed max-w-md mb-5">
                 Breathtaking view plots, swimming pools, and limestone arches resting on the shores of Lake Pichola and Fateh Sagar.
               </p>
-              <button
+              <button suppressHydrationWarning
                 onClick={() => handleCityBrowse("Udaipur")}
                 className="px-5 py-2.5 bg-terracotta hover:bg-terracotta-hover text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all flex items-center gap-1"
               >
@@ -620,7 +620,7 @@ export default function Home() {
               <p className="text-slate-300 text-xs font-medium leading-relaxed max-w-md mb-5">
                 High-rise residential configurations in Malviya Nagar & Mansarovar, featuring modern amenities and Aravali hill views.
               </p>
-              <button
+              <button suppressHydrationWarning
                 onClick={() => handleCityBrowse("Jaipur")}
                 className="px-5 py-2.5 bg-indigo hover:bg-indigo-hover text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all flex items-center gap-1"
               >
@@ -650,7 +650,7 @@ export default function Home() {
 
             {/* Slider Navigation */}
             <div className="hidden sm:flex items-center gap-2">
-              <button
+              <button suppressHydrationWarning
                 type="button"
                 onClick={() => scrollContainer(developersScrollRef, "left")}
                 className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
@@ -658,7 +658,7 @@ export default function Home() {
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <button
+              <button suppressHydrationWarning
                 type="button"
                 onClick={() => scrollContainer(developersScrollRef, "right")}
                 className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
@@ -854,7 +854,7 @@ export default function Home() {
 
             {/* Slider Navigation */}
             <div className="hidden sm:flex items-center gap-2">
-              <button
+              <button suppressHydrationWarning
                 type="button"
                 onClick={() => scrollContainer(sellersScrollRef, "left")}
                 className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
@@ -862,7 +862,7 @@ export default function Home() {
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <button
+              <button suppressHydrationWarning
                 type="button"
                 onClick={() => scrollContainer(sellersScrollRef, "right")}
                 className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
@@ -939,7 +939,7 @@ export default function Home() {
 
 
                   {/* Primary Full Width CTA */}
-                  <button
+                  <button suppressHydrationWarning
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -975,7 +975,7 @@ export default function Home() {
 
           {/* Slider Navigation */}
           <div className="hidden sm:flex items-center gap-2">
-            <button
+            <button suppressHydrationWarning
               type="button"
               onClick={() => scrollContainer(newlyAddedScrollRef, "left")}
               className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
@@ -983,7 +983,7 @@ export default function Home() {
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <button
+            <button suppressHydrationWarning
               type="button"
               onClick={() => scrollContainer(newlyAddedScrollRef, "right")}
               className="w-9 h-9 rounded-full bg-white hover:bg-sand border border-sand text-charcoal flex items-center justify-center shadow-sm cursor-pointer active:scale-95 transition-transform"
@@ -1026,7 +1026,7 @@ export default function Home() {
             <div className="flex flex-col gap-3">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-black tracking-tight leading-tight text-white">
                 Have a property to sell or rent? <br />
-                List it with SVREPL completely free.
+                List it with SQFTGO completely free.
               </h2>
               <p className="text-slate-100 text-xs sm:text-sm leading-relaxed font-semibold max-w-xl">
                 Connect with genuine RERA-compliant buyers, agents, and brokers in Rajasthan. Reach out to our verified active database of thousands of clients looking for heritage villas and luxury houses.
@@ -1087,7 +1087,7 @@ export default function Home() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-sand z-10 text-charcoal max-h-[90vh] overflow-y-auto no-scrollbar"
             >
-              <button
+              <button suppressHydrationWarning
                 type="button"
                 onClick={() => setShowPriceTrends(false)}
                 className="absolute top-4 right-4 text-charcoal/40 hover:text-charcoal transition-colors cursor-pointer"
@@ -1193,7 +1193,7 @@ export default function Home() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-sand z-10 text-charcoal max-h-[90vh] overflow-y-auto no-scrollbar"
             >
-              <button
+              <button suppressHydrationWarning
                 type="button"
                 onClick={() => setShowLocalityReviews(false)}
                 className="absolute top-4 right-4 text-charcoal/40 hover:text-charcoal transition-colors cursor-pointer"
@@ -1281,7 +1281,7 @@ export default function Home() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-sand z-10 text-charcoal max-h-[90vh] overflow-y-auto no-scrollbar"
             >
-              <button
+              <button suppressHydrationWarning
                 type="button"
                 onClick={() => setShowBuyersGuide(false)}
                 className="absolute top-4 right-4 text-charcoal/40 hover:text-charcoal transition-colors cursor-pointer"

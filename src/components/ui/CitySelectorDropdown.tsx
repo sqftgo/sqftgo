@@ -230,14 +230,14 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
 
   return (
     <div
-      className={`fixed sm:absolute z-[100] left-4 right-4 top-[72px] sm:top-auto sm:mt-3 mx-auto sm:mx-0 w-[calc(100vw-32px)] sm:w-[540px] max-w-[540px] rounded-3xl bg-white text-charcoal shadow-2xl border border-gray-100 overflow-hidden flex flex-col ${
+      className={`fixed sm:absolute z-[100] left-4 right-4 top-[72px] sm:top-auto sm:mt-3 mx-auto sm:mx-0 w-[calc(100vw-32px)] sm:w-[540px] max-w-[540px] rounded-3xl bg-white text-charcoal shadow-2xl border border-indigo/10 overflow-hidden flex flex-col ${
         align === "right" ? "sm:left-auto sm:right-0" : "sm:right-auto sm:left-0"
       }`}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Upward Tooltip Caret */}
       <div 
-        className={`absolute -top-2 w-4 h-4 rotate-45 bg-white border-t border-l border-gray-100 z-[101] hidden sm:block ${
+        className={`absolute -top-2 w-4 h-4 rotate-45 bg-white border-t border-l border-indigo/10 z-[101] hidden sm:block ${
           align === "right" ? "right-12" : "left-12"
         }`} 
       />
@@ -245,19 +245,19 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
       {/* Search Input Section */}
       <div className="p-4 pb-3 z-10 bg-white">
         <div className="relative">
-          <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
+          <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40" />
+          <input suppressHydrationWarning
             ref={inputRef}
             type="text"
             placeholder="Search for city"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-10 py-3.5 text-sm font-medium text-charcoal bg-white border border-gray-200 focus:border-indigo rounded-2xl outline-none transition-all duration-200 placeholder-gray-400 shadow-sm"
+            className="w-full pl-12 pr-10 py-3.5 text-sm font-medium text-charcoal bg-white border border-indigo/20 focus:border-indigo rounded-2xl outline-none transition-all duration-200 placeholder-charcoal/40 shadow-sm"
           />
           {searchQuery && (
-            <button
+            <button suppressHydrationWarning
               onClick={() => setSearchQuery("")}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-charcoal p-1 rounded-full hover:bg-gray-100 transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-charcoal p-1 rounded-full hover:bg-indigo/5 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -270,7 +270,7 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
         {searchQuery.trim() === "" ? (
           /* Popular Cities View */
           <div>
-            <h3 className="text-xs font-bold text-gray-400 tracking-wider uppercase mb-3 pl-1">
+            <h3 className="text-xs font-bold text-charcoal/40 tracking-wider uppercase mb-3 pl-1">
               Popular cities
             </h3>
             <div className="grid grid-cols-3 gap-2.5">
@@ -279,14 +279,14 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
                 const isSelected = selectedCity.toLowerCase() === city.name.toLowerCase();
 
                 return (
-                  <button
+                  <button suppressHydrationWarning
                     key={city.name}
                     type="button"
                     onClick={() => handleSelect(city.name)}
                     className={`group flex items-center gap-3 p-3 rounded-2xl border text-left transition-all duration-200 cursor-pointer ${
                       isSelected
                         ? "border-indigo bg-indigo/5 text-indigo shadow-sm font-semibold"
-                        : "border-gray-200 hover:border-indigo/50 hover:bg-indigo/[0.01] text-gray-700 font-medium"
+                        : "border-indigo/10 hover:border-indigo/50 hover:bg-indigo/[0.01] text-charcoal/70 font-medium"
                     }`}
                   >
                     <div className="flex-shrink-0">
@@ -301,7 +301,7 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
         ) : (
           /* Search Results View */
           <div>
-            <h3 className="text-xs font-bold text-gray-400 tracking-wider uppercase mb-2 pl-1">
+            <h3 className="text-xs font-bold text-charcoal/40 tracking-wider uppercase mb-2 pl-1">
               Search Results
             </h3>
             {searchResults.length > 0 ? (
@@ -309,27 +309,27 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
                 {searchResults.map((city) => {
                   const isSelected = selectedCity.toLowerCase() === city.toLowerCase();
                   return (
-                    <button
+                    <button suppressHydrationWarning
                       key={city}
                       type="button"
                       onClick={() => handleSelect(city)}
                       className={`w-full text-left px-4 py-3 rounded-xl text-sm transition-all duration-150 flex items-center justify-between cursor-pointer ${
                         isSelected
                           ? "bg-indigo/10 text-indigo font-bold"
-                          : "hover:bg-indigo/[0.02] text-gray-700 font-medium"
+                          : "hover:bg-indigo/[0.02] text-charcoal/70 font-medium"
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <MapPin className={`w-4 h-4 ${isSelected ? "text-indigo" : "text-gray-400"}`} />
+                        <MapPin className={`w-4 h-4 ${isSelected ? "text-indigo" : "text-charcoal/40"}`} />
                         <span>{city}</span>
                       </div>
-                      <span className="text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">Select &rarr;</span>
+                      <span className="text-xs text-charcoal/40 opacity-0 group-hover:opacity-100 transition-opacity">Select &rarr;</span>
                     </button>
                   );
                 })}
               </div>
             ) : (
-              <div className="py-8 text-center text-xs text-gray-400 font-medium">
+              <div className="py-8 text-center text-xs text-charcoal/40 font-medium">
                 {`No cities matching "${searchQuery}"`}
               </div>
             )}

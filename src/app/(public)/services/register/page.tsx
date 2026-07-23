@@ -129,7 +129,7 @@ export default function RegisterServicePage() {
               <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/15 text-xs text-indigo leading-relaxed flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-terracotta shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-terracotta">Verification Notice:</strong> All registered profiles must upload or email supporting credentials (GST registration document, PAN, or RERA license certificate) to <span className="underline">verify@svrepl.com</span>. Listings will remain hidden on the search feed until vetted by our verification team.
+                  <strong className="text-terracotta">Verification Notice:</strong> All registered profiles must upload or email supporting credentials (GST registration document, PAN, or RERA license certificate) to <span className="underline">verify@sqftgo.com</span>. Listings will remain hidden on the search feed until vetted by our verification team.
                 </div>
               </div>
 
@@ -303,7 +303,7 @@ export default function RegisterServicePage() {
                   className="mt-0.5 w-4 h-4 accent-terracotta shrink-0 cursor-pointer"
                 />
                 <label htmlFor="agreeToVettingPledge" className="cursor-pointer leading-tight text-left text-charcoal/70">
-                  I pledge that all provided business credentials are legally accurate and agree to submit matching verification proofs to the Sun Valley vetting coordinators. *
+                  I pledge that all provided business credentials are legally accurate and agree to submit matching verification proofs to the SqftGo vetting coordinators. *
                 </label>
               </div>
 

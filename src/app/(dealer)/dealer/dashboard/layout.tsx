@@ -205,7 +205,7 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
       portalLabel="Dealer Portal"
       accent="indigo"
       profileName={brokerProfile?.firmName || userName || "Dealer Account"}
-      profileEmail={userEmail || "broker@svrepl.com"}
+      profileEmail={userEmail || "broker@sqftgo.com"}
       profileInitial={brokerProfile?.ownerName?.charAt(0) || "D"}
       navSections={navSections}
       getBadgeCount={(badge) => {

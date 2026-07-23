@@ -28,7 +28,7 @@ export default function PrivacyPage() {
                 Privacy Policy
               </h1>
               <p className="text-xs text-charcoal/50 font-black uppercase tracking-widest">
-                Last Updated: July 7, 2026 • Sun Valley Real Estate Marketplace
+                Last Updated: July 7, 2026 • SqftGo Real Estate Marketplace
               </p>
             </div>
           </div>
@@ -42,7 +42,7 @@ export default function PrivacyPage() {
               <span>1. Information We Collect</span>
             </h2>
             <p className="mb-4 font-semibold text-charcoal/70">
-              At Sun Valley, we collect information to provide better services to all our users. The types of personal information we collect include:
+              At SqftGo, we collect information to provide better services to all our users. The types of personal information we collect include:
             </p>
             <ul className="list-disc pl-5 flex flex-col gap-2 font-medium text-charcoal/60">
               <li><strong>Personal Identifiers:</strong> Name, email address, phone number, and account login credentials when you sign up or submit assistance enquiries.</li>
@@ -90,8 +90,8 @@ export default function PrivacyPage() {
               For any questions regarding your data logs, cookies management, or requests to purge your profile records from our databases, please contact our data safety coordinators:
             </p>
             <div className="bg-[#faf8f5]/60 border border-sand p-5 rounded-2xl flex flex-col gap-2 font-bold text-xs text-charcoal/70">
-              <p><strong>Department:</strong> SVREPL Privacy & Security Desk</p>
-              <p><strong>Email:</strong> privacy@svrepl.com</p>
+              <p><strong>Department:</strong> SQFTGO Privacy & Security Desk</p>
+              <p><strong>Email:</strong> privacy@sqftgo.com</p>
               <p><strong>Phone:</strong> +91 98290 55555</p>
             </div>
           </section>

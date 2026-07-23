@@ -105,7 +105,7 @@ export function DashboardShell({
             </div>
           )}
           <div className="flex flex-col">
-            <span className="font-logo text-sm text-indigo leading-none">Sun Valley</span>
+            <span className="font-logo text-sm text-indigo leading-none">SqftGo</span>
             <span className="text-[8px] text-terracotta font-black uppercase tracking-wider mt-0.5">
               {portalLabel}
             </span>

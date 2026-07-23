@@ -280,7 +280,7 @@ export default function DealerProfilePage() {
                     <TextInput
                       type="email"
                       disabled
-                      value={userEmail || "dealer@sunvalley.com"}
+                      value={userEmail || "dealer@sqftgo.com"}
                     />
                   </FormField>
                 </div>

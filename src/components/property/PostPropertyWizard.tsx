@@ -33,7 +33,7 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
   const { addProperty, isLoggedIn, userEmail, userRole } = useApp();
   const canPost =
     isLoggedIn &&
-    (userRole === "admin" || userRole === "broker" || userEmail === "admin@svrepl.com");
+    (userRole === "admin" || userRole === "broker" || userEmail === "admin@sqftgo.com");
   const [mounted, setMounted] = useState(false);
 
   React.useEffect(() => {

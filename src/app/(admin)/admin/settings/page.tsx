@@ -28,9 +28,9 @@ export default function AdminSettingsPage() {
   const [maintenanceConfirmOpen, setMaintenanceConfirmOpen] = useState(false);
 
   const [form, setForm] = useState({
-    siteName: "Sun Valley Real Estate",
+    siteName: "SqftGo Real Estate",
     tagline: "Rajasthan's Premier Property Marketplace",
-    supportEmail: "support@svrepl.com",
+    supportEmail: "support@sqftgo.com",
     phone: "+91 294 2400000",
     requireApproval: true,
     allowDealerRegistration: true,

@@ -100,6 +100,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, 
 
         {onSelect && (
           <button
+            suppressHydrationWarning
             type="button"
             aria-label="Show on map"
             onClick={(e) => {
@@ -114,6 +115,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, 
         )}
 
         <button
+          suppressHydrationWarning
           type="button"
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           aria-pressed={isFavorite}
@@ -124,18 +126,19 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, 
           }}
           className={`absolute top-3 right-3 p-2 rounded-xl border shadow-sm z-10 transition-all duration-200 cursor-pointer ${
             isFavorite
-              ? "bg-red-500/20 border-red-500/30 text-red-500"
-              : "bg-white border-sand text-charcoal hover:text-red-500"
+              ? "bg-rose-500/10 border-rose-500/30 text-rose-500"
+              : "bg-white border-sand text-charcoal hover:text-rose-500"
           }`}
         >
           <motion.div whileTap={{ scale: 1.3 }}>
-            <Heart className={`w-4 h-4 ${isFavorite ? "fill-red-500" : ""}`} />
+            <Heart className={`w-4 h-4 ${isFavorite ? "fill-rose-500" : ""}`} />
           </motion.div>
         </button>
 
         {property.images.length > 1 && (
           <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
             <button
+              suppressHydrationWarning
               type="button"
               aria-label="Previous image"
               onClick={prevImage}
@@ -144,6 +147,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, 
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
+              suppressHydrationWarning
               type="button"
               aria-label="Next image"
               onClick={nextImage}

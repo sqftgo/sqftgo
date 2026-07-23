@@ -9,19 +9,19 @@ export interface DemoAccount {
 
 export const DEMO_ACCOUNTS: readonly DemoAccount[] = [
   {
-    email: "admin@svrepl.com",
+    email: "admin@sqftgo.com",
     passwords: ["admin2026", "admin123"],
     role: "admin",
     name: "Super Admin",
   },
   {
-    email: "broker@svrepl.com",
+    email: "broker@sqftgo.com",
     passwords: ["broker2026", "broker123"],
     role: "broker",
     name: "Rajesh Mehta",
   },
   {
-    email: "user@svrepl.com",
+    email: "user@sqftgo.com",
     passwords: ["user2026", "user123"],
     role: "user",
     name: "Arjun Sharma",

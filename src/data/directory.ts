@@ -92,7 +92,7 @@ export const directoryProfiles: DirectoryProfile[] = [
       category: "Agent & Broker",
       city: "Udaipur",
       address: "Panchwati, Udaipur",
-      email: "broker@svrepl.com",
+      email: "broker@sqftgo.com",
       website: "www.lakecitybrokerage.com",
       mobile: "+91 98290 12345",
       description: "Trusted broker specializing in lakefront villas, luxury apartments, and commercial lease verification in Shobhagpura & Panchwati.",

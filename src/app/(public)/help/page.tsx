@@ -38,7 +38,7 @@ export default function HelpCenterPage() {
     },
     {
       category: "listings",
-      q: "How do I list my own property on Sun Valley?",
+      q: "How do I list my own property on SqftGo?",
       a: "If you are a builder, developer, or certified broker, you can register a business account. Once registered, navigate to the 'Add Property Listing' form on your dashboard, input RERA registration numbers, attach photographs, and submit. The admin team will review and publish it within 24 hours.",
     },
     {
@@ -103,15 +103,15 @@ export default function HelpCenterPage() {
             icon: Phone,
             title: "Call Support",
             desc: "Mon-Sat, 9AM to 7PM",
-            detail: "+91 94140 SVREPL",
+            detail: "+91 94140 SQFTGO",
             action: () => triggerToast("Broker hotline is online. Dialling..."),
           },
           {
             icon: Mail,
             title: "Email Broker Desk",
             desc: "Average response: 2 hrs",
-            detail: "desk@svrepl.com",
-            action: () => triggerToast("Opening email client draft to desk@svrepl.com..."),
+            detail: "desk@sqftgo.com",
+            action: () => triggerToast("Opening email client draft to desk@sqftgo.com..."),
           },
           {
             icon: MessageSquare,

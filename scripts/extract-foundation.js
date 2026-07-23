@@ -415,9 +415,9 @@ write(
   "src/constants/demoAccounts.ts",
   [
     "export const DEMO_ACCOUNTS = [",
-    '  { email: "admin@svrepl.com", password: "admin2026", role: "admin" as const, name: "Admin" },',
-    '  { email: "broker@svrepl.com", password: "admin123", role: "broker" as const, name: "Rajesh Mehta" },',
-    '  { email: "user@svrepl.com", password: "user123", role: "user" as const, name: "Priya Sharma" },',
+    '  { email: "admin@sqftgo.com", password: "admin2026", role: "admin" as const, name: "Admin" },',
+    '  { email: "broker@sqftgo.com", password: "admin123", role: "broker" as const, name: "Rajesh Mehta" },',
+    '  { email: "user@sqftgo.com", password: "user123", role: "user" as const, name: "Priya Sharma" },',
     "] as const;",
     "",
     'export const SESSION_STORAGE_KEY = "sv_mock_session";',
