@@ -43,3 +43,5 @@ next-env.d.ts
 # Agent and File
 ./cursor
 ./impeccable
+.agents
+.claude
