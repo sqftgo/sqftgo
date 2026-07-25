@@ -15,7 +15,6 @@ export { ROUTES } from "./routes";
 export {
   DEMO_ACCOUNTS,
   SESSION_STORAGE_KEY,
-  findDemoAccount,
   type DemoAccount,
   type DemoRole,
 } from "./demoAccounts";

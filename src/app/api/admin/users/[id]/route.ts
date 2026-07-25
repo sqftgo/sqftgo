@@ -67,6 +67,19 @@ export async function PATCH(
     return jsonError("No updates provided");
   }
 
+  // Prevent locking yourself out of the sole admin account.
+  if (id === user.id) {
+    if (patch.role !== undefined && patch.role !== "admin") {
+      return jsonError("You cannot demote your own admin role.", 403);
+    }
+    if (patch.status === "suspended") {
+      return jsonError("You cannot suspend your own account.", 403);
+    }
+  }
+  if (patch.role === "admin") {
+    return jsonError("Admin role cannot be granted via the API.", 403);
+  }
+
   // Role/status changes need service role (or admin RLS update policy).
   if ((patch.role !== undefined || patch.status !== undefined) && !hasServiceRoleKey()) {
     return jsonError(

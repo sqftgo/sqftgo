@@ -36,7 +36,14 @@ export async function POST(request: NextRequest) {
 
   const { error } = await supabase.auth.updateUser({ password });
   if (error) {
-    return jsonError(error.message, 400);
+    const raw = error.message ?? "";
+    if (/same|identical|unchanged/i.test(raw)) {
+      return jsonError("New password must be different from your current password.", 400);
+    }
+    if (/weak|short|least|characters/i.test(raw)) {
+      return jsonError("Password does not meet security requirements.", 400);
+    }
+    return jsonError("Unable to update password. Request a new reset link and try again.", 400);
   }
 
   return applyCookies(jsonOk({ ok: true }));

@@ -342,6 +342,10 @@ function AuthForm() {
             {SHOW_DEMO_LOGIN && activeTab === "login" && (
               <div className="bg-sand/20 border border-sand/40 rounded-xl p-3.5 mt-1 text-[11px] font-semibold text-charcoal/65 flex flex-col gap-2">
                 <span className="text-[9px] font-black text-indigo uppercase tracking-wider">Quick Demo Login</span>
+                <p className="text-[10px] font-medium text-charcoal/50 leading-snug">
+                  Fills email only — use local seed passwords from{" "}
+                  <code className="text-[9px]">.env.example</code>.
+                </p>
                 <div className="grid grid-cols-2 gap-2">
                   {DEMO_ACCOUNTS.map((account) => (
                     <button
@@ -349,7 +353,7 @@ function AuthForm() {
                       type="button"
                       onClick={() => {
                         setEmail(account.email);
-                        setPassword(account.passwords[0]);
+                        setPassword("");
                         setFormError(null);
                       }}
                       className="py-1.5 px-2 bg-white hover:bg-slate-100 border border-sand rounded-lg text-[10px] font-bold text-slate-700 cursor-pointer text-center whitespace-nowrap"

@@ -124,20 +124,46 @@ const defaultSession: SessionSnapshot = {
   selectedCity: "Udaipur",
 };
 
-function readSession(): SessionSnapshot {
-  if (typeof window === "undefined") return defaultSession;
+type UiPrefs = Pick<SessionSnapshot, "favorites" | "compareList" | "selectedCity">;
+
+function readUiPrefs(): UiPrefs {
+  if (typeof window === "undefined") {
+    return {
+      favorites: defaultSession.favorites,
+      compareList: defaultSession.compareList,
+      selectedCity: defaultSession.selectedCity,
+    };
+  }
   try {
     const raw = localStorage.getItem(SESSION_STORAGE_KEY);
-    if (!raw) return defaultSession;
-    return { ...defaultSession, ...JSON.parse(raw) };
+    if (!raw) {
+      return {
+        favorites: defaultSession.favorites,
+        compareList: defaultSession.compareList,
+        selectedCity: defaultSession.selectedCity,
+      };
+    }
+    const parsed = JSON.parse(raw) as Partial<SessionSnapshot>;
+    return {
+      favorites: Array.isArray(parsed.favorites) ? parsed.favorites : [],
+      compareList: Array.isArray(parsed.compareList) ? parsed.compareList : [],
+      selectedCity:
+        typeof parsed.selectedCity === "string" && parsed.selectedCity
+          ? parsed.selectedCity
+          : defaultSession.selectedCity,
+    };
   } catch {
-    return defaultSession;
+    return {
+      favorites: defaultSession.favorites,
+      compareList: defaultSession.compareList,
+      selectedCity: defaultSession.selectedCity,
+    };
   }
 }
 
-function writeSession(session: SessionSnapshot) {
+function writeUiPrefs(prefs: UiPrefs) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(prefs));
 }
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -154,21 +180,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    const saved = readSession();
-    setSelectedCityState(saved.selectedCity);
-    setFavorites(saved.favorites);
-    setCompareList(saved.compareList);
+    const prefs = readUiPrefs();
+    setSelectedCityState(prefs.selectedCity);
+    setFavorites(prefs.favorites);
+    setCompareList(prefs.compareList);
 
     let cancelled = false;
 
     async function hydrateAuth() {
+      // Never trust localStorage for roles/identity — only Supabase cookie session.
       if (!hasSupabaseEnv()) {
-        // Fall back to persisted local session only when Supabase is not configured
-        setIsLoggedInState(saved.isLoggedIn);
-        setUserEmailState(saved.userEmail);
-        setUserRoleState(saved.userRole);
-        setUserNameState(saved.userName);
-        setUserProfile(saved.userProfile);
+        setIsLoggedInState(false);
+        setUserEmailState("");
+        setUserRoleState(null);
+        setUserNameState("");
+        setUserProfile(null);
         if (!cancelled) setSessionReady(true);
         return;
       }
@@ -210,27 +236,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     if (!sessionReady) return;
-    writeSession({
-      isLoggedIn,
-      userEmail,
-      userRole,
-      userName,
-      userProfile,
-      favorites,
-      compareList,
-      selectedCity,
-    });
-  }, [
-    sessionReady,
-    isLoggedIn,
-    userEmail,
-    userRole,
-    userName,
-    userProfile,
-    favorites,
-    compareList,
-    selectedCity,
-  ]);
+    writeUiPrefs({ favorites, compareList, selectedCity });
+  }, [sessionReady, favorites, compareList, selectedCity]);
 
   const setSelectedCity = useCallback((city: string) => setSelectedCityState(city), []);
   const setIsLoggedIn = useCallback((val: boolean) => setIsLoggedInState(val), []);

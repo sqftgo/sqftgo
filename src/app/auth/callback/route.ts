@@ -22,9 +22,8 @@ export async function GET(request: Request) {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    return NextResponse.redirect(
-      `${site}/login?error=${encodeURIComponent(error.message)}`
-    );
+    // Do not leak provider error text into the URL / browser history.
+    return NextResponse.redirect(`${site}/login?error=auth_callback_failed`);
   }
 
   // Password recovery → force user to set a new password
