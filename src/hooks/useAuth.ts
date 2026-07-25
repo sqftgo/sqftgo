@@ -38,16 +38,19 @@ export function useAuth() {
 
   const signup = useCallback(
     async (input: { name: string; email: string; password: string }) => {
-      const session = await authService.signup(input);
-      setMockUsers(await authService.listUsers());
+      const result = await authService.signup(input);
+      if (result.status === "confirm_email") {
+        return result;
+      }
+      const session = result.session;
       setIsLoggedIn(true);
       setUserEmail(session.email);
       setUserRole(session.role);
       setUserName(session.name);
       setUserProfile(session.profile);
-      return session;
+      return result;
     },
-    [setIsLoggedIn, setUserEmail, setUserRole, setUserName, setUserProfile, setMockUsers]
+    [setIsLoggedIn, setUserEmail, setUserRole, setUserName, setUserProfile]
   );
 
   return {

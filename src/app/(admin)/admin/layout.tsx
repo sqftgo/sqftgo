@@ -4,9 +4,8 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
-import { DEMO_ACCOUNTS } from "@/constants/demoAccounts";
 import { DashboardShell, type DashboardNavSection } from "@/components/layout/DashboardShell";
-import { Button, DropdownMenu, Avatar } from "@/components/ui";
+import { DropdownMenu, Avatar } from "@/components/ui";
 import {
   LayoutDashboard, Users, Briefcase, Building2, CheckSquare, Tag,
   MapPin, Star, FileText, BarChart3, MessageSquare, Settings, User,
@@ -24,11 +23,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     sessionReady,
     properties,
     notifications,
-    setIsLoggedIn,
-    setUserEmail,
-    setUserRole,
-    setUserName,
-    setUserProfile,
   } = useApp();
 
   const pendingCount = properties.filter((p) => p.status === "Pending Review").length;
@@ -36,22 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     (n) => !n.read && (n.forRole === "admin" || n.forRole === "all")
   ).length;
 
-  const isAdmin = isLoggedIn && (userRole === "admin" || userEmail === "admin@sqftgo.com");
-
-  const enterAsDemoAdmin = () => {
-    const demo = DEMO_ACCOUNTS.find((a) => a.role === "admin")!;
-    setIsLoggedIn(true);
-    setUserEmail(demo.email);
-    setUserRole("admin");
-    setUserName(demo.name);
-    setUserProfile({
-      id: `profile-${demo.email}`,
-      name: demo.name,
-      email: demo.email,
-      role: "admin",
-      joinedDate: "2025-06-01",
-    });
-  };
+  const isAdmin = isLoggedIn && userRole === "admin";
 
   const handleLogout = () => {
     logout();
@@ -121,16 +100,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         <h1 className="text-2xl font-serif font-black text-charcoal mb-3">Admin Access Only</h1>
         <p className="text-charcoal/50 text-sm font-semibold mb-8 leading-relaxed">
-          This area is restricted to platform administrators. Sign in with admin credentials or use the demo account.
+          This area is restricted to the platform administrator. Sign in with the seeded admin account.
         </p>
-        <Button fullWidth onClick={enterAsDemoAdmin} className="mb-3">
-          Continue as Demo Admin
-        </Button>
         <Link
           href="/login"
           className="block w-full py-3.5 bg-terracotta hover:bg-terracotta-hover text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-colors mb-3 shadow-md shadow-terracotta/15"
         >
-          Admin Login
+          Sign In
         </Link>
         <Link
           href="/"
@@ -193,7 +169,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       accent="terracotta"
       brandIcon={<Shield className="w-4 h-4 text-white" />}
       profileName={userName || "Super Admin"}
-      profileEmail={userEmail || "admin@sqftgo.com"}
+      profileEmail={userEmail || ""}
       profileInitial="A"
       navSections={navSections}
       getBadgeCount={(badge) => {

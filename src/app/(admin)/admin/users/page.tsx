@@ -26,6 +26,23 @@ export default function AdminUsersPage() {
   const [roleFilter, setRoleFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { authService } = await import("@/services/auth");
+        const users = await authService.listUsers();
+        if (!cancelled) setMockUsers(users);
+      } catch {
+        // Keep existing mock/local data if admin API is unavailable
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [setMockUsers]);
 
   const roleOptions = useMemo(() => ["All", "user", "broker", "admin"].map(r => ({
     label: r === "All" ? "All Roles" : r.charAt(0).toUpperCase() + r.slice(1),
@@ -44,22 +61,35 @@ export default function AdminUsersPage() {
     return matchSearch && matchRole && matchStatus;
   });
 
-  const toggleStatus = (id: string, name: string, current: string) => {
+  const toggleStatus = async (id: string, name: string, current: string) => {
     const next = current === "active" ? "suspended" : "active";
-    setMockUsers(prev => prev.map(u => u.id === id ? { ...u, status: next as "active" | "suspended" } : u));
-    addLog({ action: `User ${next === "suspended" ? "Suspended" : "Activated"}`, performedBy: userEmail, role: "Admin", target: name });
+    setActionError(null);
+    try {
+      const { authService } = await import("@/services/auth");
+      const updated = await authService.updateUser(id, { status: next as "active" | "suspended" });
+      setMockUsers(prev => prev.map(u => u.id === id ? updated : u));
+      addLog({ action: `User ${next === "suspended" ? "Suspended" : "Activated"}`, performedBy: userEmail, role: "Admin", target: name });
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Unable to update user status");
+    }
   };
 
-  const changeRole = (id: string, name: string, role: MockUser["role"]) => {
-    setMockUsers(prev => prev.map(u => u.id === id ? { ...u, role } : u));
-    addLog({ action: "User Role Changed", performedBy: userEmail, role: "Admin", target: `${name} → ${role}` });
+  const changeRole = async (id: string, name: string, role: MockUser["role"]) => {
+    setActionError(null);
+    try {
+      const { authService } = await import("@/services/auth");
+      const updated = await authService.updateUser(id, { role });
+      setMockUsers(prev => prev.map(u => u.id === id ? updated : u));
+      addLog({ action: "User Role Changed", performedBy: userEmail, role: "Admin", target: `${name} → ${role}` });
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Unable to change role");
+    }
   };
 
   const confirmDelete = () => {
     if (!pendingDelete) return;
-    const { id, name } = pendingDelete;
-    setMockUsers(prev => prev.filter(u => u.id !== id));
-    addLog({ action: "User Deleted", performedBy: userEmail, role: "Admin", target: name });
+    // Soft-delete via suspend until Auth Admin delete is wired
+    void toggleStatus(pendingDelete.id, pendingDelete.name, "active");
     setPendingDelete(null);
   };
 
@@ -156,6 +186,11 @@ export default function AdminUsersPage() {
         title="User Management"
         description={`${mockUsers.length} registered users`}
       />
+      {actionError ? (
+        <p className="text-sm font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-4 py-3">
+          {actionError}
+        </p>
+      ) : null}
 
       <div className="flex flex-wrap gap-3">
         <SearchInput

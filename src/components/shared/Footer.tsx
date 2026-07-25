@@ -19,7 +19,7 @@ export const Footer: React.FC = () => {
   // Hide Footer on dashboard and auth pages
   if (
     pathname === "/login" || pathname === "/signup" || pathname === "/register" ||
-    pathname === "/forgot-password" || pathname === "/dealer/register" || 
+    pathname === "/forgot-password" || pathname === "/update-password" || pathname === "/dealer/register" || 
     pathname === "/admin/login" ||
     pathname.startsWith("/dealer/dashboard") || pathname.startsWith("/admin")
   ) {

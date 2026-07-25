@@ -10,6 +10,7 @@ import React, {
   useSyncExternalStore,
 } from "react";
 import { SESSION_STORAGE_KEY } from "@/constants/demoAccounts";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
 import type {
   Property,
   UserProfile,
@@ -32,6 +33,7 @@ import {
   inquiryService,
   dealerService,
   catalogService,
+  authService,
   type SessionSnapshot,
 } from "@/services";
 
@@ -105,7 +107,7 @@ interface AppContextType {
   compareList: string[];
   setCompareList: React.Dispatch<React.SetStateAction<string[]>>;
   toggleCompare: (id: string) => void;
-  logout: () => void;
+  logout: () => void | Promise<void>;
   sessionReady: boolean;
 }
 
@@ -156,12 +158,54 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSelectedCityState(saved.selectedCity);
     setFavorites(saved.favorites);
     setCompareList(saved.compareList);
-    setIsLoggedInState(saved.isLoggedIn);
-    setUserEmailState(saved.userEmail);
-    setUserRoleState(saved.userRole);
-    setUserNameState(saved.userName);
-    setUserProfile(saved.userProfile);
-    setSessionReady(true);
+
+    let cancelled = false;
+
+    async function hydrateAuth() {
+      if (!hasSupabaseEnv()) {
+        // Fall back to persisted local session only when Supabase is not configured
+        setIsLoggedInState(saved.isLoggedIn);
+        setUserEmailState(saved.userEmail);
+        setUserRoleState(saved.userRole);
+        setUserNameState(saved.userName);
+        setUserProfile(saved.userProfile);
+        if (!cancelled) setSessionReady(true);
+        return;
+      }
+
+      try {
+        const session = await authService.getSession();
+        if (cancelled) return;
+        if (session) {
+          setIsLoggedInState(true);
+          setUserEmailState(session.email);
+          setUserRoleState(session.role);
+          setUserNameState(session.name);
+          setUserProfile(session.profile);
+        } else {
+          setIsLoggedInState(false);
+          setUserEmailState("");
+          setUserRoleState(null);
+          setUserNameState("");
+          setUserProfile(null);
+        }
+      } catch {
+        if (!cancelled) {
+          setIsLoggedInState(false);
+          setUserEmailState("");
+          setUserRoleState(null);
+          setUserNameState("");
+          setUserProfile(null);
+        }
+      } finally {
+        if (!cancelled) setSessionReady(true);
+      }
+    }
+
+    void hydrateAuth();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -197,12 +241,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   );
   const setUserName = useCallback((name: string) => setUserNameState(name), []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     setIsLoggedInState(false);
     setUserEmailState("");
     setUserRoleState(null);
     setUserNameState("");
     setUserProfile(null);
+    if (hasSupabaseEnv()) {
+      try {
+        await authService.logout();
+      } catch {
+        // Local state already cleared
+      }
+    }
   }, []);
 
   const toggleFavorite = useCallback((id: string) => {

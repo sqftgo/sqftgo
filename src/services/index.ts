@@ -1,7 +1,7 @@
 export { propertyService, mockPropertyRepository } from "./properties";
 export type { PropertyRepository, PropertyFilters, PropertyCreateInput } from "./properties";
 
-export { authService, mockAuthRepository } from "./auth";
+export { authService, supabaseAuthRepository } from "./auth";
 export type { AuthRepository, AuthSession, AuthRole } from "./auth";
 
 export { inquiryService, mockInquiryRepository } from "./inquiries";

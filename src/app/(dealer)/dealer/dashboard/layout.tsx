@@ -4,9 +4,8 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
-import { DEMO_ACCOUNTS } from "@/constants/demoAccounts";
 import { DashboardShell, type DashboardNavSection } from "@/components/layout/DashboardShell";
-import { Button, DropdownMenu, Avatar } from "@/components/ui";
+import { DropdownMenu, Avatar } from "@/components/ui";
 import {
   LayoutDashboard, Building2, Plus, MessageSquare, BarChart3,
   Mail, CreditCard, User, Settings, Bell, ChevronDown, ShieldAlert, LogOut,
@@ -25,11 +24,6 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
     inquiries,
     notifications,
     properties,
-    setIsLoggedIn,
-    setUserEmail,
-    setUserRole,
-    setUserName,
-    setUserProfile,
   } = useApp();
 
   const isBroker = isLoggedIn && (userRole === "broker" || userRole === "admin");
@@ -46,21 +40,6 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
   const unreadNotifCount = notifications.filter(
     (n) => !n.read && (n.forRole === "broker" || n.forRole === "all")
   ).length;
-
-  const enterAsDemoBroker = () => {
-    const demo = DEMO_ACCOUNTS.find((a) => a.role === "broker")!;
-    setIsLoggedIn(true);
-    setUserEmail(demo.email);
-    setUserRole("broker");
-    setUserName(demo.name);
-    setUserProfile({
-      id: `profile-${demo.email}`,
-      name: demo.name,
-      email: demo.email,
-      role: "broker",
-      joinedDate: "2025-11-10",
-    });
-  };
 
   const handleLogout = () => {
     logout();
@@ -132,11 +111,8 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
         </div>
         <h1 className="text-2xl font-serif font-black text-charcoal mb-3">Dealer Access Required</h1>
         <p className="text-charcoal/50 text-sm font-semibold mb-8 leading-relaxed">
-          Sign in with a broker account to manage listings and leads, or continue with the demo dealer.
+          Sign in with a broker account to manage listings and leads.
         </p>
-        <Button fullWidth variant="secondary" onClick={enterAsDemoBroker} className="mb-3">
-          Continue as Demo Dealer
-        </Button>
         <Link
           href="/login"
           className="block w-full py-3.5 bg-terracotta hover:bg-terracotta-hover text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-colors mb-3"
@@ -205,7 +181,7 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
       portalLabel="Dealer Portal"
       accent="indigo"
       profileName={brokerProfile?.firmName || userName || "Dealer Account"}
-      profileEmail={userEmail || "broker@sqftgo.com"}
+      profileEmail={userEmail || ""}
       profileInitial={brokerProfile?.ownerName?.charAt(0) || "D"}
       navSections={navSections}
       getBadgeCount={(badge) => {

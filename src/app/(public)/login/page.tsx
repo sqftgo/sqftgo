@@ -3,9 +3,13 @@
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/hooks/useAuth";
+import { DEMO_ACCOUNTS } from "@/constants/demoAccounts";
+import { safeRedirectPath } from "@/lib/auth/urls";
 import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+const SHOW_DEMO_LOGIN = process.env.NODE_ENV !== "production";
 
 const SLIDES = [
   {
@@ -37,18 +41,13 @@ const SLIDES = [
 function AuthForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { setIsLoggedIn, setUserEmail, setUserRole, setUserName, mockUsers, setMockUsers, directoryProfiles } = useApp();
+  const { login, signup } = useAuth();
 
-  // Determine initial tab from query parameter (?tab=signup)
   const initialTab = searchParams.get("tab") === "signup" ? "signup" : "login";
   const [activeTab, setActiveTab] = useState<"login" | "signup">(initialTab);
 
-  // Form input states
-
-  // Slideshow active index
   const [activeSlide, setActiveSlide] = useState(0);
 
-  // Slideshow interval timer
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveSlide((prev) => (prev + 1) % SLIDES.length);
@@ -56,7 +55,6 @@ function AuthForm() {
     return () => clearInterval(timer);
   }, []);
 
-  // Sync active tab with search parameter updates
   useEffect(() => {
     const tabParam = searchParams.get("tab");
     if (tabParam === "signup") {
@@ -66,7 +64,6 @@ function AuthForm() {
     }
   }, [searchParams]);
 
-  // Form states
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -74,108 +71,82 @@ function AuthForm() {
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formSuccess, setFormSuccess] = useState<string | null>(null);
 
-  // Auto-fill defaults
   useEffect(() => {
     if (activeTab === "signup") {
       setEmail("");
       setPassword("");
+      setFormError(null);
     }
   }, [activeTab]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const redirectAfterAuth = (role: "user" | "broker" | "admin") => {
+    const next = safeRedirectPath(searchParams.get("next"), "");
+    if (next) {
+      router.push(next);
+      return;
+    }
+    if (role === "admin") {
+      router.push("/admin");
+    } else if (role === "broker") {
+      router.push("/dealer/dashboard");
+    } else {
+      router.push("/");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
 
-    let finalRole: "user" | "broker" | "admin" = "user";
-    let finalName = name || email.split("@")[0];
-
-    const foundUser = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+    setFormError(null);
+    setFormSuccess(null);
 
     if (activeTab === "signup") {
-      if (email === "admin@sqftgo.com") {
-        alert("The admin account cannot be registered here.");
+      if (email.trim().toLowerCase() === "admin@sqftgo.com") {
+        setFormError("The admin account cannot be registered here.");
         return;
       }
       if (!name || !confirmPassword) return;
-      if (password !== confirmPassword) {
-        alert("Passwords do not match!");
+      if (password.length < 8) {
+        setFormError("Password must be at least 8 characters.");
         return;
       }
-
-      // Add new registered user
-      const isBrokerEmail = email.toLowerCase().includes("broker") || email.toLowerCase().includes("dealer");
-      finalRole = isBrokerEmail ? "broker" : "user";
-
-      const newUser = {
-        id: `usr-${Date.now()}`,
-        name: finalName,
-        email: email,
-        role: finalRole,
-        status: "active" as const,
-        joinedDate: new Date().toISOString().split("T")[0],
-        inquiriesCount: 0
-      };
-      setMockUsers(prev => [...prev, newUser]);
-    } else {
-      // Login check
-      if (email.toLowerCase() === "admin@sqftgo.com") {
-        if (password !== "admin2026" && password !== "admin123") {
-          alert("Invalid admin credentials! Please use admin2026 or admin123");
-          return;
-        }
-        finalRole = "admin";
-        finalName = "Admin User";
-      } else if (email.toLowerCase() === "broker@sqftgo.com") {
-        if (password !== "broker2026" && password !== "broker123") {
-          alert("Invalid broker credentials! Please use broker2026 or broker123");
-          return;
-        }
-        finalRole = "broker";
-        finalName = "Rajesh Mehta";
-      } else if (email.toLowerCase() === "user@sqftgo.com") {
-        if (password !== "user2026" && password !== "user123") {
-          alert("Invalid client credentials! Please use user2026 or user123");
-          return;
-        }
-        finalRole = "user";
-        finalName = "Arjun Sharma";
-      } else if (foundUser) {
-        finalRole = foundUser.role;
-        finalName = foundUser.name;
-      } else {
-        // Fallback check in broker directories
-        const isDealer = directoryProfiles.some(d => d.email.toLowerCase() === email.toLowerCase());
-        finalRole = isDealer ? "broker" : "user";
+      if (password !== confirmPassword) {
+        setFormError("Passwords do not match.");
+        return;
       }
     }
 
     setIsSubmitting(true);
-
-    // Simulate auth network delay
-    setTimeout(() => {
-      setIsLoggedIn(true);
-      setUserEmail(email);
-      setUserRole(finalRole);
-      if (setUserName) setUserName(finalName);
-      setIsSubmitting(false);
-
-      // Navigate dynamically based on role
-      if (finalRole === "admin") {
-        router.push("/admin");
-      } else if (finalRole === "broker") {
-        router.push("/dealer/dashboard");
+    try {
+      if (activeTab === "signup") {
+        const result = await signup({ name, email, password });
+        if (result.status === "confirm_email") {
+          setActiveTab("login");
+          setPassword("");
+          setConfirmPassword("");
+          setFormSuccess(result.message);
+          return;
+        }
+        redirectAfterAuth(result.session.role);
       } else {
-        router.push("/");
+        const session = await login(email, password);
+        redirectAfterAuth(session.role);
       }
-    }, 1000);
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Authentication failed");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleTabToggle = () => {
     const nextTab = activeTab === "login" ? "signup" : "login";
     setActiveTab(nextTab);
 
-    // Update URL query parameters for consistency without reloading
     const params = new URLSearchParams(window.location.search);
     if (nextTab === "signup") {
       params.set("tab", "signup");
@@ -188,10 +159,8 @@ function AuthForm() {
   return (
     <div className="fixed inset-0 w-full h-full min-h-screen bg-white text-charcoal z-50 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden select-none font-sans">
 
-      {/* LEFT COLUMN: AUTH FORM */}
       <div className="w-full lg:w-[42%] xl:w-[38%] bg-white flex flex-col justify-center px-6 sm:px-12 xl:px-16 py-12 relative z-10 min-h-full border-r border-sand">
 
-        {/* Back Button */}
         <button
           type="button"
           onClick={() => {
@@ -208,7 +177,6 @@ function AuthForm() {
         </button>
 
         <div className="max-w-md w-full mx-auto flex flex-col justify-center">
-          {/* Logo and Header */}
           <div className="flex flex-col items-center mb-6">
             <Link href="/" className="flex items-center justify-center mb-4">
               <span className="font-logo text-3xl leading-none text-indigo hover:text-indigo/80 transition-colors select-none">
@@ -224,7 +192,6 @@ function AuthForm() {
             </p>
           </div>
 
-          {/* Forms Section */}
           <div className="flex flex-col gap-4">
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-xs font-bold text-slate-700">
 
@@ -238,7 +205,6 @@ function AuthForm() {
                     transition={{ duration: 0.15 }}
                     className="flex flex-col gap-4"
                   >
-                    {/* Full Name */}
                     <div className="flex flex-col gap-1.5">
                       <label className="text-slate-500">Full Name</label>
                       <div className="relative">
@@ -257,7 +223,6 @@ function AuthForm() {
                 ) : null}
               </AnimatePresence>
 
-              {/* Email Address */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-slate-500">Email Address</label>
                 <div className="relative">
@@ -273,7 +238,6 @@ function AuthForm() {
                 </div>
               </div>
 
-              {/* Password */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-slate-500">Password</label>
                 <div className="relative">
@@ -336,21 +300,24 @@ function AuthForm() {
                       />
                       <span>Keep me logged in</span>
                     </label>
-                    <a
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        alert("Password recovery is not implemented in this demo.");
-                      }}
-                      className="text-indigo hover:underline"
-                    >
+                    <Link href="/forgot-password" className="text-indigo hover:underline">
                       Forgot password?
-                    </a>
+                    </Link>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              {/* Submit Button */}
+              {formError ? (
+                <p className="text-[11px] font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">
+                  {formError}
+                </p>
+              ) : null}
+              {formSuccess ? (
+                <p className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
+                  {formSuccess}
+                </p>
+              ) : null}
+
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -372,46 +339,28 @@ function AuthForm() {
               </button>
             </form>
 
-            {/* Mock Credentials Helper */}
-            {activeTab === "login" && (
+            {SHOW_DEMO_LOGIN && activeTab === "login" && (
               <div className="bg-sand/20 border border-sand/40 rounded-xl p-3.5 mt-1 text-[11px] font-semibold text-charcoal/65 flex flex-col gap-2">
-                <span className="text-[9px] font-black text-indigo uppercase tracking-wider">Quick Demo Login Autocomplete</span>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEmail("user@sqftgo.com");
-                      setPassword("user2026");
-                    }}
-                    className="py-1.5 px-2 bg-white hover:bg-slate-100 border border-sand rounded-lg text-[10px] font-bold text-slate-700 cursor-pointer text-center whitespace-nowrap"
-                  >
-                    Client User
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEmail("broker@sqftgo.com");
-                      setPassword("broker2026");
-                    }}
-                    className="py-1.5 px-2 bg-white hover:bg-slate-100 border border-sand rounded-lg text-[10px] font-bold text-slate-700 cursor-pointer text-center whitespace-nowrap"
-                  >
-                    Broker Dealer
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEmail("admin@sqftgo.com");
-                      setPassword("admin2026");
-                    }}
-                    className="py-1.5 px-2 bg-white hover:bg-slate-100 border border-sand rounded-lg text-[10px] font-bold text-slate-700 cursor-pointer text-center whitespace-nowrap"
-                  >
-                    Super Admin
-                  </button>
+                <span className="text-[9px] font-black text-indigo uppercase tracking-wider">Quick Demo Login</span>
+                <div className="grid grid-cols-2 gap-2">
+                  {DEMO_ACCOUNTS.map((account) => (
+                    <button
+                      key={account.email}
+                      type="button"
+                      onClick={() => {
+                        setEmail(account.email);
+                        setPassword(account.passwords[0]);
+                        setFormError(null);
+                      }}
+                      className="py-1.5 px-2 bg-white hover:bg-slate-100 border border-sand rounded-lg text-[10px] font-bold text-slate-700 cursor-pointer text-center whitespace-nowrap"
+                    >
+                      {account.role === "broker" ? "Broker Dealer" : "Client User"}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
 
-            {/* Divider */}
             <div className="flex items-center justify-center my-2 relative w-full">
               <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-sand/55" /></div>
               <span className="relative px-3.5 bg-white text-[10px] font-black text-charcoal/40 uppercase tracking-widest leading-none select-none">
@@ -419,10 +368,9 @@ function AuthForm() {
               </span>
             </div>
 
-            {/* Google Authentication Button */}
             <button
               type="button"
-              onClick={() => alert("Google Sign-In is not configured for this demo.")}
+              onClick={() => setFormError("Google Sign-In is not configured yet.")}
               className="w-full flex items-center justify-center gap-2.5 px-4 py-3.5 rounded-2xl border border-sand bg-white hover:bg-slate-50 text-charcoal hover:border-indigo/40 shadow-sm active:scale-[0.99] transition-all font-bold text-xs tracking-wide cursor-pointer"
             >
               <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
@@ -432,7 +380,6 @@ function AuthForm() {
             </button>
           </div>
 
-          {/* Tab switch link */}
           <p className="text-center text-xs text-slate-500 font-bold mt-8">
             {activeTab === "login" ? (
               <>
@@ -462,22 +409,18 @@ function AuthForm() {
 
       </div>
 
-      {/* RIGHT COLUMN: GRAPHICS & PROMO SLIDESHOW */}
       <div className="hidden lg:flex w-full lg:w-[58%] xl:w-[62%] h-full bg-charcoal border-l border-sand/40 relative overflow-hidden items-center justify-center min-h-full">
 
-        {/* Carousel Background Slide Image */}
         <div className="absolute inset-0 w-full h-full z-0 select-none pointer-events-none transition-all duration-700 ease-in-out">
           <img
             src={SLIDES[activeSlide].image}
             alt={SLIDES[activeSlide].title}
             className="w-full h-full object-cover object-center brightness-[0.5] contrast-[1.05] scale-[1.01] transition-all duration-700 ease-in-out"
           />
-          {/* Gradients to look aesthetic */}
           <div className="absolute inset-0 bg-neutral-950/40" />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30" />
         </div>
 
-        {/* Close Button "x" at top right */}
         <Link
           href="/"
           className="absolute top-6 right-6 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 border border-white/10 text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg backdrop-blur-md cursor-pointer"
@@ -485,7 +428,6 @@ function AuthForm() {
           <X className="w-5 h-5 stroke-[2.5]" />
         </Link>
 
-        {/* Modern Typography Overlay */}
         <div className="absolute left-12 bottom-28 right-12 z-10 flex flex-col gap-3.5 text-left select-none pointer-events-none max-w-xl">
           <div className="w-fit bg-white/20 text-gold border border-white/20 font-black text-[9px] tracking-widest uppercase py-1 px-3.5 rounded-full mb-1">
             Heritage Portal
@@ -499,7 +441,6 @@ function AuthForm() {
           </p>
         </div>
 
-        {/* Slideshow Progress Indicators (Higgsfield Style) */}
         <div className="absolute bottom-8 left-12 right-12 z-20 flex gap-4">
           {SLIDES.map((slide, idx) => {
             const isActive = idx === activeSlide;

@@ -1,4 +1,4 @@
-export type DemoRole = "user" | "broker" | "admin";
+export type DemoRole = "user" | "broker";
 
 export interface DemoAccount {
   email: string;
@@ -7,22 +7,17 @@ export interface DemoAccount {
   name: string;
 }
 
+/** Public demo autocomplete accounts only — admin is seeded, never listed here. */
 export const DEMO_ACCOUNTS: readonly DemoAccount[] = [
   {
-    email: "admin@sqftgo.com",
-    passwords: ["admin2026", "admin123"],
-    role: "admin",
-    name: "Super Admin",
-  },
-  {
     email: "broker@sqftgo.com",
-    passwords: ["broker2026", "broker123"],
+    passwords: ["broker2026"],
     role: "broker",
     name: "Rajesh Mehta",
   },
   {
     email: "user@sqftgo.com",
-    passwords: ["user2026", "user123"],
+    passwords: ["user2026"],
     role: "user",
     name: "Arjun Sharma",
   },

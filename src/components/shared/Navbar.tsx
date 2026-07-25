@@ -19,7 +19,7 @@ export const Navbar: React.FC = () => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
   const isDashboardRoute = pathname.startsWith("/dealer/") || pathname.startsWith("/admin");
-  const isAuthPage = pathname === "/login" || pathname === "/signup" || pathname === "/register" || pathname === "/forgot-password" || pathname === "/dealer/register" || pathname === "/admin/login" || isDashboardRoute;
+  const isAuthPage = pathname === "/login" || pathname === "/signup" || pathname === "/register" || pathname === "/forgot-password" || pathname === "/update-password" || pathname === "/dealer/register" || pathname === "/admin/login" || isDashboardRoute;
   const isPropertyDetailPage = pathname.startsWith("/property/");
 
   // Monitor scroll for header styling and progress indicator
