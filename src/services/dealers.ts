@@ -51,7 +51,7 @@ function toQuery(filters?: DealerFilters): string {
   return qs ? `?${qs}` : "";
 }
 
-/** Directory profiles hit Supabase; messages/visits stay mock until later phases. */
+/** Directory profiles hit Supabase; messages stay mock until a later phase. */
 export const supabaseDealerRepository: DealerRepository = {
   async listProfiles(filters) {
     return apiJson<DirectoryProfile[]>(`/api/dealers${toQuery(filters)}`);

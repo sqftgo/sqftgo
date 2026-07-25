@@ -4,8 +4,16 @@ import React from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import {
-  Building2, MessageSquare, Eye, Plus, ArrowUpRight,
-  CheckCircle2, Heart, CreditCard, Calendar, MessageCircle
+  Building2,
+  MessageSquare,
+  Eye,
+  Plus,
+  ArrowUpRight,
+  CheckCircle2,
+  Heart,
+  CreditCard,
+  Calendar,
+  MessageCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -20,18 +28,42 @@ import {
 } from "@/components/ui";
 
 export default function DealerDashboardPage() {
-  const { properties, inquiries, notifications, userEmail, directoryProfiles } = useApp();
+  const {
+    properties,
+    inquiries,
+    userEmail,
+    directoryProfiles,
+    visits,
+    updateVisit,
+  } = useApp();
 
-  const brokerProfile = directoryProfiles.find(p => p.email.toLowerCase() === userEmail.toLowerCase());
-  const myProperties = properties.filter(p => p.ownerEmail?.toLowerCase() === userEmail.toLowerCase());
+  const brokerProfile = directoryProfiles.find(
+    (p) => p.email.toLowerCase() === userEmail.toLowerCase()
+  );
+  const myProperties = properties.filter(
+    (p) => p.ownerEmail?.toLowerCase() === userEmail.toLowerCase()
+  );
 
-  const activeProps = myProperties.filter(p => p.status === "Active");
+  const activeProps = myProperties.filter((p) => p.status === "Active");
 
-  const totalInquiries = myProperties.reduce((a, p) => a + (inquiries[p.id]?.length || 0), 0);
+  const totalInquiries = myProperties.reduce(
+    (a, p) => a + (inquiries[p.id]?.length || 0),
+    0
+  );
   const recentInquiries = myProperties
-    .flatMap(p => (inquiries[p.id] || []).map(inq => ({ ...inq, propertyTitle: p.title, propId: p.id })))
+    .flatMap((p) =>
+      (inquiries[p.id] || []).map((inq) => ({
+        ...inq,
+        propertyTitle: p.title,
+        propId: p.id,
+      }))
+    )
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 4);
+
+  const upcomingVisits = visits
+    .filter((v) => v.status === "Pending Approval" || v.status === "Confirmed")
+    .slice(0, 5);
 
   const stats = [
     { label: "Active Listings", value: activeProps.length, icon: Building2, tone: "default" as const },
@@ -187,19 +219,45 @@ export default function DealerDashboardPage() {
 
           <Panel title="Upcoming Property Visits" padding="md">
             <div className="space-y-3">
-              {[
-                { name: "Rahul Verma", time: "Today at 04:00 PM", property: "Lake-Facing Villa" },
-                { name: "Priya Sharma", time: "Tomorrow at 11:30 AM", property: "3 BHK Flat in C-Scheme" }
-              ].map((v, i) => (
-                <div key={i} className="flex gap-3 p-3 bg-sand/20 border border-indigo/5 rounded-2xl">
-                  <Calendar className="w-4 h-4 text-indigo shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-xs font-bold text-charcoal">{v.name}</p>
-                    <p className="text-[10px] text-charcoal/40 mt-0.5">{v.time}</p>
-                    <p className="text-[9px] text-indigo font-bold mt-1 uppercase tracking-wide">Re: {v.property}</p>
+              {upcomingVisits.length === 0 ? (
+                <p className="text-xs text-charcoal/40 font-semibold text-center py-6">
+                  No upcoming tours yet.
+                </p>
+              ) : (
+                upcomingVisits.map((v) => (
+                  <div
+                    key={v.id}
+                    className="flex gap-3 p-3 bg-sand/20 border border-indigo/5 rounded-2xl"
+                  >
+                    <Calendar className="w-4 h-4 text-indigo shrink-0 mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs font-bold text-charcoal truncate">{v.visitorName}</p>
+                        <Badge status={v.status} size="sm">
+                          {v.status}
+                        </Badge>
+                      </div>
+                      <p className="text-[10px] text-charcoal/40 mt-0.5">
+                        {v.date} at {v.time}
+                      </p>
+                      <p className="text-[9px] text-indigo font-bold mt-1 uppercase tracking-wide truncate">
+                        Re: {v.propertyTitle}
+                      </p>
+                      {v.status === "Pending Approval" ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void updateVisit(v.id, { status: "Confirmed" });
+                          }}
+                          className="mt-2 text-[10px] font-black uppercase tracking-wider text-emerald-600 hover:underline"
+                        >
+                          Confirm Tour
+                        </button>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </Panel>
         </div>

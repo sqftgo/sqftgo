@@ -4,7 +4,7 @@ import React, { use, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
-import { formatIndianCurrency, InquiryForm, PropertyCard, Avatar } from "@/components/ui";
+import { formatIndianCurrency, InquiryForm, VisitBookingForm, PropertyCard, Avatar } from "@/components/ui";
 import { 
   MapPin, 
   BedDouble, 
@@ -667,8 +667,9 @@ export default function PropertyDetailPage({ params }: PageProps) {
         </div>
 
         {/* Right Column: Sticky Contact Sidebar (Desktop Only) */}
-        <div className="hidden lg:block lg:col-span-4 lg:sticky lg:top-28">
+        <div className="hidden lg:block lg:col-span-4 lg:sticky lg:top-28 space-y-5">
           <InquiryForm property={property} />
+          <VisitBookingForm property={property} />
         </div>
 
       </div>
@@ -803,8 +804,9 @@ export default function PropertyDetailPage({ params }: PageProps) {
               </div>
 
               {/* Embedded Inquiry Form */}
-              <div className="p-1">
+              <div className="p-1 space-y-4">
                 <InquiryForm property={property} />
+                <VisitBookingForm property={property} />
               </div>
             </motion.div>
           </>
