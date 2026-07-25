@@ -337,6 +337,46 @@ export type NotificationUpdate = Partial<
   Pick<NotificationInsert, "read" | "title" | "message" | "type" | "for_role">
 >;
 
+export type VisitStatusDb = "pending" | "confirmed" | "completed" | "cancelled";
+
+export type SiteVisitRow = {
+  id: string;
+  property_id: string;
+  user_id: string | null;
+  visitor_name: string;
+  visitor_email: string;
+  visitor_phone: string;
+  scheduled_date: string;
+  scheduled_time: string;
+  status: VisitStatusDb;
+  notes: string | null;
+  broker_notes: string | null;
+  cancelled_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SiteVisitInsert = {
+  id?: string;
+  property_id: string;
+  user_id?: string | null;
+  visitor_name: string;
+  visitor_email: string;
+  visitor_phone: string;
+  scheduled_date: string;
+  scheduled_time: string;
+  status?: VisitStatusDb;
+  notes?: string | null;
+  broker_notes?: string | null;
+  cancelled_at?: string | null;
+  completed_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type SiteVisitUpdate = Partial<SiteVisitInsert>;
+
 export type Database = {
   public: {
     Tables: {
@@ -422,6 +462,27 @@ export type Database = {
           },
         ];
       };
+      site_visits: {
+        Row: SiteVisitRow;
+        Insert: SiteVisitInsert;
+        Update: SiteVisitUpdate;
+        Relationships: [
+          {
+            foreignKeyName: "site_visits_property_id_fkey";
+            columns: ["property_id"];
+            isOneToOne: false;
+            referencedRelation: "properties";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "site_visits_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -442,6 +503,7 @@ export type Database = {
       assistance_status: AssistanceStatusDb;
       notification_type: NotificationTypeDb;
       notification_for_role: NotificationForRoleDb;
+      visit_status: VisitStatusDb;
     };
     CompositeTypes: {
       [_ in never]: never;

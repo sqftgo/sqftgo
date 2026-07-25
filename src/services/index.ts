@@ -16,6 +16,9 @@ export type { CatalogRepository } from "./catalog";
 export { notificationService, supabaseNotificationRepository } from "./notifications";
 export type { NotificationRepository } from "./notifications";
 
+export { visitService, supabaseVisitRepository } from "./visits";
+export type { VisitRepository, VisitCreatePayload, VisitUpdatePayload } from "./visits";
+
 export {
   getStore,
   patchStore,

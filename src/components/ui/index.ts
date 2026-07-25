@@ -37,6 +37,7 @@ export {
 } from "./NotificationsPageShell";
 export { PropertyCard, formatIndianCurrency } from "./PropertyCard";
 export { InquiryForm } from "./InquiryForm";
+export { VisitBookingForm } from "./VisitBookingForm";
 export { FilterPanel, type FilterState } from "./FilterPanel";
 export { default as StepProgress } from "./StepProgress";
 export { default as CityMap } from "./CityMap";

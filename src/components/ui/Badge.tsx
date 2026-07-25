@@ -27,6 +27,7 @@ const PROPERTY_STATUS_TONE: Record<string, BadgeTone> = {
   suspended: "danger",
   rejected: "danger",
   confirmed: "success",
+  cancelled: "danger",
 };
 
 export function toneFromStatus(status: string): BadgeTone {

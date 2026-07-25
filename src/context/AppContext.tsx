@@ -24,6 +24,7 @@ import type {
   CustomerReview,
   DirectoryProfile,
   PropertyInquiry,
+  VisitBooking,
 } from "@/types";
 import {
   getStore,
@@ -34,6 +35,7 @@ import {
   dealerService,
   catalogService,
   notificationService,
+  visitService,
   authService,
   type SessionSnapshot,
 } from "@/services";
@@ -51,6 +53,7 @@ export type {
   CustomerReview,
   DirectoryProfile,
   PropertyInquiry,
+  VisitBooking,
 };
 
 interface AppContextType {
@@ -121,6 +124,30 @@ interface AppContextType {
   markNotificationRead: (id: string) => Promise<void>;
   markAllNotificationsRead: () => Promise<void>;
   deleteNotification: (id: string) => Promise<void>;
+  visits: VisitBooking[];
+  visitsReady: boolean;
+  refreshVisits: () => Promise<void>;
+  bookVisit: (
+    propertyId: string,
+    payload: {
+      name: string;
+      email: string;
+      phone: string;
+      date: string;
+      time: string;
+      notes?: string;
+    }
+  ) => Promise<VisitBooking>;
+  updateVisit: (
+    id: string,
+    updates: {
+      status?: VisitBooking["status"];
+      date?: string;
+      time?: string;
+      notes?: string;
+      brokerNotes?: string;
+    }
+  ) => Promise<VisitBooking>;
   categories: Category[];
   setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
   locations: Location[];
@@ -207,6 +234,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [enquiriesReady, setEnquiriesReady] = useState(false);
   const [notifications, setNotificationsState] = useState<Notification[]>([]);
   const [notificationsReady, setNotificationsReady] = useState(false);
+  const [visits, setVisitsState] = useState<VisitBooking[]>([]);
+  const [visitsReady, setVisitsReady] = useState(false);
   const [selectedCity, setSelectedCityState] = useState(defaultSession.selectedCity);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [compareList, setCompareList] = useState<string[]>([]);
@@ -312,6 +341,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!sessionReady) return;
     void refreshNotifications();
   }, [sessionReady, isLoggedIn, userRole, refreshNotifications]);
+
+  const refreshVisits = useCallback(async () => {
+    if (!hasSupabaseEnv() || !isLoggedIn) {
+      setVisitsState([]);
+      setVisitsReady(true);
+      return;
+    }
+    try {
+      const rows = await visitService.list();
+      setVisitsState(rows);
+    } catch {
+      setVisitsState([]);
+    } finally {
+      setVisitsReady(true);
+    }
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (!sessionReady) return;
+    void refreshVisits();
+  }, [sessionReady, isLoggedIn, userRole, refreshVisits]);
 
   const refreshInquiries = useCallback(async () => {
     if (!hasSupabaseEnv() || !isLoggedIn) {
@@ -665,6 +715,45 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setNotificationsState((prev) => prev.filter((n) => n.id !== id));
   }, []);
 
+  const bookVisit = useCallback(
+    async (
+      propertyId: string,
+      payload: {
+        name: string;
+        email: string;
+        phone: string;
+        date: string;
+        time: string;
+        notes?: string;
+      }
+    ) => {
+      const created = await visitService.book(propertyId, payload);
+      setVisitsState((prev) => [created, ...prev.filter((v) => v.id !== created.id)]);
+      void refreshNotifications();
+      return created;
+    },
+    [refreshNotifications]
+  );
+
+  const updateVisit = useCallback(
+    async (
+      id: string,
+      updates: {
+        status?: VisitBooking["status"];
+        date?: string;
+        time?: string;
+        notes?: string;
+        brokerNotes?: string;
+      }
+    ) => {
+      const updated = await visitService.update(id, updates);
+      setVisitsState((prev) => prev.map((v) => (v.id === id ? updated : v)));
+      void refreshNotifications();
+      return updated;
+    },
+    [refreshNotifications]
+  );
+
   const addLog = useCallback((log: Omit<ActivityLog, "id" | "timestamp">) => {
     void catalogService.addLog(log);
   }, []);
@@ -726,6 +815,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       markNotificationRead,
       markAllNotificationsRead,
       deleteNotification,
+      visits,
+      visitsReady,
+      refreshVisits,
+      bookVisit,
+      updateVisit,
       categories: store.categories,
       setCategories,
       locations: store.locations,
@@ -795,6 +889,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       markNotificationRead,
       markAllNotificationsRead,
       deleteNotification,
+      visits,
+      visitsReady,
+      refreshVisits,
+      bookVisit,
+      updateVisit,
       setCategories,
       setLocations,
       addLog,
