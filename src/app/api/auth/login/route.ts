@@ -3,6 +3,7 @@ import type { ProfileRow } from "@/types/database";
 import { createRouteClient } from "@/lib/supabase/route";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { jsonError } from "@/lib/api/auth";
+import { skipEmailConfirmEnabled } from "@/lib/auth/email-confirm";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { authSessionPayload } from "@/lib/mappers/profile";
 
@@ -45,7 +46,23 @@ export async function POST(request: NextRequest) {
 
   const { supabase, applyCookies } = createRouteClient(request);
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  let { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+  // Temporarily auto-confirm stuck accounts so login works without inbox mail.
+  if (error && /email not confirmed/i.test(error.message) && skipEmailConfirmEnabled()) {
+    const admin = createServiceClient();
+    const { data: listed } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
+    const pending = listed?.users?.find((u) => u.email?.toLowerCase() === email);
+    if (pending?.id) {
+      const { error: confirmError } = await admin.auth.admin.updateUserById(pending.id, {
+        email_confirm: true,
+      });
+      if (!confirmError) {
+        ({ data, error } = await supabase.auth.signInWithPassword({ email, password }));
+      }
+    }
+  }
+
   if (error || !data.user) {
     const raw = error?.message ?? "";
     if (/email not confirmed/i.test(raw)) {
