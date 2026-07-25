@@ -77,7 +77,8 @@ Before real deploy:
 
 ### 3. App-level rate limiting
 
-- [ ] Throttle `/api/auth/login`, `/signup`, `/forgot-password` (e.g. Upstash) for public internet
+- [x] In-memory throttle on `/api/auth/login` (10/min), `/signup` (5/min), `/forgot-password` (5/min) per IP (`src/lib/auth/rate-limit.ts`)
+- [ ] Replace with Redis/Upstash when running multiple app instances
 
 ### 4. Google / social Sign-In
 
@@ -85,8 +86,9 @@ See **[`REMAINING.md`](./REMAINING.md)** — Google OAuth + Dealer KYC are track
 
 ### 5. Demo / seed hygiene
 
-- [ ] Change or remove demo passwords before shared/staging deploy  
-- [ ] Prefer `.env.local` (gitignored)  
+- [x] Document that seed passwords must be rotated before shared/staging (`.env.example`, `seed.sql`)
+- [ ] Change or remove demo passwords in any shared Supabase project before staging
+- [ ] Prefer `.env.local` (gitignored)
 - [ ] Never commit `SUPABASE_SERVICE_ROLE_KEY`
 
 Local demo (dev only):
@@ -98,6 +100,10 @@ Local demo (dev only):
 | `admin@sqftgo.com` | `admin2026` | admin (not on login UI) |
 
 ### 6. Optional hardening
+
+### Email confirm skip (production lock)
+
+- [x] `skipEmailConfirmEnabled()` always returns `false` when `NODE_ENV=production` (ignores `AUTH_SKIP_EMAIL_CONFIRM=true`)
 
 - [ ] CAPTCHA (Supabase Bot Detection)
 - [ ] MFA for admin

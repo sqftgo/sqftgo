@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
+import { isServiceDirectoryCategory } from "@/features/dealers";
 import { 
   Paintbrush, 
   Compass, 
@@ -13,7 +14,6 @@ import {
   Truck, 
   MapPin, 
   Mail, 
-  Globe, 
   Phone, 
   Plus, 
   ArrowUpRight,
@@ -47,11 +47,9 @@ export default function ServicesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterBySelectedCity, setFilterBySelectedCity] = useState(true);
 
-  // Filter out real estate dealers (Agent & Broker and Property Consultant)
+  // Filter out agent/consultant dealers (builders remain as service partners)
   const serviceProfiles = useMemo(() => {
-    return directoryProfiles.filter(
-      p => p.category !== "Agent & Broker" && p.category !== "Property Consultant"
-    );
+    return directoryProfiles.filter((p) => isServiceDirectoryCategory(p.category));
   }, [directoryProfiles]);
 
   const profilesForSelectedCity = useMemo(() => {
@@ -486,7 +484,7 @@ export default function ServicesPage() {
                           <span>Contact</span>
                         </a>
                         
-                        {/* Secondary Icons (Email, Web) */}
+                        {/* Secondary Icon (Email) */}
                         <a
                           href={`mailto:${profile.email}`}
                           title="Email"
@@ -494,16 +492,6 @@ export default function ServicesPage() {
                           suppressHydrationWarning
                         >
                           <Mail className="w-4.5 h-4.5" />
-                        </a>
-                        <a
-                          href={`https://${profile.website}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          title="Website"
-                          className="w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-sand hover:border-terracotta hover:bg-terracotta/5 text-charcoal hover:text-terracotta transition-colors shadow-sm"
-                          suppressHydrationWarning
-                        >
-                          <Globe className="w-4.5 h-4.5" />
                         </a>
                       </div>
                     </motion.div>

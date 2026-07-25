@@ -9,7 +9,6 @@ import {
   Tag, 
   MapPin, 
   Mail, 
-  Globe, 
   Phone, 
   FileText, 
   CheckCircle2, 
@@ -18,6 +17,7 @@ import {
   AlertCircle 
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import CustomSelect from "@/components/ui/CustomSelect";
 
 const CATEGORIES = [
   "Agent & Broker",
@@ -183,15 +183,15 @@ export default function RegisterServicePage() {
                       <Tag className="w-4 h-4 text-terracotta" />
                       <span>Business Category *</span>
                     </label>
-                    <select
+                    <CustomSelect
+                      options={CATEGORIES.map((cat) => ({ label: cat, value: cat }))}
                       value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value as DirectoryProfile["category"] })}
-                      className="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm font-semibold outline-none cursor-pointer focus:border-terracotta"
-                    >
-                      {CATEGORIES.map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
+                      onChange={(val) => setFormData({ ...formData, category: val as DirectoryProfile["category"] })}
+                      placeholder="Select Category"
+                      searchable
+                      buttonClassName="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm font-semibold text-charcoal shadow-sm"
+                      accent="terracotta"
+                    />
                   </div>
                 </div>
 
@@ -203,15 +203,15 @@ export default function RegisterServicePage() {
                       <MapPin className="w-4 h-4 text-terracotta" />
                       <span>City *</span>
                     </label>
-                    <select
+                    <CustomSelect
+                      options={CITIES.map((c) => ({ label: c, value: c }))}
                       value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm font-semibold outline-none cursor-pointer focus:border-terracotta text-charcoal"
-                    >
-                      {CITIES.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
+                      onChange={(val) => setFormData({ ...formData, city: val })}
+                      placeholder="Select City"
+                      searchable
+                      buttonClassName="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm font-semibold text-charcoal shadow-sm"
+                      accent="terracotta"
+                    />
                   </div>
                   
                   {/* Address */}
@@ -231,8 +231,8 @@ export default function RegisterServicePage() {
                   </div>
                 </div>
 
-                {/* Email, Website, Mobile */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Email & Mobile */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Email */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-indigo flex items-center gap-1.5">
@@ -245,22 +245,6 @@ export default function RegisterServicePage() {
                       placeholder="contact@jaipurarchitects.in"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-terracotta text-charcoal font-medium"
-                    />
-                  </div>
-
-                  {/* Website */}
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-indigo flex items-center gap-1.5">
-                      <Globe className="w-4 h-4 text-terracotta" />
-                      <span>Website Address *</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="www.jaipurarchitects.in"
-                      value={formData.website}
-                      onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                       className="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-terracotta text-charcoal font-medium"
                     />
                   </div>

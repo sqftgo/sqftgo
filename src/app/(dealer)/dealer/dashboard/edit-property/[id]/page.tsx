@@ -3,14 +3,16 @@
 import { useRouter, useParams } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { PropertyForm, type PropertyFormSubmitData } from "@/components/property";
+import { isOwnProperty } from "@/lib/ownership";
 
 export default function EditPropertyPage() {
   const router = useRouter();
   const params = useParams();
-  const { properties, userEmail, updateProperty, addLog } = useApp();
+  const { properties, userEmail, userProfile, updateProperty, addLog } = useApp();
 
   const prop = properties.find(
-    (p) => p.id === params.id && p.ownerEmail?.toLowerCase() === userEmail.toLowerCase()
+    (p) =>
+      p.id === params.id && isOwnProperty(p, userProfile?.id, userEmail)
   );
 
   if (!prop) {

@@ -14,9 +14,10 @@ import {
   Button,
   TextArea,
 } from "@/components/ui";
+import { filterMyProperties } from "@/lib/ownership";
 
 export default function DealerInquiriesPage() {
-  const { properties, userEmail, inquiries, deleteInquiry } = useApp();
+  const { properties, userEmail, userProfile, inquiries, deleteInquiry } = useApp();
   const [search, setSearch] = useState("");
   const [replyModal, setReplyModal] = useState<{
     id: string;
@@ -29,9 +30,7 @@ export default function DealerInquiriesPage() {
   const [pendingDismiss, setPendingDismiss] = useState<{ inquiryId: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const myProperties = properties.filter(
-    (p) => p.ownerEmail?.toLowerCase() === userEmail.toLowerCase()
-  );
+  const myProperties = filterMyProperties(properties, userProfile?.id, userEmail);
 
   const allInquiries = useMemo(() => {
     return myProperties

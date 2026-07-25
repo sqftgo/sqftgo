@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useApp } from "@/context/AppContext";
 import {
   Save,
@@ -9,9 +9,6 @@ import {
   Phone,
   FileText,
   ShieldCheck,
-  KeyRound,
-  Terminal,
-  Activity,
 } from "lucide-react";
 import {
   DashboardPageHeader,
@@ -26,39 +23,77 @@ import {
 } from "@/components/ui";
 
 export default function AdminProfilePage() {
-  const { userEmail } = useApp();
+  const { userEmail, userName, userProfile, updateProfile } = useApp();
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({
-    name: "Admin User",
-    email: userEmail || "admin@sqftgo.com",
-    phone: "+91 98000 00001",
-    bio: "Platform administrator for SqftGo Real Estate. Managing listing approvals, dealer registrations, and global system overrides.",
+    name: userName || userProfile?.name || "",
+    email: userEmail || userProfile?.email || "",
+    phone: userProfile?.phone || "",
+    bio: userProfile?.bio || "",
   });
 
-  const handleSave = (e?: React.FormEvent) => {
+  useEffect(() => {
+    setForm({
+      name: userName || userProfile?.name || "",
+      email: userEmail || userProfile?.email || "",
+      phone: userProfile?.phone || "",
+      bio: userProfile?.bio || "",
+    });
+  }, [userEmail, userName, userProfile]);
+
+  const handleSave = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setError(null);
+    setBusy(true);
+    try {
+      await updateProfile({
+        name: form.name.trim(),
+        phone: form.phone.trim() || null,
+        bio: form.bio.trim() || null,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to save profile");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
     <div className="p-6 md:p-8 bg-[#faf8f5] min-h-screen text-charcoal w-full space-y-6">
       <DashboardPageHeader
         title="Admin Profile"
-        description="Manage your credentials and credentials for the platform."
+        description="Update your account name, phone, and bio."
         className="rounded-3xl"
         actions={
-          <Button type="button" onClick={() => handleSave()} size="md">
+          <Button
+            type="button"
+            onClick={() => void handleSave()}
+            size="md"
+            loading={busy}
+          >
             <Save className="w-4 h-4" /> Save Profile Info
           </Button>
         }
       />
 
+      {error && (
+        <Alert
+          variant="danger"
+          title="Could not save"
+          description={error}
+          onDismiss={() => setError(null)}
+        />
+      )}
+
       {saved && (
         <Alert
           variant="success"
           title="Profile Update Complete"
-          description="Your admin account parameters were updated successfully."
+          description="Your admin account profile was updated."
           onDismiss={() => setSaved(false)}
         />
       )}
@@ -73,12 +108,16 @@ export default function AdminProfilePage() {
 
           <div>
             <h2 className="text-base font-serif font-black text-charcoal leading-snug">
-              {form.name}
+              {form.name || "Admin"}
             </h2>
             <div className="flex items-center justify-center gap-1.5 mt-1.5">
-              <Badge tone="warning" size="sm" className="bg-terracotta/5 text-terracotta border-terracotta/10">
+              <Badge
+                tone="warning"
+                size="sm"
+                className="bg-terracotta/5 text-terracotta border-terracotta/10"
+              >
                 <Shield className="w-3.5 h-3.5 mr-1" />
-                Super Administrator
+                Administrator
               </Badge>
             </div>
           </div>
@@ -92,20 +131,19 @@ export default function AdminProfilePage() {
             </div>
             <div className="flex items-center gap-2.5 text-xs text-charcoal/60">
               <Phone className="w-4 h-4 text-charcoal/30" />
-              <span>{form.phone}</span>
+              <span>{form.phone || "No phone on file"}</span>
             </div>
           </div>
         </Panel>
 
-        <form
-          onSubmit={handleSave}
-          className="lg:col-span-2"
-        >
+        <form onSubmit={(e) => void handleSave(e)} className="lg:col-span-2">
           <Panel padding="lg" rounded="3xl" className="md:p-8 space-y-6">
             <div className="space-y-4">
               <div className="flex items-center gap-2.5 pb-3 border-b border-indigo/5">
                 <FileText className="w-4 h-4 text-terracotta" />
-                <h2 className="text-sm font-serif font-black text-charcoal">Account Parameters</h2>
+                <h2 className="text-sm font-serif font-black text-charcoal">
+                  Account Parameters
+                </h2>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -130,14 +168,14 @@ export default function AdminProfilePage() {
                   />
                 </FormField>
 
-                <FormField label="Permissions Clearance">
+                <FormField label="Role">
                   <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-4 py-3 rounded-xl text-emerald-700 text-xs font-semibold">
                     <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Full Overlord Access</span>
+                    <span>Admin (managed via Users page / DB)</span>
                   </div>
                 </FormField>
 
-                <FormField label="Biographical Memo / Responsibility" className="sm:col-span-2">
+                <FormField label="Bio" className="sm:col-span-2">
                   <TextArea
                     value={form.bio}
                     onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
@@ -148,35 +186,8 @@ export default function AdminProfilePage() {
               </div>
             </div>
 
-            <div className="space-y-4 pt-4 border-t border-indigo/5">
-              <div className="flex items-center gap-2.5 pb-1">
-                <Activity className="w-4 h-4 text-terracotta" />
-                <h2 className="text-xs font-serif font-black text-charcoal">Security Session State</h2>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="border border-indigo/5 bg-sand/10 rounded-2xl p-4 flex items-center gap-3">
-                  <KeyRound className="w-8 h-8 text-terracotta/75 shrink-0" />
-                  <div>
-                    <h4 className="text-[10px] font-bold text-charcoal">Encryption Key</h4>
-                    <p className="text-[9px] text-charcoal/40 mt-0.5">RSA 4096-bit signature active</p>
-                  </div>
-                </div>
-
-                <div className="border border-indigo/5 bg-sand/10 rounded-2xl p-4 flex items-center gap-3">
-                  <Terminal className="w-8 h-8 text-terracotta/75 shrink-0" />
-                  <div>
-                    <h4 className="text-[10px] font-bold text-charcoal">Audit Signatures</h4>
-                    <p className="text-[9px] text-charcoal/40 mt-0.5">
-                      All configuration updates are hashed
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <div className="flex justify-end pt-4 border-t border-indigo/5">
-              <Button type="submit" size="md">
+              <Button type="submit" size="md" loading={busy}>
                 <Save className="w-4 h-4" /> Save Profile
               </Button>
             </div>

@@ -139,7 +139,7 @@ const filterProperties = (list: Property[], filters: FilterState): Property[] =>
 
 function ListingsContent() {
   const searchParams = useSearchParams();
-  const { properties, selectedCity, setSelectedCity } = useApp();
+  const { properties, selectedCity, setSelectedCity, propertiesError, propertiesReady } = useApp();
 
   // Initializing state with query parameters
   const [filters, setFilters] = useState<FilterState>({
@@ -329,6 +329,17 @@ function ListingsContent() {
 
   return (
     <div className="container mx-auto px-4 md:px-6 max-w-7xl pb-20 pt-6">
+
+      {propertiesError ? (
+        <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+          Could not refresh listings: {propertiesError}. Showing last loaded data if any.
+        </div>
+      ) : null}
+      {!propertiesReady ? (
+        <div className="mb-4 rounded-2xl border border-indigo/10 bg-indigo/5 px-4 py-3 text-sm font-semibold text-indigo">
+          Loading properties…
+        </div>
+      ) : null}
       
       {/* Premium Header Banner Card */}
       <div className="w-full rounded-3xl bg-cream/90 border border-sand p-6 md:p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6 relative overflow-hidden">
@@ -346,15 +357,15 @@ function ListingsContent() {
         <div className="flex items-center gap-6 relative z-10 border-t md:border-t-0 md:border-l border-sand pt-4 md:pt-0 md:pl-8">
           <div className="flex flex-col text-left">
             <span className="text-2xl font-serif font-black text-indigo">
-              {sortedList.length > 0 ? "50+" : "0"}
+              {sortedList.length}
             </span>
-            <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest mt-1">Available Listings</span>
+            <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest mt-1">Matching listings</span>
           </div>
           <div className="flex flex-col text-left border-l border-sand pl-6">
             <span className="text-2xl font-serif font-black text-terracotta">
-              {sortedList.filter(p => p.featured).length > 0 ? "15+" : "0"}
+              {sortedList.filter(p => p.featured).length}
             </span>
-            <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest mt-1">Featured Spots</span>
+            <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest mt-1">Featured</span>
           </div>
         </div>
       </div>
