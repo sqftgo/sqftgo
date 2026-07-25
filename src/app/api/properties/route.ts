@@ -10,7 +10,7 @@ import {
   propertyStatusUiSchema,
   zodErrorMessage,
 } from "@/lib/validation/property";
-import type { PropertyRow } from "@/types/database";
+import type { PropertyPurposeDb, PropertyRow, PropertyTypeDb } from "@/types/database";
 
 function parseOptionalNumber(value: string | null): number | undefined {
   if (value == null || value === "") return undefined;
@@ -54,8 +54,8 @@ export async function GET(request: NextRequest) {
   }
 
   if (city && city !== "All India") query = query.eq("city", city);
-  if (type && type !== "any") query = query.eq("type", type);
-  if (purpose) query = query.eq("purpose", purpose);
+  if (type && type !== "any") query = query.eq("type", type as PropertyTypeDb);
+  if (purpose) query = query.eq("purpose", purpose as PropertyPurposeDb);
   if (featuredParam === "true") query = query.eq("featured", true);
   if (featuredParam === "false") query = query.eq("featured", false);
   if (minPrice !== undefined) query = query.gte("price", minPrice);

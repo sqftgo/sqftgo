@@ -1,5 +1,5 @@
 import type { Property } from "@/types";
-import type { PropertyRow, PropertyStatusDb } from "@/types/database";
+import type { PropertyInsert, PropertyRow, PropertyStatusDb, PropertyUpdate } from "@/types/database";
 
 const UI_TO_DB_STATUS: Record<Property["status"], PropertyStatusDb> = {
   Draft: "draft",
@@ -96,9 +96,9 @@ export function mapCreateToInsert(input: {
   verifiedDate?: string;
   seoTitle?: string;
   seoDescription?: string;
-  verificationChecks?: Property["verificationChecks"];
-  priceBreakdown?: Property["priceBreakdown"];
-}) {
+  verificationChecks?: Partial<NonNullable<Property["verificationChecks"]>> | null;
+  priceBreakdown?: Property["priceBreakdown"] | null;
+}): PropertyInsert {
   return {
     owner_id: input.ownerId,
     title: input.title,
@@ -129,13 +129,13 @@ export function mapCreateToInsert(input: {
     verified_date: input.verifiedDate ?? null,
     seo_title: input.seoTitle ?? null,
     seo_description: input.seoDescription ?? null,
-    verification_checks: input.verificationChecks ?? null,
-    price_breakdown: input.priceBreakdown ?? null,
+    verification_checks: (input.verificationChecks ?? null) as PropertyInsert["verification_checks"],
+    price_breakdown: (input.priceBreakdown ?? null) as PropertyInsert["price_breakdown"],
   };
 }
 
-export function mapUpdateToPatch(updates: Partial<Property>) {
-  const patch: Record<string, unknown> = {};
+export function mapUpdateToPatch(updates: Partial<Property>): PropertyUpdate {
+  const patch: PropertyUpdate = {};
   if (updates.title !== undefined) patch.title = updates.title;
   if (updates.price !== undefined) patch.price = updates.price;
   if (updates.type !== undefined) patch.type = updates.type;
@@ -166,8 +166,10 @@ export function mapUpdateToPatch(updates: Partial<Property>) {
   if (updates.seoTitle !== undefined) patch.seo_title = updates.seoTitle;
   if (updates.seoDescription !== undefined) patch.seo_description = updates.seoDescription;
   if (updates.verificationChecks !== undefined) {
-    patch.verification_checks = updates.verificationChecks;
+    patch.verification_checks = updates.verificationChecks as PropertyUpdate["verification_checks"];
   }
-  if (updates.priceBreakdown !== undefined) patch.price_breakdown = updates.priceBreakdown;
+  if (updates.priceBreakdown !== undefined) {
+    patch.price_breakdown = updates.priceBreakdown as PropertyUpdate["price_breakdown"];
+  }
   return patch;
 }

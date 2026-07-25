@@ -5,7 +5,7 @@ import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapVisitRow, toDbVisitStatus, type SiteVisitJoined } from "@/lib/mappers/visit";
 import { notifyUser } from "@/lib/notifications/server";
 import { visitUpdateSchema, visitZodError } from "@/lib/validation/visit";
-import type { SiteVisitRow } from "@/types/database";
+import type { SiteVisitRow, SiteVisitUpdate } from "@/types/database";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -67,7 +67,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   if (!isAdmin && !isOwner && !isVisitor) return jsonError("Forbidden", 403);
 
   const updates = parsed.data;
-  const patch: Record<string, unknown> = {};
+  const patch: SiteVisitUpdate = {};
 
   if (updates.status) {
     if (updates.status === "Cancelled") {

@@ -4,7 +4,7 @@ import { createServiceClient } from "@/lib/supabase/admin";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapAssistanceRow } from "@/lib/mappers/leads";
 import { assistanceUpdateSchema, leadZodError } from "@/lib/validation/leads";
-import type { AssistanceRequestRow } from "@/types/database";
+import type { AssistanceRequestRow, AssistanceRequestUpdate } from "@/types/database";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -33,7 +33,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   const parsed = assistanceUpdateSchema.safeParse(body);
   if (!parsed.success) return jsonError(leadZodError(parsed.error));
 
-  const patch: Record<string, unknown> = {};
+  const patch: AssistanceRequestUpdate = {};
   if (parsed.data.status !== undefined) patch.status = parsed.data.status;
   if (parsed.data.notes !== undefined) patch.notes = parsed.data.notes;
   if (Object.keys(patch).length === 0) return jsonError("No updates provided");

@@ -1,5 +1,6 @@
 import type { DirectoryProfile } from "@/types";
-import type { DirectoryProfileRow } from "@/types/database";
+import type { DirectoryProfileRow, DirectoryProfileInsert, DirectoryProfileUpdate } from "@/types/database";
+import type { DealerUpdateInput } from "@/lib/validation/dealer";
 
 export type DirectoryProfileView = DirectoryProfile & {
   userId?: string | null;
@@ -44,7 +45,7 @@ export function mapDealerCreateToInsert(
     listingsCount?: number;
   },
   userId: string | null
-): Record<string, unknown> {
+): DirectoryProfileInsert {
   return {
     user_id: userId,
     firm_name: input.firmName,
@@ -64,14 +65,8 @@ export function mapDealerCreateToInsert(
   };
 }
 
-export function mapDealerUpdateToPatch(
-  updates: Partial<DirectoryProfile> & {
-    reraId?: string | null;
-    experience?: string | null;
-    teamSize?: number | null;
-  }
-): Record<string, unknown> {
-  const patch: Record<string, unknown> = {};
+export function mapDealerUpdateToPatch(updates: DealerUpdateInput): DirectoryProfileUpdate {
+  const patch: DirectoryProfileUpdate = {};
   if (updates.firmName !== undefined) patch.firm_name = updates.firmName;
   if (updates.ownerName !== undefined) patch.owner_name = updates.ownerName;
   if (updates.category !== undefined) patch.category = updates.category;

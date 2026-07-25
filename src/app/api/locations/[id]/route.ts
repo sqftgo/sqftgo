@@ -4,7 +4,7 @@ import { createServiceClient } from "@/lib/supabase/admin";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapLocationRow } from "@/lib/mappers/catalog";
 import { locationUpdateSchema, catalogZodError } from "@/lib/validation/catalog";
-import type { LocationRow } from "@/types/database";
+import type { LocationRow, LocationUpdate } from "@/types/database";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -33,7 +33,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   const parsed = locationUpdateSchema.safeParse(body);
   if (!parsed.success) return jsonError(catalogZodError(parsed.error));
 
-  const patch: Record<string, unknown> = {};
+  const patch: LocationUpdate = {};
   if (parsed.data.city !== undefined) patch.city = parsed.data.city;
   if (parsed.data.state !== undefined) patch.state = parsed.data.state;
   if (parsed.data.country !== undefined) patch.country = parsed.data.country;

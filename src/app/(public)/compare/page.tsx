@@ -145,7 +145,11 @@ export default function ComparePage() {
                   key: "reraId",
                   format: (v: unknown) => (v as string) || "Not Registered",
                 },
-              ] as const
+              ] as Array<{
+                label: string;
+                key: string;
+                format?: (v: unknown) => string;
+              }>
             ).map(({ label, key, format }) => (
               <div
                 key={key}
