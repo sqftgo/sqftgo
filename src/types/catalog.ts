@@ -42,6 +42,8 @@ export interface ActivityLog {
 
 export interface DirectoryProfile {
   id: string;
+  /** Linked auth/profiles id when the directory card is claimed. */
+  userId?: string | null;
   firmName: string;
   ownerName: string;
   category: "Agent & Broker" | "Builder & Developer" | "Interior Decorator" | "Architect" | "Building Contractor" | "Property Consultant" | "Vastu Consultant" | "Home Valuation/Inspection" | "Home Shifting/Deep Cleaning";

@@ -7,6 +7,7 @@ const UI_TO_DB_STATUS: Record<Property["status"], PropertyStatusDb> = {
   Active: "active",
   Sold: "sold",
   Rented: "rented",
+  Rejected: "rejected",
 };
 
 const DB_TO_UI_STATUS: Record<PropertyStatusDb, Property["status"]> = {
@@ -15,6 +16,7 @@ const DB_TO_UI_STATUS: Record<PropertyStatusDb, Property["status"]> = {
   active: "Active",
   sold: "Sold",
   rented: "Rented",
+  rejected: "Rejected",
 };
 
 export function toDbStatus(status: Property["status"]): PropertyStatusDb {
@@ -53,6 +55,7 @@ export function mapPropertyRow(row: PropertyRow): Property {
     ownerName: row.owner_name,
     ownerPhone: row.owner_phone,
     ownerEmail: row.owner_email ?? undefined,
+    ownerId: row.owner_id,
     inquiryCount: row.inquiry_count,
     status: toUiStatus(row.status),
     featured: row.featured,

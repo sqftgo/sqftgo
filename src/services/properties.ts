@@ -1,4 +1,5 @@
 import type { Property } from "@/types";
+import { apiClient, type PaginatedResult } from "@/lib/api/client";
 
 export interface PropertyFilters {
   city?: string;
@@ -12,6 +13,8 @@ export interface PropertyFilters {
   search?: string;
   /** When true, returns only the authenticated broker's listings (all statuses). */
   mine?: boolean;
+  limit?: number;
+  offset?: number;
 }
 
 export type PropertyCreateInput = Omit<
@@ -26,31 +29,11 @@ export type PropertyCreateInput = Omit<
 
 export interface PropertyRepository {
   list(filters?: PropertyFilters): Promise<Property[]>;
+  listPage(filters?: PropertyFilters): Promise<PaginatedResult<Property>>;
   getById(id: string): Promise<Property | null>;
   create(input: PropertyCreateInput): Promise<Property>;
   update(id: string, updates: Partial<Property>): Promise<Property>;
   remove(id: string): Promise<void>;
-}
-
-async function apiJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
-  const res = await fetch(input, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
-    credentials: "same-origin",
-  });
-
-  const data = (await res.json().catch(() => ({}))) as T & { error?: string };
-  if (!res.ok) {
-    throw new Error(
-      typeof data === "object" && data && "error" in data && data.error
-        ? String(data.error)
-        : "Request failed"
-    );
-  }
-  return data;
 }
 
 function toQuery(filters?: PropertyFilters): string {
@@ -66,41 +49,46 @@ function toQuery(filters?: PropertyFilters): string {
   if (filters.featured !== undefined) params.set("featured", String(filters.featured));
   if (filters.search) params.set("search", filters.search);
   if (filters.mine) params.set("mine", "1");
+  if (filters.limit !== undefined) params.set("limit", String(filters.limit));
+  if (filters.offset !== undefined) params.set("offset", String(filters.offset));
   const qs = params.toString();
   return qs ? `?${qs}` : "";
 }
 
 export const supabasePropertyRepository: PropertyRepository = {
+  async listPage(filters) {
+    return apiClient<PaginatedResult<Property>>(`/api/properties${toQuery(filters)}`);
+  },
+
   async list(filters) {
-    return apiJson<Property[]>(`/api/properties${toQuery(filters)}`);
+    const page = await this.listPage(filters);
+    return page.items;
   },
 
   async getById(id) {
     try {
-      return await apiJson<Property>(`/api/properties/${id}`);
+      return await apiClient<Property>(`/api/properties/${id}`);
     } catch {
       return null;
     }
   },
 
   async create(input) {
-    return apiJson<Property>("/api/properties", {
+    return apiClient<Property>("/api/properties", {
       method: "POST",
       body: JSON.stringify(input),
     });
   },
 
   async update(id, updates) {
-    return apiJson<Property>(`/api/properties/${id}`, {
+    return apiClient<Property>(`/api/properties/${id}`, {
       method: "PATCH",
       body: JSON.stringify(updates),
     });
   },
 
   async remove(id) {
-    await apiJson<{ ok: boolean }>(`/api/properties/${id}`, {
-      method: "DELETE",
-    });
+    await apiClient<{ ok: boolean }>(`/api/properties/${id}`, { method: "DELETE" });
   },
 };
 

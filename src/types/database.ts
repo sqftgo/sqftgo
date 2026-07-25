@@ -27,7 +27,8 @@ export type PropertyStatusDb =
   | "pending_review"
   | "active"
   | "sold"
-  | "rented";
+  | "rented"
+  | "rejected";
 
 export type InquiryStatusDb = "new" | "read" | "archived";
 
@@ -537,6 +538,91 @@ export type UserFavoriteInsert = {
   created_at?: string;
 };
 
+export type KycStatusDb = "draft" | "pending" | "approved" | "rejected";
+
+export type PlatformSettingsRow = {
+  id: number;
+  site_name: string;
+  tagline: string;
+  support_email: string | null;
+  support_phone: string | null;
+  maintenance_mode: boolean;
+  require_listing_approval: boolean;
+  max_listings_per_dealer: number | null;
+  currency_code: string;
+  analytics_measurement_id: string | null;
+  updated_at: string;
+  updated_by: string | null;
+};
+
+export type PlatformSettingsUpdate = {
+  site_name?: string;
+  tagline?: string;
+  support_email?: string | null;
+  support_phone?: string | null;
+  maintenance_mode?: boolean;
+  require_listing_approval?: boolean;
+  max_listings_per_dealer?: number | null;
+  currency_code?: string;
+  analytics_measurement_id?: string | null;
+  updated_at?: string;
+  updated_by?: string | null;
+};
+
+export type DealerKycRow = {
+  id: string;
+  user_id: string;
+  directory_profile_id: string | null;
+  pan_number: string | null;
+  aadhaar_last4: string | null;
+  status: KycStatusDb;
+  dealer_notes: string;
+  admin_notes: string;
+  rejection_reason: string | null;
+  submitted_at: string | null;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DealerKycInsert = {
+  id?: string;
+  user_id: string;
+  directory_profile_id?: string | null;
+  pan_number?: string | null;
+  aadhaar_last4?: string | null;
+  status?: KycStatusDb;
+  dealer_notes?: string;
+  admin_notes?: string;
+  rejection_reason?: string | null;
+  submitted_at?: string | null;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type DealerKycUpdate = Partial<DealerKycInsert>;
+
+export type DealerKycDocumentRow = {
+  id: string;
+  kyc_id: string;
+  doc_type: string;
+  storage_path: string;
+  file_name: string;
+  created_at: string;
+};
+
+export type DealerKycDocumentInsert = {
+  id?: string;
+  kyc_id: string;
+  doc_type: string;
+  storage_path: string;
+  file_name?: string;
+  created_at?: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -726,6 +812,40 @@ export type Database = {
             columns: ["actor_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      platform_settings: {
+        Row: PlatformSettingsRow;
+        Insert: Partial<PlatformSettingsRow> & { id?: number };
+        Update: PlatformSettingsUpdate;
+        Relationships: [];
+      };
+      dealer_kyc: {
+        Row: DealerKycRow;
+        Insert: DealerKycInsert;
+        Update: DealerKycUpdate;
+        Relationships: [
+          {
+            foreignKeyName: "dealer_kyc_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      dealer_kyc_documents: {
+        Row: DealerKycDocumentRow;
+        Insert: DealerKycDocumentInsert;
+        Update: Partial<DealerKycDocumentInsert>;
+        Relationships: [
+          {
+            foreignKeyName: "dealer_kyc_documents_kyc_id_fkey";
+            columns: ["kyc_id"];
+            isOneToOne: false;
+            referencedRelation: "dealer_kyc";
             referencedColumns: ["id"];
           },
         ];

@@ -1,24 +1,5 @@
+import { apiClient } from "@/lib/api/client";
 import type { ActivityLog, Amenity, Category, Location } from "@/types";
-
-async function apiJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
-  const res = await fetch(input, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
-    credentials: "same-origin",
-  });
-  const data = (await res.json().catch(() => ({}))) as T & { error?: string };
-  if (!res.ok) {
-    throw new Error(
-      typeof data === "object" && data && "error" in data && data.error
-        ? String(data.error)
-        : "Request failed"
-    );
-  }
-  return data;
-}
 
 export interface CatalogRepository {
   listCategories(opts?: { all?: boolean }): Promise<Category[]>;
@@ -55,85 +36,85 @@ export interface CatalogRepository {
 export const supabaseCatalogRepository: CatalogRepository = {
   async listCategories(opts) {
     const qs = opts?.all ? "?all=1" : "";
-    return apiJson<Category[]>(`/api/categories${qs}`);
+    return apiClient<Category[]>(`/api/categories${qs}`);
   },
 
   async createCategory(input) {
-    return apiJson<Category>("/api/categories", {
+    return apiClient<Category>("/api/categories", {
       method: "POST",
       body: JSON.stringify(input),
     });
   },
 
   async updateCategory(id, updates) {
-    return apiJson<Category>(`/api/categories/${id}`, {
+    return apiClient<Category>(`/api/categories/${id}`, {
       method: "PATCH",
       body: JSON.stringify(updates),
     });
   },
 
   async deleteCategory(id) {
-    return apiJson<{ ok: boolean; deactivated?: boolean }>(`/api/categories/${id}`, {
+    return apiClient<{ ok: boolean; deactivated?: boolean }>(`/api/categories/${id}`, {
       method: "DELETE",
     });
   },
 
   async listLocations(opts) {
     const qs = opts?.all ? "?all=1" : "";
-    return apiJson<Location[]>(`/api/locations${qs}`);
+    return apiClient<Location[]>(`/api/locations${qs}`);
   },
 
   async createLocation(input) {
-    return apiJson<Location>("/api/locations", {
+    return apiClient<Location>("/api/locations", {
       method: "POST",
       body: JSON.stringify(input),
     });
   },
 
   async updateLocation(id, updates) {
-    return apiJson<Location>(`/api/locations/${id}`, {
+    return apiClient<Location>(`/api/locations/${id}`, {
       method: "PATCH",
       body: JSON.stringify(updates),
     });
   },
 
   async deleteLocation(id) {
-    return apiJson<{ ok: boolean; deactivated?: boolean }>(`/api/locations/${id}`, {
+    return apiClient<{ ok: boolean; deactivated?: boolean }>(`/api/locations/${id}`, {
       method: "DELETE",
     });
   },
 
   async listAmenities(opts) {
     const qs = opts?.all ? "?all=1" : "";
-    return apiJson<Amenity[]>(`/api/amenities${qs}`);
+    return apiClient<Amenity[]>(`/api/amenities${qs}`);
   },
 
   async createAmenity(input) {
-    return apiJson<Amenity>("/api/amenities", {
+    return apiClient<Amenity>("/api/amenities", {
       method: "POST",
       body: JSON.stringify(input),
     });
   },
 
   async updateAmenity(id, updates) {
-    return apiJson<Amenity>(`/api/amenities/${id}`, {
+    return apiClient<Amenity>(`/api/amenities/${id}`, {
       method: "PATCH",
       body: JSON.stringify(updates),
     });
   },
 
   async deleteAmenity(id) {
-    return apiJson<{ ok: boolean; deactivated?: boolean }>(`/api/amenities/${id}`, {
+    return apiClient<{ ok: boolean; deactivated?: boolean }>(`/api/amenities/${id}`, {
       method: "DELETE",
     });
   },
 
   async listLogs() {
-    return apiJson<ActivityLog[]>("/api/logs");
+    return apiClient<ActivityLog[]>("/api/logs");
   },
 
   async addLog(log) {
-    return apiJson<ActivityLog>("/api/logs", {
+    return apiClient<ActivityLog>("/api/logs", {
       method: "POST",
       body: JSON.stringify({
         action: log.action,

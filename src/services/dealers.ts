@@ -1,39 +1,23 @@
 import type { DirectoryProfile } from "@/types";
+import { apiClient, type PaginatedResult } from "@/lib/api/client";
 
 export interface DealerFilters {
   city?: string;
   category?: string;
   search?: string;
   mine?: boolean;
+  limit?: number;
+  offset?: number;
 }
 
 export interface DealerRepository {
   listProfiles(filters?: DealerFilters): Promise<DirectoryProfile[]>;
+  listProfilesPage(filters?: DealerFilters): Promise<PaginatedResult<DirectoryProfile>>;
   getById(id: string): Promise<DirectoryProfile | null>;
   getByEmail(email: string): Promise<DirectoryProfile | null>;
   create(profile: Omit<DirectoryProfile, "id">): Promise<DirectoryProfile>;
   update(id: string, updates: Partial<DirectoryProfile>): Promise<DirectoryProfile>;
   remove(id: string): Promise<void>;
-}
-
-async function apiJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
-  const res = await fetch(input, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
-    credentials: "same-origin",
-  });
-  const data = (await res.json().catch(() => ({}))) as T & { error?: string };
-  if (!res.ok) {
-    throw new Error(
-      typeof data === "object" && data && "error" in data && data.error
-        ? String(data.error)
-        : "Request failed"
-    );
-  }
-  return data;
 }
 
 function toQuery(filters?: DealerFilters): string {
@@ -43,49 +27,55 @@ function toQuery(filters?: DealerFilters): string {
   if (filters.category) params.set("category", filters.category);
   if (filters.search) params.set("search", filters.search);
   if (filters.mine) params.set("mine", "1");
+  if (filters.limit !== undefined) params.set("limit", String(filters.limit));
+  if (filters.offset !== undefined) params.set("offset", String(filters.offset));
   const qs = params.toString();
   return qs ? `?${qs}` : "";
 }
 
-/** Directory profiles hit Supabase. */
 export const supabaseDealerRepository: DealerRepository = {
+  async listProfilesPage(filters) {
+    return apiClient<PaginatedResult<DirectoryProfile>>(`/api/dealers${toQuery(filters)}`);
+  },
+
   async listProfiles(filters) {
-    return apiJson<DirectoryProfile[]>(`/api/dealers${toQuery(filters)}`);
+    const page = await this.listProfilesPage(filters);
+    return page.items;
   },
 
   async getById(id) {
     try {
-      return await apiJson<DirectoryProfile>(`/api/dealers/${id}`);
+      return await apiClient<DirectoryProfile>(`/api/dealers/${id}`);
     } catch {
       return null;
     }
   },
 
   async getByEmail(email) {
-    const rows = await apiJson<DirectoryProfile[]>(
-      `/api/dealers?search=${encodeURIComponent(email)}`
+    const page = await apiClient<PaginatedResult<DirectoryProfile>>(
+      `/api/dealers?search=${encodeURIComponent(email)}&limit=20`
     );
     return (
-      rows.find((p) => p.email.toLowerCase() === email.toLowerCase()) ?? null
+      page.items.find((p) => p.email.toLowerCase() === email.toLowerCase()) ?? null
     );
   },
 
   async create(profile) {
-    return apiJson<DirectoryProfile>("/api/dealers", {
+    return apiClient<DirectoryProfile>("/api/dealers", {
       method: "POST",
       body: JSON.stringify(profile),
     });
   },
 
   async update(id, updates) {
-    return apiJson<DirectoryProfile>(`/api/dealers/${id}`, {
+    return apiClient<DirectoryProfile>(`/api/dealers/${id}`, {
       method: "PATCH",
       body: JSON.stringify(updates),
     });
   },
 
   async remove(id) {
-    await apiJson<{ ok: boolean }>(`/api/dealers/${id}`, { method: "DELETE" });
+    await apiClient<{ ok: boolean }>(`/api/dealers/${id}`, { method: "DELETE" });
   },
 };
 

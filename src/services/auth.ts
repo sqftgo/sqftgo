@@ -1,4 +1,5 @@
 import type { MockUser, UserProfile } from "@/types";
+import { apiClient, type PaginatedResult } from "@/lib/api/client";
 
 export type AuthRole = "user" | "broker" | "admin";
 
@@ -20,7 +21,7 @@ export interface AuthRepository {
     email: string;
     password: string;
   }): Promise<SignupResult>;
-  logout(): Promise<void>;
+  logout: () => Promise<void>;
   getSession(): Promise<AuthSession | null>;
   updateProfile(input: {
     name?: string;
@@ -30,7 +31,11 @@ export interface AuthRepository {
     avatarUrl?: string | null;
   }): Promise<AuthSession>;
   resetPassword(email: string): Promise<void>;
-  listUsers(): Promise<MockUser[]>;
+  listUsers(params?: { limit?: number; offset?: number }): Promise<MockUser[]>;
+  listUsersPage(params?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<PaginatedResult<MockUser>>;
   updateUser(id: string, updates: Partial<MockUser>): Promise<MockUser>;
 }
 
@@ -44,27 +49,6 @@ type ApiSessionPayload = {
   message?: string;
 };
 
-async function apiJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
-  const res = await fetch(input, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
-    credentials: "same-origin",
-  });
-
-  const data = (await res.json().catch(() => ({}))) as T & { error?: string };
-  if (!res.ok) {
-    throw new Error(
-      typeof data === "object" && data && "error" in data && data.error
-        ? String(data.error)
-        : "Request failed"
-    );
-  }
-  return data;
-}
-
 export const supabaseAuthRepository: AuthRepository = {
   async login(email, password) {
     const trimmed = email.trim().toLowerCase();
@@ -72,7 +56,7 @@ export const supabaseAuthRepository: AuthRepository = {
       throw new Error("Email and password are required");
     }
 
-    return apiJson<ApiSessionPayload>("/api/auth/login", {
+    return apiClient<ApiSessionPayload>("/api/auth/login", {
       method: "POST",
       body: JSON.stringify({ email: trimmed, password }),
     });
@@ -89,7 +73,7 @@ export const supabaseAuthRepository: AuthRepository = {
       throw new Error("Password must be at least 8 characters");
     }
 
-    const data = await apiJson<ApiSessionPayload & { status?: string; message?: string }>(
+    const data = await apiClient<ApiSessionPayload & { status?: string; message?: string }>(
       "/api/auth/signup",
       {
         method: "POST",
@@ -121,7 +105,7 @@ export const supabaseAuthRepository: AuthRepository = {
   },
 
   async logout() {
-    await apiJson<{ ok: boolean }>("/api/auth/logout", {
+    await apiClient<{ ok: boolean }>("/api/auth/logout", {
       method: "POST",
       body: "{}",
     });
@@ -129,14 +113,14 @@ export const supabaseAuthRepository: AuthRepository = {
 
   async getSession() {
     try {
-      return await apiJson<ApiSessionPayload>("/api/auth/me", { method: "GET" });
+      return await apiClient<ApiSessionPayload>("/api/auth/me", { method: "GET" });
     } catch {
       return null;
     }
   },
 
   async updateProfile(input) {
-    return apiJson<ApiSessionPayload>("/api/auth/me", {
+    return apiClient<ApiSessionPayload>("/api/auth/me", {
       method: "PATCH",
       body: JSON.stringify(input),
     });
@@ -146,18 +130,30 @@ export const supabaseAuthRepository: AuthRepository = {
     const trimmed = email.trim().toLowerCase();
     if (!trimmed) throw new Error("Email is required");
 
-    await apiJson<{ ok: boolean }>("/api/auth/forgot-password", {
+    await apiClient<{ ok: boolean }>("/api/auth/forgot-password", {
       method: "POST",
       body: JSON.stringify({ email: trimmed }),
     });
   },
 
-  async listUsers() {
-    return apiJson<MockUser[]>("/api/admin/users", { method: "GET" });
+  async listUsersPage(params) {
+    const qs = new URLSearchParams();
+    if (params?.limit !== undefined) qs.set("limit", String(params.limit));
+    if (params?.offset !== undefined) qs.set("offset", String(params.offset));
+    const q = qs.toString();
+    return apiClient<PaginatedResult<MockUser>>(
+      `/api/admin/users${q ? `?${q}` : ""}`,
+      { method: "GET" }
+    );
+  },
+
+  async listUsers(params) {
+    const page = await this.listUsersPage(params);
+    return page.items;
   },
 
   async updateUser(id, updates) {
-    return apiJson<MockUser>(`/api/admin/users/${id}`, {
+    return apiClient<MockUser>(`/api/admin/users/${id}`, {
       method: "PATCH",
       body: JSON.stringify({
         name: updates.name,

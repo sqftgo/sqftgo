@@ -1,3 +1,4 @@
+import { apiClient } from "@/lib/api/client";
 import type { AssistanceRequest, GeneralEnquiry, PropertyInquiry } from "@/types";
 import type { PropertyInquiryView } from "@/lib/mappers/inquiry";
 
@@ -16,26 +17,6 @@ export interface InquiryRepository {
   listEnquiries(): Promise<GeneralEnquiry[]>;
   addEnquiry(enq: Omit<GeneralEnquiry, "id" | "date"> & { payload?: Record<string, unknown> }): Promise<GeneralEnquiry>;
   removeEnquiry(id: string): Promise<void>;
-}
-
-async function apiJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
-  const res = await fetch(input, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
-    credentials: "same-origin",
-  });
-  const data = (await res.json().catch(() => ({}))) as T & { error?: string };
-  if (!res.ok) {
-    throw new Error(
-      typeof data === "object" && data && "error" in data && data.error
-        ? String(data.error)
-        : "Request failed"
-    );
-  }
-  return data;
 }
 
 function toRecord(rows: PropertyInquiryView[]): Record<string, PropertyInquiry[]> {
@@ -59,7 +40,7 @@ function toRecord(rows: PropertyInquiryView[]): Record<string, PropertyInquiry[]
 /** Property inquiries + assistance/enquiries hit Supabase. */
 export const supabaseInquiryRepository: InquiryRepository = {
   async listByProperty(propertyId) {
-    const rows = await apiJson<PropertyInquiryView[]>(`/api/properties/${propertyId}/inquiries`);
+    const rows = await apiClient<PropertyInquiryView[]>(`/api/properties/${propertyId}/inquiries`);
     return rows.map((r) => ({
       id: r.id,
       name: r.name,
@@ -72,17 +53,17 @@ export const supabaseInquiryRepository: InquiryRepository = {
   },
 
   async listAll() {
-    const rows = await apiJson<PropertyInquiryView[]>("/api/inquiries");
+    const rows = await apiClient<PropertyInquiryView[]>("/api/inquiries");
     return toRecord(rows);
   },
 
   async listFlat(opts) {
     const qs = opts?.mine ? "?mine=1" : "";
-    return apiJson<PropertyInquiryView[]>(`/api/inquiries${qs}`);
+    return apiClient<PropertyInquiryView[]>(`/api/inquiries${qs}`);
   },
 
   async submit(propertyId, inquiry) {
-    const created = await apiJson<PropertyInquiryView>(`/api/properties/${propertyId}/inquiries`, {
+    const created = await apiClient<PropertyInquiryView>(`/api/properties/${propertyId}/inquiries`, {
       method: "POST",
       body: JSON.stringify({
         name: inquiry.name,
@@ -107,51 +88,51 @@ export const supabaseInquiryRepository: InquiryRepository = {
   },
 
   async removeById(inquiryId) {
-    await apiJson<{ ok: boolean }>(`/api/inquiries/${inquiryId}`, { method: "DELETE" });
+    await apiClient<{ ok: boolean }>(`/api/inquiries/${inquiryId}`, { method: "DELETE" });
   },
 
   async updateStatus(inquiryId, status) {
-    return apiJson<PropertyInquiryView>(`/api/inquiries/${inquiryId}`, {
+    return apiClient<PropertyInquiryView>(`/api/inquiries/${inquiryId}`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
     });
   },
 
   async listAssistance() {
-    return apiJson<AssistanceRequest[]>("/api/assistance");
+    return apiClient<AssistanceRequest[]>("/api/assistance");
   },
 
   async addAssistance(req) {
-    return apiJson<AssistanceRequest>("/api/assistance", {
+    return apiClient<AssistanceRequest>("/api/assistance", {
       method: "POST",
       body: JSON.stringify(req),
     });
   },
 
   async updateAssistance(id, updates) {
-    return apiJson<AssistanceRequest>(`/api/assistance/${id}`, {
+    return apiClient<AssistanceRequest>(`/api/assistance/${id}`, {
       method: "PATCH",
       body: JSON.stringify(updates),
     });
   },
 
   async removeAssistance(id) {
-    await apiJson<{ ok: boolean }>(`/api/assistance/${id}`, { method: "DELETE" });
+    await apiClient<{ ok: boolean }>(`/api/assistance/${id}`, { method: "DELETE" });
   },
 
   async listEnquiries() {
-    return apiJson<GeneralEnquiry[]>("/api/enquiries");
+    return apiClient<GeneralEnquiry[]>("/api/enquiries");
   },
 
   async addEnquiry(enq) {
-    return apiJson<GeneralEnquiry>("/api/enquiries", {
+    return apiClient<GeneralEnquiry>("/api/enquiries", {
       method: "POST",
       body: JSON.stringify(enq),
     });
   },
 
   async removeEnquiry(id) {
-    await apiJson<{ ok: boolean }>(`/api/enquiries/${id}`, { method: "DELETE" });
+    await apiClient<{ ok: boolean }>(`/api/enquiries/${id}`, { method: "DELETE" });
   },
 };
 
