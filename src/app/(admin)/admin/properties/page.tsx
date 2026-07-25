@@ -22,7 +22,7 @@ export default function AdminPropertiesPage() {
 
   const cities = useMemo(() => [...new Set(properties.map(p => p.city))], [properties]);
 
-  const statusOptions = useMemo(() => ["All", "Active", "Pending Review", "Sold", "Rented"].map(s => ({
+  const statusOptions = useMemo(() => ["All", "Active", "Pending Review", "Rejected", "Draft", "Sold", "Rented"].map(s => ({
     label: s === "All" ? "All Statuses" : s,
     value: s
   })), []);

@@ -2,14 +2,14 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
-import { authService } from "@/services";
+import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import { Building2, CheckCircle2, Eye, EyeOff } from "lucide-react";
 
 export default function DealerRegisterPage() {
   const router = useRouter();
-  const { addDirectoryProfile, setIsLoggedIn, setUserEmail, setUserRole, setUserName, setUserProfile } =
-    useApp();
+  const { addDirectoryProfile } = useApp();
+  const { signup } = useAuth();
   const [step, setStep] = useState(0);
   const [done, setDone] = useState(false);
   const [pendingConfirm, setPendingConfirm] = useState(false);
@@ -36,7 +36,8 @@ export default function DealerRegisterPage() {
     setSubmitting(true);
     try {
       // Real signup always creates role=user. Broker access is admin-granted only.
-      const result = await authService.signup({
+      // AuthProvider.signup applies the session when authenticated.
+      const result = await signup({
         name: form.name.trim(),
         email: form.email.trim().toLowerCase(),
         password: form.password,
@@ -73,11 +74,6 @@ export default function DealerRegisterPage() {
         return;
       }
 
-      setIsLoggedIn(true);
-      setUserEmail(result.session.email);
-      setUserRole(result.session.role);
-      setUserName(result.session.name);
-      setUserProfile(result.session.profile);
       setDone(true);
       setTimeout(() => router.push("/"), 2000);
     } catch (err) {
@@ -97,7 +93,7 @@ export default function DealerRegisterPage() {
         <p className="text-white/50 text-sm font-semibold">
           {pendingConfirm
             ? "Check your inbox to confirm your account. An admin must approve broker access before the dealer dashboard unlocks."
-            : "Your account is ready. Broker dashboard access requires admin approval — redirecting home…"}
+            : "Your account is ready. Dealer dashboard access requires admin approval — redirecting home…"}
         </p>
       </div>
     </div>

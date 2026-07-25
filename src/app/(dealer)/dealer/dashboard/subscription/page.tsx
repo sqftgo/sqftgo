@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { CheckCircle2, Zap, Crown, Building2 } from "lucide-react";
 import {
   DashboardPageHeader,
@@ -35,7 +35,6 @@ const PLANS = [
     ],
     color: "border-indigo",
     badge: "Most Popular",
-    current: true,
   },
   {
     id: "enterprise",
@@ -55,39 +54,37 @@ const PLANS = [
   },
 ];
 
+/**
+ * Billing is not wired (no subscriptions table / Razorpay). Plans are preview-only.
+ */
 export default function DealerSubscriptionPage() {
-  const [selected, setSelected] = useState("professional");
-  const [upgraded, setUpgraded] = useState(false);
-
   return (
     <div className="p-6 md:p-8 space-y-8 max-w-5xl mx-auto text-charcoal">
       <DashboardPageHeader
         title="Subscription Plans"
-        description="Select the subscription level that suits your property listing portfolio."
+        description="Partner plan preview — billing is not enabled yet."
         className="rounded-3xl"
       />
 
-      {upgraded && (
-        <Alert
-          variant="success"
-          title="Plan upgraded successfully!"
-          description="Your new partner features are now active."
-          onDismiss={() => setUpgraded(false)}
-        />
-      )}
+      <Alert
+        variant="warning"
+        title="Billing not available"
+        description="Selecting a plan does not charge a card or change entitlements. Razorpay and subscription records will ship in a later phase."
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {PLANS.map((plan) => (
           <div
             key={plan.id}
-            onClick={() => setSelected(plan.id)}
-            className={`bg-white/80 border-2 ${
-              selected === plan.id ? plan.color : "border-indigo/10"
-            } rounded-3xl p-6 relative cursor-pointer transition-all shadow-sm hover:shadow-md`}
+            className={`bg-white/80 border-2 ${plan.color} rounded-3xl p-6 relative shadow-sm opacity-95`}
           >
             {plan.badge && (
               <span className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <Badge tone="primary" size="sm" className="bg-indigo text-white border-indigo shadow-sm">
+                <Badge
+                  tone="primary"
+                  size="sm"
+                  className="bg-indigo text-white border-indigo shadow-sm"
+                >
                   {plan.badge}
                 </Badge>
               </span>
@@ -99,12 +96,16 @@ export default function DealerSubscriptionPage() {
                 </p>
                 <p className="text-2xl font-serif font-black text-charcoal mt-1">
                   {plan.price}
-                  <span className="text-xs font-semibold text-charcoal/40">{plan.period}</span>
+                  <span className="text-xs font-semibold text-charcoal/40">
+                    {plan.period}
+                  </span>
                 </p>
               </div>
               {plan.id === "starter" && <Zap className="w-6 h-6 text-indigo/35" />}
               {plan.id === "professional" && <Crown className="w-6 h-6 text-indigo" />}
-              {plan.id === "enterprise" && <Building2 className="w-6 h-6 text-terracotta" />}
+              {plan.id === "enterprise" && (
+                <Building2 className="w-6 h-6 text-terracotta" />
+              )}
             </div>
             <div className="space-y-2.5 mb-6">
               {plan.features.map((f) => (
@@ -114,17 +115,8 @@ export default function DealerSubscriptionPage() {
                 </div>
               ))}
             </div>
-            <Button
-              fullWidth
-              variant={selected === plan.id ? "secondary" : "outline"}
-              size="sm"
-              onClick={() => {
-                setSelected(plan.id);
-                setUpgraded(true);
-                setTimeout(() => setUpgraded(false), 3000);
-              }}
-            >
-              {plan.current && selected === plan.id ? "Current Plan" : "Select Plan"}
+            <Button fullWidth variant="outline" size="sm" disabled>
+              Coming soon
             </Button>
           </div>
         ))}
@@ -132,8 +124,9 @@ export default function DealerSubscriptionPage() {
 
       <Panel title="Billing Note" padding="md" rounded="3xl">
         <p className="text-xs text-charcoal/65 font-semibold leading-relaxed">
-          All partner plans are billed monthly. You can upgrade or downgrade at any time. Payments
-          are processed securely via Razorpay. Cancel anytime with no penalties.
+          All dealers currently operate under the default platform access with no
+          paid entitlements. When billing launches, upgrades will process through
+          a verified payment provider and update a subscription record.
         </p>
       </Panel>
     </div>

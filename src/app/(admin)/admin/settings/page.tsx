@@ -1,297 +1,210 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  Save,
-  Globe,
-  Bell,
-  Shield,
-  CreditCard,
-  AlertTriangle,
-  Sliders,
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { platformService } from "@/services";
+import type { PlatformSettings } from "@/types";
 import {
   DashboardPageHeader,
-  Button,
   Alert,
-  ConfirmDialog,
   Panel,
-  SettingsRow,
-  Switch,
   FormField,
   TextInput,
-  CustomSelect,
+  Switch,
+  Button,
+  SettingsRow,
 } from "@/components/ui";
 
+const empty: Omit<PlatformSettings, "updatedAt" | "updatedBy"> = {
+  siteName: "SqftGo",
+  tagline: "Rajasthan Real Estate Marketplace",
+  supportEmail: null,
+  supportPhone: null,
+  maintenanceMode: false,
+  requireListingApproval: true,
+  maxListingsPerDealer: null,
+  currencyCode: "INR",
+  analyticsMeasurementId: null,
+};
+
 export default function AdminSettingsPage() {
-  const [saved, setSaved] = useState(false);
-  const [maintenanceConfirmOpen, setMaintenanceConfirmOpen] = useState(false);
+  const [form, setForm] = useState(empty);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState<string | null>(null);
 
-  const [form, setForm] = useState({
-    siteName: "SqftGo Real Estate",
-    tagline: "Rajasthan's Premier Property Marketplace",
-    supportEmail: "support@sqftgo.com",
-    phone: "+91 294 2400000",
-    requireApproval: true,
-    allowDealerRegistration: true,
-    maintenanceMode: false,
-    maxImagesPerListing: "10",
-    maxListingsPerDealer: "25",
-    inquiryNotifications: true,
-    googleAnalyticsId: "UA-XXXXXXXXX",
-    razorpayEnabled: true,
-    defaultCurrency: "INR",
-  });
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const settings = await platformService.getSettings();
+        if (cancelled) return;
+        setForm({
+          siteName: settings.siteName,
+          tagline: settings.tagline,
+          supportEmail: settings.supportEmail,
+          supportPhone: settings.supportPhone,
+          maintenanceMode: settings.maintenanceMode,
+          requireListingApproval: settings.requireListingApproval,
+          maxListingsPerDealer: settings.maxListingsPerDealer,
+          currencyCode: settings.currencyCode,
+          analyticsMeasurementId: settings.analyticsMeasurementId,
+        });
+        setSavedAt(settings.updatedAt);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load settings");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  const set = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
+  const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
+    setForm((f) => ({ ...f, [key]: value }));
 
-  const handleSave = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
-  };
-
-  const handleMaintenanceToggle = (checked: boolean) => {
-    if (checked && !form.maintenanceMode) {
-      setMaintenanceConfirmOpen(true);
-    } else if (!checked) {
-      set("maintenanceMode", false);
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const updated = await platformService.updateSettings(form);
+      setSavedAt(updated.updatedAt);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setSaving(false);
     }
-  };
-
-  const confirmMaintenanceMode = () => {
-    set("maintenanceMode", true);
-    setMaintenanceConfirmOpen(false);
   };
 
   return (
     <div className="p-6 md:p-8 bg-[#faf8f5] min-h-screen text-charcoal w-full space-y-6">
       <DashboardPageHeader
         title="Platform Settings"
-        description="Configure system configurations, listing requirements, payment pathways, and site parameters."
+        description="Persisted in platform_settings. Payment provider secrets stay in environment variables."
         className="rounded-3xl"
         actions={
-          <Button type="button" onClick={() => handleSave()} size="md">
-            <Save className="w-4 h-4" /> Save Configurations
+          <Button
+            type="button"
+            onClick={() => void handleSave()}
+            disabled={loading || saving}
+          >
+            {saving ? "Saving…" : "Save settings"}
           </Button>
         }
       />
 
-      {saved && (
+      <Alert
+        variant="info"
+        title="Payments are env-only"
+        description="Razorpay / billing credentials are not stored here. Configure them via server environment variables when billing ships."
+      />
+
+      {error ? (
+        <Alert variant="danger" title="Settings error" description={error} />
+      ) : null}
+      {savedAt && !error ? (
         <Alert
           variant="success"
-          title="Configurations Saved"
-          description="System preferences updated and live across all nodes."
-          onDismiss={() => setSaved(false)}
+          title="Loaded"
+          description={`Last updated ${new Date(savedAt).toLocaleString()}`}
         />
-      )}
+      ) : null}
 
-      <form onSubmit={handleSave} className="space-y-6">
-        <Panel padding="lg" rounded="3xl" className="space-y-4">
-          <div className="flex items-center gap-2.5 pb-3 border-b border-indigo/5">
-            <Globe className="w-4 h-4 text-terracotta" />
-            <h2 className="text-sm font-serif font-black text-charcoal">General Parameters</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <FormField label="Site Brand Title">
-              <TextInput
-                type="text"
-                value={form.siteName}
-                onChange={(e) => set("siteName", e.target.value)}
-              />
-            </FormField>
-
-            <FormField label="Support Helpline Email">
-              <TextInput
-                type="email"
-                value={form.supportEmail}
-                onChange={(e) => set("supportEmail", e.target.value)}
-              />
-            </FormField>
-
-            <FormField label="Tagline Slogan">
-              <TextInput
-                type="text"
-                value={form.tagline}
-                onChange={(e) => set("tagline", e.target.value)}
-              />
-            </FormField>
-
-            <FormField label="Helpline Phone">
-              <TextInput
-                type="text"
-                value={form.phone}
-                onChange={(e) => set("phone", e.target.value)}
-              />
-            </FormField>
-          </div>
-        </Panel>
-
-        <Panel padding="lg" rounded="3xl">
-          <div className="flex items-center gap-2.5 pb-3 border-b border-indigo/5 mb-2">
-            <Shield className="w-4 h-4 text-terracotta" />
-            <h2 className="text-sm font-serif font-black text-charcoal">
-              Listing Approval & Registration Rules
-            </h2>
-          </div>
-
-          <SettingsRow
-            label="Require Admin Review"
-            description="Force newly added or edited listings into Pending Review state before going live."
-            icon={<Sliders className="w-4 h-4" />}
-            accent="terracotta"
-          >
-            <Switch
-              accent="terracotta"
-              checked={form.requireApproval}
-              onCheckedChange={(v) => set("requireApproval", v)}
-              aria-label="Require Admin Review"
+      <Panel padding="lg" rounded="3xl" className="space-y-5">
+        <h2 className="text-sm font-serif font-black">Brand & support</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField label="Site name" required>
+            <TextInput
+              value={form.siteName}
+              onChange={(e) => set("siteName", e.target.value)}
+              disabled={loading}
             />
-          </SettingsRow>
-
-          <SettingsRow
-            label="Enable Dealer Registration"
-            description="Allow prospective real estate brokers to sign up on the public interface."
-            icon={<Sliders className="w-4 h-4" />}
-            accent="terracotta"
-          >
-            <Switch
-              accent="terracotta"
-              checked={form.allowDealerRegistration}
-              onCheckedChange={(v) => set("allowDealerRegistration", v)}
-              aria-label="Enable Dealer Registration"
+          </FormField>
+          <FormField label="Currency code" required>
+            <TextInput
+              value={form.currencyCode}
+              onChange={(e) => set("currencyCode", e.target.value.toUpperCase())}
+              disabled={loading}
+              maxLength={3}
             />
-          </SettingsRow>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-indigo/5 mt-3">
-            <FormField label="Max Images Per Listing">
-              <TextInput
-                type="number"
-                value={form.maxImagesPerListing}
-                onChange={(e) => set("maxImagesPerListing", e.target.value)}
-              />
-            </FormField>
-
-            <FormField label="Max Listings Per Dealer Limit">
-              <TextInput
-                type="number"
-                value={form.maxListingsPerDealer}
-                onChange={(e) => set("maxListingsPerDealer", e.target.value)}
-              />
-            </FormField>
-          </div>
-        </Panel>
-
-        <Panel padding="lg" rounded="3xl">
-          <div className="flex items-center gap-2.5 pb-3 border-b border-indigo/5 mb-2">
-            <Bell className="w-4 h-4 text-terracotta" />
-            <h2 className="text-sm font-serif font-black text-charcoal">
-              Global Notifications Preference
-            </h2>
-          </div>
-
-          <SettingsRow
-            label="Platform Enquiry Email Notifications"
-            description="Send direct email copies to administrator on new user inquiries, reports, and feedback."
-            icon={<Bell className="w-4 h-4" />}
-            accent="terracotta"
-          >
-            <Switch
-              accent="terracotta"
-              checked={form.inquiryNotifications}
-              onCheckedChange={(v) => set("inquiryNotifications", v)}
-              aria-label="Platform Enquiry Email Notifications"
+          </FormField>
+          <FormField label="Tagline" required className="md:col-span-2">
+            <TextInput
+              value={form.tagline}
+              onChange={(e) => set("tagline", e.target.value)}
+              disabled={loading}
             />
-          </SettingsRow>
-        </Panel>
-
-        <Panel padding="lg" rounded="3xl" className="space-y-4">
-          <div className="flex items-center gap-2.5 pb-3 border-b border-indigo/5">
-            <CreditCard className="w-4 h-4 text-terracotta" />
-            <h2 className="text-sm font-serif font-black text-charcoal">
-              Payment & Analytics Integrations
-            </h2>
-          </div>
-
-          <SettingsRow
-            label="Razorpay Payment Gateway"
-            description="Allow dealers to purchase subscriptions online using the integrated Razorpay SDK."
-            icon={<CreditCard className="w-4 h-4" />}
-            accent="terracotta"
-          >
-            <Switch
-              accent="terracotta"
-              checked={form.razorpayEnabled}
-              onCheckedChange={(v) => set("razorpayEnabled", v)}
-              aria-label="Razorpay Payment Gateway"
+          </FormField>
+          <FormField label="Support email">
+            <TextInput
+              value={form.supportEmail ?? ""}
+              onChange={(e) => set("supportEmail", e.target.value || null)}
+              disabled={loading}
             />
-          </SettingsRow>
+          </FormField>
+          <FormField label="Support phone">
+            <TextInput
+              value={form.supportPhone ?? ""}
+              onChange={(e) => set("supportPhone", e.target.value || null)}
+              disabled={loading}
+            />
+          </FormField>
+          <FormField label="Analytics measurement ID" className="md:col-span-2">
+            <TextInput
+              value={form.analyticsMeasurementId ?? ""}
+              onChange={(e) =>
+                set("analyticsMeasurementId", e.target.value || null)
+              }
+              disabled={loading}
+              placeholder="G-XXXXXXXX"
+            />
+          </FormField>
+        </div>
+      </Panel>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-indigo/5">
-            <FormField label="Google Analytics Measurement ID">
-              <TextInput
-                type="text"
-                value={form.googleAnalyticsId}
-                onChange={(e) => set("googleAnalyticsId", e.target.value)}
-                placeholder="G-XXXXXXXXXX"
-              />
-            </FormField>
-
-            <FormField label="Payment Settlements Currency">
-              <CustomSelect
-                options={[
-                  { label: "Indian Rupee (INR)", value: "INR" },
-                  { label: "US Dollar (USD)", value: "USD" },
-                  { label: "Euro (EUR)", value: "EUR" },
-                ]}
-                value={form.defaultCurrency}
-                onChange={(v) => set("defaultCurrency", v)}
-                accent="terracotta"
-                buttonClassName="bg-sand/30 border border-indigo/10 text-xs font-semibold px-4 py-3 rounded-xl text-charcoal"
-              />
-            </FormField>
-          </div>
-        </Panel>
-
-        <Panel
-          padding="lg"
-          rounded="3xl"
-          className="bg-amber-500/[0.02] border-amber-500/15 space-y-4"
+      <Panel padding="lg" rounded="3xl" className="space-y-2">
+        <h2 className="text-sm font-serif font-black mb-2">Marketplace rules</h2>
+        <SettingsRow
+          label="Maintenance mode"
+          description="When on, non-admin visitors are redirected to /maintenance for public marketplace pages."
         >
-          <div className="flex items-center gap-2.5 pb-3 border-b border-amber-500/10">
-            <AlertTriangle className="w-4 h-4 text-amber-600" />
-            <h2 className="text-sm font-serif font-black text-amber-700">Platform Maintenance</h2>
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="max-w-lg">
-              <h3 className="text-xs font-bold text-amber-700">Toggle Maintenance Offline Mode</h3>
-              <p className="text-[10px] text-amber-600/60 font-semibold mt-0.5 leading-relaxed">
-                When active, public users will see a maintenance message, and non-admin logins will be
-                blocked.
-              </p>
-            </div>
-
-            <Switch
-              accent="terracotta"
-              checked={form.maintenanceMode}
-              onCheckedChange={handleMaintenanceToggle}
-              aria-label="Toggle Maintenance Offline Mode"
-            />
-          </div>
-        </Panel>
-      </form>
-
-      <ConfirmDialog
-        open={maintenanceConfirmOpen}
-        onClose={() => setMaintenanceConfirmOpen(false)}
-        onConfirm={confirmMaintenanceMode}
-        title="Activate Maintenance Mode?"
-        description="This will take the entire marketplace offline for regular users immediately. Only administrators will be able to access portal panels."
-        confirmLabel="Yes, Go Offline"
-        tone="warning"
-      />
+          <Switch
+            checked={form.maintenanceMode}
+            onCheckedChange={(v) => set("maintenanceMode", v)}
+            disabled={loading}
+            aria-label="Maintenance mode"
+          />
+        </SettingsRow>
+        <SettingsRow
+          label="Require listing approval"
+          description="Policy flag for admin workflows (brokers still submit pending review via existing APIs)."
+        >
+          <Switch
+            checked={form.requireListingApproval}
+            onCheckedChange={(v) => set("requireListingApproval", v)}
+            disabled={loading}
+            aria-label="Require listing approval"
+          />
+        </SettingsRow>
+        <FormField label="Max listings per dealer (optional)">
+          <TextInput
+            type="number"
+            value={form.maxListingsPerDealer ?? ""}
+            onChange={(e) => {
+              const n = e.target.value ? Number(e.target.value) : null;
+              set("maxListingsPerDealer", Number.isFinite(n as number) ? n : null);
+            }}
+            disabled={loading}
+            placeholder="No cap"
+          />
+        </FormField>
+      </Panel>
     </div>
   );
 }
