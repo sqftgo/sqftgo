@@ -48,6 +48,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         items: [
           { href: "/admin/users", label: "Users", icon: Users },
           { href: "/admin/dealers", label: "Dealers", icon: Briefcase },
+          { href: "/admin/kyc", label: "KYC Reviews", icon: Shield },
         ],
       },
       {

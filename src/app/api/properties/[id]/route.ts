@@ -143,6 +143,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         entityType: "property",
         entityId: updated.id,
       });
+    } else if (updated.status === "rejected" && previousStatus === "pending_review") {
+      void notifyUser({
+        userId: updated.owner_id,
+        forRole: "broker",
+        title: "Listing rejected",
+        message: `“${updated.title}” was not approved. Review feedback in your dashboard and resubmit when ready.`,
+        type: "error",
+        eventKey: "property.rejected",
+        entityType: "property",
+        entityId: updated.id,
+      });
     }
   }
 

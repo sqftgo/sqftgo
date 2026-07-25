@@ -11,13 +11,66 @@ import {
 
 type AppRole = "user" | "broker" | "admin";
 
+function isMaintenanceSurface(pathname: string): boolean {
+  if (pathname === "/") return true;
+  return [
+    "/listings",
+    "/dealers",
+    "/property",
+    "/services",
+    "/destinations",
+    "/favorites",
+  ].some((p) => pathname.startsWith(p));
+}
+
+async function readMaintenanceMode(
+  url: string,
+  serviceKey: string
+): Promise<boolean> {
+  const admin = createClient<Database>(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data } = await admin
+    .from("platform_settings")
+    .select("maintenance_mode")
+    .eq("id", 1)
+    .maybeSingle();
+  return Boolean((data as { maintenance_mode?: boolean } | null)?.maintenance_mode);
+}
+
+async function readProfileRole(
+  supabase: ReturnType<typeof createServerClient<Database>>,
+  url: string,
+  userId: string
+): Promise<{ role: AppRole; status: string } | null> {
+  if (hasServiceRoleKey()) {
+    const admin = createClient<Database>(url, getServiceRoleKey(), {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data } = await admin
+      .from("profiles")
+      .select("role, status")
+      .eq("id", userId)
+      .maybeSingle();
+    return data;
+  }
+  const { data } = await supabase
+    .from("profiles")
+    .select("role, status")
+    .eq("id", userId)
+    .maybeSingle();
+  return data;
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const pathname = request.nextUrl.pathname;
   const isAdminRoute = pathname.startsWith("/admin");
   const isDealerDashboard = pathname.startsWith("/dealer/dashboard");
-  const isProtected = isAdminRoute || isDealerDashboard;
+  const isAccountRoute =
+    pathname.startsWith("/settings") || pathname.startsWith("/profile");
+  const isProtected = isAdminRoute || isDealerDashboard || isAccountRoute;
 
   // Production must fail closed: never expose protected UI without auth config.
   if (!hasSupabaseEnv()) {
@@ -51,6 +104,33 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Maintenance gate for public marketplace surfaces (admins bypass).
+  if (
+    isMaintenanceSurface(pathname) &&
+    pathname !== "/maintenance" &&
+    !pathname.startsWith("/api") &&
+    hasServiceRoleKey()
+  ) {
+    try {
+      const on = await readMaintenanceMode(url, getServiceRoleKey());
+      if (on) {
+        let role: AppRole | null = null;
+        if (user) {
+          const profile = await readProfileRole(supabase, url, user.id);
+          role = (profile?.role ?? null) as AppRole | null;
+        }
+        if (role !== "admin") {
+          const maintUrl = request.nextUrl.clone();
+          maintUrl.pathname = "/maintenance";
+          maintUrl.search = "";
+          return NextResponse.redirect(maintUrl);
+        }
+      }
+    } catch {
+      // Fail open if settings unavailable
+    }
+  }
+
   if (!isProtected) {
     return supabaseResponse;
   }
@@ -62,29 +142,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Prefer service role for role lookup after getUser() — Edge + RLS session
-  // attachment can miss the profile row and falsely bounce valid sessions.
-  // Identity is already verified; we only read that user's row by id.
-  let profile: { role: AppRole; status: string } | null = null;
-  if (hasServiceRoleKey()) {
-    const admin = createClient<Database>(url, getServiceRoleKey(), {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-    const { data } = await admin
-      .from("profiles")
-      .select("role, status")
-      .eq("id", user.id)
-      .maybeSingle();
-    profile = data;
-  } else {
-    const { data } = await supabase
-      .from("profiles")
-      .select("role, status")
-      .eq("id", user.id)
-      .maybeSingle();
-    profile = data;
-  }
-
+  const profile = await readProfileRole(supabase, url, user.id);
   const role = (profile?.role ?? null) as AppRole | null;
   const suspended = profile?.status === "suspended";
 
