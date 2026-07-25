@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useMemo } from "react";
 import { useApp, MockUser } from "@/context/AppContext";
+import { useAdminUsersQuery } from "@/hooks/queries/marketplace";
 import { Trash2, Shield, UserCheck, UserX, MoreVertical } from "lucide-react";
 import {
   DropdownMenu,
@@ -11,6 +12,8 @@ import {
   Avatar,
   DataTable,
   ConfirmDialog,
+  Alert,
+  Button,
   type DataTableColumn,
 } from "@/components/ui";
 
@@ -27,22 +30,15 @@ export default function AdminUsersPage() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const { isFetching, isError, error, refetch, isFetched } = useAdminUsersQuery();
 
-  React.useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const { authService } = await import("@/services/auth");
-        const users = await authService.listUsers();
-        if (!cancelled) setAdminUsers(users);
-      } catch {
-        // Keep existing admin user cache if admin API is unavailable
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [setAdminUsers]);
+  const usersReady = isFetched;
+  const loadError =
+    isError && error instanceof Error
+      ? error.message
+      : isError
+        ? "Unable to load users from the admin API"
+        : null;
 
   const roleOptions = useMemo(() => ["All", "user", "broker", "admin"].map(r => ({
     label: r === "All" ? "All Roles" : r.charAt(0).toUpperCase() + r.slice(1),
@@ -184,12 +180,40 @@ export default function AdminUsersPage() {
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
       <DashboardPageHeader
         title="User Management"
-        description={`${adminUsers.length} registered users`}
+        description={
+          usersReady
+            ? `${adminUsers.length} registered users`
+            : "Loading users…"
+        }
       />
+      {loadError ? (
+        <Alert
+          variant="danger"
+          title="Could not load users"
+          description={loadError}
+        >
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-3"
+            onClick={() => void refetch()}
+          >
+            Retry
+          </Button>
+        </Alert>
+      ) : null}
       {actionError ? (
         <p className="text-sm font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-4 py-3">
           {actionError}
         </p>
+      ) : null}
+      {!usersReady || isFetching ? (
+        <Alert
+          variant="info"
+          title="Loading"
+          description="Fetching accounts via TanStack Query…"
+        />
       ) : null}
 
       <div className="flex flex-wrap gap-3">

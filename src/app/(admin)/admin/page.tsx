@@ -14,7 +14,15 @@ import {
 } from "@/components/ui";
 
 export default function AdminDashboardPage() {
-  const { properties, adminUsers, directoryProfiles, inquiries, enquiries, activityLogs } = useApp();
+  const {
+    properties,
+    adminUsers,
+    inquiries,
+    enquiries,
+    activityLogs,
+    propertiesError,
+    propertiesReady,
+  } = useApp();
 
   const totalUsers = adminUsers.filter(u => u.role === "user").length;
   const totalDealers = adminUsers.filter(u => u.role === "broker").length;
@@ -39,6 +47,20 @@ export default function AdminDashboardPage() {
         description="Platform overview and management controls"
       />
 
+      {propertiesError ? (
+        <Alert
+          variant="danger"
+          title="Property data failed to load"
+          description={propertiesError}
+        />
+      ) : null}
+      {!propertiesReady ? (
+        <Alert
+          variant="info"
+          title="Loading marketplace data"
+          description="Refreshing listings…"
+        />
+      ) : null}
       <KpiGrid className="xl:grid-cols-3">
         {stats.map((stat, i) => {
           const Icon = stat.icon;

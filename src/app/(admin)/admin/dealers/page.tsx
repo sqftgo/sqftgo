@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useApp } from "@/context/AppContext";
+import { isDealerCategory } from "@/features/dealers";
 import { Trash2, CheckCircle2, MapPin, Phone, Globe, ExternalLink, MoreVertical } from "lucide-react";
 import {
   DropdownMenu,
@@ -17,10 +18,12 @@ export default function AdminDealersPage() {
   const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const dealers = directoryProfiles.filter(p => {
-    const isDealerCat = p.category === "Agent & Broker" || p.category === "Property Consultant" || p.category === "Builder & Developer";
-    const matchSearch = !search || p.firmName.toLowerCase().includes(search.toLowerCase()) || p.ownerName.toLowerCase().includes(search.toLowerCase());
-    return isDealerCat && matchSearch;
+  const dealers = directoryProfiles.filter((p) => {
+    const matchSearch =
+      !search ||
+      p.firmName.toLowerCase().includes(search.toLowerCase()) ||
+      p.ownerName.toLowerCase().includes(search.toLowerCase());
+    return isDealerCategory(p.category) && matchSearch;
   });
 
   const confirmDelete = async () => {

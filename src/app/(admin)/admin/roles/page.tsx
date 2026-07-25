@@ -1,50 +1,46 @@
 "use client";
+
 import React from "react";
 import { Shield, CheckCircle2 } from "lucide-react";
 import { DashboardPageHeader, Panel, Badge, Alert } from "@/components/ui";
 
+/** Documentation of coarse roles — not an editable permissions matrix. */
 const ROLES = [
   {
-    name: "Super Admin",
+    name: "Admin",
     tone: "warning" as const,
     permissions: [
-      "Full Platform Access",
-      "User Management",
-      "Dealer Management",
-      "Property Management",
-      "Role Management",
-      "System Settings",
-      "View Logs",
-      "Analytics",
+      "Full platform access via middleware + API role checks",
+      "User management (suspend / promote broker)",
+      "Property approvals and catalog CRUD",
+      "Activity logs",
+      "Admin-only APIs",
     ],
   },
   {
-    name: "Dealer",
+    name: "Broker (Dealer)",
     tone: "primary" as const,
     permissions: [
-      "Own Property Management",
-      "View Own Inquiries",
-      "Manage Profile",
-      "View Own Analytics",
-      "Manage Subscription",
+      "Own property management",
+      "View own inquiries / messages",
+      "Directory profile updates",
+      "Dealer dashboard routes",
     ],
   },
   {
     name: "User",
     tone: "info" as const,
     permissions: [
-      "Browse Properties",
-      "Save Favorites",
-      "Submit Inquiries",
-      "Contact Dealers",
-      "Manage Own Profile",
-      "Compare Properties",
+      "Browse properties",
+      "Save favorites",
+      "Submit inquiries / visits",
+      "Manage own profile",
     ],
   },
   {
     name: "Guest",
     tone: "neutral" as const,
-    permissions: ["Browse Properties", "View Property Details", "Search Listings"],
+    permissions: ["Browse public listings", "View property details", "Search"],
   },
 ];
 
@@ -53,8 +49,15 @@ export default function AdminRolesPage() {
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
       <DashboardPageHeader
         title="Roles & Permissions"
-        description="Platform role hierarchy and access controls"
+        description="Read-only reference for the current coarse role model"
       />
+
+      <Alert
+        variant="info"
+        title="Documentation only — not editable"
+        description="There is no permissions matrix API. Roles are the profiles.role enum (user | broker | admin), enforced by middleware, RLS, and API checks. Assign roles on the Users page; admin elevation cannot be granted via the public API."
+      />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {ROLES.map((role) => (
           <Panel key={role.name} padding="lg" rounded="2xl">
@@ -73,11 +76,6 @@ export default function AdminRolesPage() {
           </Panel>
         ))}
       </div>
-      <Alert
-        variant="info"
-        title="Role assignments"
-        description="Role assignments are managed via the Users page. Role definitions are enforced server-side via RBAC middleware. Admin accounts can only be created manually."
-      />
     </div>
   );
 }
