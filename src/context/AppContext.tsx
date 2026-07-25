@@ -149,9 +149,29 @@ interface AppContextType {
     }
   ) => Promise<VisitBooking>;
   categories: Category[];
+  categoriesReady: boolean;
+  refreshCategories: () => Promise<void>;
   setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  createCategory: (input: { name: string; icon: string }) => Promise<Category>;
+  updateCategory: (
+    id: string,
+    updates: { name?: string; icon?: string; active?: boolean }
+  ) => Promise<Category>;
+  deleteCategory: (id: string) => Promise<void>;
   locations: Location[];
+  locationsReady: boolean;
+  refreshLocations: () => Promise<void>;
   setLocations: React.Dispatch<React.SetStateAction<Location[]>>;
+  createLocation: (input: {
+    city: string;
+    state: string;
+    country: string;
+  }) => Promise<Location>;
+  updateLocation: (
+    id: string,
+    updates: { city?: string; state?: string; country?: string; active?: boolean }
+  ) => Promise<Location>;
+  deleteLocation: (id: string) => Promise<void>;
   activityLogs: ActivityLog[];
   addLog: (log: Omit<ActivityLog, "id" | "timestamp">) => void;
   mockUsers: MockUser[];
@@ -236,6 +256,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [notificationsReady, setNotificationsReady] = useState(false);
   const [visits, setVisitsState] = useState<VisitBooking[]>([]);
   const [visitsReady, setVisitsReady] = useState(false);
+  const [categories, setCategoriesState] = useState<Category[]>([]);
+  const [categoriesReady, setCategoriesReady] = useState(false);
+  const [locations, setLocationsState] = useState<Location[]>([]);
+  const [locationsReady, setLocationsReady] = useState(false);
   const [selectedCity, setSelectedCityState] = useState(defaultSession.selectedCity);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [compareList, setCompareList] = useState<string[]>([]);
@@ -362,6 +386,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!sessionReady) return;
     void refreshVisits();
   }, [sessionReady, isLoggedIn, userRole, refreshVisits]);
+
+  const refreshCategories = useCallback(async () => {
+    if (!hasSupabaseEnv()) {
+      setCategoriesState([]);
+      setCategoriesReady(true);
+      return;
+    }
+    try {
+      const rows = await catalogService.listCategories({ all: userRole === "admin" });
+      setCategoriesState(rows);
+    } catch {
+      setCategoriesState([]);
+    } finally {
+      setCategoriesReady(true);
+    }
+  }, [userRole]);
+
+  const refreshLocations = useCallback(async () => {
+    if (!hasSupabaseEnv()) {
+      setLocationsState([]);
+      setLocationsReady(true);
+      return;
+    }
+    try {
+      const rows = await catalogService.listLocations({ all: userRole === "admin" });
+      setLocationsState(rows);
+    } catch {
+      setLocationsState([]);
+    } finally {
+      setLocationsReady(true);
+    }
+  }, [userRole]);
+
+  useEffect(() => {
+    if (!sessionReady) return;
+    void refreshCategories();
+    void refreshLocations();
+  }, [sessionReady, isLoggedIn, userRole, refreshCategories, refreshLocations]);
 
   const refreshInquiries = useCallback(async () => {
     if (!hasSupabaseEnv() || !isLoggedIn) {
@@ -543,16 +605,80 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     []
   );
 
-  const setCategories: React.Dispatch<React.SetStateAction<Category[]>> = useCallback((action) => {
-    const current = getStore().categories;
-    const next = typeof action === "function" ? action(current) : action;
-    patchStore({ categories: next });
+  const setCategories: React.Dispatch<React.SetStateAction<Category[]>> = useCallback(
+    (action) => {
+      setCategoriesState((current) =>
+        typeof action === "function" ? action(current) : action
+      );
+    },
+    []
+  );
+
+  const setLocations: React.Dispatch<React.SetStateAction<Location[]>> = useCallback(
+    (action) => {
+      setLocationsState((current) =>
+        typeof action === "function" ? action(current) : action
+      );
+    },
+    []
+  );
+
+  const createCategory = useCallback(async (input: { name: string; icon: string }) => {
+    const created = await catalogService.createCategory(input);
+    setCategoriesState((prev) => [...prev, created]);
+    return created;
   }, []);
 
-  const setLocations: React.Dispatch<React.SetStateAction<Location[]>> = useCallback((action) => {
-    const current = getStore().locations;
-    const next = typeof action === "function" ? action(current) : action;
-    patchStore({ locations: next });
+  const updateCategory = useCallback(
+    async (id: string, updates: { name?: string; icon?: string; active?: boolean }) => {
+      const updated = await catalogService.updateCategory(id, updates);
+      setCategoriesState((prev) => prev.map((c) => (c.id === id ? updated : c)));
+      return updated;
+    },
+    []
+  );
+
+  const deleteCategory = useCallback(async (id: string) => {
+    const result = await catalogService.deleteCategory(id);
+    if (result.deactivated) {
+      setCategoriesState((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, active: false } : c))
+      );
+    } else {
+      setCategoriesState((prev) => prev.filter((c) => c.id !== id));
+    }
+  }, []);
+
+  const createLocation = useCallback(
+    async (input: { city: string; state: string; country: string }) => {
+      const created = await catalogService.createLocation(input);
+      setLocationsState((prev) => [...prev, created]);
+      return created;
+    },
+    []
+  );
+
+  const updateLocation = useCallback(
+    async (
+      id: string,
+      updates: { city?: string; state?: string; country?: string; active?: boolean }
+    ) => {
+      const updated = await catalogService.updateLocation(id, updates);
+      setLocationsState((prev) => prev.map((l) => (l.id === id ? updated : l)));
+      return updated;
+    },
+    []
+  );
+
+  const deleteLocation = useCallback(async (id: string) => {
+    const result = await catalogService.deleteLocation(id);
+    if (result.deactivated) {
+      setLocationsState((prev) =>
+        prev.map((l) => (l.id === id ? { ...l, active: false } : l))
+      );
+    } else {
+      setLocationsState((prev) => prev.filter((l) => l.id !== id));
+    }
   }, []);
 
   const setMockUsers: React.Dispatch<React.SetStateAction<MockUser[]>> = useCallback((action) => {
@@ -820,10 +946,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       refreshVisits,
       bookVisit,
       updateVisit,
-      categories: store.categories,
+      categories,
+      categoriesReady,
+      refreshCategories,
       setCategories,
-      locations: store.locations,
+      createCategory,
+      updateCategory,
+      deleteCategory,
+      locations,
+      locationsReady,
+      refreshLocations,
       setLocations,
+      createLocation,
+      updateLocation,
+      deleteLocation,
       activityLogs: store.activityLogs,
       addLog,
       mockUsers: store.mockUsers,
@@ -894,8 +1030,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       refreshVisits,
       bookVisit,
       updateVisit,
+      categories,
+      categoriesReady,
+      refreshCategories,
       setCategories,
+      createCategory,
+      updateCategory,
+      deleteCategory,
+      locations,
+      locationsReady,
+      refreshLocations,
       setLocations,
+      createLocation,
+      updateLocation,
+      deleteLocation,
       addLog,
       setMockUsers,
       compareList,

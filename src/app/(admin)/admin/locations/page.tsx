@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { useApp, Location } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
 import { Plus, Trash2 } from "lucide-react";
 import {
   DashboardPageHeader,
@@ -14,27 +14,71 @@ import {
 } from "@/components/ui";
 
 export default function AdminLocationsPage() {
-  const { locations, setLocations, addLog, userEmail } = useApp();
+  const {
+    locations,
+    createLocation,
+    updateLocation,
+    deleteLocation,
+    addLog,
+    userEmail,
+  } = useApp();
   const [form, setForm] = useState({ city: "", state: "", country: "India" });
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
 
-  const handleAdd = () => {
-    if (!form.city.trim()) return;
-    const newLoc: Location = { id: `loc-${Date.now()}`, ...form, active: true, propertyCount: 0 };
-    setLocations(prev => [...prev, newLoc]);
-    addLog({ action: "Location Added", performedBy: userEmail, role: "Admin", target: `${form.city}, ${form.state}` });
-    setForm({ city: "", state: "", country: "India" });
-    setSaved(true); setTimeout(() => setSaved(false), 2000);
+  const handleAdd = async () => {
+    if (!form.city.trim() || !form.state.trim() || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await createLocation({
+        city: form.city.trim(),
+        state: form.state.trim(),
+        country: form.country.trim() || "India",
+      });
+      addLog({
+        action: "Location Added",
+        performedBy: userEmail,
+        role: "Admin",
+        target: `${form.city}, ${form.state}`,
+      });
+      setForm({ city: "", state: "", country: "India" });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to add location");
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const toggleActive = (id: string) => setLocations(prev => prev.map(l => l.id === id ? { ...l, active: !l.active } : l));
+  const toggleActive = async (id: string, active: boolean) => {
+    try {
+      await updateLocation(id, { active: !active });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to update location");
+    }
+  };
 
-  const confirmDelete = () => {
-    if (!pendingDelete) return;
-    setLocations(prev => prev.filter(l => l.id !== pendingDelete.id));
-    addLog({ action: "Location Deleted", performedBy: userEmail, role: "Admin", target: pendingDelete.name });
-    setPendingDelete(null);
+  const confirmDelete = async () => {
+    if (!pendingDelete || busy) return;
+    setBusy(true);
+    try {
+      await deleteLocation(pendingDelete.id);
+      addLog({
+        action: "Location Deleted",
+        performedBy: userEmail,
+        role: "Admin",
+        target: pendingDelete.name,
+      });
+      setPendingDelete(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to delete location");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -47,28 +91,31 @@ export default function AdminLocationsPage() {
       {saved && (
         <Alert variant="success" title="Location added!" onDismiss={() => setSaved(false)} />
       )}
+      {error ? (
+        <Alert variant="danger" title={error} onDismiss={() => setError(null)} />
+      ) : null}
 
       <Panel title="Add Location">
         <div className="flex flex-wrap gap-3">
           <TextInput
             value={form.city}
-            onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
+            onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
             placeholder="City name"
             className="flex-1 min-w-[150px]"
           />
           <TextInput
             value={form.state}
-            onChange={e => setForm(f => ({ ...f, state: e.target.value }))}
+            onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))}
             placeholder="State"
             className="flex-1 min-w-[150px]"
           />
           <TextInput
             value={form.country}
-            onChange={e => setForm(f => ({ ...f, country: e.target.value }))}
+            onChange={(e) => setForm((f) => ({ ...f, country: e.target.value }))}
             placeholder="Country"
             className="flex-1 min-w-[120px]"
           />
-          <Button onClick={handleAdd} size="md">
+          <Button onClick={() => void handleAdd()} size="md" disabled={busy}>
             <Plus className="w-4 h-4" /> Add
           </Button>
         </div>
@@ -76,11 +123,16 @@ export default function AdminLocationsPage() {
 
       <Panel padding="none">
         <div className="divide-y divide-indigo/5">
-          {locations.map(loc => (
-            <div key={loc.id} className="flex items-center gap-4 px-5 py-4 hover:bg-indigo/5 transition-colors">
+          {locations.map((loc) => (
+            <div
+              key={loc.id}
+              className="flex items-center gap-4 px-5 py-4 hover:bg-indigo/5 transition-colors"
+            >
               <div className="flex-1">
                 <p className="text-sm font-bold text-charcoal">{loc.city}</p>
-                <p className="text-[10px] text-charcoal/40 font-semibold">{loc.state}, {loc.country}</p>
+                <p className="text-[10px] text-charcoal/40 font-semibold">
+                  {loc.state}, {loc.country} · {loc.propertyCount} properties
+                </p>
               </div>
               <Badge status={loc.active ? "active" : "inactive"} size="sm">
                 {loc.active ? "Active" : "Inactive"}
@@ -88,7 +140,7 @@ export default function AdminLocationsPage() {
               <div className="flex items-center gap-2">
                 <Switch
                   checked={loc.active}
-                  onCheckedChange={() => toggleActive(loc.id)}
+                  onCheckedChange={() => void toggleActive(loc.id, loc.active)}
                   size="sm"
                   accent="terracotta"
                   aria-label={`Toggle ${loc.city}`}
@@ -109,7 +161,9 @@ export default function AdminLocationsPage() {
       <ConfirmDialog
         open={Boolean(pendingDelete)}
         onClose={() => setPendingDelete(null)}
-        onConfirm={confirmDelete}
+        onConfirm={() => {
+          void confirmDelete();
+        }}
         title="Delete location?"
         description={pendingDelete ? `Delete location "${pendingDelete.name}"?` : undefined}
         confirmLabel="Delete"
