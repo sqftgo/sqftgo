@@ -11,6 +11,7 @@ import React, {
 } from "react";
 import { SESSION_STORAGE_KEY } from "@/constants/demoAccounts";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { toggleCompareList } from "@/lib/compare";
 import type {
   Property,
   UserProfile,
@@ -702,13 +703,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   );
 
   const toggleCompare = useCallback((id: string) => {
-    setCompareList((prev) =>
-      prev.includes(id)
-        ? prev.filter((x) => x !== id)
-        : prev.length >= 4
-          ? [...prev.slice(1), id]
-          : [...prev, id]
-    );
+    setCompareList((prev) => toggleCompareList(prev, id));
   }, []);
 
   const setProperties: React.Dispatch<React.SetStateAction<Property[]>> = useCallback((action) => {

@@ -6,6 +6,7 @@ import { config } from "@fortawesome/fontawesome-svg-core";
 import { AppProvider } from "@/context/AppContext";
 import Navbar from "@/components/shared/Navbar";
 import MainWrapper from "@/components/shared/MainWrapper";
+import CompareBar from "@/components/shared/CompareBar";
 
 // Prevent Font Awesome from dynamically adding its CSS since we imported it above
 config.autoAddCss = false;
@@ -55,6 +56,9 @@ export default function RootLayout({
           {/* Global Footer */}
           <Footer />
           
+          {/* Sticky compare tray when 2+ properties selected */}
+          <CompareBar />
+
           {/* Global Dream Project Button */}
           <DreamProjectButton />
         </AppProvider>

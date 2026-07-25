@@ -10,7 +10,7 @@ export type { InquiryRepository } from "./inquiries";
 export { dealerService, supabaseDealerRepository } from "./dealers";
 export type { DealerRepository, DealerFilters } from "./dealers";
 
-export { catalogService, mockCatalogRepository } from "./catalog";
+export { catalogService } from "./catalog";
 export type { CatalogRepository } from "./catalog";
 
 export { notificationService, supabaseNotificationRepository } from "./notifications";

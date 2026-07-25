@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, MapPin, ChevronLeft, ChevronRight, Phone, UserCheck } from "lucide-react";
+import { Heart, MapPin, ChevronLeft, ChevronRight, Phone, UserCheck, GitCompareArrows } from "lucide-react";
 import { Property, useApp } from "@/context/AppContext";
 import { formatIndianCurrency } from "@/lib/format";
 import { motion } from "framer-motion";
@@ -18,10 +18,11 @@ interface PropertyCardProps {
 }
 
 export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, layout = "grid" }) => {
-  const { favorites, toggleFavorite } = useApp();
+  const { favorites, toggleFavorite, compareList, toggleCompare } = useApp();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const isFavorite = favorites.includes(property.id);
+  const isCompared = compareList.includes(property.id);
   const imageSrc = property.images[currentImageIndex] || "/indian_heritage_hero_bg.png";
 
   const nextImage = (e: React.MouseEvent) => {
@@ -108,11 +109,30 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, 
               e.stopPropagation();
               onSelect(property);
             }}
-            className="absolute top-3 right-13 p-2 rounded-xl border border-sand bg-white text-charcoal hover:text-terracotta shadow-sm z-10 transition-all duration-200 cursor-pointer"
+            className="absolute top-3 right-[6.5rem] p-2 rounded-xl border border-sand bg-white text-charcoal hover:text-terracotta shadow-sm z-10 transition-all duration-200 cursor-pointer"
           >
             <MapPin className="w-4 h-4 text-terracotta" />
           </button>
         )}
+
+        <button
+          suppressHydrationWarning
+          type="button"
+          aria-label={isCompared ? "Remove from compare" : "Add to compare"}
+          aria-pressed={isCompared}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleCompare(property.id);
+          }}
+          className={`absolute top-3 right-13 p-2 rounded-xl border shadow-sm z-10 transition-all duration-200 cursor-pointer ${
+            isCompared
+              ? "bg-indigo/10 border-indigo/30 text-indigo"
+              : "bg-white border-sand text-charcoal hover:text-indigo"
+          }`}
+        >
+          <GitCompareArrows className={`w-4 h-4 ${isCompared ? "stroke-[2.5]" : ""}`} />
+        </button>
 
         <button
           suppressHydrationWarning
