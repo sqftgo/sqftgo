@@ -13,6 +13,9 @@ export type { DealerRepository, DealerFilters } from "./dealers";
 export { catalogService, mockCatalogRepository } from "./catalog";
 export type { CatalogRepository } from "./catalog";
 
+export { notificationService, supabaseNotificationRepository } from "./notifications";
+export type { NotificationRepository } from "./notifications";
+
 export {
   getStore,
   patchStore,

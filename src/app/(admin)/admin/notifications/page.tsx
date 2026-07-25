@@ -31,7 +31,12 @@ const ADMIN_PREFERENCES = [
 ];
 
 export default function AdminNotificationsPage() {
-  const { notifications, setNotifications, markNotificationRead } = useApp();
+  const {
+    notifications,
+    markNotificationRead,
+    markAllNotificationsRead,
+    deleteNotification,
+  } = useApp();
 
   return (
     <NotificationsPageShell
@@ -49,15 +54,15 @@ export default function AdminNotificationsPage() {
       preferencesTitle="System Dispatch Rules"
       preferencesDescription="Toggle live alerts for standard operational flows."
       preferencesButtonLabel="Configs"
-      onMarkRead={markNotificationRead}
-      onMarkAll={() =>
-        setNotifications((prev) =>
-          prev.map((n) =>
-            n.forRole === "admin" || n.forRole === "all" ? { ...n, read: true } : n
-          )
-        )
-      }
-      onDelete={(id) => setNotifications((prev) => prev.filter((n) => n.id !== id))}
+      onMarkRead={(id) => {
+        void markNotificationRead(id);
+      }}
+      onMarkAll={() => {
+        void markAllNotificationsRead();
+      }}
+      onDelete={(id) => {
+        void deleteNotification(id);
+      }}
     />
   );
 }
