@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { X, Star, TrendingUp, MapPin, BookOpen, Phone, ExternalLink, ArrowRight, Compass } from "lucide-react";
-import { Destination } from "@/data/destinations";
+import { Destination } from "../data/destinations";
 
 interface DestinationDrawerProps {
   selectedDestination: Destination | null;

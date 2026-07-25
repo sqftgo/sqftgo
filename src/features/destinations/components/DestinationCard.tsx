@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Building, TrendingUp, ArrowRight, MapPin, IndianRupee } from "lucide-react";
-import { Destination } from "@/data/destinations";
+import { Destination } from "../data/destinations";
 
 interface DestinationCardProps {
   dest: Destination;

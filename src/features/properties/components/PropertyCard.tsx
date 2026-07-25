@@ -3,11 +3,12 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, MapPin, ChevronLeft, ChevronRight, Phone, UserCheck, GitCompareArrows } from "lucide-react";
-import { Property, useApp } from "@/context/AppContext";
+import { Heart, MapPin, ChevronLeft, ChevronRight, Phone, UserCheck } from "lucide-react";
+import type { Property } from "@/types";
+import { useApp } from "@/context/AppContext";
 import { formatIndianCurrency } from "@/lib/format";
 import { motion } from "framer-motion";
-import { Avatar } from "./Avatar";
+import { Avatar } from "@/components/ui/Avatar";
 
 export { formatIndianCurrency } from "@/lib/format";
 
@@ -15,14 +16,27 @@ interface PropertyCardProps {
   property: Property;
   onSelect?: (property: Property) => void;
   layout?: "grid" | "list";
+  /** When set, overrides AppContext favorites for this card. */
+  isFavorite?: boolean;
+  onToggleFavorite?: (propertyId: string) => void;
 }
 
-export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, layout = "grid" }) => {
-  const { favorites, toggleFavorite, compareList, toggleCompare } = useApp();
+export const PropertyCard: React.FC<PropertyCardProps> = ({
+  property,
+  onSelect,
+  layout = "grid",
+  isFavorite: isFavoriteProp,
+  onToggleFavorite,
+}) => {
+  const { favorites, toggleFavorite } = useApp();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const isFavorite = favorites.includes(property.id);
-  const isCompared = compareList.includes(property.id);
+  const isFavorite = isFavoriteProp ?? favorites.includes(property.id);
+  const handleToggleFavorite = () => {
+    if (onToggleFavorite) onToggleFavorite(property.id);
+    else toggleFavorite(property.id);
+  };
+
   const imageSrc = property.images[currentImageIndex] || "/indian_heritage_hero_bg.png";
 
   const nextImage = (e: React.MouseEvent) => {
@@ -115,24 +129,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, 
           </button>
         )}
 
-        <button
-          suppressHydrationWarning
-          type="button"
-          aria-label={isCompared ? "Remove from compare" : "Add to compare"}
-          aria-pressed={isCompared}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleCompare(property.id);
-          }}
-          className={`absolute top-3 right-13 p-2 rounded-xl border shadow-sm z-10 transition-all duration-200 cursor-pointer ${
-            isCompared
-              ? "bg-indigo/10 border-indigo/30 text-indigo"
-              : "bg-white border-sand text-charcoal hover:text-indigo"
-          }`}
-        >
-          <GitCompareArrows className={`w-4 h-4 ${isCompared ? "stroke-[2.5]" : ""}`} />
-        </button>
+
 
         <button
           suppressHydrationWarning
@@ -142,7 +139,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onSelect, 
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            toggleFavorite(property.id);
+            handleToggleFavorite();
           }}
           className={`absolute top-3 right-3 p-2 rounded-xl border shadow-sm z-10 transition-all duration-200 cursor-pointer ${
             isFavorite
