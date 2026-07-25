@@ -7,8 +7,8 @@ export type { AuthRepository, AuthSession, AuthRole } from "./auth";
 export { inquiryService, supabaseInquiryRepository } from "./inquiries";
 export type { InquiryRepository } from "./inquiries";
 
-export { dealerService, mockDealerRepository } from "./dealers";
-export type { DealerRepository } from "./dealers";
+export { dealerService, supabaseDealerRepository } from "./dealers";
+export type { DealerRepository, DealerFilters } from "./dealers";
 
 export { catalogService, mockCatalogRepository } from "./catalog";
 export type { CatalogRepository } from "./catalog";

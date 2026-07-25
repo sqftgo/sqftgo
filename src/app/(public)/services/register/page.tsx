@@ -55,7 +55,7 @@ const CITIES = [
 ];
 
 export default function RegisterServicePage() {
-  const { addDirectoryProfile } = useApp();
+  const { addDirectoryProfile, isLoggedIn } = useApp();
 
   const [formData, setFormData] = useState<Omit<DirectoryProfile, "id">>({
     firmName: "",
@@ -72,18 +72,26 @@ export default function RegisterServicePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [agreeToVettingPledge, setAgreeToVettingPledge] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!agreeToVettingPledge) return;
+    if (!agreeToVettingPledge || isSubmitting) return;
+    if (!isLoggedIn) {
+      setError("Please sign in before registering your firm in the directory.");
+      return;
+    }
     setIsSubmitting(true);
-
-    setTimeout(() => {
-      addDirectoryProfile(formData);
-      setIsSubmitting(false);
+    setError(null);
+    try {
+      await addDirectoryProfile(formData);
       setIsSuccess(true);
       setAgreeToVettingPledge(false);
-    }, 1200);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to register. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -306,6 +314,12 @@ export default function RegisterServicePage() {
                   I pledge that all provided business credentials are legally accurate and agree to submit matching verification proofs to the SqftGo vetting coordinators. *
                 </label>
               </div>
+
+              {error ? (
+                <p className="text-xs font-semibold text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+                  {error}
+                </p>
+              ) : null}
 
               {/* Submit button */}
               <button

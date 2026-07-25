@@ -31,6 +31,17 @@ export type PropertyStatusDb =
 
 export type InquiryStatusDb = "new" | "read" | "archived";
 
+export type DirectoryCategoryDb =
+  | "Agent & Broker"
+  | "Builder & Developer"
+  | "Interior Decorator"
+  | "Architect"
+  | "Building Contractor"
+  | "Property Consultant"
+  | "Vastu Consultant"
+  | "Home Valuation/Inspection"
+  | "Home Shifting/Deep Cleaning";
+
 export type ProfileRow = {
   id: string;
   email: string;
@@ -174,6 +185,50 @@ export type PropertyInquiryInsert = {
 
 export type PropertyInquiryUpdate = Partial<PropertyInquiryInsert>;
 
+export type DirectoryProfileRow = {
+  id: string;
+  user_id: string | null;
+  firm_name: string;
+  owner_name: string;
+  category: DirectoryCategoryDb;
+  city: string;
+  address: string;
+  email: string;
+  website: string;
+  mobile: string;
+  description: string;
+  rera_id: string | null;
+  experience: string | null;
+  specialties: string[];
+  team_size: number | null;
+  listings_count: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DirectoryProfileInsert = {
+  id?: string;
+  user_id?: string | null;
+  firm_name: string;
+  owner_name: string;
+  category: DirectoryCategoryDb;
+  city: string;
+  address?: string;
+  email: string;
+  website?: string;
+  mobile: string;
+  description?: string;
+  rera_id?: string | null;
+  experience?: string | null;
+  specialties?: string[];
+  team_size?: number | null;
+  listings_count?: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type DirectoryProfileUpdate = Partial<DirectoryProfileInsert>;
+
 export type Database = {
   public: {
     Tables: {
@@ -219,6 +274,20 @@ export type Database = {
           },
         ];
       };
+      directory_profiles: {
+        Row: DirectoryProfileRow;
+        Insert: DirectoryProfileInsert;
+        Update: DirectoryProfileUpdate;
+        Relationships: [
+          {
+            foreignKeyName: "directory_profiles_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -235,6 +304,7 @@ export type Database = {
       furnished_status: FurnishedStatusDb;
       property_status: PropertyStatusDb;
       inquiry_status: InquiryStatusDb;
+      directory_category: DirectoryCategoryDb;
     };
     CompositeTypes: {
       [_ in never]: never;

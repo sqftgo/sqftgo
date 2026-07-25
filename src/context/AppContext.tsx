@@ -85,8 +85,12 @@ interface AppContextType {
   reviews: CustomerReview[];
   addReview: (review: Omit<CustomerReview, "id" | "date">) => void;
   directoryProfiles: DirectoryProfile[];
+  directoryProfilesReady: boolean;
+  refreshDirectoryProfiles: () => Promise<void>;
   setDirectoryProfiles: React.Dispatch<React.SetStateAction<DirectoryProfile[]>>;
-  addDirectoryProfile: (profile: Omit<DirectoryProfile, "id">) => void;
+  addDirectoryProfile: (profile: Omit<DirectoryProfile, "id">) => Promise<DirectoryProfile>;
+  updateDirectoryProfile: (id: string, updates: Partial<DirectoryProfile>) => Promise<DirectoryProfile>;
+  deleteDirectoryProfile: (id: string) => Promise<void>;
   isLoggedIn: boolean;
   setIsLoggedIn: (val: boolean) => void;
   userEmail: string;
@@ -178,6 +182,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [propertiesReady, setPropertiesReady] = useState(false);
   const [inquiries, setInquiriesState] = useState<Record<string, PropertyInquiry[]>>({});
   const [inquiriesReady, setInquiriesReady] = useState(false);
+  const [directoryProfiles, setDirectoryProfilesState] = useState<DirectoryProfile[]>([]);
+  const [directoryProfilesReady, setDirectoryProfilesReady] = useState(false);
   const [selectedCity, setSelectedCityState] = useState(defaultSession.selectedCity);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [compareList, setCompareList] = useState<string[]>([]);
@@ -302,6 +308,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     void refreshInquiries();
   }, [sessionReady, isLoggedIn, userRole, refreshInquiries]);
 
+  const refreshDirectoryProfiles = useCallback(async () => {
+    if (!hasSupabaseEnv()) {
+      setDirectoryProfilesState([]);
+      setDirectoryProfilesReady(true);
+      return;
+    }
+    try {
+      const rows = await dealerService.listProfiles();
+      setDirectoryProfilesState(rows);
+    } catch {
+      setDirectoryProfilesState([]);
+    } finally {
+      setDirectoryProfilesReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!sessionReady) return;
+    void refreshDirectoryProfiles();
+  }, [sessionReady, refreshDirectoryProfiles]);
+
   useEffect(() => {
     if (!sessionReady) return;
     writeUiPrefs({ favorites, compareList, selectedCity });
@@ -372,9 +399,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const setDirectoryProfiles: React.Dispatch<React.SetStateAction<DirectoryProfile[]>> = useCallback(
     (action) => {
-      const current = getStore().directoryProfiles;
-      const next = typeof action === "function" ? action(current) : action;
-      patchStore({ directoryProfiles: next });
+      setDirectoryProfilesState((current) =>
+        typeof action === "function" ? action(current) : action
+      );
     },
     []
   );
@@ -418,7 +445,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ) => {
       const matchingProfile =
         isLoggedIn && userRole === "broker"
-          ? getStore().directoryProfiles.find(
+          ? directoryProfiles.find(
               (dp) => dp.email.toLowerCase() === userEmail.toLowerCase()
             )
           : null;
@@ -432,7 +459,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setPropertiesState((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
       return created;
     },
-    [isLoggedIn, userRole, userEmail, userName, userProfile?.phone]
+    [isLoggedIn, userRole, userEmail, userName, userProfile?.phone, directoryProfiles]
   );
 
   const updateProperty = useCallback(async (propertyId: string, updates: Partial<Property>) => {
@@ -486,8 +513,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     void inquiryService.addReview(rev);
   }, []);
 
-  const addDirectoryProfile = useCallback((prof: Omit<DirectoryProfile, "id">) => {
-    void dealerService.create(prof);
+  const addDirectoryProfile = useCallback(async (prof: Omit<DirectoryProfile, "id">) => {
+    const created = await dealerService.create(prof);
+    setDirectoryProfilesState((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
+    return created;
+  }, []);
+
+  const updateDirectoryProfile = useCallback(
+    async (id: string, updates: Partial<DirectoryProfile>) => {
+      const updated = await dealerService.update(id, updates);
+      setDirectoryProfilesState((prev) => prev.map((p) => (p.id === id ? updated : p)));
+      return updated;
+    },
+    []
+  );
+
+  const deleteDirectoryProfile = useCallback(async (id: string) => {
+    await dealerService.remove(id);
+    setDirectoryProfilesState((prev) => prev.filter((p) => p.id !== id));
   }, []);
 
   const markNotificationRead = useCallback((id: string) => {
@@ -524,9 +567,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addGeneralEnquiry,
       reviews: store.reviews,
       addReview,
-      directoryProfiles: store.directoryProfiles,
+      directoryProfiles,
+      directoryProfilesReady,
+      refreshDirectoryProfiles,
       setDirectoryProfiles,
       addDirectoryProfile,
+      updateDirectoryProfile,
+      deleteDirectoryProfile,
       isLoggedIn,
       setIsLoggedIn,
       userEmail,
@@ -576,8 +623,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setEnquiries,
       addGeneralEnquiry,
       addReview,
+      directoryProfiles,
+      directoryProfilesReady,
+      refreshDirectoryProfiles,
       setDirectoryProfiles,
       addDirectoryProfile,
+      updateDirectoryProfile,
+      deleteDirectoryProfile,
       isLoggedIn,
       setIsLoggedIn,
       userEmail,
