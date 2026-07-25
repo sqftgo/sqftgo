@@ -19,6 +19,9 @@ export type { NotificationRepository } from "./notifications";
 export { visitService, supabaseVisitRepository } from "./visits";
 export type { VisitRepository, VisitCreatePayload, VisitUpdatePayload } from "./visits";
 
+export { messageService, supabaseMessageRepository } from "./messages";
+export type { MessageRepository, MessageThreadCreatePayload } from "./messages";
+
 export {
   getStore,
   patchStore,

@@ -377,6 +377,61 @@ export type SiteVisitInsert = {
 
 export type SiteVisitUpdate = Partial<SiteVisitInsert>;
 
+export type MessageThreadKindDb = "direct" | "support";
+export type MessageThreadStatusDb = "open" | "resolved" | "archived";
+
+export type MessageThreadRow = {
+  id: string;
+  subject: string;
+  created_by: string;
+  participant_ids: string[];
+  property_id: string | null;
+  kind: MessageThreadKindDb;
+  status: MessageThreadStatusDb;
+  last_message_at: string;
+  last_message_preview: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MessageThreadInsert = {
+  id?: string;
+  subject: string;
+  created_by: string;
+  participant_ids: string[];
+  property_id?: string | null;
+  kind?: MessageThreadKindDb;
+  status?: MessageThreadStatusDb;
+  last_message_at?: string;
+  last_message_preview?: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type MessageThreadUpdate = Partial<MessageThreadInsert>;
+
+export type MessageRow = {
+  id: string;
+  thread_id: string;
+  sender_id: string;
+  body: string;
+  created_at: string;
+};
+
+export type MessageInsert = {
+  id?: string;
+  thread_id: string;
+  sender_id: string;
+  body: string;
+  created_at?: string;
+};
+
+export type MessageThreadReadRow = {
+  thread_id: string;
+  user_id: string;
+  last_read_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -483,6 +538,40 @@ export type Database = {
           },
         ];
       };
+      message_threads: {
+        Row: MessageThreadRow;
+        Insert: MessageThreadInsert;
+        Update: MessageThreadUpdate;
+        Relationships: [
+          {
+            foreignKeyName: "message_threads_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      messages: {
+        Row: MessageRow;
+        Insert: MessageInsert;
+        Update: Partial<MessageInsert>;
+        Relationships: [
+          {
+            foreignKeyName: "messages_thread_id_fkey";
+            columns: ["thread_id"];
+            isOneToOne: false;
+            referencedRelation: "message_threads";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      message_thread_reads: {
+        Row: MessageThreadReadRow;
+        Insert: MessageThreadReadRow;
+        Update: Partial<MessageThreadReadRow>;
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -504,6 +593,8 @@ export type Database = {
       notification_type: NotificationTypeDb;
       notification_for_role: NotificationForRoleDb;
       visit_status: VisitStatusDb;
+      message_thread_kind: MessageThreadKindDb;
+      message_thread_status: MessageThreadStatusDb;
     };
     CompositeTypes: {
       [_ in never]: never;

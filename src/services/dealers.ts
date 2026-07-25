@@ -1,6 +1,4 @@
-import { simulateNetwork } from "@/mocks/delay";
 import type { DirectoryProfile } from "@/types";
-import { getStore, type MessageThread, type VisitBooking } from "./store";
 
 export interface DealerFilters {
   city?: string;
@@ -16,8 +14,6 @@ export interface DealerRepository {
   create(profile: Omit<DirectoryProfile, "id">): Promise<DirectoryProfile>;
   update(id: string, updates: Partial<DirectoryProfile>): Promise<DirectoryProfile>;
   remove(id: string): Promise<void>;
-  listMessages(forRole?: MessageThread["forRole"]): Promise<MessageThread[]>;
-  listVisits(): Promise<VisitBooking[]>;
 }
 
 async function apiJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
@@ -51,7 +47,7 @@ function toQuery(filters?: DealerFilters): string {
   return qs ? `?${qs}` : "";
 }
 
-/** Directory profiles hit Supabase; messages stay mock until a later phase. */
+/** Directory profiles hit Supabase. */
 export const supabaseDealerRepository: DealerRepository = {
   async listProfiles(filters) {
     return apiJson<DirectoryProfile[]>(`/api/dealers${toQuery(filters)}`);
@@ -90,17 +86,6 @@ export const supabaseDealerRepository: DealerRepository = {
 
   async remove(id) {
     await apiJson<{ ok: boolean }>(`/api/dealers/${id}`, { method: "DELETE" });
-  },
-
-  async listMessages(forRole) {
-    await simulateNetwork(90);
-    const all = getStore().messages;
-    return forRole ? all.filter((m) => m.forRole === forRole) : [...all];
-  },
-
-  async listVisits() {
-    await simulateNetwork(80);
-    return [...getStore().visits];
   },
 };
 
