@@ -4,7 +4,7 @@ export type { PropertyRepository, PropertyFilters, PropertyCreateInput } from ".
 export { authService, supabaseAuthRepository } from "./auth";
 export type { AuthRepository, AuthSession, AuthRole } from "./auth";
 
-export { inquiryService, mockInquiryRepository } from "./inquiries";
+export { inquiryService, supabaseInquiryRepository } from "./inquiries";
 export type { InquiryRepository } from "./inquiries";
 
 export { dealerService, mockDealerRepository } from "./dealers";

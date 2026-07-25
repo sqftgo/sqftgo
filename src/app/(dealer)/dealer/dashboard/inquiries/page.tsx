@@ -18,19 +18,37 @@ import {
 export default function DealerInquiriesPage() {
   const { properties, userEmail, inquiries, deleteInquiry } = useApp();
   const [search, setSearch] = useState("");
-  const [replyModal, setReplyModal] = useState<any>(null);
+  const [replyModal, setReplyModal] = useState<{
+    id: string;
+    name: string;
+    propertyId: string;
+    propertyTitle: string;
+  } | null>(null);
   const [replyMsg, setReplyMsg] = useState("");
   const [replySent, setReplySent] = useState(false);
-  const [pendingDismiss, setPendingDismiss] = useState<{ propertyId: string; idx: number } | null>(null);
+  const [pendingDismiss, setPendingDismiss] = useState<{ inquiryId: string } | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const myProperties = properties.filter(p => p.ownerEmail?.toLowerCase() === userEmail.toLowerCase());
+  const myProperties = properties.filter(
+    (p) => p.ownerEmail?.toLowerCase() === userEmail.toLowerCase()
+  );
 
   const allInquiries = useMemo(() => {
-    return myProperties.flatMap(p =>
-      (inquiries[p.id] || []).map((inq, idx) => ({
-        ...inq, propertyId: p.id, propertyTitle: p.title, propertyImage: p.images?.[0], idx
-      }))
-    ).filter(inq => !search || inq.name.toLowerCase().includes(search.toLowerCase()) || inq.propertyTitle.toLowerCase().includes(search.toLowerCase()))
+    return myProperties
+      .flatMap((p) =>
+        (inquiries[p.id] || []).map((inq) => ({
+          ...inq,
+          propertyId: p.id,
+          propertyTitle: p.title,
+          propertyImage: p.images?.[0],
+        }))
+      )
+      .filter(
+        (inq) =>
+          !search ||
+          inq.name.toLowerCase().includes(search.toLowerCase()) ||
+          inq.propertyTitle.toLowerCase().includes(search.toLowerCase())
+      )
       .sort((a, b) => b.date.localeCompare(a.date));
   }, [myProperties, inquiries, search]);
 
@@ -40,18 +58,29 @@ export default function DealerInquiriesPage() {
     setReplyMsg("");
   };
 
-  const handleReply = () => {
+  const handleReply = async () => {
+    if (!replyModal?.id || busy) return;
     setReplySent(true);
-    setTimeout(() => {
-      deleteInquiry(replyModal.propertyId, replyModal.idx);
+    setBusy(true);
+    try {
+      await deleteInquiry(replyModal.id);
       closeReply();
-    }, 1500);
+    } catch {
+      setReplySent(false);
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const confirmDismiss = () => {
-    if (!pendingDismiss) return;
-    deleteInquiry(pendingDismiss.propertyId, pendingDismiss.idx);
-    setPendingDismiss(null);
+  const confirmDismiss = async () => {
+    if (!pendingDismiss?.inquiryId || busy) return;
+    setBusy(true);
+    try {
+      await deleteInquiry(pendingDismiss.inquiryId);
+      setPendingDismiss(null);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -79,7 +108,7 @@ export default function DealerInquiriesPage() {
         <div className="grid grid-cols-1 gap-4">
           {allInquiries.map((inq, i) => (
             <motion.div
-              key={`${inq.propertyId}-${inq.idx}`}
+              key={inq.id ?? `${inq.propertyId}-${inq.email}-${inq.date}-${i}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
@@ -111,8 +140,16 @@ export default function DealerInquiriesPage() {
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={() => setReplyModal(inq)}
+                  onClick={() =>
+                    setReplyModal({
+                      id: inq.id!,
+                      name: inq.name,
+                      propertyId: inq.propertyId,
+                      propertyTitle: inq.propertyTitle,
+                    })
+                  }
                   className="uppercase tracking-wider"
+                  disabled={!inq.id}
                 >
                   <Send className="w-3.5 h-3.5" />
                   Reply
@@ -128,7 +165,14 @@ export default function DealerInquiriesPage() {
                   items={[
                     { id: "call", label: `Call: ${inq.phone}`, href: `tel:${inq.phone}`, icon: Phone },
                     { id: "email", label: `Email: ${inq.email}`, href: `mailto:${inq.email}`, icon: Mail },
-                    { id: "dismiss", label: "Dismiss Inquiry", onClick: () => setPendingDismiss({ propertyId: inq.propertyId, idx: inq.idx }), icon: Trash2, variant: "danger", dividerBefore: true }
+                    {
+                      id: "dismiss",
+                      label: "Dismiss Inquiry",
+                      onClick: () => inq.id && setPendingDismiss({ inquiryId: inq.id }),
+                      icon: Trash2,
+                      variant: "danger",
+                      dividerBefore: true,
+                    },
                   ]}
                 />
               </div>
@@ -150,8 +194,8 @@ export default function DealerInquiriesPage() {
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={handleReply}
-                disabled={!replyMsg}
+                onClick={() => void handleReply()}
+                disabled={!replyMsg || busy}
                 className="uppercase tracking-wider"
               >
                 <Send className="w-3.5 h-3.5" />
@@ -179,7 +223,7 @@ export default function DealerInquiriesPage() {
       <ConfirmDialog
         open={Boolean(pendingDismiss)}
         onClose={() => setPendingDismiss(null)}
-        onConfirm={confirmDismiss}
+        onConfirm={() => void confirmDismiss()}
         title="Dismiss inquiry?"
         description="Dismiss this inquiry? It will be removed from your inbox."
         confirmLabel="Dismiss"

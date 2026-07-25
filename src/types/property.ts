@@ -1,9 +1,11 @@
 export interface PropertyInquiry {
+  id?: string;
   name: string;
   email: string;
   phone: string;
   message: string;
   date: string;
+  status?: "new" | "read" | "archived";
 }
 
 export interface Property {

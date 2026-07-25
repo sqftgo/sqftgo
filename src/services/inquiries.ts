@@ -1,12 +1,16 @@
-import { simulateNetwork } from "@/mocks/delay";
 import type { AssistanceRequest, CustomerReview, GeneralEnquiry, PropertyInquiry } from "@/types";
 import { getStore, patchStore } from "./store";
+import { simulateNetwork } from "@/mocks/delay";
+import type { PropertyInquiryView } from "@/lib/mappers/inquiry";
 
 export interface InquiryRepository {
   listByProperty(propertyId: string): Promise<PropertyInquiry[]>;
   listAll(): Promise<Record<string, PropertyInquiry[]>>;
-  submit(propertyId: string, inquiry: Omit<PropertyInquiry, "date">): Promise<PropertyInquiry>;
+  listFlat(opts?: { mine?: boolean }): Promise<PropertyInquiryView[]>;
+  submit(propertyId: string, inquiry: Omit<PropertyInquiry, "date" | "id" | "status">): Promise<PropertyInquiry>;
   remove(propertyId: string, index: number): Promise<void>;
+  removeById(inquiryId: string): Promise<void>;
+  updateStatus(inquiryId: string, status: "new" | "read" | "archived"): Promise<PropertyInquiryView>;
   listAssistance(): Promise<AssistanceRequest[]>;
   addAssistance(req: Omit<AssistanceRequest, "id" | "status">): Promise<AssistanceRequest>;
   listEnquiries(): Promise<GeneralEnquiry[]>;
@@ -15,45 +19,103 @@ export interface InquiryRepository {
   addReview(rev: Omit<CustomerReview, "id" | "date">): Promise<CustomerReview>;
 }
 
-export const mockInquiryRepository: InquiryRepository = {
+async function apiJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
+  const res = await fetch(input, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init?.headers ?? {}),
+    },
+    credentials: "same-origin",
+  });
+  const data = (await res.json().catch(() => ({}))) as T & { error?: string };
+  if (!res.ok) {
+    throw new Error(
+      typeof data === "object" && data && "error" in data && data.error
+        ? String(data.error)
+        : "Request failed"
+    );
+  }
+  return data;
+}
+
+function toRecord(rows: PropertyInquiryView[]): Record<string, PropertyInquiry[]> {
+  const out: Record<string, PropertyInquiry[]> = {};
+  for (const row of rows) {
+    const entry: PropertyInquiry = {
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      phone: row.phone,
+      message: row.message,
+      date: row.date,
+      status: row.status,
+    };
+    if (!out[row.propertyId]) out[row.propertyId] = [];
+    out[row.propertyId].push(entry);
+  }
+  return out;
+}
+
+/** Property-inquiry methods hit Supabase APIs; assistance/enquiries/reviews stay mock until later phases. */
+export const supabaseInquiryRepository: InquiryRepository = {
   async listByProperty(propertyId) {
-    await simulateNetwork(80);
-    return [...(getStore().inquiries[propertyId] ?? [])];
+    const rows = await apiJson<PropertyInquiryView[]>(`/api/properties/${propertyId}/inquiries`);
+    return rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      email: r.email,
+      phone: r.phone,
+      message: r.message,
+      date: r.date,
+      status: r.status,
+    }));
   },
 
   async listAll() {
-    await simulateNetwork(80);
-    return structuredClone(getStore().inquiries);
+    const rows = await apiJson<PropertyInquiryView[]>("/api/inquiries");
+    return toRecord(rows);
+  },
+
+  async listFlat(opts) {
+    const qs = opts?.mine ? "?mine=1" : "";
+    return apiJson<PropertyInquiryView[]>(`/api/inquiries${qs}`);
   },
 
   async submit(propertyId, inquiry) {
-    await simulateNetwork(160);
-    const entry: PropertyInquiry = {
-      ...inquiry,
-      date: new Date().toISOString().split("T")[0],
+    const created = await apiJson<PropertyInquiryView>(`/api/properties/${propertyId}/inquiries`, {
+      method: "POST",
+      body: JSON.stringify({
+        name: inquiry.name,
+        email: inquiry.email,
+        phone: inquiry.phone,
+        message: inquiry.message,
+      }),
+    });
+    return {
+      id: created.id,
+      name: created.name,
+      email: created.email,
+      phone: created.phone,
+      message: created.message,
+      date: created.date,
+      status: created.status,
     };
-    const inquiries = {
-      ...getStore().inquiries,
-      [propertyId]: [...(getStore().inquiries[propertyId] ?? []), entry],
-    };
-    const properties = getStore().properties.map((p) =>
-      p.id === propertyId ? { ...p, inquiryCount: p.inquiryCount + 1 } : p
-    );
-    patchStore({ inquiries, properties });
-    return entry;
   },
 
-  async remove(propertyId, index) {
-    await simulateNetwork(100);
-    const existing = getStore().inquiries[propertyId] ?? [];
-    const updated = existing.filter((_, i) => i !== index);
-    const inquiries = { ...getStore().inquiries, [propertyId]: updated };
-    const properties = getStore().properties.map((p) =>
-      p.id === propertyId
-        ? { ...p, inquiryCount: Math.max(0, p.inquiryCount - 1) }
-        : p
-    );
-    patchStore({ inquiries, properties });
+  async remove(_propertyId, _index) {
+    throw new Error("Use removeById with the inquiry id");
+  },
+
+  async removeById(inquiryId) {
+    await apiJson<{ ok: boolean }>(`/api/inquiries/${inquiryId}`, { method: "DELETE" });
+  },
+
+  async updateStatus(inquiryId, status) {
+    return apiJson<PropertyInquiryView>(`/api/inquiries/${inquiryId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
   },
 
   async listAssistance() {
@@ -105,4 +167,4 @@ export const mockInquiryRepository: InquiryRepository = {
   },
 };
 
-export const inquiryService: InquiryRepository = mockInquiryRepository;
+export const inquiryService: InquiryRepository = supabaseInquiryRepository;
