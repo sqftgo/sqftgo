@@ -7,7 +7,6 @@ export const ROUTES = {
   register: "/register",
   forgotPassword: "/forgot-password",
   favorites: "/favorites",
-  compare: "/compare",
   destinations: "/destinations",
   dealers: "/dealers",
   services: "/services",
