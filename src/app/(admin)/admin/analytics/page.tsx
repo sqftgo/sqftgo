@@ -49,7 +49,7 @@ type InquiryRow = {
 };
 
 export default function AdminAnalyticsPage() {
-  const { properties, mockUsers, inquiries, enquiries } = useApp();
+  const { properties, adminUsers, inquiries, enquiries } = useApp();
   
   const [cityFilter, setCityFilter] = useState("all");
   const [activeBarIdx, setActiveBarIdx] = useState<number | null>(null);
@@ -174,7 +174,7 @@ export default function AdminAnalyticsPage() {
       <KpiGrid>
         <StatCard
           label="Total Sourced Users"
-          value={mockUsers.length}
+          value={adminUsers.length}
           hint="Active dealers & clients"
           tone="indigo"
           icon={<Users className="w-4 h-4" />}

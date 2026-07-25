@@ -31,7 +31,5 @@ export {
   subscribeStore,
   resetStore,
   type AppStore,
-  type MessageThread,
-  type VisitBooking,
   type SessionSnapshot,
 } from "./store";

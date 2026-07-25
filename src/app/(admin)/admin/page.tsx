@@ -14,10 +14,10 @@ import {
 } from "@/components/ui";
 
 export default function AdminDashboardPage() {
-  const { properties, mockUsers, directoryProfiles, inquiries, enquiries, activityLogs } = useApp();
+  const { properties, adminUsers, directoryProfiles, inquiries, enquiries, activityLogs } = useApp();
 
-  const totalUsers = mockUsers.filter(u => u.role === "user").length;
-  const totalDealers = mockUsers.filter(u => u.role === "broker").length;
+  const totalUsers = adminUsers.filter(u => u.role === "user").length;
+  const totalDealers = adminUsers.filter(u => u.role === "broker").length;
   const totalProperties = properties.length;
   const pendingApprovals = properties.filter(p => p.status === "Pending Review").length;
   const activeProperties = properties.filter(p => p.status === "Active").length;

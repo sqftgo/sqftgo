@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Bell,
   CheckCheck,
@@ -23,6 +23,7 @@ import {
   Button,
   Panel,
 } from "@/components/ui";
+import { readNotificationPrefs, writeNotificationPrefs } from "@/lib/notificationPrefs";
 
 export type NotificationRole = "admin" | "broker" | "all";
 
@@ -47,6 +48,8 @@ export interface NotificationsPageShellProps {
   notifications: DashboardNotification[];
   preferences: NotificationPrefItem[];
   initialPrefs: Record<string, boolean>;
+  /** When set, preference toggles hydrate/persist via localStorage for this key. */
+  prefsStorageKey?: string;
   unreadLabel?: (count: number) => string;
   preferencesTitle?: string;
   preferencesDescription?: string;
@@ -130,6 +133,7 @@ export function NotificationsPageShell({
   notifications,
   preferences,
   initialPrefs,
+  prefsStorageKey,
   unreadLabel = (n) => `${n} unread alerts requiring your attention`,
   preferencesTitle = "Configure Alert Preferences",
   preferencesDescription = "Customize when you receive push dashboard updates.",
@@ -141,6 +145,27 @@ export function NotificationsPageShell({
 }: NotificationsPageShellProps) {
   const [preferencesOpen, setPreferencesOpen] = useState(false);
   const [prefForm, setPrefForm] = useState(initialPrefs);
+  const [prefsReady, setPrefsReady] = useState(!prefsStorageKey);
+
+  useEffect(() => {
+    if (!prefsStorageKey) {
+      setPrefForm(initialPrefs);
+      setPrefsReady(true);
+      return;
+    }
+    setPrefForm(readNotificationPrefs(prefsStorageKey, initialPrefs));
+    setPrefsReady(true);
+    // initialPrefs is a stable defaults object from the page; hydrate once per storage key.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefsStorageKey]);
+
+  const updatePref = (key: string, checked: boolean) => {
+    setPrefForm((prev) => {
+      const next = { ...prev, [key]: checked };
+      if (prefsStorageKey) writeNotificationPrefs(prefsStorageKey, next);
+      return next;
+    });
+  };
 
   const filtered = notifications.filter(
     (n) => n.forRole === roleFilter || n.forRole === "all"
@@ -232,9 +257,8 @@ export function NotificationsPageShell({
                       size="sm"
                       accent={accent}
                       checked={Boolean(prefForm[key])}
-                      onCheckedChange={(checked) =>
-                        setPrefForm((prev) => ({ ...prev, [key]: checked }))
-                      }
+                      disabled={!prefsReady}
+                      onCheckedChange={(checked) => updatePref(key, checked)}
                       aria-label={label}
                     />
                   </div>

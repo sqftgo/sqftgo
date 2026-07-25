@@ -3,7 +3,6 @@ export {
   initialAssistanceRequests,
   initialInquiries,
   initialEnquiries,
-  initialReviews,
 } from "./inquiries";
 export { directoryProfiles } from "./directory";
 export {

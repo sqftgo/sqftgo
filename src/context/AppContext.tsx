@@ -23,7 +23,6 @@ import type {
   MockUser,
   AssistanceRequest,
   GeneralEnquiry,
-  CustomerReview,
   DirectoryProfile,
   PropertyInquiry,
   VisitBooking,
@@ -53,7 +52,6 @@ export type {
   MockUser,
   AssistanceRequest,
   GeneralEnquiry,
-  CustomerReview,
   DirectoryProfile,
   PropertyInquiry,
   VisitBooking,
@@ -103,8 +101,6 @@ interface AppContextType {
     enquiry: Omit<GeneralEnquiry, "id" | "date"> & { payload?: Record<string, unknown> }
   ) => Promise<GeneralEnquiry>;
   deleteGeneralEnquiry: (id: string) => Promise<void>;
-  reviews: CustomerReview[];
-  addReview: (review: Omit<CustomerReview, "id" | "date">) => void;
   directoryProfiles: DirectoryProfile[];
   directoryProfilesReady: boolean;
   refreshDirectoryProfiles: () => Promise<void>;
@@ -198,8 +194,8 @@ interface AppContextType {
   logsReady: boolean;
   refreshLogs: () => Promise<void>;
   addLog: (log: Omit<ActivityLog, "id" | "timestamp">) => void;
-  mockUsers: MockUser[];
-  setMockUsers: React.Dispatch<React.SetStateAction<MockUser[]>>;
+  adminUsers: MockUser[];
+  setAdminUsers: React.Dispatch<React.SetStateAction<MockUser[]>>;
   compareList: string[];
   setCompareList: React.Dispatch<React.SetStateAction<string[]>>;
   toggleCompare: (id: string) => void;
@@ -854,10 +850,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
-  const setMockUsers: React.Dispatch<React.SetStateAction<MockUser[]>> = useCallback((action) => {
-    const current = getStore().mockUsers;
+  const setAdminUsers: React.Dispatch<React.SetStateAction<MockUser[]>> = useCallback((action) => {
+    const current = getStore().adminUsers;
     const next = typeof action === "function" ? action(current) : action;
-    patchStore({ mockUsers: next });
+    patchStore({ adminUsers: next });
   }, []);
 
   const addAssistanceRequest = useCallback(async (req: Omit<AssistanceRequest, "id" | "status">) => {
@@ -973,10 +969,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const deleteGeneralEnquiry = useCallback(async (id: string) => {
     await inquiryService.removeEnquiry(id);
     setEnquiriesState((prev) => prev.filter((e) => e.id !== id));
-  }, []);
-
-  const addReview = useCallback((rev: Omit<CustomerReview, "id" | "date">) => {
-    void inquiryService.addReview(rev);
   }, []);
 
   const addDirectoryProfile = useCallback(async (prof: Omit<DirectoryProfile, "id">) => {
@@ -1097,8 +1089,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setEnquiries,
       addGeneralEnquiry,
       deleteGeneralEnquiry,
-      reviews: store.reviews,
-      addReview,
       directoryProfiles,
       directoryProfilesReady,
       refreshDirectoryProfiles,
@@ -1154,8 +1144,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       logsReady,
       refreshLogs,
       addLog,
-      mockUsers: store.mockUsers,
-      setMockUsers,
+      adminUsers: store.adminUsers,
+      setAdminUsers,
       compareList,
       setCompareList,
       toggleCompare,
@@ -1195,7 +1185,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setEnquiries,
       addGeneralEnquiry,
       deleteGeneralEnquiry,
-      addReview,
       directoryProfiles,
       directoryProfilesReady,
       refreshDirectoryProfiles,
@@ -1250,7 +1239,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       logsReady,
       refreshLogs,
       addLog,
-      setMockUsers,
+      setAdminUsers,
       compareList,
       toggleCompare,
       logout,

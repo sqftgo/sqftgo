@@ -21,7 +21,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export default function AdminUsersPage() {
-  const { mockUsers, setMockUsers, addLog, userEmail } = useApp();
+  const { adminUsers, setAdminUsers, addLog, userEmail } = useApp();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -34,15 +34,15 @@ export default function AdminUsersPage() {
       try {
         const { authService } = await import("@/services/auth");
         const users = await authService.listUsers();
-        if (!cancelled) setMockUsers(users);
+        if (!cancelled) setAdminUsers(users);
       } catch {
-        // Keep existing mock/local data if admin API is unavailable
+        // Keep existing admin user cache if admin API is unavailable
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [setMockUsers]);
+  }, [setAdminUsers]);
 
   const roleOptions = useMemo(() => ["All", "user", "broker", "admin"].map(r => ({
     label: r === "All" ? "All Roles" : r.charAt(0).toUpperCase() + r.slice(1),
@@ -54,7 +54,7 @@ export default function AdminUsersPage() {
     value: s
   })), []);
 
-  const filtered = mockUsers.filter(u => {
+  const filtered = adminUsers.filter(u => {
     const matchSearch = !search || u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
     const matchRole = roleFilter === "All" || u.role === roleFilter;
     const matchStatus = statusFilter === "All" || u.status === statusFilter;
@@ -67,7 +67,7 @@ export default function AdminUsersPage() {
     try {
       const { authService } = await import("@/services/auth");
       const updated = await authService.updateUser(id, { status: next as "active" | "suspended" });
-      setMockUsers(prev => prev.map(u => u.id === id ? updated : u));
+      setAdminUsers(prev => prev.map(u => u.id === id ? updated : u));
       addLog({ action: `User ${next === "suspended" ? "Suspended" : "Activated"}`, performedBy: userEmail, role: "Admin", target: name });
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Unable to update user status");
@@ -79,7 +79,7 @@ export default function AdminUsersPage() {
     try {
       const { authService } = await import("@/services/auth");
       const updated = await authService.updateUser(id, { role });
-      setMockUsers(prev => prev.map(u => u.id === id ? updated : u));
+      setAdminUsers(prev => prev.map(u => u.id === id ? updated : u));
       addLog({ action: "User Role Changed", performedBy: userEmail, role: "Admin", target: `${name} → ${role}` });
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Unable to change role");
@@ -184,7 +184,7 @@ export default function AdminUsersPage() {
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
       <DashboardPageHeader
         title="User Management"
-        description={`${mockUsers.length} registered users`}
+        description={`${adminUsers.length} registered users`}
       />
       {actionError ? (
         <p className="text-sm font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-4 py-3">
