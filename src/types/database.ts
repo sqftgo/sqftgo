@@ -42,6 +42,11 @@ export type DirectoryCategoryDb =
   | "Home Valuation/Inspection"
   | "Home Shifting/Deep Cleaning";
 
+export type AssistanceStatusDb =
+  | "Received"
+  | "Assigned to Agent"
+  | "Properties Suggested";
+
 export type ProfileRow = {
   id: string;
   email: string;
@@ -229,6 +234,72 @@ export type DirectoryProfileInsert = {
 
 export type DirectoryProfileUpdate = Partial<DirectoryProfileInsert>;
 
+export type AssistanceRequestRow = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  budget: string;
+  areas: string[];
+  bhk: string;
+  family_size: number;
+  move_in_date: string;
+  notes: string;
+  status: AssistanceStatusDb;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AssistanceRequestInsert = {
+  id?: string;
+  name: string;
+  email: string;
+  phone: string;
+  budget?: string;
+  areas?: string[];
+  bhk?: string;
+  family_size?: number;
+  move_in_date?: string;
+  notes?: string;
+  status?: AssistanceStatusDb;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type AssistanceRequestUpdate = Partial<AssistanceRequestInsert>;
+
+export type GeneralEnquiryRow = {
+  id: string;
+  name: string;
+  city: string;
+  property_type: string;
+  budget: string;
+  email: string;
+  mobile: string;
+  remarks: string;
+  message: string | null;
+  payload: Json | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type GeneralEnquiryInsert = {
+  id?: string;
+  name: string;
+  city?: string;
+  property_type?: string;
+  budget?: string;
+  email: string;
+  mobile: string;
+  remarks?: string;
+  message?: string | null;
+  payload?: Json | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type GeneralEnquiryUpdate = Partial<GeneralEnquiryInsert>;
+
 export type Database = {
   public: {
     Tables: {
@@ -288,6 +359,18 @@ export type Database = {
           },
         ];
       };
+      assistance_requests: {
+        Row: AssistanceRequestRow;
+        Insert: AssistanceRequestInsert;
+        Update: AssistanceRequestUpdate;
+        Relationships: [];
+      };
+      general_enquiries: {
+        Row: GeneralEnquiryRow;
+        Insert: GeneralEnquiryInsert;
+        Update: GeneralEnquiryUpdate;
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -305,6 +388,7 @@ export type Database = {
       property_status: PropertyStatusDb;
       inquiry_status: InquiryStatusDb;
       directory_category: DirectoryCategoryDb;
+      assistance_status: AssistanceStatusDb;
     };
     CompositeTypes: {
       [_ in never]: never;

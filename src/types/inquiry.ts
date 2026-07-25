@@ -23,6 +23,7 @@ export interface GeneralEnquiry {
   remarks: string;
   message?: string;
   date: string;
+  payload?: Record<string, unknown> | null;
 }
 
 export interface CustomerReview {

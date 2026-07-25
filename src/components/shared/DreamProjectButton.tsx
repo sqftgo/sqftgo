@@ -8,6 +8,7 @@ import {
   Home, MapPin, Building2, Wallet, CalendarDays, UploadCloud 
 } from "lucide-react";
 import { StepProgress } from "@/components/ui";
+import { useApp } from "@/context/AppContext";
 
 const STEPS = [
   "Basic Details",
@@ -15,7 +16,7 @@ const STEPS = [
   "Home Requirements",
   "Amenities & Lifestyle",
   "Dream Description",
-  "Inspiration & Submit"
+  "Contact & Submit"
 ];
 
 const PROPERTY_TYPES = ["Apartment", "Villa", "Independent House", "Farmhouse", "Penthouse", "Plot/Land", "Commercial Space", "Other"];
@@ -32,10 +33,14 @@ const MATTERS_MOST = ["Location", "Budget", "Safety", "Schools Nearby", "Public 
 export default function DreamProjectButton() {
   const pathname = usePathname();
   const isDashboardRoute = pathname.startsWith("/dealer/") || pathname.startsWith("/admin");
+  const { addGeneralEnquiry, isLoggedIn, userEmail, userName, userProfile } = useApp();
   
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -57,18 +62,29 @@ export default function DreamProjectButton() {
     mattersMost: [] as string[],
     description: "",
     files: [] as File[],
+    contactName: "",
+    contactEmail: "",
+    contactPhone: "",
   });
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Reset form when modal opens
+  // Reset form when modal opens; prefill contact from session when available
   useEffect(() => {
     if (isOpen) {
       setCurrentStep(0);
+      setSubmitError(null);
+      setIsSuccess(false);
+      setFormData((prev) => ({
+        ...prev,
+        contactName: isLoggedIn ? userName || prev.contactName : prev.contactName,
+        contactEmail: isLoggedIn ? userEmail || prev.contactEmail : prev.contactEmail,
+        contactPhone: isLoggedIn ? userProfile?.phone || prev.contactPhone : prev.contactPhone,
+      }));
     }
-  }, [isOpen]);
+  }, [isOpen, isLoggedIn, userName, userEmail, userProfile?.phone]);
 
   const updateForm = (key: string, value: string | string[] | File[]) => {
     setFormData(prev => ({ ...prev, [key]: value }));
@@ -94,10 +110,53 @@ export default function DreamProjectButton() {
     if (currentStep > 0) setCurrentStep(prev => prev - 1);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert("Dream Project Submitted! We will contact you soon.");
-    setIsOpen(false);
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (isSubmitting) return;
+    setSubmitError(null);
+    setIsSubmitting(true);
+    try {
+      const messageParts = [
+        formData.whoWillLive && `Who: ${formData.whoWillLive}`,
+        formData.whenPlanning && `When: ${formData.whenPlanning}`,
+        formData.bedrooms && `BHK: ${formData.bedrooms}`,
+        formData.area && `Area: ${formData.area}`,
+        formData.description && `Vision: ${formData.description}`,
+      ].filter(Boolean);
+
+      await addGeneralEnquiry({
+        name: formData.contactName.trim(),
+        email: formData.contactEmail.trim().toLowerCase(),
+        mobile: formData.contactPhone.trim(),
+        city: formData.city.trim() || "Udaipur",
+        propertyType: formData.propertyType || "Other",
+        budget: formData.budget || "",
+        remarks: formData.description.trim() || "Dream Project submission",
+        message: messageParts.join(" · ") || undefined,
+        payload: {
+          source: "dream_project",
+          whoWillLive: formData.whoWillLive,
+          whenPlanning: formData.whenPlanning,
+          alreadyOwn: formData.alreadyOwn,
+          needFinancing: formData.needFinancing,
+          country: formData.country,
+          area: formData.area,
+          landmarks: formData.landmarks,
+          bedrooms: formData.bedrooms,
+          size: formData.size,
+          style: formData.style,
+          amenities: formData.amenities,
+          features: formData.features,
+          mattersMost: formData.mattersMost,
+        },
+      });
+      setIsSuccess(true);
+      setTimeout(() => setIsOpen(false), 1600);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Unable to submit. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isDashboardRoute) return null;
@@ -525,34 +584,78 @@ export default function DreamProjectButton() {
                         </div>
                       )}
 
-                      {/* --- STEP 6: Inspiration & Submit --- */}
+                      {/* --- STEP 6: Contact & Submit --- */}
                       {currentStep === 5 && (
                         <div className="space-y-6">
                           <h3 className="text-xl font-serif font-black text-indigo flex items-center gap-2">
                             <UploadCloud className="w-5 h-5 text-terracotta" />
-                            Upload Inspiration <span className="text-xs sm:text-sm font-sans font-medium text-charcoal/50">(Optional)</span>
+                            Contact & Submit
                           </h3>
 
                           <p className="text-xs sm:text-sm font-medium text-charcoal/70">
-                            Have photos, floor plans, or Pinterest boards? Upload them here to give us a better idea of your style.
+                            How should our concierge team reach you? Inspiration uploads come in a later release.
                           </p>
 
-                          <div className="w-full h-40 border-2 border-dashed border-sand hover:border-terracotta/50 bg-sand/10 rounded-2xl flex flex-col items-center justify-center gap-2.5 transition-colors cursor-pointer group">
-                            <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                              <Upload className="w-4 h-4 text-terracotta" />
-                            </div>
-                            <div className="text-center">
-                              <span className="text-xs sm:text-sm font-bold text-indigo block">Click to upload or drag and drop</span>
-                              <span className="text-[10px] sm:text-xs text-charcoal/50 font-medium">SVG, PNG, JPG or PDF (max. 10MB)</span>
-                            </div>
+                          <div className="space-y-3">
+                            <label className="text-xs sm:text-sm font-bold text-charcoal block">Full name</label>
+                            <input
+                              type="text"
+                              required
+                              value={formData.contactName}
+                              onChange={(e) => updateForm("contactName", e.target.value)}
+                              placeholder="e.g. Rahul Sharma"
+                              className="w-full px-3 py-2.5 rounded-xl bg-white border border-sand focus:ring-2 focus:ring-terracotta/50 focus:border-terracotta outline-none transition-all text-sm font-medium"
+                            />
+                          </div>
+                          <div className="space-y-3">
+                            <label className="text-xs sm:text-sm font-bold text-charcoal block">Email</label>
+                            <input
+                              type="email"
+                              required
+                              value={formData.contactEmail}
+                              onChange={(e) => updateForm("contactEmail", e.target.value)}
+                              placeholder="e.g. rahul@example.com"
+                              className="w-full px-3 py-2.5 rounded-xl bg-white border border-sand focus:ring-2 focus:ring-terracotta/50 focus:border-terracotta outline-none transition-all text-sm font-medium"
+                            />
+                          </div>
+                          <div className="space-y-3">
+                            <label className="text-xs sm:text-sm font-bold text-charcoal block">Phone</label>
+                            <input
+                              type="tel"
+                              required
+                              value={formData.contactPhone}
+                              onChange={(e) => updateForm("contactPhone", e.target.value)}
+                              placeholder="e.g. +91 98765 43210"
+                              className="w-full px-3 py-2.5 rounded-xl bg-white border border-sand focus:ring-2 focus:ring-terracotta/50 focus:border-terracotta outline-none transition-all text-sm font-medium"
+                            />
                           </div>
 
-                          <div className="bg-terracotta/5 border border-terracotta/20 rounded-2xl p-4 mt-4">
-                            <h4 className="font-bold text-xs sm:text-sm text-indigo mb-1">Ready to submit?</h4>
-                            <p className="text-[11px] sm:text-xs text-charcoal/70">
-                              Our concierge team will review your requirements and reach out within 24 hours with curated property matches.
-                            </p>
+                          <div className="w-full h-28 border-2 border-dashed border-sand bg-sand/10 rounded-2xl flex flex-col items-center justify-center gap-2 opacity-60">
+                            <Upload className="w-4 h-4 text-terracotta" />
+                            <span className="text-[10px] sm:text-xs text-charcoal/50 font-medium">Inspiration uploads coming soon</span>
                           </div>
+
+                          {submitError ? (
+                            <p className="text-xs font-semibold text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+                              {submitError}
+                            </p>
+                          ) : null}
+
+                          {isSuccess ? (
+                            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+                              <h4 className="font-bold text-xs sm:text-sm text-emerald-800 mb-1">Submitted!</h4>
+                              <p className="text-[11px] sm:text-xs text-emerald-700">
+                                Our concierge team will review your Dream Project and reach out within 24 hours.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="bg-terracotta/5 border border-terracotta/20 rounded-2xl p-4">
+                              <h4 className="font-bold text-xs sm:text-sm text-indigo mb-1">Ready to submit?</h4>
+                              <p className="text-[11px] sm:text-xs text-charcoal/70">
+                                Our concierge team will review your requirements and reach out with curated property matches.
+                              </p>
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -584,10 +687,17 @@ export default function DreamProjectButton() {
                     </button>
                   ) : (
                     <button
-                      onClick={handleSubmit}
-                      className="flex items-center gap-1.5 px-5 py-2 sm:px-6 sm:py-2.5 rounded-xl bg-indigo hover:bg-indigo-hover text-white font-bold text-xs sm:text-sm shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5"
+                      onClick={() => void handleSubmit()}
+                      disabled={
+                        isSubmitting ||
+                        isSuccess ||
+                        !formData.contactName.trim() ||
+                        !formData.contactEmail.trim() ||
+                        !formData.contactPhone.trim()
+                      }
+                      className="flex items-center gap-1.5 px-5 py-2 sm:px-6 sm:py-2.5 rounded-xl bg-indigo hover:bg-indigo-hover text-white font-bold text-xs sm:text-sm shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-55 disabled:pointer-events-none"
                     >
-                      Submit
+                      {isSubmitting ? "Submitting..." : "Submit"}
                       <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                   )}

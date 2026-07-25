@@ -98,7 +98,7 @@ export default function AdminReportsPage() {
               <Avatar name={enq.name} size="sm" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-charcoal">{enq.name}</p>
-                <p className="text-[10px] text-charcoal/50 font-semibold truncate">{enq.message?.slice(0, 60)}...</p>
+                <p className="text-[10px] text-charcoal/50 font-semibold truncate">{(enq.message || enq.remarks || "").slice(0, 60)}{(enq.message || enq.remarks || "").length > 60 ? "..." : ""}</p>
               </div>
               <span className="text-[9px] text-charcoal/40 font-semibold shrink-0">{enq.date}</span>
             </div>
