@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { useApp } from "@/context/AppContext";
+import { isAgentOrConsultantCategory } from "@/features/dealers";
 import { Users, Building2, MessageSquare, Download } from "lucide-react";
 import {
   DashboardPageHeader,
@@ -18,7 +19,9 @@ export default function AdminReportsPage() {
   const totalInquiries = Object.values(inquiries).reduce((a, b) => a + b.length, 0);
   const totalEnquiries = enquiries.length;
   const activeProperties = properties.filter(p => p.status === "Active").length;
-  const totalDealers = directoryProfiles.filter(p => p.category === "Agent & Broker" || p.category === "Property Consultant").length;
+  const totalDealers = directoryProfiles.filter((p) =>
+    isAgentOrConsultantCategory(p.category)
+  ).length;
 
   const cityReport = properties.reduce((acc: Record<string, number>, p) => {
     acc[p.city] = (acc[p.city] || 0) + 1;
