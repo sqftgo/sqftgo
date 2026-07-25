@@ -26,23 +26,25 @@ import {
   Panel,
   Button,
 } from "@/components/ui";
+import { findMyDirectoryProfile, filterMyProperties } from "@/lib/ownership";
 
 export default function DealerDashboardPage() {
   const {
     properties,
     inquiries,
     userEmail,
+    userProfile,
     directoryProfiles,
     visits,
     updateVisit,
   } = useApp();
 
-  const brokerProfile = directoryProfiles.find(
-    (p) => p.email.toLowerCase() === userEmail.toLowerCase()
+  const brokerProfile = findMyDirectoryProfile(
+    directoryProfiles,
+    userProfile?.id,
+    userEmail
   );
-  const myProperties = properties.filter(
-    (p) => p.ownerEmail?.toLowerCase() === userEmail.toLowerCase()
-  );
+  const myProperties = filterMyProperties(properties, userProfile?.id, userEmail);
 
   const activeProps = myProperties.filter((p) => p.status === "Active");
 

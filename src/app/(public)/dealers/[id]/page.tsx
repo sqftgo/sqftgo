@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
@@ -15,35 +15,43 @@ import {
   Star, 
   ShieldCheck, 
   BadgeCheck, 
-  MessageSquare,
   AlertCircle,
-  CheckCircle2
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { PropertyCard } from "@/components/ui";
+import { filterDealerListings } from "@/lib/ownership";
 
 export default function DealerProfilePage() {
   const params = useParams();
   const router = useRouter();
-  const { directoryProfiles, properties } = useApp();
-  const [messageSent, setMessageSent] = useState(false);
+  const { directoryProfiles, properties, directoryProfilesReady, directoryProfilesError } = useApp();
 
   const profileId = params.id as string;
   const profile = directoryProfiles.find(p => p.id === profileId);
 
   const brokerProperties = React.useMemo(() => {
     if (!profile) return [];
-    const directMatches = properties.filter(
-      p => (p.ownerEmail && p.ownerEmail.toLowerCase() === profile.email.toLowerCase()) || 
-           p.ownerPhone === profile.mobile
-    );
-    if (directMatches.length > 0) {
-      return directMatches.filter(p => p.status === "Active");
-    }
-    return properties.filter(
-      p => p.city.toLowerCase() === profile.city.toLowerCase() && p.status === "Active"
-    );
+    return filterDealerListings(properties, profile);
   }, [properties, profile]);
+
+  if (!directoryProfilesReady) {
+    return (
+      <main className="min-h-screen bg-cream pt-32 flex flex-col items-center justify-center">
+        <p className="text-charcoal/60 font-semibold">Loading dealer profile…</p>
+      </main>
+    );
+  }
+
+  if (directoryProfilesError && !profile) {
+    return (
+      <main className="min-h-screen bg-cream pt-32 flex flex-col items-center justify-center px-4">
+        <h1 className="text-3xl font-serif font-black text-charcoal mb-4">Unable to load directory</h1>
+        <p className="text-charcoal/60 mb-8 text-center max-w-md">{directoryProfilesError}</p>
+        <button onClick={() => router.back()} className="px-6 py-3 bg-indigo text-white rounded-xl font-bold">
+          Go Back
+        </button>
+      </main>
+    );
+  }
 
   if (!profile) {
     return (
@@ -64,6 +72,11 @@ export default function DealerProfilePage() {
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
+  const mailto = profile.email
+    ? `mailto:${profile.email}?subject=${encodeURIComponent(`Inquiry for ${profile.firmName}`)}`
+    : null;
+  const tel = profile.mobile ? `tel:${profile.mobile.replace(/\s/g, "")}` : null;
 
   return (
     <main className="min-h-screen bg-cream pt-24 pb-24 px-4 md:px-6">
@@ -118,12 +131,7 @@ export default function DealerProfilePage() {
                     <BadgeCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                     <span>RERA ID: {profile.reraId}</span>
                   </span>
-                ) : (
-                  <span className="bg-emerald-500/10 border border-emerald-500/25 text-emerald-800 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
-                    <BadgeCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span>Verified Partner</span>
-                  </span>
-                )}
+                ) : null}
               </div>
               
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif font-black text-indigo leading-tight mb-2">
@@ -204,7 +212,7 @@ export default function DealerProfilePage() {
                   </div>
                   <div className="flex flex-col text-left">
                     <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest">SqftGo Vetted</span>
-                    <span className="text-xs font-black text-charcoal mt-0.5">{profile.reraId ? "RERA Vetted" : "Clear Records"}</span>
+                    <span className="text-xs font-black text-charcoal mt-0.5">{profile.reraId ? "RERA listed" : "Directory listing"}</span>
                   </div>
                 </div>
               </div>
@@ -286,93 +294,46 @@ export default function DealerProfilePage() {
                 </div>
               </div>
 
-              {/* Inquiry Form */}
+              {/* Contact — in-app inquire API not shipped yet */}
               <div className="p-6 relative z-10 text-left">
-                <h3 className="font-serif font-black text-lg text-indigo mb-1">Inquire with Broker</h3>
-                <p className="text-xs text-charcoal/50 mb-5">Send a message directly to request callbacks or consulting.</p>
+                <h3 className="font-serif font-black text-lg text-indigo mb-1">Contact this broker</h3>
+                <p className="text-xs text-charcoal/50 mb-5">
+                  In-app messaging to dealers is not available yet. Use the office contacts below.
+                </p>
 
-                <AnimatePresence mode="wait">
-                  {messageSent ? (
-                    <motion.div
-                      key="success"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="flex flex-col items-center justify-center text-center py-6"
+                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[10px] text-charcoal/80 leading-relaxed flex items-start gap-2 mb-4">
+                  <AlertCircle className="w-3.5 h-3.5 text-amber-700 shrink-0 mt-0.5" />
+                  <span>
+                    A contact form that reports success without sending a message has been removed.
+                    Reach the firm directly via phone or email.
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  {tel && (
+                    <a
+                      href={tel}
+                      className="w-full py-3 bg-terracotta hover:bg-terracotta-hover text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider"
                     >
-                      <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 mb-3 shadow-inner">
-                        <CheckCircle2 className="w-7 h-7" />
-                      </div>
-                      <h4 className="font-serif font-black text-base text-indigo mb-1">Inquiry Submitted!</h4>
-                      <p className="text-xs text-charcoal/50 max-w-[200px] leading-relaxed mb-4">
-                        Your message has been sent successfully. They will contact you shortly.
-                      </p>
-                      <button
-                        onClick={() => setMessageSent(false)}
-                        className="px-3.5 py-1.5 border border-sand rounded-xl text-[10px] font-bold text-charcoal hover:bg-sand/35 transition-colors cursor-pointer"
-                      >
-                        Send another message
-                      </button>
-                    </motion.div>
-                  ) : (
-                    <form 
-                      onSubmit={(e) => { e.preventDefault(); setMessageSent(true); }} 
-                      className="flex flex-col gap-4 text-sm"
-                    >
-                      {/* Name */}
-                      <div className="flex flex-col gap-1.5">
-                        <label htmlFor="inquiryName" className="font-bold text-indigo text-xs">Full Name</label>
-                        <input
-                          id="inquiryName"
-                          type="text"
-                          required
-                          placeholder="e.g. Rahul Sharma"
-                          className="w-full bg-white border border-sand rounded-xl py-2.5 px-4 focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta text-charcoal font-medium text-xs"
-                        />
-                      </div>
-
-                      {/* Email */}
-                      <div className="flex flex-col gap-1.5">
-                        <label htmlFor="inquiryEmail" className="font-bold text-indigo text-xs">Email Address</label>
-                        <input
-                          id="inquiryEmail"
-                          type="email"
-                          required
-                          placeholder="e.g. rahul@example.com"
-                          className="w-full bg-white border border-sand rounded-xl py-2.5 px-4 focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta text-charcoal font-medium text-xs"
-                        />
-                      </div>
-
-                      {/* Message */}
-                      <div className="flex flex-col gap-1.5">
-                        <label htmlFor="inquiryMessage" className="font-bold text-indigo text-xs">Message</label>
-                        <textarea
-                          id="inquiryMessage"
-                          rows={3}
-                          required
-                          defaultValue={`I am interested in listings managed by your firm and would like to request more details.`}
-                          className="w-full bg-white border border-sand rounded-xl py-2.5 px-4 focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta text-charcoal font-medium text-xs resize-none"
-                        />
-                      </div>
-
-                      {/* Security Pledge */}
-                      <div className="p-3 rounded-xl bg-indigo/5 border border-sand/50 text-[10px] text-indigo/90 leading-relaxed flex items-start gap-2">
-                        <AlertCircle className="w-3.5 h-3.5 text-terracotta shrink-0 mt-0.5" />
-                        <span>
-                          <strong>Security Pledge:</strong> We verify physical registry credentials and title deeds for relocation transactions.
-                        </span>
-                      </div>
-
-                      {/* Submit Button */}
-                      <button
-                        type="submit"
-                        className="w-full py-3 bg-terracotta hover:bg-terracotta-hover text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-2 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-xs uppercase tracking-wider mt-1"
-                      >
-                        <Mail className="w-4 h-4" />
-                        <span>Send Message</span>
-                      </button>
-                    </form>
+                      <Phone className="w-4 h-4" />
+                      Call {profile.mobile}
+                    </a>
                   )}
-                </AnimatePresence>
+                  {mailto && (
+                    <a
+                      href={mailto}
+                      className="w-full py-3 bg-indigo hover:bg-indigo/90 text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-all text-xs uppercase tracking-wider"
+                    >
+                      <Mail className="w-4 h-4" />
+                      Email {profile.email}
+                    </a>
+                  )}
+                  {!tel && !mailto && (
+                    <p className="text-xs text-charcoal/50 font-semibold">
+                      No phone or email published for this dealer.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>

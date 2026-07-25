@@ -13,23 +13,31 @@ import {
   EmptyState,
   CustomSelect,
 } from "@/components/ui";
+import { authService } from "@/services/auth";
 
 export default function PublicSettingsPage() {
-  const { isLoggedIn } = useApp();
+  const { isLoggedIn, userEmail } = useApp();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastTone, setToastTone] = useState<"info" | "success" | "danger" | "warning">(
+    "info"
+  );
+  const [resetBusy, setResetBusy] = useState(false);
 
   const [settings, setSettings] = useState({
     emailNotifications: true,
     smsAlerts: false,
     marketingEmails: true,
-    twoFactorAuth: false,
     profileVisibility: "public",
     language: "English",
   });
 
-  const triggerToast = (msg: string) => {
+  const triggerToast = (
+    msg: string,
+    tone: "info" | "success" | "danger" | "warning" = "info"
+  ) => {
+    setToastTone(tone);
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
   const handleToggle = (key: keyof typeof settings) => {
@@ -37,7 +45,10 @@ export default function PublicSettingsPage() {
       ...prev,
       [key]: !prev[key],
     }));
-    triggerToast("Settings preference updated.");
+    triggerToast(
+      "Preference updated on this device only — server sync is not available yet.",
+      "warning"
+    );
   };
 
   const handleSelectChange = (key: keyof typeof settings, value: string) => {
@@ -45,7 +56,32 @@ export default function PublicSettingsPage() {
       ...prev,
       [key]: value,
     }));
-    triggerToast("Settings preference updated.");
+    triggerToast(
+      "Preference updated on this device only — server sync is not available yet.",
+      "warning"
+    );
+  };
+
+  const handlePasswordReset = async () => {
+    if (!userEmail) {
+      triggerToast("No signed-in email found.", "danger");
+      return;
+    }
+    setResetBusy(true);
+    try {
+      await authService.resetPassword(userEmail);
+      triggerToast(
+        "If an account exists for your email, a password reset link has been sent.",
+        "success"
+      );
+    } catch (err) {
+      triggerToast(
+        err instanceof Error ? err.message : "Unable to send reset email",
+        "danger"
+      );
+    } finally {
+      setResetBusy(false);
+    }
   };
 
   if (!isLoggedIn) {
@@ -71,7 +107,7 @@ export default function PublicSettingsPage() {
       {toastMessage && (
         <div className="fixed bottom-10 right-10 z-50 max-w-sm">
           <Alert
-            variant="info"
+            variant={toastTone}
             title={toastMessage}
             onDismiss={() => setToastMessage(null)}
           />
@@ -81,11 +117,17 @@ export default function PublicSettingsPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-serif font-black text-charcoal">Account Settings</h1>
         <p className="text-charcoal/50 text-sm font-semibold mt-1">
-          Manage your platform preferences, privacy options, and security settings
+          Manage security and device preferences
         </p>
       </div>
 
       <div className="space-y-6">
+        <Alert
+          variant="info"
+          title="Notification preferences are local"
+          description="Toggles below are stored on this device only and do not change server push routing yet."
+        />
+
         <Panel title="Notification Preferences" padding="lg" rounded="3xl">
           <div className="-my-2">
             <SettingsRow
@@ -171,24 +213,19 @@ export default function PublicSettingsPage() {
           </div>
         </Panel>
 
-        <Panel title="Security Preferences" padding="lg" rounded="3xl">
+        <Panel title="Security" padding="lg" rounded="3xl">
           <div className="-my-2">
             <SettingsRow
               label="Two-Factor Authentication (2FA)"
-              description="Secure your client account using mobile authenticator app confirmations."
+              description="Authenticator MFA is not enabled on this project yet."
               icon={<Shield className="w-4 h-4" />}
               accent="indigo"
             >
-              <Switch
-                checked={settings.twoFactorAuth}
-                onCheckedChange={() => handleToggle("twoFactorAuth")}
-                accent="indigo"
-                aria-label="Two-Factor Authentication"
-              />
+              <BadgeUnavailable />
             </SettingsRow>
             <SettingsRow
               label="Update Login Password"
-              description="Regularly change your password to keep your shortlist transactions safe."
+              description={`Send a reset link to ${userEmail}.`}
               icon={<Shield className="w-4 h-4" />}
               accent="indigo"
             >
@@ -196,11 +233,10 @@ export default function PublicSettingsPage() {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() =>
-                  triggerToast("Password reset link has been dispatched to your email.")
-                }
+                loading={resetBusy}
+                onClick={() => void handlePasswordReset()}
               >
-                Trigger Password Reset
+                Send password reset email
               </Button>
             </SettingsRow>
           </div>
@@ -227,5 +263,13 @@ export default function PublicSettingsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function BadgeUnavailable() {
+  return (
+    <span className="text-[10px] font-black uppercase tracking-wider text-charcoal/40 bg-sand/40 border border-indigo/10 px-2.5 py-1 rounded-lg">
+      Unavailable
+    </span>
   );
 }

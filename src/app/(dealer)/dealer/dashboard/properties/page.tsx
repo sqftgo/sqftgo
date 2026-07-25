@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useApp, Property } from "@/context/AppContext";
 import { Plus, Edit2, Trash2, ExternalLink, Building2, CheckCircle2, XCircle, Grid, List, Eye, Heart, MessageSquare, MoreVertical } from "lucide-react";
@@ -16,18 +17,26 @@ import {
   EmptyState,
   type DataTableColumn,
 } from "@/components/ui";
+import { filterMyProperties } from "@/lib/ownership";
 
-const STATUS_OPTIONS = ["All", "Active", "Pending Review", "Sold", "Rented", "Draft"] as const;
+const STATUS_OPTIONS = ["All", "Active", "Pending Review", "Sold", "Rented", "Draft", "Rejected"] as const;
 const TYPE_OPTIONS = ["All", "Villa", "Apartment", "Home", "Office Space", "Shop", "Agricultural Land", "Hotel"];
 
 export default function DealerPropertiesPage() {
-  const { properties, userEmail, updateProperty, deleteProperty, inquiries } = useApp();
+  const { properties, userEmail, userProfile, updateProperty, deleteProperty, inquiries } = useApp();
+  const searchParams = useSearchParams();
+  const statusParam = searchParams.get("status") || "All";
+
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState(statusParam);
   const [typeFilter, setTypeFilter] = useState("All");
   const [sortBy, setSortBy] = useState("newest");
   const [viewMode, setViewMode] = useState<"table" | "grid">("grid");
   const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
+
+  useEffect(() => {
+    setStatusFilter(statusParam);
+  }, [statusParam]);
 
   const statusOptions = useMemo(() => STATUS_OPTIONS.map(s => ({
     label: s === "All" ? "All Statuses" : s,
@@ -47,7 +56,7 @@ export default function DealerPropertiesPage() {
   ], []);
 
   const myProperties = useMemo(() => {
-    let props = properties.filter(p => p.ownerEmail?.toLowerCase() === userEmail.toLowerCase());
+    let props = filterMyProperties(properties, userProfile?.id, userEmail);
     if (search) props = props.filter(p => p.title.toLowerCase().includes(search.toLowerCase()) || p.locality.toLowerCase().includes(search.toLowerCase()));
     if (statusFilter !== "All") props = props.filter(p => p.status === statusFilter);
     if (typeFilter !== "All") props = props.filter(p => p.type === typeFilter);
@@ -55,7 +64,7 @@ export default function DealerPropertiesPage() {
     if (sortBy === "price-desc") props = [...props].sort((a, b) => b.price - a.price);
     if (sortBy === "inquiries") props = [...props].sort((a, b) => (inquiries[b.id]?.length || 0) - (inquiries[a.id]?.length || 0));
     return props;
-  }, [properties, userEmail, search, statusFilter, typeFilter, sortBy, inquiries]);
+  }, [properties, userProfile?.id, userEmail, search, statusFilter, typeFilter, sortBy, inquiries]);
 
   const formatPrice = (v: number) => "₹" + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(v);
 
@@ -188,8 +197,12 @@ export default function DealerPropertiesPage() {
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
       <DashboardPageHeader
-        title="My Property Listings"
-        description={`${myProperties.length} active and draft listings found`}
+        title={statusFilter === "Draft" ? "Hold / Draft Properties" : "My Property Listings"}
+        description={
+          statusFilter === "Draft"
+            ? `${myProperties.length} draft properties on hold (requiring updates)`
+            : `${myProperties.length} active and draft listings found`
+        }
         actions={
           <>
             <div className="bg-sand/35 border border-indigo/5 p-1 rounded-xl flex gap-0.5">

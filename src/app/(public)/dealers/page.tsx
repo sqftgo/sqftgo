@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
+import { isAgentOrConsultantCategory } from "@/features/dealers";
 import { Search, MapPin, Phone, Mail, Globe, ArrowRight, Building2, User, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -11,8 +12,8 @@ export default function DealersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const dealerProfiles = directoryProfiles.filter(
-    p => p.category === "Agent & Broker" || p.category === "Property Consultant"
+  const dealerProfiles = directoryProfiles.filter((p) =>
+    isAgentOrConsultantCategory(p.category)
   );
 
   const categories = ["All", ...Array.from(new Set(dealerProfiles.map(p => p.category)))];

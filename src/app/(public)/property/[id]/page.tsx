@@ -41,8 +41,7 @@ import {
   Store,
   Bus,
   Heart,
-  Eye,
-  GitCompareArrows
+  Eye
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -53,7 +52,7 @@ interface PageProps {
 export default function PropertyDetailPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const router = useRouter();
-  const { properties, favorites, toggleFavorite, compareList, toggleCompare } = useApp();
+  const { properties, favorites, toggleFavorite } = useApp();
   
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [isCopied, setIsCopied] = useState(false);
@@ -64,7 +63,7 @@ export default function PropertyDetailPage({ params }: PageProps) {
 
   const property = properties.find((p) => p.id === resolvedParams.id && p.status === "Active");
   const isSaved = favorites.includes(resolvedParams.id);
-  const isCompared = compareList.includes(resolvedParams.id);
+
 
   if (!property) {
     return (
@@ -370,17 +369,6 @@ export default function PropertyDetailPage({ params }: PageProps) {
               <span className="hidden sm:inline">{isSaved ? "Saved" : "Save"}</span>
             </button>
 
-            <button
-              onClick={() => toggleCompare(property.id)}
-              className={`flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl border font-bold text-sm transition-all cursor-pointer ${
-                isCompared
-                  ? "bg-indigo/10 border-indigo/20 text-indigo hover:bg-indigo/15"
-                  : "bg-white border-sand text-charcoal/80 hover:bg-sand/30"
-              }`}
-            >
-              <GitCompareArrows className="w-4 h-4" />
-              <span className="hidden sm:inline">{isCompared ? "Comparing" : "Compare"}</span>
-            </button>
             
             <button
               onClick={handleShare}
@@ -404,17 +392,7 @@ export default function PropertyDetailPage({ params }: PageProps) {
               <Heart className={`w-3.5 h-3.5 ${isSaved ? "fill-rose-500 text-rose-500" : ""}`} />
               <span>{isSaved ? "Saved" : "Save"}</span>
             </button>
-            <button
-              onClick={() => toggleCompare(property.id)}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 p-3.5 rounded-2xl border transition-all ${
-                  isCompared
-                    ? "bg-indigo/10 border-indigo/20 text-indigo"
-                    : "bg-white border-sand text-charcoal/80 hover:bg-sand/30"
-                }`}
-            >
-              <GitCompareArrows className="w-3.5 h-3.5" />
-              <span>{isCompared ? "Comparing" : "Compare"}</span>
-            </button>
+
             <button
               onClick={handleShare}
               className="flex-1 sm:flex-initial py-2.5 px-4 rounded-xl border border-sand bg-white text-charcoal font-bold text-xs flex items-center justify-center gap-2 hover:bg-sand/30 transition-colors cursor-pointer"

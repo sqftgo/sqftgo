@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp, Property } from "@/context/AppContext";
+import { isAgentOrConsultantCategory } from "@/features/dealers";
 import { PropertyCard, formatIndianCurrency, CustomSelect } from "@/components/ui";
 import {
   Compass,
@@ -159,11 +160,8 @@ export default function Home() {
 
   const displayTopPicks = filteredTopPicks.length > 0 ? filteredTopPicks : properties.slice(0, 6);
 
-  // Filters for Builders
   const builders = directoryProfiles.filter((p) => p.category === "Builder & Developer");
-  
-  // Filters for Sellers
-  const sellers = directoryProfiles.filter((p) => p.category === "Agent & Broker" || p.category === "Property Consultant");
+  const sellers = directoryProfiles.filter((p) => isAgentOrConsultantCategory(p.category));
 
   // Newly Added Properties (last 6 properties in database)
   const newlyAddedProperties = [...properties]

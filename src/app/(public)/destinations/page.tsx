@@ -1,15 +1,14 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import Link from "next/link";
 import { Compass } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
-import { DESTINATIONS, TAGS, Destination } from "@/data/destinations";
-import DestinationHero from "@/components/destinations/DestinationHero";
-import DestinationsFilter from "@/components/destinations/DestinationsFilter";
-import DestinationCard from "@/components/destinations/DestinationCard";
-import DestinationDrawer from "@/components/destinations/DestinationDrawer";
+import { DESTINATIONS, TAGS, type Destination } from "@/features/destinations";
+import DestinationHero from "@/features/destinations/components/DestinationHero";
+import DestinationsFilter from "@/features/destinations/components/DestinationsFilter";
+import DestinationCard from "@/features/destinations/components/DestinationCard";
+import DestinationDrawer from "@/features/destinations/components/DestinationDrawer";
 
 export default function DestinationsPage() {
   const { properties, selectedCity } = useApp();
@@ -102,90 +101,8 @@ export default function DestinationsPage() {
         cityPropertiesMap={cityPropertiesMap}
       />
 
-      {/* 2. DEDICATED PROPERTY STYLE COLLECTIONS SECTION */}
-      <section className="relative py-12 px-4 md:px-8 max-w-7xl mx-auto w-full z-20 -mt-12 text-left bg-white rounded-[32px] shadow-xl border border-indigo/5 p-6 md:p-10 mb-10">
-        <div className="flex flex-col gap-1.5 mb-6 text-left">
-          <span className="text-terracotta font-black text-xs uppercase tracking-wider">explore our collections</span>
-          <h2 className="text-2xl sm:text-3xl font-serif font-black text-charcoal tracking-tight">Top Picks by Property Style</h2>
-          <p className="text-xs text-charcoal/50 font-semibold mt-1">Explore our verified handpicked stays curated for your lifestyle</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-auto md:h-[480px]">
-          {/* Column 1: Apartments (Tall Card) */}
-          <Link 
-            href="/listings?type=Apartment"
-            className="group relative flex flex-col rounded-[2.5rem] overflow-hidden bg-slate-900 border border-sand shadow-sm hover:shadow-2xl transition-all duration-500 h-[320px] md:h-full"
-          >
-            <img 
-              src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80" 
-              alt="Apartments" 
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-85 group-hover:opacity-90 transition-opacity duration-300" />
-            <div className="relative z-10 flex flex-col justify-end h-full p-8 text-left">
-              <h3 className="text-2xl font-serif font-black text-white leading-tight">Apartments</h3>
-              <p className="text-[10px] text-gold font-bold uppercase tracking-widest mt-1">1,100+ Stays Available</p>
-            </div>
-          </Link>
-
-          {/* Column 2: Stacked Cards (Houses & Cabins) */}
-          <div className="flex flex-col gap-6 justify-between h-auto md:h-full min-h-[360px] md:min-h-0">
-            {/* House Card */}
-            <Link 
-              href="/listings?type=Home"
-              className="group relative flex-1 flex flex-col rounded-[2.5rem] overflow-hidden bg-slate-900 border border-sand shadow-sm hover:shadow-2xl transition-all duration-500 min-h-[170px]"
-            >
-              <img 
-                src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80" 
-                alt="Houses" 
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-85 group-hover:opacity-90 transition-opacity duration-300" />
-              <div className="relative z-10 flex flex-col justify-end h-full p-6 text-left">
-                <h3 className="text-xl font-serif font-black text-white leading-tight">Houses</h3>
-                <p className="text-[9px] text-gold font-bold uppercase tracking-widest mt-0.5">950+ Stays Available</p>
-              </div>
-            </Link>
-
-            {/* Plots & Lands Card */}
-            <Link 
-              href="/listings?type=Agricultural%20Land"
-              className="group relative flex-1 flex flex-col rounded-[2.5rem] overflow-hidden bg-slate-900 border border-sand shadow-sm hover:shadow-2xl transition-all duration-500 min-h-[170px]"
-            >
-              <img 
-                src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=600&q=80" 
-                alt="Plots & Lands" 
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-85 group-hover:opacity-90 transition-opacity duration-300" />
-              <div className="relative z-10 flex flex-col justify-end h-full p-6 text-left">
-                <h3 className="text-xl font-serif font-black text-white leading-tight">Plots & Lands</h3>
-                <p className="text-[9px] text-gold font-bold uppercase tracking-widest mt-0.5">450+ Plots Available</p>
-              </div>
-            </Link>
-          </div>
-
-          {/* Column 3: Villas & Hotels (Tall Card) */}
-          <Link 
-            href="/listings?type=Villa"
-            className="group relative flex flex-col rounded-[2.5rem] overflow-hidden bg-slate-900 border border-sand shadow-sm hover:shadow-2xl transition-all duration-500 h-[320px] md:h-full"
-          >
-            <img 
-              src="https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=600&q=80" 
-              alt="Villas & Hotels" 
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-85 group-hover:opacity-90 transition-opacity duration-300" />
-            <div className="relative z-10 flex flex-col justify-end h-full p-8 text-left">
-              <h3 className="text-2xl font-serif font-black text-white leading-tight">Villas & Hotels</h3>
-              <p className="text-[10px] text-gold font-bold uppercase tracking-widest mt-1">300+ Stays Available</p>
-            </div>
-          </Link>
-        </div>
-      </section>
-
-      {/* 3. DEDICATED CITY REGIONS & FILTER GRID */}
-      <section className="relative py-12 px-4 md:px-8 max-w-7xl mx-auto w-full z-20 text-left bg-white rounded-[32px] shadow-xl border border-indigo/5 p-6 md:p-10 mb-16">
+      {/* 2. DEDICATED CITY REGIONS & FILTER GRID */}
+      <section className="relative py-12 px-4 md:px-8 max-w-7xl mx-auto w-full z-20 -mt-12 text-left bg-white rounded-[32px] shadow-xl border border-indigo/5 p-6 md:p-10 mb-16">
         
         {/* Centered Symmetric Region Filters */}
         <DestinationsFilter

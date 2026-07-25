@@ -13,7 +13,7 @@ const SHOW_DEMO_LOGIN = process.env.NODE_ENV !== "production";
 
 const SLIDES = [
   {
-    image: "https://images.unsplash.com/featured/1200x800/?udaipur,palace,heritage",
+    image: "https://images.unsplash.com/photo-1589901164570-f9de6556e1c1?q=80&w=1332&auto=format&fit=crop",
     title: "LAKEVIEW HAVELI",
     desc: "Experience heritage living with gorgeous lake-facing suites in Udaipur.",
     label: "Udaipur Suite"
@@ -358,7 +358,7 @@ function AuthForm() {
                       }}
                       className="py-1.5 px-2 bg-white hover:bg-slate-100 border border-sand rounded-lg text-[10px] font-bold text-slate-700 cursor-pointer text-center whitespace-nowrap"
                     >
-                      {account.role === "broker" ? "Broker Dealer" : "Client User"}
+                      {account.role === "broker" ? "Dealer" : "Client User"}
                     </button>
                   ))}
                 </div>
