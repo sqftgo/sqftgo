@@ -32,9 +32,7 @@ export default function ProfilePage() {
     favorites,
     properties,
     inquiries,
-    setIsLoggedIn,
-    setUserEmail,
-    setUserRole,
+    logout,
   } = useApp();
   const router = useRouter();
 
@@ -65,10 +63,7 @@ export default function ProfilePage() {
   const displayName = userName || userEmail.split("@")[0];
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUserEmail("");
-    if (setUserRole) setUserRole(null);
-    router.push("/");
+    void logout().finally(() => router.push("/"));
   };
 
   const roleTone =

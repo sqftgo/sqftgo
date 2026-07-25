@@ -2,14 +2,19 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
+import { authService } from "@/services";
 import Link from "next/link";
 import { Building2, CheckCircle2, Eye, EyeOff } from "lucide-react";
 
 export default function DealerRegisterPage() {
   const router = useRouter();
-  const { setIsLoggedIn, setUserEmail, setUserRole, setUserName, addDirectoryProfile } = useApp();
+  const { addDirectoryProfile, setIsLoggedIn, setUserEmail, setUserRole, setUserName, setUserProfile } =
+    useApp();
   const [step, setStep] = useState(0);
   const [done, setDone] = useState(false);
+  const [pendingConfirm, setPendingConfirm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [showPw, setShowPw] = useState(false);
   const [form, setForm] = useState({
     name: "", firmName: "", email: "", phone: "", password: "", confirmPassword: "",
@@ -17,28 +22,76 @@ export default function DealerRegisterPage() {
   });
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
-  const handleRegister = () => {
-    if (form.password !== form.confirmPassword) { alert("Passwords don't match!"); return; }
-    addDirectoryProfile({
-      firmName: form.firmName, ownerName: form.name, email: form.email,
-      mobile: form.phone, category: form.category as any, city: form.city,
-      address: form.city, description: "", reraId: form.reraId || undefined,
-      website: "",
-    });
-    setIsLoggedIn(true);
-    setUserEmail(form.email);
-    setUserRole("broker");
-    setUserName(form.name);
-    setDone(true);
-    setTimeout(() => router.push("/dealer/dashboard"), 2000);
+  const handleRegister = async () => {
+    setError(null);
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords don't match.");
+      return;
+    }
+    if (form.password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      // Real signup always creates role=user. Broker access is admin-granted only.
+      const result = await authService.signup({
+        name: form.name.trim(),
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+      });
+
+      addDirectoryProfile({
+        firmName: form.firmName,
+        ownerName: form.name,
+        email: form.email,
+        mobile: form.phone,
+        category: form.category as
+          | "Agent & Broker"
+          | "Property Consultant"
+          | "Builder & Developer"
+          | "Interior Decorator"
+          | "Architect",
+        city: form.city,
+        address: form.city,
+        description: "",
+        reraId: form.reraId || undefined,
+        website: "",
+      });
+
+      if (result.status === "confirm_email") {
+        setPendingConfirm(true);
+        setDone(true);
+        return;
+      }
+
+      setIsLoggedIn(true);
+      setUserEmail(result.session.email);
+      setUserRole(result.session.role);
+      setUserName(result.session.name);
+      setUserProfile(result.session.profile);
+      setDone(true);
+      setTimeout(() => router.push("/"), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to create account.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (done) return (
     <div className="min-h-screen bg-[#0f1117] flex items-center justify-center p-6">
       <div className="bg-[#1e2028] border border-emerald-500/20 rounded-3xl p-12 max-w-sm w-full text-center">
         <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 flex items-center justify-center mx-auto mb-6"><CheckCircle2 className="w-8 h-8 text-emerald-400" /></div>
-        <h2 className="text-2xl font-serif font-black text-white mb-2">Welcome aboard!</h2>
-        <p className="text-white/50 text-sm font-semibold">Your dealer account has been created. Redirecting to dashboard...</p>
+        <h2 className="text-2xl font-serif font-black text-white mb-2">
+          {pendingConfirm ? "Confirm your email" : "Application received"}
+        </h2>
+        <p className="text-white/50 text-sm font-semibold">
+          {pendingConfirm
+            ? "Check your inbox to confirm your account. An admin must approve broker access before the dealer dashboard unlocks."
+            : "Your account is ready. Broker dashboard access requires admin approval — redirecting home…"}
+        </p>
       </div>
     </div>
   );
@@ -101,9 +154,18 @@ export default function DealerRegisterPage() {
                   {["Udaipur", "Jaipur", "Jodhpur", "Jaisalmer", "Kota", "Ahmedabad", "Surat"].map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
+              {error && (
+                <p className="text-rose-400 text-xs font-semibold leading-snug">{error}</p>
+              )}
               <div className="flex gap-3">
                 <button onClick={() => setStep(0)} className="flex-1 py-3 bg-white/5 text-white/60 text-xs font-bold rounded-xl hover:bg-white/10 transition-colors cursor-pointer">← Back</button>
-                <button onClick={handleRegister} disabled={!form.firmName} className="flex-1 py-3 bg-indigo hover:bg-indigo-hover text-white text-xs font-black uppercase tracking-wider rounded-xl transition-colors disabled:opacity-40 cursor-pointer">Create Account</button>
+                <button
+                  onClick={() => void handleRegister()}
+                  disabled={!form.firmName || submitting}
+                  className="flex-1 py-3 bg-indigo hover:bg-indigo-hover text-white text-xs font-black uppercase tracking-wider rounded-xl transition-colors disabled:opacity-40 cursor-pointer"
+                >
+                  {submitting ? "Creating…" : "Create Account"}
+                </button>
               </div>
             </>
           )}

@@ -12,7 +12,7 @@ import { CitySelectorDropdown, UserDropdown, Avatar } from "@/components/ui";
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const { selectedCity, setSelectedCity, isLoggedIn, setIsLoggedIn, userEmail, favorites, userRole } = useApp();
+  const { selectedCity, setSelectedCity, isLoggedIn, logout, userEmail, favorites, userRole } = useApp();
   
   const [isScrolled, setIsScrolled] = useState(false);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
@@ -218,7 +218,9 @@ export const Navbar: React.FC = () => {
                             userEmail={userEmail}
                             userRole={userRole}
                             onClose={() => setShowUserDropdown(false)}
-                            onLogout={() => setIsLoggedIn(false)}
+                            onLogout={() => {
+                              void logout();
+                            }}
                             align="right"
                           />
                         </motion.div>
