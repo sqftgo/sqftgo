@@ -48,7 +48,7 @@ export interface CatalogRepository {
   addLog(log: Omit<ActivityLog, "id" | "timestamp">): Promise<ActivityLog>;
 }
 
-/** Categories/locations hit Supabase; notifications/logs remain mock leftovers. */
+/** Categories/locations/logs hit Supabase; leftover notification mocks unused. */
 export const supabaseCatalogRepository: CatalogRepository = {
   async listNotifications(forRole) {
     await simulateNetwork(80);
@@ -117,19 +117,19 @@ export const supabaseCatalogRepository: CatalogRepository = {
   },
 
   async listLogs() {
-    await simulateNetwork(80);
-    return [...getStore().activityLogs];
+    return apiJson<ActivityLog[]>("/api/logs");
   },
 
   async addLog(log) {
-    await simulateNetwork(80);
-    const item: ActivityLog = {
-      ...log,
-      id: `log-${Date.now()}`,
-      timestamp: new Date().toLocaleString("en-IN"),
-    };
-    patchStore({ activityLogs: [item, ...getStore().activityLogs] });
-    return item;
+    return apiJson<ActivityLog>("/api/logs", {
+      method: "POST",
+      body: JSON.stringify({
+        action: log.action,
+        performedBy: log.performedBy,
+        role: log.role,
+        target: log.target,
+      }),
+    });
   },
 };
 

@@ -26,7 +26,11 @@ const ROLE_TONE: Record<string, "warning" | "primary" | "info" | "neutral"> = {
 };
 
 export default function AdminLogsPage() {
-  const { activityLogs } = useApp();
+  const { activityLogs, logsReady, refreshLogs } = useApp();
+
+  React.useEffect(() => {
+    void refreshLogs();
+  }, [refreshLogs]);
 
   const columns: DataTableColumn<ActivityLog>[] = [
     {
@@ -75,13 +79,17 @@ export default function AdminLogsPage() {
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
       <DashboardPageHeader
         title="Activity Logs"
-        description={`${activityLogs.length} events recorded`}
+        description={
+          logsReady
+            ? `${activityLogs.length} events recorded`
+            : "Loading activity…"
+        }
       />
       <DataTable
         columns={columns}
         rows={activityLogs as ActivityLog[]}
         rowKey={(log) => log.id}
-        emptyMessage="No activity logged yet."
+        emptyMessage={logsReady ? "No activity logged yet." : "Loading…"}
       />
     </div>
   );

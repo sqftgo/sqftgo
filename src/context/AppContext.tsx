@@ -173,6 +173,8 @@ interface AppContextType {
   ) => Promise<Location>;
   deleteLocation: (id: string) => Promise<void>;
   activityLogs: ActivityLog[];
+  logsReady: boolean;
+  refreshLogs: () => Promise<void>;
   addLog: (log: Omit<ActivityLog, "id" | "timestamp">) => void;
   mockUsers: MockUser[];
   setMockUsers: React.Dispatch<React.SetStateAction<MockUser[]>>;
@@ -260,6 +262,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [categoriesReady, setCategoriesReady] = useState(false);
   const [locations, setLocationsState] = useState<Location[]>([]);
   const [locationsReady, setLocationsReady] = useState(false);
+  const [activityLogs, setActivityLogsState] = useState<ActivityLog[]>([]);
+  const [logsReady, setLogsReady] = useState(false);
   const [selectedCity, setSelectedCityState] = useState(defaultSession.selectedCity);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [compareList, setCompareList] = useState<string[]>([]);
@@ -424,6 +428,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     void refreshCategories();
     void refreshLocations();
   }, [sessionReady, isLoggedIn, userRole, refreshCategories, refreshLocations]);
+
+  const refreshLogs = useCallback(async () => {
+    if (!hasSupabaseEnv() || !isLoggedIn || userRole !== "admin") {
+      setActivityLogsState([]);
+      setLogsReady(true);
+      return;
+    }
+    try {
+      const rows = await catalogService.listLogs();
+      setActivityLogsState(rows);
+    } catch {
+      setActivityLogsState([]);
+    } finally {
+      setLogsReady(true);
+    }
+  }, [isLoggedIn, userRole]);
+
+  useEffect(() => {
+    if (!sessionReady) return;
+    void refreshLogs();
+  }, [sessionReady, isLoggedIn, userRole, refreshLogs]);
 
   const refreshInquiries = useCallback(async () => {
     if (!hasSupabaseEnv() || !isLoggedIn) {
@@ -881,7 +906,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   );
 
   const addLog = useCallback((log: Omit<ActivityLog, "id" | "timestamp">) => {
-    void catalogService.addLog(log);
+    void (async () => {
+      try {
+        const created = await catalogService.addLog(log);
+        setActivityLogsState((prev) => [created, ...prev.filter((l) => l.id !== created.id)]);
+      } catch {
+        // Fire-and-forget: never block primary admin/dealer actions.
+      }
+    })();
   }, []);
 
   const value = useMemo<AppContextType>(
@@ -960,7 +992,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createLocation,
       updateLocation,
       deleteLocation,
-      activityLogs: store.activityLogs,
+      activityLogs,
+      logsReady,
+      refreshLogs,
       addLog,
       mockUsers: store.mockUsers,
       setMockUsers,
@@ -1044,6 +1078,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createLocation,
       updateLocation,
       deleteLocation,
+      activityLogs,
+      logsReady,
+      refreshLogs,
       addLog,
       setMockUsers,
       compareList,
