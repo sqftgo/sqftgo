@@ -60,8 +60,15 @@ interface AppContextType {
   favorites: string[];
   toggleFavorite: (id: string) => void;
   assistanceRequests: AssistanceRequest[];
+  assistanceReady: boolean;
+  refreshAssistance: () => Promise<void>;
   setAssistanceRequests: React.Dispatch<React.SetStateAction<AssistanceRequest[]>>;
-  addAssistanceRequest: (req: Omit<AssistanceRequest, "id" | "status">) => void;
+  addAssistanceRequest: (req: Omit<AssistanceRequest, "id" | "status">) => Promise<AssistanceRequest>;
+  updateAssistanceRequest: (
+    id: string,
+    updates: { status?: AssistanceRequest["status"]; notes?: string }
+  ) => Promise<AssistanceRequest>;
+  deleteAssistanceRequest: (id: string) => Promise<void>;
   addProperty: (
     property: Omit<Property, "id" | "inquiryCount" | "status" | "ownerName" | "ownerPhone" | "ownerEmail"> & {
       status?: Property["status"];
@@ -80,8 +87,13 @@ interface AppContextType {
     inquiry: { name: string; email: string; phone: string; message: string }
   ) => Promise<PropertyInquiry>;
   enquiries: GeneralEnquiry[];
+  enquiriesReady: boolean;
+  refreshEnquiries: () => Promise<void>;
   setEnquiries: React.Dispatch<React.SetStateAction<GeneralEnquiry[]>>;
-  addGeneralEnquiry: (enquiry: Omit<GeneralEnquiry, "id" | "date">) => void;
+  addGeneralEnquiry: (
+    enquiry: Omit<GeneralEnquiry, "id" | "date"> & { payload?: Record<string, unknown> }
+  ) => Promise<GeneralEnquiry>;
+  deleteGeneralEnquiry: (id: string) => Promise<void>;
   reviews: CustomerReview[];
   addReview: (review: Omit<CustomerReview, "id" | "date">) => void;
   directoryProfiles: DirectoryProfile[];
@@ -184,6 +196,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [inquiriesReady, setInquiriesReady] = useState(false);
   const [directoryProfiles, setDirectoryProfilesState] = useState<DirectoryProfile[]>([]);
   const [directoryProfilesReady, setDirectoryProfilesReady] = useState(false);
+  const [assistanceRequests, setAssistanceRequestsState] = useState<AssistanceRequest[]>([]);
+  const [assistanceReady, setAssistanceReady] = useState(false);
+  const [enquiries, setEnquiriesState] = useState<GeneralEnquiry[]>([]);
+  const [enquiriesReady, setEnquiriesReady] = useState(false);
   const [selectedCity, setSelectedCityState] = useState(defaultSession.selectedCity);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [compareList, setCompareList] = useState<string[]>([]);
@@ -329,6 +345,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     void refreshDirectoryProfiles();
   }, [sessionReady, refreshDirectoryProfiles]);
 
+  const refreshAssistance = useCallback(async () => {
+    if (!hasSupabaseEnv() || !isLoggedIn || userRole !== "admin") {
+      setAssistanceRequestsState([]);
+      setAssistanceReady(true);
+      return;
+    }
+    try {
+      setAssistanceRequestsState(await inquiryService.listAssistance());
+    } catch {
+      setAssistanceRequestsState([]);
+    } finally {
+      setAssistanceReady(true);
+    }
+  }, [isLoggedIn, userRole]);
+
+  const refreshEnquiries = useCallback(async () => {
+    if (!hasSupabaseEnv() || !isLoggedIn || userRole !== "admin") {
+      setEnquiriesState([]);
+      setEnquiriesReady(true);
+      return;
+    }
+    try {
+      setEnquiriesState(await inquiryService.listEnquiries());
+    } catch {
+      setEnquiriesState([]);
+    } finally {
+      setEnquiriesReady(true);
+    }
+  }, [isLoggedIn, userRole]);
+
+  useEffect(() => {
+    if (!sessionReady) return;
+    void refreshAssistance();
+    void refreshEnquiries();
+  }, [sessionReady, refreshAssistance, refreshEnquiries]);
+
   useEffect(() => {
     if (!sessionReady) return;
     writeUiPrefs({ favorites, compareList, selectedCity });
@@ -384,17 +436,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const setAssistanceRequests: React.Dispatch<React.SetStateAction<AssistanceRequest[]>> = useCallback(
     (action) => {
-      const current = getStore().assistanceRequests;
-      const next = typeof action === "function" ? action(current) : action;
-      patchStore({ assistanceRequests: next });
+      setAssistanceRequestsState((current) =>
+        typeof action === "function" ? action(current) : action
+      );
     },
     []
   );
 
   const setEnquiries: React.Dispatch<React.SetStateAction<GeneralEnquiry[]>> = useCallback((action) => {
-    const current = getStore().enquiries;
-    const next = typeof action === "function" ? action(current) : action;
-    patchStore({ enquiries: next });
+    setEnquiriesState((current) => (typeof action === "function" ? action(current) : action));
   }, []);
 
   const setDirectoryProfiles: React.Dispatch<React.SetStateAction<DirectoryProfile[]>> = useCallback(
@@ -433,8 +483,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     patchStore({ mockUsers: next });
   }, []);
 
-  const addAssistanceRequest = useCallback((req: Omit<AssistanceRequest, "id" | "status">) => {
-    void inquiryService.addAssistance(req);
+  const addAssistanceRequest = useCallback(async (req: Omit<AssistanceRequest, "id" | "status">) => {
+    const created = await inquiryService.addAssistance(req);
+    setAssistanceRequestsState((prev) => [created, ...prev.filter((r) => r.id !== created.id)]);
+    return created;
+  }, []);
+
+  const updateAssistanceRequest = useCallback(
+    async (id: string, updates: { status?: AssistanceRequest["status"]; notes?: string }) => {
+      const updated = await inquiryService.updateAssistance(id, updates);
+      setAssistanceRequestsState((prev) => prev.map((r) => (r.id === id ? updated : r)));
+      return updated;
+    },
+    []
+  );
+
+  const deleteAssistanceRequest = useCallback(async (id: string) => {
+    await inquiryService.removeAssistance(id);
+    setAssistanceRequestsState((prev) => prev.filter((r) => r.id !== id));
   }, []);
 
   const addProperty = useCallback(
@@ -505,8 +571,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [refreshProperties]
   );
 
-  const addGeneralEnquiry = useCallback((enq: Omit<GeneralEnquiry, "id" | "date">) => {
-    void inquiryService.addEnquiry(enq);
+  const addGeneralEnquiry = useCallback(
+    async (enq: Omit<GeneralEnquiry, "id" | "date"> & { payload?: Record<string, unknown> }) => {
+      const created = await inquiryService.addEnquiry(enq);
+      setEnquiriesState((prev) => [created, ...prev.filter((e) => e.id !== created.id)]);
+      return created;
+    },
+    []
+  );
+
+  const deleteGeneralEnquiry = useCallback(async (id: string) => {
+    await inquiryService.removeEnquiry(id);
+    setEnquiriesState((prev) => prev.filter((e) => e.id !== id));
   }, []);
 
   const addReview = useCallback((rev: Omit<CustomerReview, "id" | "date">) => {
@@ -549,9 +625,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setProperties,
       favorites,
       toggleFavorite,
-      assistanceRequests: store.assistanceRequests,
+      assistanceRequests,
+      assistanceReady,
+      refreshAssistance,
       setAssistanceRequests,
       addAssistanceRequest,
+      updateAssistanceRequest,
+      deleteAssistanceRequest,
       addProperty,
       updateProperty,
       deleteProperty,
@@ -562,9 +642,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       inquiriesReady,
       refreshInquiries,
       submitInquiry,
-      enquiries: store.enquiries,
+      enquiries,
+      enquiriesReady,
+      refreshEnquiries,
       setEnquiries,
       addGeneralEnquiry,
+      deleteGeneralEnquiry,
       reviews: store.reviews,
       addReview,
       directoryProfiles,
@@ -612,16 +695,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       favorites,
       toggleFavorite,
       setAssistanceRequests,
+      assistanceRequests,
+      assistanceReady,
+      refreshAssistance,
       addAssistanceRequest,
+      updateAssistanceRequest,
+      deleteAssistanceRequest,
       addProperty,
       updateProperty,
       deleteProperty,
       deleteInquiry,
+      inquiries,
       inquiriesReady,
       refreshInquiries,
       submitInquiry,
+      enquiries,
+      enquiriesReady,
+      refreshEnquiries,
       setEnquiries,
       addGeneralEnquiry,
+      deleteGeneralEnquiry,
       addReview,
       directoryProfiles,
       directoryProfilesReady,

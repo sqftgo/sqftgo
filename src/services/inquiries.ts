@@ -13,8 +13,11 @@ export interface InquiryRepository {
   updateStatus(inquiryId: string, status: "new" | "read" | "archived"): Promise<PropertyInquiryView>;
   listAssistance(): Promise<AssistanceRequest[]>;
   addAssistance(req: Omit<AssistanceRequest, "id" | "status">): Promise<AssistanceRequest>;
+  updateAssistance(id: string, updates: { status?: AssistanceRequest["status"]; notes?: string }): Promise<AssistanceRequest>;
+  removeAssistance(id: string): Promise<void>;
   listEnquiries(): Promise<GeneralEnquiry[]>;
-  addEnquiry(enq: Omit<GeneralEnquiry, "id" | "date">): Promise<GeneralEnquiry>;
+  addEnquiry(enq: Omit<GeneralEnquiry, "id" | "date"> & { payload?: Record<string, unknown> }): Promise<GeneralEnquiry>;
+  removeEnquiry(id: string): Promise<void>;
   listReviews(): Promise<CustomerReview[]>;
   addReview(rev: Omit<CustomerReview, "id" | "date">): Promise<CustomerReview>;
 }
@@ -57,7 +60,7 @@ function toRecord(rows: PropertyInquiryView[]): Record<string, PropertyInquiry[]
   return out;
 }
 
-/** Property-inquiry methods hit Supabase APIs; assistance/enquiries/reviews stay mock until later phases. */
+/** Property inquiries + assistance/enquiries hit Supabase; reviews stay mock. */
 export const supabaseInquiryRepository: InquiryRepository = {
   async listByProperty(propertyId) {
     const rows = await apiJson<PropertyInquiryView[]>(`/api/properties/${propertyId}/inquiries`);
@@ -119,35 +122,40 @@ export const supabaseInquiryRepository: InquiryRepository = {
   },
 
   async listAssistance() {
-    await simulateNetwork(80);
-    return [...getStore().assistanceRequests];
+    return apiJson<AssistanceRequest[]>("/api/assistance");
   },
 
   async addAssistance(req) {
-    await simulateNetwork(140);
-    const item: AssistanceRequest = {
-      ...req,
-      id: `req-${Date.now()}`,
-      status: "Received",
-    };
-    patchStore({ assistanceRequests: [item, ...getStore().assistanceRequests] });
-    return item;
+    return apiJson<AssistanceRequest>("/api/assistance", {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
+  },
+
+  async updateAssistance(id, updates) {
+    return apiJson<AssistanceRequest>(`/api/assistance/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(updates),
+    });
+  },
+
+  async removeAssistance(id) {
+    await apiJson<{ ok: boolean }>(`/api/assistance/${id}`, { method: "DELETE" });
   },
 
   async listEnquiries() {
-    await simulateNetwork(80);
-    return [...getStore().enquiries];
+    return apiJson<GeneralEnquiry[]>("/api/enquiries");
   },
 
   async addEnquiry(enq) {
-    await simulateNetwork(140);
-    const item: GeneralEnquiry = {
-      ...enq,
-      id: `enq-${Date.now()}`,
-      date: new Date().toISOString().split("T")[0],
-    };
-    patchStore({ enquiries: [item, ...getStore().enquiries] });
-    return item;
+    return apiJson<GeneralEnquiry>("/api/enquiries", {
+      method: "POST",
+      body: JSON.stringify(enq),
+    });
+  },
+
+  async removeEnquiry(id) {
+    await apiJson<{ ok: boolean }>(`/api/enquiries/${id}`, { method: "DELETE" });
   },
 
   async listReviews() {
