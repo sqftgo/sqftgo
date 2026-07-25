@@ -4,7 +4,7 @@ import { createServiceClient } from "@/lib/supabase/admin";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapCategoryRow } from "@/lib/mappers/catalog";
 import { categoryUpdateSchema, catalogZodError } from "@/lib/validation/catalog";
-import type { CategoryRow } from "@/types/database";
+import type { CategoryRow, CategoryUpdate, PropertyTypeDb } from "@/types/database";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -33,7 +33,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   const parsed = categoryUpdateSchema.safeParse(body);
   if (!parsed.success) return jsonError(catalogZodError(parsed.error));
 
-  const patch: Record<string, unknown> = {};
+  const patch: CategoryUpdate = {};
   if (parsed.data.name !== undefined) patch.name = parsed.data.name;
   if (parsed.data.icon !== undefined) patch.icon = parsed.data.icon;
   if (parsed.data.active !== undefined) patch.active = parsed.data.active;
@@ -80,7 +80,7 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
   const { count } = await admin
     .from("properties")
     .select("id", { count: "exact", head: true })
-    .eq("type", existing.name);
+    .eq("type", existing.name as PropertyTypeDb);
 
   if ((count ?? 0) > 0) {
     const { data, error: softError } = await admin

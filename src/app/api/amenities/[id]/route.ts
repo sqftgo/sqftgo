@@ -4,7 +4,7 @@ import { createServiceClient } from "@/lib/supabase/admin";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapAmenityRow } from "@/lib/mappers/catalog";
 import { amenityUpdateSchema, catalogZodError } from "@/lib/validation/catalog";
-import type { AmenityRow } from "@/types/database";
+import type { AmenityRow, AmenityUpdate } from "@/types/database";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -33,7 +33,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   const parsed = amenityUpdateSchema.safeParse(body);
   if (!parsed.success) return jsonError(catalogZodError(parsed.error));
 
-  const patch: Record<string, unknown> = {};
+  const patch: AmenityUpdate = {};
   if (parsed.data.name !== undefined) patch.name = parsed.data.name;
   if (parsed.data.active !== undefined) patch.active = parsed.data.active;
   if (parsed.data.sortOrder !== undefined) patch.sort_order = parsed.data.sortOrder;

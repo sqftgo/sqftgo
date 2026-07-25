@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import type { ProfileRow } from "@/types/database";
+import type { ProfileRow, ProfileUpdate } from "@/types/database";
 import { createRouteClient } from "@/lib/supabase/route";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
@@ -75,7 +75,7 @@ export async function PATCH(request: NextRequest) {
   const parsed = profileUpdateSchema.safeParse(body);
   if (!parsed.success) return jsonError(profileZodError(parsed.error));
 
-  const patch: Record<string, unknown> = {};
+  const patch: ProfileUpdate = {};
   if (parsed.data.name !== undefined) patch.name = parsed.data.name;
   if (parsed.data.phone !== undefined) patch.phone = parsed.data.phone;
   if (parsed.data.bio !== undefined) patch.bio = parsed.data.bio;
