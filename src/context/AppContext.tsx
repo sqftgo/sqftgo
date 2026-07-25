@@ -71,12 +71,14 @@ interface AppContextType {
   deleteProperty: (propertyId: string) => Promise<void>;
   refreshProperties: () => Promise<void>;
   propertiesReady: boolean;
-  deleteInquiry: (propertyId: string, index: number) => void;
+  deleteInquiry: (inquiryId: string) => Promise<void>;
   inquiries: Record<string, PropertyInquiry[]>;
+  inquiriesReady: boolean;
+  refreshInquiries: () => Promise<void>;
   submitInquiry: (
     propertyId: string,
     inquiry: { name: string; email: string; phone: string; message: string }
-  ) => void;
+  ) => Promise<PropertyInquiry>;
   enquiries: GeneralEnquiry[];
   setEnquiries: React.Dispatch<React.SetStateAction<GeneralEnquiry[]>>;
   addGeneralEnquiry: (enquiry: Omit<GeneralEnquiry, "id" | "date">) => void;
@@ -109,7 +111,7 @@ interface AppContextType {
   compareList: string[];
   setCompareList: React.Dispatch<React.SetStateAction<string[]>>;
   toggleCompare: (id: string) => void;
-  logout: () => void | Promise<void>;
+  logout: () => Promise<void>;
   sessionReady: boolean;
 }
 
@@ -174,6 +176,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [sessionReady, setSessionReady] = useState(false);
   const [properties, setPropertiesState] = useState<Property[]>([]);
   const [propertiesReady, setPropertiesReady] = useState(false);
+  const [inquiries, setInquiriesState] = useState<Record<string, PropertyInquiry[]>>({});
+  const [inquiriesReady, setInquiriesReady] = useState(false);
   const [selectedCity, setSelectedCityState] = useState(defaultSession.selectedCity);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [compareList, setCompareList] = useState<string[]>([]);
@@ -259,6 +263,45 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     void refreshProperties();
   }, [sessionReady, isLoggedIn, userRole, refreshProperties]);
 
+  const refreshInquiries = useCallback(async () => {
+    if (!hasSupabaseEnv() || !isLoggedIn) {
+      setInquiriesState({});
+      setInquiriesReady(true);
+      return;
+    }
+    try {
+      if (userRole === "user") {
+        const rows = await inquiryService.listFlat({ mine: true });
+        const out: Record<string, PropertyInquiry[]> = {};
+        for (const row of rows) {
+          const entry: PropertyInquiry = {
+            id: row.id,
+            name: row.name,
+            email: row.email,
+            phone: row.phone,
+            message: row.message,
+            date: row.date,
+            status: row.status,
+          };
+          if (!out[row.propertyId]) out[row.propertyId] = [];
+          out[row.propertyId].push(entry);
+        }
+        setInquiriesState(out);
+      } else {
+        setInquiriesState(await inquiryService.listAll());
+      }
+    } catch {
+      setInquiriesState({});
+    } finally {
+      setInquiriesReady(true);
+    }
+  }, [isLoggedIn, userRole]);
+
+  useEffect(() => {
+    if (!sessionReady) return;
+    void refreshInquiries();
+  }, [sessionReady, isLoggedIn, userRole, refreshInquiries]);
+
   useEffect(() => {
     if (!sessionReady) return;
     writeUiPrefs({ favorites, compareList, selectedCity });
@@ -279,6 +322,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUserRoleState(null);
     setUserNameState("");
     setUserProfile(null);
+    setInquiriesState({});
+    setInquiriesReady(false);
     if (hasSupabaseEnv()) {
       try {
         await authService.logout();
@@ -401,15 +446,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setPropertiesState((prev) => prev.filter((p) => p.id !== propertyId));
   }, []);
 
-  const deleteInquiry = useCallback((propertyId: string, index: number) => {
-    void inquiryService.remove(propertyId, index);
-  }, []);
+  const deleteInquiry = useCallback(
+    async (inquiryId: string) => {
+      await inquiryService.removeById(inquiryId);
+      setInquiriesState((prev) => {
+        const next: Record<string, PropertyInquiry[]> = {};
+        for (const [pid, list] of Object.entries(prev)) {
+          const filtered = list.filter((inq) => inq.id !== inquiryId);
+          if (filtered.length) next[pid] = filtered;
+        }
+        return next;
+      });
+      void refreshProperties();
+    },
+    [refreshProperties]
+  );
 
   const submitInquiry = useCallback(
-    (propertyId: string, inquiry: { name: string; email: string; phone: string; message: string }) => {
-      void inquiryService.submit(propertyId, inquiry);
+    async (
+      propertyId: string,
+      inquiry: { name: string; email: string; phone: string; message: string }
+    ) => {
+      const created = await inquiryService.submit(propertyId, inquiry);
+      setInquiriesState((prev) => ({
+        ...prev,
+        [propertyId]: [created, ...(prev[propertyId] ?? [])],
+      }));
+      void refreshProperties();
+      return created;
     },
-    []
+    [refreshProperties]
   );
 
   const addGeneralEnquiry = useCallback((enq: Omit<GeneralEnquiry, "id" | "date">) => {
@@ -449,7 +515,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       refreshProperties,
       propertiesReady,
       deleteInquiry,
-      inquiries: store.inquiries,
+      inquiries,
+      inquiriesReady,
+      refreshInquiries,
       submitInquiry,
       enquiries: store.enquiries,
       setEnquiries,
@@ -502,6 +570,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       updateProperty,
       deleteProperty,
       deleteInquiry,
+      inquiriesReady,
+      refreshInquiries,
       submitInquiry,
       setEnquiries,
       addGeneralEnquiry,

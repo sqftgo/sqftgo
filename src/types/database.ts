@@ -29,6 +29,8 @@ export type PropertyStatusDb =
   | "sold"
   | "rented";
 
+export type InquiryStatusDb = "new" | "read" | "archived";
+
 export type ProfileRow = {
   id: string;
   email: string;
@@ -146,6 +148,32 @@ export type PropertyInsert = {
 
 export type PropertyUpdate = Partial<PropertyInsert>;
 
+export type PropertyInquiryRow = {
+  id: string;
+  property_id: string;
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  status: InquiryStatusDb;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PropertyInquiryInsert = {
+  id?: string;
+  property_id: string;
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  status?: InquiryStatusDb;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type PropertyInquiryUpdate = Partial<PropertyInquiryInsert>;
+
 export type Database = {
   public: {
     Tables: {
@@ -177,6 +205,20 @@ export type Database = {
           },
         ];
       };
+      property_inquiries: {
+        Row: PropertyInquiryRow;
+        Insert: PropertyInquiryInsert;
+        Update: PropertyInquiryUpdate;
+        Relationships: [
+          {
+            foreignKeyName: "property_inquiries_property_id_fkey";
+            columns: ["property_id"];
+            isOneToOne: false;
+            referencedRelation: "properties";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -192,6 +234,7 @@ export type Database = {
       property_purpose: PropertyPurposeDb;
       furnished_status: FurnishedStatusDb;
       property_status: PropertyStatusDb;
+      inquiry_status: InquiryStatusDb;
     };
     CompositeTypes: {
       [_ in never]: never;

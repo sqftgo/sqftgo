@@ -13,8 +13,15 @@ export default function MyInquiriesPage() {
   const myInquiries = useMemo(() =>
     properties.flatMap(p =>
       (inquiries[p.id] || [])
-        .filter(i => i.email === userEmail)
-        .map(i => ({ ...i, propertyTitle: p.title, propertyImage: p.images?.[0], propId: p.id, locality: p.locality, city: p.city }))
+        .filter((i) => i.email.toLowerCase() === userEmail.toLowerCase())
+        .map((i) => ({
+          ...i,
+          propertyTitle: p.title,
+          propertyImage: p.images?.[0],
+          propId: p.id,
+          locality: p.locality,
+          city: p.city,
+        }))
     ).sort((a, b) => b.date.localeCompare(a.date)),
     [properties, inquiries, userEmail]
   );
@@ -46,7 +53,7 @@ export default function MyInquiriesPage() {
       ) : (
         <div className="space-y-4">
           {myInquiries.map((inq, i) => (
-            <div key={i} className="bg-white/80 border border-indigo/10 rounded-2xl p-5 shadow hover:shadow-md transition-all">
+            <div key={inq.id ?? `${inq.propId}-${inq.date}-${i}`} className="bg-white/80 border border-indigo/10 rounded-2xl p-5 shadow hover:shadow-md transition-all">
               <div className="flex items-start gap-4">
                 <div className="w-16 h-16 rounded-xl overflow-hidden bg-sand/30 shrink-0">
                   <img src={inq.propertyImage} alt="" className="w-full h-full object-cover" />
