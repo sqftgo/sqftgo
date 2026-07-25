@@ -21,6 +21,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { uploadPropertyImage } from "@/lib/uploads/propertyImage";
 
 const STEPS = ["Type & Purpose", "Location", "Specifications", "Photos", "Price & Terms", "Review"];
 
@@ -57,10 +58,10 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
   const [description, setDescription] = useState("");
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [price, setPrice] = useState<string>("");
-
-  const [mockUploadedImages, setMockUploadedImages] = useState<string[]>([
-    "https://maps.google.com/cbk?output=thumbnail&w=800&h=600&ll=26.2700,73.0100",
-  ]);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   if (!mounted || !canPost) {
     return (
@@ -81,18 +82,26 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
     );
   };
 
-  const handleMockUpload = () => {
-    const mockUnsplashPics = [
-      "https://maps.google.com/cbk?output=thumbnail&w=800&h=600&ll=24.5764,73.6836",
-      "https://maps.google.com/cbk?output=thumbnail&w=800&h=600&ll=24.5925,73.6791",
-      "https://maps.google.com/cbk?output=thumbnail&w=800&h=600&ll=24.6000,73.6800",
-    ];
-    const nextPic = mockUnsplashPics[mockUploadedImages.length % mockUnsplashPics.length];
-    setMockUploadedImages((prev) => [...prev, nextPic]);
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files?.length || uploading) return;
+    setUploadError(null);
+    setUploading(true);
+    try {
+      const urls: string[] = [];
+      for (const file of Array.from(files)) {
+        urls.push(await uploadPropertyImage(file));
+      }
+      setUploadedImages((prev) => [...prev, ...urls]);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Image upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const handleRemoveImage = (idx: number) => {
-    setMockUploadedImages((prev) => prev.filter((_, i) => i !== idx));
+    setUploadedImages((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const validateStep = (): boolean => {
@@ -140,9 +149,9 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
         `A well-maintained ${bhk ? bhk + " BHK " : ""}${type} located in the pleasant vicinity of ${locality}, ${city}. Ideal for family residence.`,
       amenities: selectedAmenities.length > 0 ? selectedAmenities : ["Security", "Parking"],
       images:
-        mockUploadedImages.length > 0
-          ? mockUploadedImages
-          : ["https://maps.google.com/cbk?output=thumbnail&w=800&h=600&ll=26.2700,73.0100"],
+        uploadedImages.length > 0
+          ? uploadedImages
+          : ["https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80"],
       status: "Pending Review",
     })
       .then(() => {
@@ -380,20 +389,37 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
           >
             <span className="font-extrabold text-indigo text-sm">Upload Photos</span>
 
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              multiple
+              className="hidden"
+              onChange={(e) => void handleFileUpload(e.target.files)}
+            />
+
             <div
-              onClick={handleMockUpload}
+              onClick={() => !uploading && fileInputRef.current?.click()}
               className="border-2 border-dashed border-sand hover:border-terracotta rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-colors duration-200 bg-sand/10"
             >
               <Upload className="w-10 h-10 text-charcoal/40 mb-3" />
-              <span className="text-sm font-bold text-charcoal">Click to Upload mockup photo</span>
-              <span className="text-xs text-charcoal/50 mt-1">Supports PNG, JPG (maximum 5MB)</span>
+              <span className="text-sm font-bold text-charcoal">
+                {uploading ? "Uploading..." : "Click to upload photos"}
+              </span>
+              <span className="text-xs text-charcoal/50 mt-1">PNG, JPG, WebP, GIF (max 5MB each)</span>
             </div>
 
-            {mockUploadedImages.length > 0 && (
+            {uploadError ? (
+              <p className="text-xs font-semibold text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+                {uploadError}
+              </p>
+            ) : null}
+
+            {uploadedImages.length > 0 && (
               <div className="flex flex-wrap gap-4 mt-2">
-                {mockUploadedImages.map((img, idx) => (
+                {uploadedImages.map((img, idx) => (
                   <div
-                    key={idx}
+                    key={`${img}-${idx}`}
                     className="relative w-24 h-16 rounded-xl overflow-hidden border border-sand shadow-sm flex-shrink-0"
                   >
                     <img src={img} alt="upload" className="w-full h-full object-cover" />

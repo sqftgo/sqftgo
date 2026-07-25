@@ -40,6 +40,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { uploadPropertyImage } from "@/lib/uploads/propertyImage";
 
 const CREATE_STEPS = [
   { title: "Basic Info", desc: "Title, type & purpose", icon: Building2 },
@@ -214,6 +215,9 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
   const [saved, setSaved] = useState(false);
   const [newImageUrl, setNewImageUrl] = useState("");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [form, setForm] = useState<FormState>(() =>
     mode === "edit" && initialProperty ? propertyToForm(initialProperty) : emptyForm()
   );
@@ -237,6 +241,24 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
     if (url && url.startsWith("http")) {
       set("images", [...form.images, url]);
       setNewImageUrl("");
+    }
+  };
+
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files?.length || uploading) return;
+    setUploadError(null);
+    setUploading(true);
+    try {
+      const urls: string[] = [];
+      for (const file of Array.from(files)) {
+        urls.push(await uploadPropertyImage(file));
+      }
+      setForm((f) => ({ ...f, images: [...f.images, ...urls] }));
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Image upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -838,22 +860,49 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                     </div>
 
                     <div className="space-y-5 text-left">
-                      <div className="bg-sand/15 border border-dashed border-indigo/20 rounded-3xl p-6 text-center space-y-3">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => void handleFileUpload(e.target.files)}
+                      />
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => !uploading && fileInputRef.current?.click()}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            if (!uploading) fileInputRef.current?.click();
+                          }
+                        }}
+                        className="bg-sand/15 border border-dashed border-indigo/20 rounded-3xl p-6 text-center space-y-3 cursor-pointer hover:border-terracotta/40 transition-colors"
+                      >
                         <Upload className="w-10 h-10 text-indigo/35 mx-auto" />
                         <div>
-                          <p className="text-charcoal/60 text-xs font-bold">Image upload simulated</p>
+                          <p className="text-charcoal/60 text-xs font-bold">
+                            {uploading ? "Uploading..." : "Click to upload images"}
+                          </p>
                           <p className="text-charcoal/40 text-[10px] font-semibold mt-0.5">
-                            Drag & drop files or add image URLs below directly.
+                            PNG, JPG, WebP, GIF · max 5MB each · or paste a URL below
                           </p>
                         </div>
                       </div>
+
+                      {uploadError ? (
+                        <p className="text-xs font-semibold text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+                          {uploadError}
+                        </p>
+                      ) : null}
 
                       <div className="flex gap-2">
                         <TextInput
                           type="text"
                           value={newImageUrl}
                           onChange={(e) => setNewImageUrl(e.target.value)}
-                          placeholder="Add image URL (e.g. https://images.unsplash.com/...)"
+                          placeholder="Add image URL (optional fallback)"
                           className="flex-1"
                         />
                         <Button
