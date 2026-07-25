@@ -423,6 +423,30 @@ export type LocationInsert = {
 
 export type LocationUpdate = Partial<LocationInsert>;
 
+export type ActivityLogRow = {
+  id: string;
+  action: string;
+  performed_by: string;
+  actor_id: string | null;
+  role: string;
+  target: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  created_at: string;
+};
+
+export type ActivityLogInsert = {
+  id?: string;
+  action: string;
+  performed_by: string;
+  actor_id?: string | null;
+  role: string;
+  target?: string;
+  entity_type?: string | null;
+  entity_id?: string | null;
+  created_at?: string;
+};
+
 export type MessageThreadKindDb = "direct" | "support";
 export type MessageThreadStatusDb = "open" | "resolved" | "archived";
 
@@ -629,6 +653,20 @@ export type Database = {
         Insert: LocationInsert;
         Update: LocationUpdate;
         Relationships: [];
+      };
+      activity_logs: {
+        Row: ActivityLogRow;
+        Insert: ActivityLogInsert;
+        Update: never;
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: {
