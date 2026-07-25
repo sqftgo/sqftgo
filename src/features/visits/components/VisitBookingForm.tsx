@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Property, useApp } from "@/context/AppContext";
+import type { Property } from "@/types";
+import { useApp } from "@/context/AppContext";
 import { Calendar, CheckCircle2, Clock, User, Mail, Phone, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 

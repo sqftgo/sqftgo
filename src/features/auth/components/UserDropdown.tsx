@@ -83,7 +83,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             ) : isBroker ? (
               <>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-emerald-600">Verified Broker</span>
+                <span className="text-emerald-600">Verified Dealer</span>
               </>
             ) : (
               <>
@@ -155,10 +155,10 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             </Link>
           </>
         ) : isBroker ? (
-          /* Broker Specific Navigation */
+          /* Dealer dashboard navigation (DB role remains broker) */
           <>
             <div className="px-3 py-1.5 text-[9px] font-black text-charcoal/40 uppercase tracking-widest">
-              Broker Console
+              Dealer Console
             </div>
 
             <Link
@@ -167,7 +167,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
               className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-extrabold text-indigo bg-indigo/5 hover:bg-indigo/10 border border-indigo/20 transition-all group mb-1.5"
             >
               <Sliders className="w-4 h-4 text-indigo" />
-              <span>Dealers Dashboard</span>
+              <span>Dealer Dashboard</span>
             </Link>
 
             <Link
@@ -197,19 +197,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
               <span>Services Directory</span>
             </Link>
 
-            <div className="border-t border-sand/40 my-1" />
 
-            <Link
-              href="/post-property"
-              onClick={handleItemClick}
-              className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-white bg-indigo hover:bg-indigo-hover transition-colors shadow-sm"
-            >
-              <div className="flex items-center gap-2.5">
-                <Plus className="w-4 h-4 text-white" />
-                <span>Add Property Listing</span>
-              </div>
-              <Sparkles className="w-3.5 h-3.5 text-white/80 animate-pulse" />
-            </Link>
           </>
         ) : (
           /* Client / Partner Regular User Navigation */

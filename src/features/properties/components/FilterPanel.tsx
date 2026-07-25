@@ -2,7 +2,7 @@
 
 import React, { useMemo } from "react";
 import { Filter, X, RefreshCw } from "lucide-react";
-import CustomSelect from "./CustomSelect";
+import CustomSelect from "@/components/ui/CustomSelect";
 import { useApp } from "@/context/AppContext";
 import {
   CITIES,

@@ -1,2 +1,6 @@
-export { PostPropertyWizard } from "./PostPropertyWizard";
-export { PropertyForm, type PropertyFormProps, type PropertyFormSubmitData } from "./PropertyForm";
+export {
+  PropertyForm,
+  type PropertyFormProps,
+  type PropertyFormSubmitData,
+  PostPropertyWizard,
+} from "@/features/properties";

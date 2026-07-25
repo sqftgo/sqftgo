@@ -10,7 +10,8 @@ import {
   FURNISHING_OPTIONS,
   AMENITIES as AMENITY_FALLBACK,
 } from "@/constants";
-import { StepProgress, formatIndianCurrency, ErrorState, Alert } from "@/components/ui";
+import { StepProgress, ErrorState, Alert } from "@/components/ui";
+import { formatIndianCurrency } from "@/lib/format";
 import {
   IndianRupee,
   ChevronRight,

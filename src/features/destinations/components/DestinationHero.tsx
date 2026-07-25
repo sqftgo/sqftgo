@@ -1,6 +1,6 @@
 import React from "react";
 import { Compass, Search, X, MapPin, Building } from "lucide-react";
-import { Destination } from "@/data/destinations";
+import { Destination } from "../data/destinations";
 
 interface DestinationHeroProps {
   searchQuery: string;

@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Property, useApp } from "@/context/AppContext";
+import type { Property } from "@/types";
+import { useApp } from "@/context/AppContext";
 import { Send, CheckCircle2, User, Mail, Phone, MessageSquare, CheckCircle, ShieldAlert } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Avatar } from "./Avatar";
+import { Avatar } from "@/components/ui/Avatar";
 
 interface InquiryFormProps {
   property: Property;
