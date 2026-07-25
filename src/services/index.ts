@@ -22,6 +22,9 @@ export type { VisitRepository, VisitCreatePayload, VisitUpdatePayload } from "./
 export { messageService, supabaseMessageRepository } from "./messages";
 export type { MessageRepository, MessageThreadCreatePayload } from "./messages";
 
+export { favoritesService, supabaseFavoritesRepository } from "./favorites";
+export type { FavoritesRepository } from "./favorites";
+
 export {
   getStore,
   patchStore,

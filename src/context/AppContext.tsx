@@ -38,6 +38,7 @@ import {
   notificationService,
   visitService,
   authService,
+  favoritesService,
   type SessionSnapshot,
 } from "@/services";
 
@@ -63,6 +64,8 @@ interface AppContextType {
   properties: Property[];
   setProperties: React.Dispatch<React.SetStateAction<Property[]>>;
   favorites: string[];
+  favoritesReady: boolean;
+  refreshFavorites: () => Promise<void>;
   toggleFavorite: (id: string) => void;
   assistanceRequests: AssistanceRequest[];
   assistanceReady: boolean;
@@ -279,6 +282,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [logsReady, setLogsReady] = useState(false);
   const [selectedCity, setSelectedCityState] = useState(defaultSession.selectedCity);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [favoritesReady, setFavoritesReady] = useState(false);
   const [compareList, setCompareList] = useState<string[]>([]);
   const [isLoggedIn, setIsLoggedInState] = useState(false);
   const [userEmail, setUserEmailState] = useState("");
@@ -578,8 +582,50 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     if (!sessionReady) return;
-    writeUiPrefs({ favorites, compareList, selectedCity });
-  }, [sessionReady, favorites, compareList, selectedCity]);
+    // Never persist account favorites into shared localStorage — avoids cross-user leaks.
+    writeUiPrefs({
+      favorites: isLoggedIn ? [] : favorites,
+      compareList,
+      selectedCity,
+    });
+  }, [sessionReady, isLoggedIn, favorites, compareList, selectedCity]);
+
+  const refreshFavorites = useCallback(async () => {
+    if (!hasSupabaseEnv() || !isLoggedIn) {
+      setFavoritesReady(true);
+      return;
+    }
+    try {
+      const guestLocal = readUiPrefs().favorites;
+      const server = await favoritesService.list();
+      const merged = Array.from(new Set([...server, ...guestLocal]));
+      const missingOnServer = guestLocal.filter((id) => !server.includes(id));
+      await Promise.all(
+        missingOnServer.map((id) => favoritesService.add(id).catch(() => undefined))
+      );
+      setFavorites(merged);
+      writeUiPrefs({
+        favorites: [],
+        compareList: readUiPrefs().compareList,
+        selectedCity: readUiPrefs().selectedCity,
+      });
+    } catch {
+      // Keep existing in-memory favorites if sync fails
+    } finally {
+      setFavoritesReady(true);
+    }
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (!sessionReady) return;
+    if (!isLoggedIn) {
+      setFavorites(readUiPrefs().favorites);
+      setFavoritesReady(true);
+      return;
+    }
+    setFavoritesReady(false);
+    void refreshFavorites();
+  }, [sessionReady, isLoggedIn, refreshFavorites]);
 
   const setSelectedCity = useCallback((city: string) => setSelectedCityState(city), []);
   const setIsLoggedIn = useCallback((val: boolean) => setIsLoggedInState(val), []);
@@ -598,6 +644,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUserProfile(null);
     setInquiriesState({});
     setInquiriesReady(false);
+    setFavorites([]);
+    setFavoritesReady(true);
     if (hasSupabaseEnv()) {
       try {
         await authService.logout();
@@ -607,11 +655,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
-  const toggleFavorite = useCallback((id: string) => {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((favId) => favId !== id) : [...prev, id]
-    );
-  }, []);
+  const toggleFavorite = useCallback(
+    (id: string) => {
+      setFavorites((prev) => {
+        const next = prev.includes(id) ? prev.filter((favId) => favId !== id) : [...prev, id];
+        return next;
+      });
+
+      if (!hasSupabaseEnv() || !isLoggedIn) return;
+
+      const removing = favorites.includes(id);
+      void (removing ? favoritesService.remove(id) : favoritesService.add(id)).catch(() => {
+        setFavorites((prev) =>
+          removing
+            ? prev.includes(id)
+              ? prev
+              : [...prev, id]
+            : prev.filter((favId) => favId !== id)
+        );
+      });
+    },
+    [favorites, isLoggedIn]
+  );
 
   const toggleCompare = useCallback((id: string) => {
     setCompareList((prev) =>
@@ -988,6 +1053,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       properties,
       setProperties,
       favorites,
+      favoritesReady,
+      refreshFavorites,
       toggleFavorite,
       assistanceRequests,
       assistanceReady,
@@ -1085,6 +1152,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       store,
       setProperties,
       favorites,
+      favoritesReady,
+      refreshFavorites,
       toggleFavorite,
       setAssistanceRequests,
       assistanceRequests,
