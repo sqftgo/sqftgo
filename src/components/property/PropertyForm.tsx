@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Property } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
 import {
   CITIES_WITHOUT_ALL,
   PROPERTY_TYPES,
   FURNISHING_OPTIONS,
-  AMENITIES,
+  AMENITIES as AMENITY_FALLBACK,
 } from "@/constants";
 import {
   CustomSelect,
@@ -210,6 +211,11 @@ const selectBtnClass =
 
 export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormProps) {
   const router = useRouter();
+  const { amenities } = useApp();
+  const amenityOptions = useMemo(() => {
+    const live = amenities.filter((a) => a.active).map((a) => a.name);
+    return live.length > 0 ? live : [...AMENITY_FALLBACK];
+  }, [amenities]);
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState<"draft" | "published" | null>(null);
   const [saved, setSaved] = useState(false);
@@ -813,7 +819,7 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                       </div>
 
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {AMENITIES.map((a) => {
+                        {amenityOptions.map((a) => {
                           const selected = form.amenities.includes(a);
                           return (
                             <button
@@ -1339,7 +1345,7 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {AMENITIES.map((a) => {
+                {amenityOptions.map((a) => {
                   const selected = form.amenities.includes(a);
                   return (
                     <button

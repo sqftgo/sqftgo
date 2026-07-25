@@ -1,5 +1,5 @@
 import { simulateNetwork } from "@/mocks/delay";
-import type { ActivityLog, Category, Location, Notification } from "@/types";
+import type { ActivityLog, Amenity, Category, Location, Notification } from "@/types";
 import { getStore, patchStore } from "./store";
 
 async function apiJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
@@ -44,6 +44,13 @@ export interface CatalogRepository {
     updates: { city?: string; state?: string; country?: string; active?: boolean }
   ): Promise<Location>;
   deleteLocation(id: string): Promise<{ ok: boolean; deactivated?: boolean }>;
+  listAmenities(opts?: { all?: boolean }): Promise<Amenity[]>;
+  createAmenity(input: { name: string; active?: boolean }): Promise<Amenity>;
+  updateAmenity(
+    id: string,
+    updates: { name?: string; active?: boolean }
+  ): Promise<Amenity>;
+  deleteAmenity(id: string): Promise<{ ok: boolean; deactivated?: boolean }>;
   listLogs(): Promise<ActivityLog[]>;
   addLog(log: Omit<ActivityLog, "id" | "timestamp">): Promise<ActivityLog>;
 }
@@ -112,6 +119,31 @@ export const supabaseCatalogRepository: CatalogRepository = {
 
   async deleteLocation(id) {
     return apiJson<{ ok: boolean; deactivated?: boolean }>(`/api/locations/${id}`, {
+      method: "DELETE",
+    });
+  },
+
+  async listAmenities(opts) {
+    const qs = opts?.all ? "?all=1" : "";
+    return apiJson<Amenity[]>(`/api/amenities${qs}`);
+  },
+
+  async createAmenity(input) {
+    return apiJson<Amenity>("/api/amenities", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async updateAmenity(id, updates) {
+    return apiJson<Amenity>(`/api/amenities/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(updates),
+    });
+  },
+
+  async deleteAmenity(id) {
+    return apiJson<{ ok: boolean; deactivated?: boolean }>(`/api/amenities/${id}`, {
       method: "DELETE",
     });
   },

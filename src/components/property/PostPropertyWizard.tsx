@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp, Property } from "@/context/AppContext";
@@ -8,7 +8,7 @@ import {
   CITIES_WITHOUT_ALL,
   PROPERTY_TYPES,
   FURNISHING_OPTIONS,
-  AMENITIES,
+  AMENITIES as AMENITY_FALLBACK,
 } from "@/constants";
 import { StepProgress, formatIndianCurrency, ErrorState, Alert } from "@/components/ui";
 import {
@@ -31,7 +31,11 @@ type PostPropertyWizardProps = {
 
 export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
   const router = useRouter();
-  const { addProperty, isLoggedIn, userEmail, userRole } = useApp();
+  const { addProperty, isLoggedIn, userEmail, userRole, amenities } = useApp();
+  const amenityOptions = useMemo(() => {
+    const live = amenities.filter((a) => a.active).map((a) => a.name);
+    return live.length > 0 ? live : [...AMENITY_FALLBACK];
+  }, [amenities]);
   const canPost =
     isLoggedIn &&
     (userRole === "admin" || userRole === "broker" || userEmail === "admin@sqftgo.com");
@@ -347,7 +351,7 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
             <div className="flex flex-col gap-2">
               <span className="font-extrabold text-indigo">Select Amenities</span>
               <div className="grid grid-cols-2 gap-2">
-                {AMENITIES.map((am) => (
+                {amenityOptions.map((am) => (
                   <label
                     key={am}
                     className="flex items-center gap-2 cursor-pointer text-charcoal/70 font-semibold text-xs"

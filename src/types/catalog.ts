@@ -25,6 +25,12 @@ export interface Location {
   propertyCount: number;
 }
 
+export interface Amenity {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
 export interface ActivityLog {
   id: string;
   action: string;
