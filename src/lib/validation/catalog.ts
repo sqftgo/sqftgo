@@ -36,6 +36,21 @@ export const locationUpdateSchema = z
   .strict()
   .refine((v) => Object.keys(v).length > 0, { message: "No updates provided" });
 
+export const amenityCreateSchema = z.object({
+  name: z.string().trim().min(2).max(80),
+  active: z.boolean().optional(),
+  sortOrder: z.number().int().min(0).max(10000).optional(),
+});
+
+export const amenityUpdateSchema = z
+  .object({
+    name: z.string().trim().min(2).max(80).optional(),
+    active: z.boolean().optional(),
+    sortOrder: z.number().int().min(0).max(10000).optional(),
+  })
+  .strict()
+  .refine((v) => Object.keys(v).length > 0, { message: "No updates provided" });
+
 export function catalogZodError(err: z.ZodError): string {
   const first = err.issues[0];
   if (!first) return "Invalid request body";

@@ -17,6 +17,7 @@ import type {
   Notification,
   Category,
   Location,
+  Amenity,
   ActivityLog,
   MockUser,
   AssistanceRequest,
@@ -172,6 +173,16 @@ interface AppContextType {
     updates: { city?: string; state?: string; country?: string; active?: boolean }
   ) => Promise<Location>;
   deleteLocation: (id: string) => Promise<void>;
+  amenities: Amenity[];
+  amenitiesReady: boolean;
+  refreshAmenities: () => Promise<void>;
+  setAmenities: React.Dispatch<React.SetStateAction<Amenity[]>>;
+  createAmenity: (input: { name: string }) => Promise<Amenity>;
+  updateAmenity: (
+    id: string,
+    updates: { name?: string; active?: boolean }
+  ) => Promise<Amenity>;
+  deleteAmenity: (id: string) => Promise<void>;
   activityLogs: ActivityLog[];
   logsReady: boolean;
   refreshLogs: () => Promise<void>;
@@ -262,6 +273,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [categoriesReady, setCategoriesReady] = useState(false);
   const [locations, setLocationsState] = useState<Location[]>([]);
   const [locationsReady, setLocationsReady] = useState(false);
+  const [amenities, setAmenitiesState] = useState<Amenity[]>([]);
+  const [amenitiesReady, setAmenitiesReady] = useState(false);
   const [activityLogs, setActivityLogsState] = useState<ActivityLog[]>([]);
   const [logsReady, setLogsReady] = useState(false);
   const [selectedCity, setSelectedCityState] = useState(defaultSession.selectedCity);
@@ -423,11 +436,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [userRole]);
 
+  const refreshAmenities = useCallback(async () => {
+    if (!hasSupabaseEnv()) {
+      setAmenitiesState([]);
+      setAmenitiesReady(true);
+      return;
+    }
+    try {
+      const rows = await catalogService.listAmenities({ all: userRole === "admin" });
+      setAmenitiesState(rows);
+    } catch {
+      setAmenitiesState([]);
+    } finally {
+      setAmenitiesReady(true);
+    }
+  }, [userRole]);
+
   useEffect(() => {
     if (!sessionReady) return;
     void refreshCategories();
     void refreshLocations();
-  }, [sessionReady, isLoggedIn, userRole, refreshCategories, refreshLocations]);
+    void refreshAmenities();
+  }, [sessionReady, isLoggedIn, userRole, refreshCategories, refreshLocations, refreshAmenities]);
 
   const refreshLogs = useCallback(async () => {
     if (!hasSupabaseEnv() || !isLoggedIn || userRole !== "admin") {
@@ -703,6 +733,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       );
     } else {
       setLocationsState((prev) => prev.filter((l) => l.id !== id));
+    }
+  }, []);
+
+  const setAmenities: React.Dispatch<React.SetStateAction<Amenity[]>> = useCallback(
+    (action) => {
+      setAmenitiesState((current) =>
+        typeof action === "function" ? action(current) : action
+      );
+    },
+    []
+  );
+
+  const createAmenity = useCallback(async (input: { name: string }) => {
+    const created = await catalogService.createAmenity(input);
+    setAmenitiesState((prev) => [...prev, created]);
+    return created;
+  }, []);
+
+  const updateAmenity = useCallback(
+    async (id: string, updates: { name?: string; active?: boolean }) => {
+      const updated = await catalogService.updateAmenity(id, updates);
+      setAmenitiesState((prev) => prev.map((a) => (a.id === id ? updated : a)));
+      return updated;
+    },
+    []
+  );
+
+  const deleteAmenity = useCallback(async (id: string) => {
+    const result = await catalogService.deleteAmenity(id);
+    if (result.deactivated) {
+      setAmenitiesState((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, active: false } : a))
+      );
+    } else {
+      setAmenitiesState((prev) => prev.filter((a) => a.id !== id));
     }
   }, []);
 
@@ -992,6 +1057,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createLocation,
       updateLocation,
       deleteLocation,
+      amenities,
+      amenitiesReady,
+      refreshAmenities,
+      setAmenities,
+      createAmenity,
+      updateAmenity,
+      deleteAmenity,
       activityLogs,
       logsReady,
       refreshLogs,
@@ -1078,6 +1150,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createLocation,
       updateLocation,
       deleteLocation,
+      amenities,
+      amenitiesReady,
+      refreshAmenities,
+      setAmenities,
+      createAmenity,
+      updateAmenity,
+      deleteAmenity,
       activityLogs,
       logsReady,
       refreshLogs,

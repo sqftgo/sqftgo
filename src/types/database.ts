@@ -423,6 +423,26 @@ export type LocationInsert = {
 
 export type LocationUpdate = Partial<LocationInsert>;
 
+export type AmenityRow = {
+  id: string;
+  name: string;
+  active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AmenityInsert = {
+  id?: string;
+  name: string;
+  active?: boolean;
+  sort_order?: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type AmenityUpdate = Partial<AmenityInsert>;
+
 export type ActivityLogRow = {
   id: string;
   action: string;
@@ -652,6 +672,12 @@ export type Database = {
         Row: LocationRow;
         Insert: LocationInsert;
         Update: LocationUpdate;
+        Relationships: [];
+      };
+      amenities: {
+        Row: AmenityRow;
+        Insert: AmenityInsert;
+        Update: AmenityUpdate;
         Relationships: [];
       };
       activity_logs: {

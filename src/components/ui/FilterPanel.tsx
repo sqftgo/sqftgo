@@ -14,7 +14,7 @@ import {
   SIZE_MIN_OPTIONS,
   SIZE_MAX_OPTIONS,
   BHK_OPTIONS,
-  AMENITIES as AMENITY_OPTIONS,
+  AMENITIES as AMENITY_FALLBACK,
 } from "@/constants";
 
 export interface FilterState {
@@ -50,7 +50,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   onClose,
   showBasicFilters = true,
 }) => {
-  const { categories, locations } = useApp();
+  const { categories, locations, amenities } = useApp();
 
   const cityOptions = useMemo(() => {
     const live = locations.filter((l) => l.active).map((l) => l.city);
@@ -66,6 +66,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     const types = live.length > 0 ? live : [...PROPERTY_TYPES];
     return [{ label: "All Types", value: "any" }, ...types.map((t) => ({ label: t, value: t }))];
   }, [categories]);
+
+  const amenityOptions = useMemo(() => {
+    const live = amenities.filter((a) => a.active).map((a) => a.name);
+    return live.length > 0 ? live : [...AMENITY_FALLBACK];
+  }, [amenities]);
 
   const handlePurposeChange = (purpose: "all" | "buy" | "sell" | "rent" | "lease") => {
     onFilterChange({ ...filters, purpose, minPrice: "", maxPrice: "" });
@@ -350,7 +355,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         <div className="flex flex-col gap-2 pt-4 border-t border-sand">
           <span className="text-xs font-bold text-indigo uppercase tracking-wide">Amenities</span>
           <div className="grid grid-cols-2 gap-x-2 gap-y-2">
-            {AMENITY_OPTIONS.map((amenity) => {
+            {amenityOptions.map((amenity) => {
               const selected = (filters.selectedAmenities || []).includes(amenity);
               return (
                 <label

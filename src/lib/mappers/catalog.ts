@@ -1,5 +1,5 @@
-import type { Category, Location } from "@/types";
-import type { CategoryRow, LocationRow } from "@/types/database";
+import type { Amenity, Category, Location } from "@/types";
+import type { AmenityRow, CategoryRow, LocationRow } from "@/types/database";
 
 export function mapCategoryRow(row: CategoryRow, count = 0): Category {
   return {
@@ -19,5 +19,13 @@ export function mapLocationRow(row: LocationRow, propertyCount = 0): Location {
     country: row.country,
     active: row.active,
     propertyCount,
+  };
+}
+
+export function mapAmenityRow(row: AmenityRow): Amenity {
+  return {
+    id: row.id,
+    name: row.name,
+    active: row.active,
   };
 }
