@@ -13,8 +13,6 @@ import {
   AlertTriangle,
   User,
   KeyRound,
-  Eye,
-  EyeOff,
 } from "lucide-react";
 import {
   DashboardPageHeader,
@@ -33,15 +31,15 @@ import {
 export default function DealerSettingsPage() {
   const { userEmail } = useApp();
   const [saved, setSaved] = useState(false);
-  const [showPassword, setShowPassword] = useState<Record<string, boolean>>({});
+  const [saveMessage, setSaveMessage] = useState(
+    "Device preferences updated. These are not synced to the server yet."
+  );
+  const [saveTone, setSaveTone] = useState<"success" | "warning" | "danger">("warning");
+  const [resetBusy, setResetBusy] = useState(false);
   const [deactivateConfirmOpen, setDeactivateConfirmOpen] = useState(false);
-  const [confirmPasswordInput, setConfirmPasswordInput] = useState("");
 
   const [form, setForm] = useState({
-    email: userEmail || "dealer@sqftgo.com",
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
+    email: userEmail || "",
     emailNotifications: true,
     smsNotifications: false,
     marketingEmails: true,
@@ -56,30 +54,42 @@ export default function DealerSettingsPage() {
 
   const handleSave = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (form.newPassword && form.newPassword !== form.confirmPassword) {
-      alert("New passwords do not match!");
-      return;
-    }
+    setSaveTone("warning");
+    setSaveMessage(
+      "Preferences saved on this device only — server sync is not available yet."
+    );
     setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setTimeout(() => setSaved(false), 4000);
+  };
+
+  const handlePasswordReset = async () => {
+    if (!userEmail) return;
+    setResetBusy(true);
+    try {
+      const { authService } = await import("@/services/auth");
+      await authService.resetPassword(userEmail);
+      setSaveTone("success");
+      setSaveMessage(
+        "If an account exists for your email, a password reset link has been sent."
+      );
+      setSaved(true);
+      setTimeout(() => setSaved(false), 5000);
+    } catch (err) {
+      setSaveTone("danger");
+      setSaveMessage(err instanceof Error ? err.message : "Unable to send reset email");
+      setSaved(true);
+    } finally {
+      setResetBusy(false);
+    }
   };
 
   const handleDeactivate = () => {
-    if (!confirmPasswordInput) return;
-    alert(
-      "Account deactivation request submitted. In a production build, this would revoke your API tokens."
+    setDeactivateConfirmOpen(false);
+    setSaveTone("warning");
+    setSaveMessage(
+      "Account deactivation is not available yet. Contact support if you need to close your dealer account."
     );
-    setDeactivateConfirmOpen(false);
-    setConfirmPasswordInput("");
-  };
-
-  const closeDeactivate = () => {
-    setDeactivateConfirmOpen(false);
-    setConfirmPasswordInput("");
-  };
-
-  const togglePasswordVisibility = (field: string) => {
-    setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }));
+    setSaved(true);
   };
 
   return (
@@ -97,9 +107,9 @@ export default function DealerSettingsPage() {
 
       {saved && (
         <Alert
-          variant="success"
-          title="Preferences Updated"
-          description="Your setting overrides have been updated successfully."
+          variant={saveTone}
+          title={saveTone === "success" ? "Done" : saveTone === "danger" ? "Error" : "Note"}
+          description={saveMessage}
           onDismiss={() => setSaved(false)}
         />
       )}
@@ -116,8 +126,7 @@ export default function DealerSettingsPage() {
               <TextInput
                 type="email"
                 value={form.email}
-                onChange={(e) => set("email", e.target.value)}
-                placeholder="broker@sqftgo.com"
+                disabled
                 className="focus:border-indigo/40 focus:ring-indigo/10"
               />
             </FormField>
@@ -157,41 +166,19 @@ export default function DealerSettingsPage() {
             <h2 className="text-sm font-serif font-black text-charcoal">Security & Password</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              { label: "Current Password", k: "currentPassword" },
-              { label: "New Password", k: "newPassword" },
-              { label: "Confirm New Password", k: "confirmPassword" },
-            ].map(({ label, k }) => (
-              <FormField key={k} label={label}>
-                <div className="relative">
-                  <TextInput
-                    type={showPassword[k] ? "text" : "password"}
-                    value={(form as any)[k]}
-                    onChange={(e) => set(k, e.target.value)}
-                    placeholder="••••••••"
-                    className="pr-10 focus:border-indigo/40 focus:ring-indigo/10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => togglePasswordVisibility(k)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-charcoal/45 hover:text-indigo focus:outline-none cursor-pointer"
-                  >
-                    {showPassword[k] ? (
-                      <EyeOff className="w-3.5 h-3.5" />
-                    ) : (
-                      <Eye className="w-3.5 h-3.5" />
-                    )}
-                  </button>
-                </div>
-              </FormField>
-            ))}
-          </div>
-
-          <p className="text-[9px] text-charcoal/40 font-semibold flex items-center gap-1.5 mt-2">
-            <KeyRound className="w-3.5 h-3.5 text-indigo/60" /> Password requirements: Must be at
-            least 8 characters containing numbers and symbols.
+          <p className="text-xs text-charcoal/60 font-semibold leading-relaxed">
+            In-app password change is not available yet. Request a reset email for{" "}
+            <strong>{userEmail}</strong>, then complete the flow on the update-password page.
           </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            loading={resetBusy}
+            onClick={() => void handlePasswordReset()}
+          >
+            <KeyRound className="w-3.5 h-3.5" /> Send password reset email
+          </Button>
         </Panel>
 
         <Panel padding="lg" rounded="3xl">
@@ -359,24 +346,13 @@ export default function DealerSettingsPage() {
 
       <ConfirmDialog
         open={deactivateConfirmOpen}
-        onClose={closeDeactivate}
+        onClose={() => setDeactivateConfirmOpen(false)}
         onConfirm={handleDeactivate}
-        title="Are you absolutely sure?"
-        description="This action will hide your listings and your public profile immediately. You can re-enable your account by logging in again later."
-        confirmLabel="Confirm Deactivation"
-        tone="danger"
-      >
-        <FormField label="Type your account password to confirm">
-          <TextInput
-            type="password"
-            required
-            value={confirmPasswordInput}
-            onChange={(e) => setConfirmPasswordInput(e.target.value)}
-            placeholder="••••••••"
-            className="focus:border-rose-500/50 focus:ring-rose-100"
-          />
-        </FormField>
-      </ConfirmDialog>
+        title="Account deactivation unavailable"
+        description="Self-serve deactivation is not wired yet. Closing this dialog acknowledges that no account change will be made."
+        confirmLabel="Got it"
+        tone="warning"
+      />
     </div>
   );
 }

@@ -1,5 +1,7 @@
 -- Local seed: single admin (not shown on public login UI) + optional demo user/broker.
--- Defaults match README local credentials. Change passwords before any shared/staging use.
+-- Defaults match README local credentials.
+-- CRITICAL: Change these passwords before ANY shared, staging, or production use.
+-- Production must never rely on seed.sql demo accounts.
 
 create extension if not exists pgcrypto with schema extensions;
 

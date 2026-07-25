@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useApp, type DirectoryProfile } from "@/context/AppContext";
+import { kycService } from "@/services";
+import type { DealerKycRecord } from "@/types";
 import {
   Save,
   User,
@@ -10,9 +12,7 @@ import {
   CreditCard,
   Building2,
   Award,
-  Sparkles,
   ChevronRight,
-  TrendingUp,
   FileCheck,
 } from "lucide-react";
 import {
@@ -27,28 +27,7 @@ import {
   TextArea,
   CustomSelect,
 } from "@/components/ui";
-
-const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-  </svg>
-);
-
-const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-  </svg>
-);
-
-const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-    <rect x="2" y="9" width="4" height="12" />
-    <circle cx="4" cy="4" r="2" />
-  </svg>
-);
+import { findMyDirectoryProfile, filterMyProperties } from "@/lib/ownership";
 
 const CATEGORIES = [
   "Agent & Broker",
@@ -81,14 +60,44 @@ const TABS = [
 ];
 
 export default function DealerProfilePage() {
-  const { userEmail, directoryProfiles, updateDirectoryProfile, properties } = useApp();
-  const profile = directoryProfiles.find((p) => p.email.toLowerCase() === userEmail.toLowerCase());
-  const myProperties = properties.filter(
-    (p) => p.ownerEmail?.toLowerCase() === userEmail.toLowerCase()
-  );
+  const { userEmail, userProfile, directoryProfiles, updateDirectoryProfile, properties } = useApp();
+  const profile = findMyDirectoryProfile(directoryProfiles, userProfile?.id, userEmail);
+  const myProperties = filterMyProperties(properties, userProfile?.id, userEmail);
 
   const [activeTab, setActiveTab] = useState("Personal");
   const [saved, setSaved] = useState(false);
+  const [kyc, setKyc] = useState<DealerKycRecord | null>(null);
+  const [kycForm, setKycForm] = useState({
+    panNumber: "",
+    aadhaarLast4: "",
+    dealerNotes: "",
+  });
+  const [kycBusy, setKycBusy] = useState(false);
+  const [kycError, setKycError] = useState<string | null>(null);
+  const [kycMessage, setKycMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const record = await kycService.getMine();
+        if (cancelled) return;
+        setKyc(record);
+        if (record) {
+          setKycForm({
+            panNumber: record.panNumber ?? "",
+            aadhaarLast4: record.aadhaarLast4 ?? "",
+            dealerNotes: record.dealerNotes ?? "",
+          });
+        }
+      } catch {
+        // KYC optional until migration applied
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const [form, setForm] = useState({
     firmName: profile?.firmName || "",
@@ -101,15 +110,6 @@ export default function DealerProfilePage() {
     description: profile?.description || "",
     specialties: profile?.specialties || [],
     experience: profile?.experience || "",
-    pan: "ABCDE1234F",
-    aadhar: "•••• •••• 9876",
-    bankName: "HDFC Bank",
-    bankAcc: "50100043219876",
-    bankIfsc: "HDFC0000240",
-    bankBranch: "Lake Palace Branch",
-    fb: "facebook.com/dealer",
-    insta: "instagram.com/dealer",
-    linkedin: "linkedin.com/in/dealer",
   });
 
   const set = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
@@ -121,9 +121,12 @@ export default function DealerProfilePage() {
     );
   };
 
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const handleSave = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!profile?.id) return;
+    setSaveError(null);
     try {
       await updateDirectoryProfile(profile.id, {
         firmName: form.firmName,
@@ -139,8 +142,8 @@ export default function DealerProfilePage() {
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch {
-      // Keep form values; toast-style saved flag reserved for success only.
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Unable to save profile");
     }
   };
 
@@ -175,12 +178,27 @@ export default function DealerProfilePage() {
           <div className="space-y-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-lg font-serif font-black text-charcoal leading-none truncate">
-                {form.firmName || "Broker Firm Name"}
+                {form.firmName || "Dealer Firm Name"}
               </h2>
-              <Badge tone="success" size="sm" className="shrink-0 gap-1">
-                <ShieldCheck className="w-3 h-3" />
-                KYC Verified
-              </Badge>
+              {kyc?.status === "approved" ? (
+                <Badge tone="success" size="sm" className="shrink-0 gap-1">
+                  <ShieldCheck className="w-3 h-3" />
+                  KYC approved
+                </Badge>
+              ) : kyc?.status === "pending" ? (
+                <Badge tone="warning" size="sm" className="shrink-0 gap-1">
+                  KYC pending
+                </Badge>
+              ) : form.reraId ? (
+                <Badge tone="success" size="sm" className="shrink-0 gap-1">
+                  <ShieldCheck className="w-3 h-3" />
+                  RERA listed
+                </Badge>
+              ) : (
+                <Badge tone="neutral" size="sm" className="shrink-0 gap-1">
+                  KYC not submitted
+                </Badge>
+              )}
             </div>
             <p className="text-xs text-charcoal/50 font-semibold truncate">
               Managed by <strong className="text-charcoal">{form.ownerName || "Dealer User"}</strong>{" "}
@@ -199,14 +217,17 @@ export default function DealerProfilePage() {
               Active Listings
             </span>
           </div>
-          <div className="px-4 py-2 bg-indigo/5 rounded-2xl border border-indigo/10 text-center min-w-[80px]">
-            <span className="block text-lg font-serif font-black text-indigo">Pro</span>
-            <span className="text-[8px] font-black text-charcoal/40 uppercase tracking-widest">
-              Partner Tier
-            </span>
-          </div>
         </div>
       </Panel>
+
+      {saveError && (
+        <Alert
+          variant="danger"
+          title="Could not save profile"
+          description={saveError}
+          onDismiss={() => setSaveError(null)}
+        />
+      )}
 
       {saved && (
         <Alert
@@ -307,7 +328,7 @@ export default function DealerProfilePage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField label="Firm / Brokerage Agency Title" required>
+                  <FormField label="Firm / Agency Title" required>
                     <TextInput
                       type="text"
                       required
@@ -389,48 +410,178 @@ export default function DealerProfilePage() {
               <div className="space-y-5">
                 <div>
                   <h3 className="text-sm font-serif font-black text-charcoal">
-                    Regulatory & KYC Documents
+                    Private KYC & RERA
                   </h3>
                   <p className="text-[10px] text-charcoal/40 font-semibold mt-0.5">
-                    Verification status of business licenses, tax documents, and RERA credentials.
+                    KYC is stored in a private table (not on the public directory).
+                    RERA ID remains part of your public business profile.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField label="Permanent Account Number (PAN)">
-                    <TextInput
-                      type="text"
-                      value={form.pan}
-                      onChange={(e) => set("pan", e.target.value)}
-                      className={inputClass}
-                    />
-                  </FormField>
+                {kycError ? (
+                  <Alert variant="danger" title="KYC error" description={kycError} />
+                ) : null}
+                {kycMessage ? (
+                  <Alert variant="success" title="KYC updated" description={kycMessage} />
+                ) : null}
+                {kyc?.status === "rejected" && kyc.rejectionReason ? (
+                  <Alert
+                    variant="warning"
+                    title="KYC rejected"
+                    description={kyc.rejectionReason}
+                  />
+                ) : null}
 
-                  <FormField label="Aadhar UIDAI Number">
-                    <TextInput
-                      type="text"
-                      value={form.aadhar}
-                      onChange={(e) => set("aadhar", e.target.value)}
-                      className={inputClass}
-                    />
-                  </FormField>
+                <FormField label="RERA Registration Certificate ID (public directory)">
+                  <TextInput
+                    type="text"
+                    value={form.reraId}
+                    onChange={(e) => set("reraId", e.target.value)}
+                    placeholder="e.g. RAJ-RERA-A-2025-XXXX"
+                    className={inputClass}
+                  />
+                </FormField>
 
-                  <FormField label="RERA Registration Certificate ID" className="sm:col-span-2">
-                    <TextInput
-                      type="text"
-                      value={form.reraId}
-                      onChange={(e) => set("reraId", e.target.value)}
-                      placeholder="e.g. RAJ-RERA-A-2025-XXXX"
-                      className={inputClass}
-                    />
-                  </FormField>
+                <FormField label="PAN number (private)">
+                  <TextInput
+                    type="text"
+                    value={kycForm.panNumber}
+                    onChange={(e) =>
+                      setKycForm((f) => ({ ...f, panNumber: e.target.value.toUpperCase() }))
+                    }
+                    disabled={kyc?.status === "pending" || kyc?.status === "approved"}
+                    placeholder="ABCDE1234F"
+                    className={inputClass}
+                  />
+                </FormField>
+
+                <FormField label="Aadhaar last 4 digits (private)">
+                  <TextInput
+                    type="text"
+                    value={kycForm.aadhaarLast4}
+                    onChange={(e) =>
+                      setKycForm((f) => ({
+                        ...f,
+                        aadhaarLast4: e.target.value.replace(/\D/g, "").slice(0, 4),
+                      }))
+                    }
+                    disabled={kyc?.status === "pending" || kyc?.status === "approved"}
+                    placeholder="1234"
+                    className={inputClass}
+                    maxLength={4}
+                  />
+                </FormField>
+
+                <FormField label="Notes for reviewer">
+                  <TextArea
+                    value={kycForm.dealerNotes}
+                    onChange={(e) =>
+                      setKycForm((f) => ({ ...f, dealerNotes: e.target.value }))
+                    }
+                    disabled={kyc?.status === "pending" || kyc?.status === "approved"}
+                    rows={3}
+                  />
+                </FormField>
+
+                <FormField label="Upload document (PAN / Aadhaar / RERA PDF)">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                    disabled={kyc?.status === "pending" || kyc?.status === "approved" || kycBusy}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setKycBusy(true);
+                      setKycError(null);
+                      try {
+                        // Ensure draft exists before upload
+                        const saved = await kycService.save({
+                          panNumber: kycForm.panNumber || null,
+                          aadhaarLast4: kycForm.aadhaarLast4 || null,
+                          dealerNotes: kycForm.dealerNotes,
+                          directoryProfileId: profile?.id ?? null,
+                          submit: false,
+                        });
+                        setKyc(saved);
+                        const doc = await kycService.uploadDocument(file, "other");
+                        setKyc((prev) =>
+                          prev
+                            ? { ...prev, documents: [doc, ...prev.documents] }
+                            : prev
+                        );
+                        setKycMessage(`Uploaded ${doc.fileName}`);
+                      } catch (err) {
+                        setKycError(err instanceof Error ? err.message : "Upload failed");
+                      } finally {
+                        setKycBusy(false);
+                        e.target.value = "";
+                      }
+                    }}
+                    className="block w-full text-xs"
+                  />
+                  {kyc?.documents?.length ? (
+                    <p className="text-[10px] text-charcoal/50 font-semibold mt-2">
+                      {kyc.documents.length} document(s) on file
+                    </p>
+                  ) : null}
+                </FormField>
+
+                <div className="flex flex-wrap gap-2 justify-end pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="md"
+                    disabled={kycBusy || kyc?.status === "pending" || kyc?.status === "approved"}
+                    onClick={async () => {
+                      setKycBusy(true);
+                      setKycError(null);
+                      try {
+                        const saved = await kycService.save({
+                          panNumber: kycForm.panNumber || null,
+                          aadhaarLast4: kycForm.aadhaarLast4 || null,
+                          dealerNotes: kycForm.dealerNotes,
+                          directoryProfileId: profile?.id ?? null,
+                          submit: false,
+                        });
+                        setKyc(saved);
+                        setKycMessage("KYC draft saved");
+                      } catch (err) {
+                        setKycError(err instanceof Error ? err.message : "Save failed");
+                      } finally {
+                        setKycBusy(false);
+                      }
+                    }}
+                  >
+                    Save draft
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="md"
+                    disabled={kycBusy || kyc?.status === "pending" || kyc?.status === "approved"}
+                    onClick={async () => {
+                      setKycBusy(true);
+                      setKycError(null);
+                      try {
+                        const saved = await kycService.save({
+                          panNumber: kycForm.panNumber || null,
+                          aadhaarLast4: kycForm.aadhaarLast4 || null,
+                          dealerNotes: kycForm.dealerNotes,
+                          directoryProfileId: profile?.id ?? null,
+                          submit: true,
+                        });
+                        setKyc(saved);
+                        setKycMessage("Submitted for admin review");
+                      } catch (err) {
+                        setKycError(err instanceof Error ? err.message : "Submit failed");
+                      } finally {
+                        setKycBusy(false);
+                      }
+                    }}
+                  >
+                    Submit for review
+                  </Button>
                 </div>
-
-                <Alert
-                  variant="success"
-                  title="Verification Verified"
-                  description="Verification documents checked on July 16, 2026. Verified status boosts lead conversions by displaying verification badge next to your property cards."
-                />
               </div>
             )}
 
@@ -441,47 +592,14 @@ export default function DealerProfilePage() {
                     Settlement Account Details
                   </h3>
                   <p className="text-[10px] text-charcoal/40 font-semibold mt-0.5">
-                    Configure the bank account for customer refunds or brokerage payouts.
+                    Bank settlement is not available on the platform yet.
                   </p>
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField label="Bank Entity Name">
-                    <TextInput
-                      type="text"
-                      value={form.bankName}
-                      onChange={(e) => set("bankName", e.target.value)}
-                      className={inputClass}
-                    />
-                  </FormField>
-
-                  <FormField label="Settlement Account Number">
-                    <TextInput
-                      type="text"
-                      value={form.bankAcc}
-                      onChange={(e) => set("bankAcc", e.target.value)}
-                      className={inputClass}
-                    />
-                  </FormField>
-
-                  <FormField label="IFSC Routing Code">
-                    <TextInput
-                      type="text"
-                      value={form.bankIfsc}
-                      onChange={(e) => set("bankIfsc", e.target.value)}
-                      className={inputClass}
-                    />
-                  </FormField>
-
-                  <FormField label="Bank Branch Locality">
-                    <TextInput
-                      type="text"
-                      value={form.bankBranch}
-                      onChange={(e) => set("bankBranch", e.target.value)}
-                      className={inputClass}
-                    />
-                  </FormField>
-                </div>
+                <Alert
+                  variant="warning"
+                  title="Bank details not stored"
+                  description="There is no settlement account API. Entering account numbers here would not save — fields have been removed until a secure vault exists."
+                />
               </div>
             )}
 
@@ -490,47 +608,14 @@ export default function DealerProfilePage() {
                 <div>
                   <h3 className="text-sm font-serif font-black text-charcoal">Social Profiles</h3>
                   <p className="text-[10px] text-charcoal/40 font-semibold mt-0.5">
-                    Attach your social media profile URLs so buyers can connect with you.
+                    Social links are not part of the directory schema yet.
                   </p>
                 </div>
-
-                <div className="space-y-4">
-                  <FormField label="Facebook Business Profile">
-                    <div className="relative">
-                      <FacebookIcon className="w-4 h-4 text-indigo/60 absolute left-4 top-1/2 -translate-y-1/2" />
-                      <TextInput
-                        type="text"
-                        value={form.fb}
-                        onChange={(e) => set("fb", e.target.value)}
-                        className={`pl-12 ${inputClass}`}
-                      />
-                    </div>
-                  </FormField>
-
-                  <FormField label="Instagram Handler Profile">
-                    <div className="relative">
-                      <InstagramIcon className="w-4 h-4 text-indigo/60 absolute left-4 top-1/2 -translate-y-1/2" />
-                      <TextInput
-                        type="text"
-                        value={form.insta}
-                        onChange={(e) => set("insta", e.target.value)}
-                        className={`pl-12 ${inputClass}`}
-                      />
-                    </div>
-                  </FormField>
-
-                  <FormField label="LinkedIn Personal Link">
-                    <div className="relative">
-                      <LinkedinIcon className="w-4 h-4 text-indigo/60 absolute left-4 top-1/2 -translate-y-1/2" />
-                      <TextInput
-                        type="text"
-                        value={form.linkedin}
-                        onChange={(e) => set("linkedin", e.target.value)}
-                        className={`pl-12 ${inputClass}`}
-                      />
-                    </div>
-                  </FormField>
-                </div>
+                <Alert
+                  variant="info"
+                  title="Social profiles unavailable"
+                  description="Facebook, Instagram, and LinkedIn URLs are not persisted. Use your website field under Business Details for a public link."
+                />
               </div>
             )}
 
@@ -541,69 +626,37 @@ export default function DealerProfilePage() {
                     Plan Tier & Conversions
                   </h3>
                   <p className="text-[10px] text-charcoal/40 font-semibold mt-0.5">
-                    Analyze your lead conversion statistics and billing information.
+                    Billing and lead analytics are not wired yet.
                   </p>
                 </div>
 
-                <div className="bg-indigo/5 border border-indigo/10 rounded-2xl p-5 flex flex-col sm:flex-row gap-4 items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white border border-indigo/10 flex items-center justify-center text-indigo">
-                      <Sparkles className="w-5 h-5 animate-pulse" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-charcoal">Pro Premium Partner Plan</h4>
-                      <p className="text-[9px] text-charcoal/40 font-semibold mt-0.5">
-                        Renews automatically: August 15, 2026
-                      </p>
-                    </div>
-                  </div>
-                  <Badge tone="primary" className="bg-indigo text-white border-indigo">
-                    Active Pro
-                  </Badge>
-                </div>
+                <Alert
+                  variant="warning"
+                  title="No subscription or fabricated KPIs"
+                  description="Partner tiers, renewal dates, and conversion percentages are not stored. Listing count below is from your real properties."
+                />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="border border-indigo/10 rounded-2xl p-5 space-y-2 bg-[#faf8f5]">
-                    <span className="text-[8px] font-black text-charcoal/40 uppercase tracking-widest">
-                      Active Listings
-                    </span>
-                    <div className="flex items-baseline gap-2">
-                      <p className="text-2xl font-serif font-black text-indigo">
-                        {myProperties.length}
-                      </p>
-                      <span className="text-[9px] text-emerald-600 font-bold flex items-center gap-0.5">
-                        <TrendingUp className="w-3 h-3" /> +1 this week
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-charcoal/50 font-semibold leading-relaxed">
-                      Total approved property listings currently indexed on the platform search
-                      database.
-                    </p>
-                  </div>
-
-                  <div className="border border-indigo/10 rounded-2xl p-5 space-y-2 bg-[#faf8f5]">
-                    <span className="text-[8px] font-black text-charcoal/40 uppercase tracking-widest">
-                      Conversion Performance
-                    </span>
-                    <div className="flex items-baseline gap-2">
-                      <p className="text-2xl font-serif font-black text-indigo">48 Leads</p>
-                      <span className="text-[9px] text-emerald-600 font-bold flex items-center gap-0.5">
-                        <TrendingUp className="w-3 h-3" /> +18% MoM
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-charcoal/50 font-semibold leading-relaxed">
-                      Unique buyers who contacted you or submitted property inquiry proposals.
-                    </p>
-                  </div>
+                <div className="border border-indigo/10 rounded-2xl p-5 space-y-2 bg-[#faf8f5]">
+                  <span className="text-[8px] font-black text-charcoal/40 uppercase tracking-widest">
+                    Your listings
+                  </span>
+                  <p className="text-2xl font-serif font-black text-indigo">
+                    {myProperties.length}
+                  </p>
+                  <p className="text-[10px] text-charcoal/50 font-semibold leading-relaxed">
+                    Properties currently associated with your account email.
+                  </p>
                 </div>
               </div>
             )}
 
+            {(activeTab === "Personal" || activeTab === "Business") && (
             <div className="flex justify-end pt-4 border-t border-indigo/5 mt-4">
               <Button type="submit" variant="secondary" size="md">
                 <Save className="w-4 h-4" /> Save Account Profile
               </Button>
             </div>
+            )}
           </Panel>
         </form>
       </div>

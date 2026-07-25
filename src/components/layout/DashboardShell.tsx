@@ -41,61 +41,42 @@ export interface DashboardShellProps {
   accessDenied?: React.ReactNode;
 }
 
-export function DashboardShell({
-  children,
-  portalLabel,
-  accent = "terracotta",
+interface SidebarContentProps {
+  brandIcon?: React.ReactNode;
+  portalLabel: string;
+  profileName: string;
+  profileEmail: string;
+  accent: "terracotta" | "indigo";
+  navSections: DashboardNavSection[];
+  isActive: (item: DashboardNavItem) => boolean;
+  getBadgeCount?: (badge?: string) => number;
+  publicSiteHref: string;
+  publicSiteLabel: string;
+  onLogout: () => void;
+  setSidebarOpen: (open: boolean) => void;
+  activeClasses: string;
+  idleHover: string;
+  iconIdle: string;
+}
+
+function SidebarContent({
   brandIcon,
+  portalLabel,
   profileName,
   profileEmail,
-  profileInitial,
+  accent,
   navSections,
+  isActive,
   getBadgeCount,
-  publicSiteHref = "/",
-  publicSiteLabel = "View Public Site",
+  publicSiteHref,
+  publicSiteLabel,
   onLogout,
-  topBarExtra,
-  searchPlaceholder = "Search dashboard...",
-  ready = true,
-  accessDenied,
-}: DashboardShellProps) {
-  const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const activeClasses =
-    accent === "terracotta"
-      ? "bg-terracotta text-white shadow-md shadow-terracotta/15"
-      : "bg-indigo text-white shadow-md shadow-indigo/15";
-  const idleHover =
-    accent === "terracotta"
-      ? "text-charcoal/65 hover:text-terracotta hover:bg-terracotta/5"
-      : "text-charcoal/65 hover:text-indigo hover:bg-indigo/5";
-  const iconIdle =
-    accent === "terracotta"
-      ? "text-terracotta/60 group-hover:text-terracotta"
-      : "text-indigo/60 group-hover:text-indigo";
-
-  if (!ready) {
-    return (
-      <div className="min-h-screen bg-cream">
-        <PageLoader label="Loading portal…" />
-      </div>
-    );
-  }
-
-  if (accessDenied) {
-    return <>{accessDenied}</>;
-  }
-
-  const isActive = (item: DashboardNavItem) => {
-    const href = item.query ? `${item.href}?${new URLSearchParams(item.query)}` : item.href;
-    if (item.query) {
-      return pathname === item.href; // query match handled loosely
-    }
-    return item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
-  };
-
-  const SidebarContent = () => (
+  setSidebarOpen,
+  activeClasses,
+  idleHover,
+  iconIdle,
+}: SidebarContentProps) {
+  return (
     <div className="flex flex-col h-full bg-sand/40 text-charcoal select-none">
       <div className="px-6 py-5 border-b border-indigo/5 shrink-0 bg-white/40">
         <Link href="/" className="flex items-center gap-2.5">
@@ -201,11 +182,94 @@ export function DashboardShell({
       </div>
     </div>
   );
+}
+
+export function DashboardShell({
+  children,
+  portalLabel,
+  accent = "terracotta",
+  brandIcon,
+  profileName,
+  profileEmail,
+  profileInitial,
+  navSections,
+  getBadgeCount,
+  publicSiteHref = "/",
+  publicSiteLabel = "View Public Site",
+  onLogout,
+  topBarExtra,
+  searchPlaceholder = "Search dashboard...",
+  ready = true,
+  accessDenied,
+}: DashboardShellProps) {
+  const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const activeClasses =
+    accent === "terracotta"
+      ? "bg-terracotta text-white shadow-md shadow-terracotta/15"
+      : "bg-indigo text-white shadow-md shadow-indigo/15";
+  const idleHover =
+    accent === "terracotta"
+      ? "text-charcoal/65 hover:text-terracotta hover:bg-terracotta/5"
+      : "text-charcoal/65 hover:text-indigo hover:bg-indigo/5";
+  const iconIdle =
+    accent === "terracotta"
+      ? "text-terracotta/60 group-hover:text-terracotta"
+      : "text-indigo/60 group-hover:text-indigo";
+
+  if (!ready) {
+    return (
+      <div className="min-h-screen bg-cream">
+        <PageLoader label="Loading portal…" />
+      </div>
+    );
+  }
+
+  if (accessDenied) {
+    return <>{accessDenied}</>;
+  }
+
+  const isActive = (item: DashboardNavItem) => {
+    if (typeof window === "undefined") {
+      return item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
+    }
+    if (item.query) {
+      const searchParams = new URLSearchParams(window.location.search);
+      const matchesQuery = Object.entries(item.query).every(([key, value]) => searchParams.get(key) === value);
+      return pathname === item.href && matchesQuery;
+    } else {
+      // If this item has no query param, but the URL does, it shouldn't be active if it's the exact same pathname
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.toString() !== "" && pathname === item.href) {
+        return false;
+      }
+    }
+    return item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
+  };
+
+  const sidebarContentProps: SidebarContentProps = {
+    brandIcon,
+    portalLabel,
+    profileName,
+    profileEmail,
+    accent,
+    navSections,
+    isActive,
+    getBadgeCount,
+    publicSiteHref,
+    publicSiteLabel,
+    onLogout,
+    setSidebarOpen,
+    activeClasses,
+    idleHover,
+    iconIdle,
+  };
 
   return (
     <div className="flex h-screen bg-cream text-charcoal font-sans overflow-hidden">
       <aside className="hidden lg:flex w-64 xl:w-70 bg-sand/40 border-r border-indigo/10 flex-col shrink-0">
-        <SidebarContent />
+        <SidebarContent {...sidebarContentProps} />
       </aside>
 
       <AnimatePresence>
@@ -237,7 +301,7 @@ export function DashboardShell({
               >
                 <X className="w-4 h-4" />
               </button>
-              <SidebarContent />
+              <SidebarContent {...sidebarContentProps} />
             </motion.aside>
           </>
         )}
