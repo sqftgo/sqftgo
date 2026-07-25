@@ -3,10 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { config } from "@fortawesome/fontawesome-svg-core";
-import { AppProvider } from "@/context/AppContext";
+import { AppProviders } from "@/providers/AppProviders";
 import Navbar from "@/components/shared/Navbar";
 import MainWrapper from "@/components/shared/MainWrapper";
-import CompareBar from "@/components/shared/CompareBar";
+
 
 // Prevent Font Awesome from dynamically adding its CSS since we imported it above
 config.autoAddCss = false;
@@ -41,7 +41,7 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
     >
       <body className="min-h-full flex flex-col font-sans">
-        <AppProvider>
+        <AppProviders>
           {/* Depth drifting background layers */}
           <DepthBackground />
           
@@ -56,12 +56,11 @@ export default function RootLayout({
           {/* Global Footer */}
           <Footer />
           
-          {/* Sticky compare tray when 2+ properties selected */}
-          <CompareBar />
+
 
           {/* Global Dream Project Button */}
           <DreamProjectButton />
-        </AppProvider>
+        </AppProviders>
       </body>
     </html>
   );

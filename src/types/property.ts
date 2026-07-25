@@ -31,8 +31,10 @@ export interface Property {
   ownerName: string;
   ownerPhone: string;
   ownerEmail?: string;
+  /** Auth/profiles id of the listing owner. */
+  ownerId?: string;
   inquiryCount: number;
-  status: "Active" | "Pending Review" | "Sold" | "Rented" | "Draft";
+  status: "Active" | "Pending Review" | "Sold" | "Rented" | "Draft" | "Rejected";
   featured?: boolean;
   reraApproved?: boolean;
   reraId?: string;

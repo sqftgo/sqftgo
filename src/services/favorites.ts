@@ -1,23 +1,4 @@
-async function apiJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
-  const res = await fetch(input, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
-    credentials: "same-origin",
-  });
-  const data = (await res.json().catch(() => ({}))) as T & { error?: string };
-  if (!res.ok) {
-    throw new Error(
-      typeof data === "object" && data && "error" in data && data.error
-        ? String(data.error)
-        : "Request failed"
-    );
-  }
-  return data;
-}
-
+import { apiClient } from "@/lib/api/client";
 export interface FavoritesRepository {
   list(): Promise<string[]>;
   add(propertyId: string): Promise<void>;
@@ -26,18 +7,18 @@ export interface FavoritesRepository {
 
 export const supabaseFavoritesRepository: FavoritesRepository = {
   async list() {
-    return apiJson<string[]>("/api/favorites");
+    return apiClient<string[]>("/api/favorites");
   },
 
   async add(propertyId) {
-    await apiJson<{ ok: boolean }>("/api/favorites", {
+    await apiClient<{ ok: boolean }>("/api/favorites", {
       method: "POST",
       body: JSON.stringify({ propertyId }),
     });
   },
 
   async remove(propertyId) {
-    await apiJson<{ ok: boolean }>(`/api/favorites/${propertyId}`, {
+    await apiClient<{ ok: boolean }>(`/api/favorites/${propertyId}`, {
       method: "DELETE",
     });
   },

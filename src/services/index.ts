@@ -25,6 +25,9 @@ export type { MessageRepository, MessageThreadCreatePayload } from "./messages";
 export { favoritesService, supabaseFavoritesRepository } from "./favorites";
 export type { FavoritesRepository } from "./favorites";
 
+export { platformService } from "./platform";
+export { kycService } from "./kyc";
+
 export {
   getStore,
   patchStore,

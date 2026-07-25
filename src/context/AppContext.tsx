@@ -7,11 +7,20 @@ import React, {
   useEffect,
   useMemo,
   useState,
-  useSyncExternalStore,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { SESSION_STORAGE_KEY } from "@/constants/demoAccounts";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { toggleCompareList } from "@/lib/compare";
+import { queryKeys } from "@/lib/queryKeys";
+import {
+  useAdminUsersQuery,
+  usePropertiesQuery,
+  useDealersQuery,
+  DEFAULT_LIST_PAGE,
+} from "@/hooks/queries/marketplace";
+import { useAuthContext } from "@/providers/AuthProvider";
+import type { PaginatedResult } from "@/lib/api/client";
+
 import type {
   Property,
   UserProfile,
@@ -28,19 +37,15 @@ import type {
   VisitBooking,
 } from "@/types";
 import {
-  getStore,
-  subscribeStore,
-  patchStore,
   propertyService,
   inquiryService,
   dealerService,
   catalogService,
   notificationService,
   visitService,
-  authService,
   favoritesService,
-  type SessionSnapshot,
 } from "@/services";
+import { findMyDirectoryProfile } from "@/lib/ownership";
 
 export type {
   Property,
@@ -85,6 +90,7 @@ interface AppContextType {
   deleteProperty: (propertyId: string) => Promise<void>;
   refreshProperties: () => Promise<void>;
   propertiesReady: boolean;
+  propertiesError: string | null;
   deleteInquiry: (inquiryId: string) => Promise<void>;
   inquiries: Record<string, PropertyInquiry[]>;
   inquiriesReady: boolean;
@@ -103,21 +109,17 @@ interface AppContextType {
   deleteGeneralEnquiry: (id: string) => Promise<void>;
   directoryProfiles: DirectoryProfile[];
   directoryProfilesReady: boolean;
+  directoryProfilesError: string | null;
   refreshDirectoryProfiles: () => Promise<void>;
   setDirectoryProfiles: React.Dispatch<React.SetStateAction<DirectoryProfile[]>>;
   addDirectoryProfile: (profile: Omit<DirectoryProfile, "id">) => Promise<DirectoryProfile>;
   updateDirectoryProfile: (id: string, updates: Partial<DirectoryProfile>) => Promise<DirectoryProfile>;
   deleteDirectoryProfile: (id: string) => Promise<void>;
   isLoggedIn: boolean;
-  setIsLoggedIn: (val: boolean) => void;
   userEmail: string;
-  setUserEmail: (email: string) => void;
   userRole: "user" | "broker" | "admin" | null;
-  setUserRole: (role: "user" | "broker" | "admin" | null) => void;
   userName: string;
-  setUserName: (name: string) => void;
   userProfile: UserProfile | null;
-  setUserProfile: React.Dispatch<React.SetStateAction<UserProfile | null>>;
   updateProfile: (input: {
     name?: string;
     phone?: string | null;
@@ -196,33 +198,27 @@ interface AppContextType {
   addLog: (log: Omit<ActivityLog, "id" | "timestamp">) => void;
   adminUsers: MockUser[];
   setAdminUsers: React.Dispatch<React.SetStateAction<MockUser[]>>;
-  compareList: string[];
-  setCompareList: React.Dispatch<React.SetStateAction<string[]>>;
-  toggleCompare: (id: string) => void;
+
   logout: () => Promise<void>;
   sessionReady: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const defaultSession: SessionSnapshot = {
-  isLoggedIn: false,
-  userEmail: "",
-  userRole: null,
-  userName: "",
-  userProfile: null,
-  favorites: [],
-  compareList: [],
+const defaultSession = {
+  favorites: [] as string[],
   selectedCity: "Udaipur",
 };
 
-type UiPrefs = Pick<SessionSnapshot, "favorites" | "compareList" | "selectedCity">;
+type UiPrefs = {
+  favorites: string[];
+  selectedCity: string;
+};
 
 function readUiPrefs(): UiPrefs {
   if (typeof window === "undefined") {
     return {
       favorites: defaultSession.favorites,
-      compareList: defaultSession.compareList,
       selectedCity: defaultSession.selectedCity,
     };
   }
@@ -231,14 +227,12 @@ function readUiPrefs(): UiPrefs {
     if (!raw) {
       return {
         favorites: defaultSession.favorites,
-        compareList: defaultSession.compareList,
         selectedCity: defaultSession.selectedCity,
       };
     }
-    const parsed = JSON.parse(raw) as Partial<SessionSnapshot>;
+    const parsed = JSON.parse(raw) as Partial<UiPrefs>;
     return {
       favorites: Array.isArray(parsed.favorites) ? parsed.favorites : [],
-      compareList: Array.isArray(parsed.compareList) ? parsed.compareList : [],
       selectedCity:
         typeof parsed.selectedCity === "string" && parsed.selectedCity
           ? parsed.selectedCity
@@ -247,7 +241,6 @@ function readUiPrefs(): UiPrefs {
   } catch {
     return {
       favorites: defaultSession.favorites,
-      compareList: defaultSession.compareList,
       selectedCity: defaultSession.selectedCity,
     };
   }
@@ -259,15 +252,41 @@ function writeUiPrefs(prefs: UiPrefs) {
 }
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const store = useSyncExternalStore(subscribeStore, getStore, getStore);
+  const auth = useAuthContext();
+  const {
+    isLoggedIn,
+    userEmail,
+    userRole,
+    userName,
+    userProfile,
+    sessionReady,
+    logout: authLogout,
+    updateProfile: authUpdateProfile,
+  } = auth;
+  const queryClient = useQueryClient();
+  const propertiesQuery = usePropertiesQuery();
+  const dealersQuery = useDealersQuery();
+  const adminUsersQuery = useAdminUsersQuery();
+  const properties = propertiesQuery.data?.items ?? [];
+  const directoryProfiles = dealersQuery.data?.items ?? [];
+  const adminUsers = adminUsersQuery.data?.items ?? [];
+  const propertiesReady = propertiesQuery.isFetched || !hasSupabaseEnv();
+  const propertiesError =
+    propertiesQuery.isError && propertiesQuery.error instanceof Error
+      ? propertiesQuery.error.message
+      : propertiesQuery.isError
+        ? "Unable to load properties"
+        : null;
+  const directoryProfilesReady = dealersQuery.isFetched || !hasSupabaseEnv();
+  const directoryProfilesError =
+    dealersQuery.isError && dealersQuery.error instanceof Error
+      ? dealersQuery.error.message
+      : dealersQuery.isError
+        ? "Unable to load dealer directory"
+        : null;
 
-  const [sessionReady, setSessionReady] = useState(false);
-  const [properties, setPropertiesState] = useState<Property[]>([]);
-  const [propertiesReady, setPropertiesReady] = useState(false);
   const [inquiries, setInquiriesState] = useState<Record<string, PropertyInquiry[]>>({});
   const [inquiriesReady, setInquiriesReady] = useState(false);
-  const [directoryProfiles, setDirectoryProfilesState] = useState<DirectoryProfile[]>([]);
-  const [directoryProfilesReady, setDirectoryProfilesReady] = useState(false);
   const [assistanceRequests, setAssistanceRequestsState] = useState<AssistanceRequest[]>([]);
   const [assistanceReady, setAssistanceReady] = useState(false);
   const [enquiries, setEnquiriesState] = useState<GeneralEnquiry[]>([]);
@@ -287,88 +306,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedCity, setSelectedCityState] = useState(defaultSession.selectedCity);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [favoritesReady, setFavoritesReady] = useState(false);
-  const [compareList, setCompareList] = useState<string[]>([]);
-  const [isLoggedIn, setIsLoggedInState] = useState(false);
-  const [userEmail, setUserEmailState] = useState("");
-  const [userRole, setUserRoleState] = useState<"user" | "broker" | "admin" | null>(null);
-  const [userName, setUserNameState] = useState("");
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     const prefs = readUiPrefs();
     setSelectedCityState(prefs.selectedCity);
     setFavorites(prefs.favorites);
-    setCompareList(prefs.compareList);
-
-    let cancelled = false;
-
-    async function hydrateAuth() {
-      // Never trust localStorage for roles/identity — only Supabase cookie session.
-      if (!hasSupabaseEnv()) {
-        setIsLoggedInState(false);
-        setUserEmailState("");
-        setUserRoleState(null);
-        setUserNameState("");
-        setUserProfile(null);
-        if (!cancelled) setSessionReady(true);
-        return;
-      }
-
-      try {
-        const session = await authService.getSession();
-        if (cancelled) return;
-        if (session) {
-          setIsLoggedInState(true);
-          setUserEmailState(session.email);
-          setUserRoleState(session.role);
-          setUserNameState(session.name);
-          setUserProfile(session.profile);
-        } else {
-          setIsLoggedInState(false);
-          setUserEmailState("");
-          setUserRoleState(null);
-          setUserNameState("");
-          setUserProfile(null);
-        }
-      } catch {
-        if (!cancelled) {
-          setIsLoggedInState(false);
-          setUserEmailState("");
-          setUserRoleState(null);
-          setUserNameState("");
-          setUserProfile(null);
-        }
-      } finally {
-        if (!cancelled) setSessionReady(true);
-      }
-    }
-
-    void hydrateAuth();
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   const refreshProperties = useCallback(async () => {
-    if (!hasSupabaseEnv()) {
-      setPropertiesState([]);
-      setPropertiesReady(true);
-      return;
-    }
-    try {
-      const rows = await propertyService.list();
-      setPropertiesState(rows);
-    } catch {
-      setPropertiesState([]);
-    } finally {
-      setPropertiesReady(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!sessionReady) return;
-    void refreshProperties();
-  }, [sessionReady, isLoggedIn, userRole, refreshProperties]);
+    await queryClient.invalidateQueries({ queryKey: queryKeys.properties.all });
+  }, [queryClient]);
 
   const refreshNotifications = useCallback(async () => {
     if (!hasSupabaseEnv() || !isLoggedIn) {
@@ -528,25 +475,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [sessionReady, isLoggedIn, userRole, refreshInquiries]);
 
   const refreshDirectoryProfiles = useCallback(async () => {
-    if (!hasSupabaseEnv()) {
-      setDirectoryProfilesState([]);
-      setDirectoryProfilesReady(true);
-      return;
-    }
-    try {
-      const rows = await dealerService.listProfiles();
-      setDirectoryProfilesState(rows);
-    } catch {
-      setDirectoryProfilesState([]);
-    } finally {
-      setDirectoryProfilesReady(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!sessionReady) return;
-    void refreshDirectoryProfiles();
-  }, [sessionReady, refreshDirectoryProfiles]);
+    await queryClient.invalidateQueries({ queryKey: queryKeys.dealers.all });
+  }, [queryClient]);
 
   const refreshAssistance = useCallback(async () => {
     if (!hasSupabaseEnv() || !isLoggedIn || userRole !== "admin") {
@@ -589,10 +519,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Never persist account favorites into shared localStorage — avoids cross-user leaks.
     writeUiPrefs({
       favorites: isLoggedIn ? [] : favorites,
-      compareList,
       selectedCity,
     });
-  }, [sessionReady, isLoggedIn, favorites, compareList, selectedCity]);
+  }, [sessionReady, isLoggedIn, favorites, selectedCity]);
 
   const refreshFavorites = useCallback(async () => {
     if (!hasSupabaseEnv() || !isLoggedIn) {
@@ -610,7 +539,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setFavorites(merged);
       writeUiPrefs({
         favorites: [],
-        compareList: readUiPrefs().compareList,
         selectedCity: readUiPrefs().selectedCity,
       });
     } catch {
@@ -632,13 +560,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [sessionReady, isLoggedIn, refreshFavorites]);
 
   const setSelectedCity = useCallback((city: string) => setSelectedCityState(city), []);
-  const setIsLoggedIn = useCallback((val: boolean) => setIsLoggedInState(val), []);
-  const setUserEmail = useCallback((email: string) => setUserEmailState(email), []);
-  const setUserRole = useCallback(
-    (role: "user" | "broker" | "admin" | null) => setUserRoleState(role),
-    []
-  );
-  const setUserName = useCallback((name: string) => setUserNameState(name), []);
 
   const updateProfile = useCallback(
     async (input: {
@@ -648,32 +569,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       city?: string | null;
       avatarUrl?: string | null;
     }) => {
-      const session = await authService.updateProfile(input);
-      setUserNameState(session.name);
-      setUserProfile(session.profile);
-      return session.profile;
+      return authUpdateProfile(input);
     },
-    []
+    [authUpdateProfile]
   );
 
   const logout = useCallback(async () => {
-    setIsLoggedInState(false);
-    setUserEmailState("");
-    setUserRoleState(null);
-    setUserNameState("");
-    setUserProfile(null);
     setInquiriesState({});
     setInquiriesReady(false);
     setFavorites([]);
     setFavoritesReady(true);
-    if (hasSupabaseEnv()) {
-      try {
-        await authService.logout();
-      } catch {
-        // Local state already cleared
-      }
-    }
-  }, []);
+    await authLogout();
+  }, [authLogout]);
 
   const toggleFavorite = useCallback(
     (id: string) => {
@@ -698,15 +605,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [favorites, isLoggedIn]
   );
 
-  const toggleCompare = useCallback((id: string) => {
-    setCompareList((prev) => toggleCompareList(prev, id));
-  }, []);
 
-  const setProperties: React.Dispatch<React.SetStateAction<Property[]>> = useCallback((action) => {
-    setPropertiesState((current) =>
-      typeof action === "function" ? action(current) : action
-    );
-  }, []);
+
+  const setProperties: React.Dispatch<React.SetStateAction<Property[]>> = useCallback(
+    (action) => {
+      queryClient.setQueryData(
+        queryKeys.properties.list(DEFAULT_LIST_PAGE),
+        (prev: PaginatedResult<Property> | undefined) => {
+          const current = prev?.items ?? [];
+          const nextItems = typeof action === "function" ? action(current) : action;
+          return {
+            items: nextItems,
+            total: nextItems.length,
+            limit: prev?.limit ?? DEFAULT_LIST_PAGE.limit,
+            offset: prev?.offset ?? DEFAULT_LIST_PAGE.offset,
+          };
+        }
+      );
+    },
+    [queryClient]
+  );
 
   const setAssistanceRequests: React.Dispatch<React.SetStateAction<AssistanceRequest[]>> = useCallback(
     (action) => {
@@ -723,11 +641,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const setDirectoryProfiles: React.Dispatch<React.SetStateAction<DirectoryProfile[]>> = useCallback(
     (action) => {
-      setDirectoryProfilesState((current) =>
-        typeof action === "function" ? action(current) : action
+      queryClient.setQueryData(
+        queryKeys.dealers.list(DEFAULT_LIST_PAGE),
+        (prev: PaginatedResult<DirectoryProfile> | undefined) => {
+          const current = prev?.items ?? [];
+          const nextItems = typeof action === "function" ? action(current) : action;
+          return {
+            items: nextItems,
+            total: nextItems.length,
+            limit: prev?.limit ?? DEFAULT_LIST_PAGE.limit,
+            offset: prev?.offset ?? DEFAULT_LIST_PAGE.offset,
+          };
+        }
       );
     },
-    []
+    [queryClient]
   );
 
   const setNotifications: React.Dispatch<React.SetStateAction<Notification[]>> = useCallback(
@@ -850,11 +778,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
-  const setAdminUsers: React.Dispatch<React.SetStateAction<MockUser[]>> = useCallback((action) => {
-    const current = getStore().adminUsers;
-    const next = typeof action === "function" ? action(current) : action;
-    patchStore({ adminUsers: next });
-  }, []);
+  const setAdminUsers: React.Dispatch<React.SetStateAction<MockUser[]>> = useCallback(
+    (action) => {
+      queryClient.setQueryData(
+        queryKeys.adminUsers.list(DEFAULT_LIST_PAGE),
+        (prev: PaginatedResult<MockUser> | undefined) => {
+          const current = prev?.items ?? [];
+          const nextItems = typeof action === "function" ? action(current) : action;
+          return {
+            items: nextItems,
+            total: nextItems.length,
+            limit: prev?.limit ?? DEFAULT_LIST_PAGE.limit,
+            offset: prev?.offset ?? DEFAULT_LIST_PAGE.offset,
+          };
+        }
+      );
+    },
+    [queryClient]
+  );
 
   const addAssistanceRequest = useCallback(async (req: Omit<AssistanceRequest, "id" | "status">) => {
     const created = await inquiryService.addAssistance(req);
@@ -884,9 +825,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ) => {
       const matchingProfile =
         isLoggedIn && userRole === "broker"
-          ? directoryProfiles.find(
-              (dp) => dp.email.toLowerCase() === userEmail.toLowerCase()
-            )
+          ? findMyDirectoryProfile(directoryProfiles, userProfile?.id, userEmail)
           : null;
 
       const created = await propertyService.create({
@@ -895,7 +834,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         ownerPhone: matchingProfile?.mobile ?? userProfile?.phone ?? "+91 99000 99000",
         ownerEmail: isLoggedIn ? userEmail : undefined,
       });
-      setPropertiesState((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
+      setProperties((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.properties.all });
       void refreshNotifications();
       return created;
     },
@@ -905,7 +845,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       userEmail,
       userName,
       userProfile?.phone,
+      userProfile?.id,
       directoryProfiles,
+      setProperties,
+      queryClient,
       refreshNotifications,
     ]
   );
@@ -913,17 +856,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateProperty = useCallback(
     async (propertyId: string, updates: Partial<Property>) => {
       const updated = await propertyService.update(propertyId, updates);
-      setPropertiesState((prev) => prev.map((p) => (p.id === propertyId ? updated : p)));
+      setProperties((prev) => prev.map((p) => (p.id === propertyId ? updated : p)));
+      void queryClient.invalidateQueries({ queryKey: queryKeys.properties.all });
       void refreshNotifications();
       return updated;
     },
-    [refreshNotifications]
+    [setProperties, queryClient, refreshNotifications]
   );
 
   const deleteProperty = useCallback(async (propertyId: string) => {
     await propertyService.remove(propertyId);
-    setPropertiesState((prev) => prev.filter((p) => p.id !== propertyId));
-  }, []);
+    setProperties((prev) => prev.filter((p) => p.id !== propertyId));
+    void queryClient.invalidateQueries({ queryKey: queryKeys.properties.all });
+  }, [setProperties, queryClient]);
 
   const deleteInquiry = useCallback(
     async (inquiryId: string) => {
@@ -973,23 +918,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const addDirectoryProfile = useCallback(async (prof: Omit<DirectoryProfile, "id">) => {
     const created = await dealerService.create(prof);
-    setDirectoryProfilesState((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
+    setDirectoryProfiles((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
+    void queryClient.invalidateQueries({ queryKey: queryKeys.dealers.all });
     return created;
-  }, []);
+  }, [setDirectoryProfiles, queryClient]);
 
   const updateDirectoryProfile = useCallback(
     async (id: string, updates: Partial<DirectoryProfile>) => {
       const updated = await dealerService.update(id, updates);
-      setDirectoryProfilesState((prev) => prev.map((p) => (p.id === id ? updated : p)));
+      setDirectoryProfiles((prev) => prev.map((p) => (p.id === id ? updated : p)));
+      void queryClient.invalidateQueries({ queryKey: queryKeys.dealers.all });
       return updated;
     },
-    []
+    [setDirectoryProfiles, queryClient]
   );
 
   const deleteDirectoryProfile = useCallback(async (id: string) => {
     await dealerService.remove(id);
-    setDirectoryProfilesState((prev) => prev.filter((p) => p.id !== id));
-  }, []);
+    setDirectoryProfiles((prev) => prev.filter((p) => p.id !== id));
+    void queryClient.invalidateQueries({ queryKey: queryKeys.dealers.all });
+  }, [setDirectoryProfiles, queryClient]);
 
   const markNotificationRead = useCallback(async (id: string) => {
     const updated = await notificationService.markRead(id);
@@ -1078,6 +1026,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       deleteProperty,
       refreshProperties,
       propertiesReady,
+      propertiesError,
       deleteInquiry,
       inquiries,
       inquiriesReady,
@@ -1091,21 +1040,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       deleteGeneralEnquiry,
       directoryProfiles,
       directoryProfilesReady,
+      directoryProfilesError,
       refreshDirectoryProfiles,
       setDirectoryProfiles,
       addDirectoryProfile,
       updateDirectoryProfile,
       deleteDirectoryProfile,
       isLoggedIn,
-      setIsLoggedIn,
       userEmail,
-      setUserEmail,
       userRole,
-      setUserRole,
       userName,
-      setUserName,
       userProfile,
-      setUserProfile,
       updateProfile,
       notifications,
       notificationsReady,
@@ -1144,11 +1089,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       logsReady,
       refreshLogs,
       addLog,
-      adminUsers: store.adminUsers,
+      adminUsers,
       setAdminUsers,
-      compareList,
-      setCompareList,
-      toggleCompare,
+
       logout,
       sessionReady,
     }),
@@ -1157,8 +1100,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setSelectedCity,
       properties,
       propertiesReady,
+      propertiesError,
       refreshProperties,
-      store,
       setProperties,
       favorites,
       favoritesReady,
@@ -1187,19 +1130,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       deleteGeneralEnquiry,
       directoryProfiles,
       directoryProfilesReady,
+      directoryProfilesError,
       refreshDirectoryProfiles,
       setDirectoryProfiles,
       addDirectoryProfile,
       updateDirectoryProfile,
       deleteDirectoryProfile,
       isLoggedIn,
-      setIsLoggedIn,
       userEmail,
-      setUserEmail,
       userRole,
-      setUserRole,
       userName,
-      setUserName,
       userProfile,
       updateProfile,
       notifications,
@@ -1239,9 +1179,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       logsReady,
       refreshLogs,
       addLog,
+      adminUsers,
       setAdminUsers,
-      compareList,
-      toggleCompare,
+
       logout,
       sessionReady,
     ]

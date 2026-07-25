@@ -2,7 +2,7 @@
 
 import React, { useCallback, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
-import { authService } from "@/services";
+import { useAuthContext } from "@/providers/AuthProvider";
 import type { PropertyFilters } from "@/services";
 
 export function useAuth() {
@@ -12,46 +12,13 @@ export function useAuth() {
     userRole,
     userName,
     userProfile,
-    setIsLoggedIn,
-    setUserEmail,
-    setUserRole,
-    setUserName,
-    setUserProfile,
-    logout,
     sessionReady,
-    adminUsers,
-    setAdminUsers,
-  } = useApp();
+    login,
+    signup,
+    logout,
+  } = useAuthContext();
 
-  const login = useCallback(
-    async (email: string, password: string) => {
-      const session = await authService.login(email, password);
-      setIsLoggedIn(true);
-      setUserEmail(session.email);
-      setUserRole(session.role);
-      setUserName(session.name);
-      setUserProfile(session.profile);
-      return session;
-    },
-    [setIsLoggedIn, setUserEmail, setUserRole, setUserName, setUserProfile]
-  );
-
-  const signup = useCallback(
-    async (input: { name: string; email: string; password: string }) => {
-      const result = await authService.signup(input);
-      if (result.status === "confirm_email") {
-        return result;
-      }
-      const session = result.session;
-      setIsLoggedIn(true);
-      setUserEmail(session.email);
-      setUserRole(session.role);
-      setUserName(session.name);
-      setUserProfile(session.profile);
-      return result;
-    },
-    [setIsLoggedIn, setUserEmail, setUserRole, setUserName, setUserProfile]
-  );
+  const { adminUsers } = useApp();
 
   return {
     isLoggedIn,
@@ -64,11 +31,6 @@ export function useAuth() {
     login,
     signup,
     logout,
-    setIsLoggedIn,
-    setUserEmail,
-    setUserRole,
-    setUserName,
-    setUserProfile,
   };
 }
 
@@ -80,8 +42,6 @@ export function useProperties(filters?: PropertyFilters) {
     deleteProperty,
     favorites,
     toggleFavorite,
-    compareList,
-    toggleCompare,
   } = useApp();
 
   const filtered = useMemo(() => {
@@ -116,8 +76,6 @@ export function useProperties(filters?: PropertyFilters) {
     deleteProperty,
     favorites,
     toggleFavorite,
-    compareList,
-    toggleCompare,
   };
 }
 

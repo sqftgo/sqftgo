@@ -1,9 +1,8 @@
 import type { MockUser, UserProfile } from "@/types";
-import { initialMockUsers } from "@/data";
 
 /**
- * Slim leftover client store: only admin user list cache until pages finish hydrating
- * from `/api/admin/users`. All marketplace domains hit Supabase via BFF.
+ * Slim leftover client store: admin user list cache only.
+ * Starts empty — pages must hydrate from `/api/admin/users` (no mock seed).
  */
 export interface AppStore {
   adminUsers: MockUser[];
@@ -11,7 +10,7 @@ export interface AppStore {
 
 function createInitialStore(): AppStore {
   return {
-    adminUsers: structuredClone(initialMockUsers),
+    adminUsers: [],
   };
 }
 
@@ -51,6 +50,5 @@ export type SessionSnapshot = {
   userName: string;
   userProfile: UserProfile | null;
   favorites: string[];
-  compareList: string[];
   selectedCity: string;
 };

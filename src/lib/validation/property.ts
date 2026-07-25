@@ -23,6 +23,7 @@ export const propertyStatusUiSchema = z.enum([
   "Sold",
   "Rented",
   "Draft",
+  "Rejected",
 ]);
 
 export const verificationChecksSchema = z
