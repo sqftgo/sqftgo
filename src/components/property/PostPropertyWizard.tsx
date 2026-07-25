@@ -123,7 +123,7 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    addProperty({
+    void addProperty({
       title: `${
         type !== "Industrial Plot" && type !== "Agricultural Land" && bhk ? bhk + " BHK " : ""
       }${type} in ${locality}`,
@@ -143,10 +143,15 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
         mockUploadedImages.length > 0
           ? mockUploadedImages
           : ["https://maps.google.com/cbk?output=thumbnail&w=800&h=600&ll=26.2700,73.0100"],
-    });
-
-    setIsSubmitted(true);
-    onSuccess?.();
+      status: "Pending Review",
+    })
+      .then(() => {
+        setIsSubmitted(true);
+        onSuccess?.();
+      })
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : "Unable to create property");
+      });
   };
 
   const renderStepContent = () => {

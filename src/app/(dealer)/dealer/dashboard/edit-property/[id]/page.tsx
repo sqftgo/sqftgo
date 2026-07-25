@@ -29,8 +29,8 @@ export default function EditPropertyPage() {
     );
   }
 
-  const handleSubmit = (data: PropertyFormSubmitData) => {
-    updateProperty(prop.id, {
+  const handleSubmit = async (data: PropertyFormSubmitData) => {
+    await updateProperty(prop.id, {
       title: data.title,
       type: data.type,
       purpose: data.purpose,
@@ -47,6 +47,7 @@ export default function EditPropertyPage() {
       price: data.price || prop.price,
       status: data.status,
       amenities: data.amenities,
+      images: data.images,
       seoTitle: data.seoTitle,
       seoDescription: data.seoDescription,
       reraId: data.reraId,

@@ -66,9 +66,11 @@ interface AppContextType {
     property: Omit<Property, "id" | "inquiryCount" | "status" | "ownerName" | "ownerPhone" | "ownerEmail"> & {
       status?: Property["status"];
     }
-  ) => void;
-  updateProperty: (propertyId: string, updates: Partial<Property>) => void;
-  deleteProperty: (propertyId: string) => void;
+  ) => Promise<Property>;
+  updateProperty: (propertyId: string, updates: Partial<Property>) => Promise<Property>;
+  deleteProperty: (propertyId: string) => Promise<void>;
+  refreshProperties: () => Promise<void>;
+  propertiesReady: boolean;
   deleteInquiry: (propertyId: string, index: number) => void;
   inquiries: Record<string, PropertyInquiry[]>;
   submitInquiry: (
@@ -170,6 +172,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const store = useSyncExternalStore(subscribeStore, getStore, getStore);
 
   const [sessionReady, setSessionReady] = useState(false);
+  const [properties, setPropertiesState] = useState<Property[]>([]);
+  const [propertiesReady, setPropertiesReady] = useState(false);
   const [selectedCity, setSelectedCityState] = useState(defaultSession.selectedCity);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [compareList, setCompareList] = useState<string[]>([]);
@@ -234,6 +238,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, []);
 
+  const refreshProperties = useCallback(async () => {
+    if (!hasSupabaseEnv()) {
+      setPropertiesState([]);
+      setPropertiesReady(true);
+      return;
+    }
+    try {
+      const rows = await propertyService.list();
+      setPropertiesState(rows);
+    } catch {
+      setPropertiesState([]);
+    } finally {
+      setPropertiesReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!sessionReady) return;
+    void refreshProperties();
+  }, [sessionReady, isLoggedIn, userRole, refreshProperties]);
+
   useEffect(() => {
     if (!sessionReady) return;
     writeUiPrefs({ favorites, compareList, selectedCity });
@@ -280,9 +305,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const setProperties: React.Dispatch<React.SetStateAction<Property[]>> = useCallback((action) => {
-    const current = getStore().properties;
-    const next = typeof action === "function" ? action(current) : action;
-    patchStore({ properties: next });
+    setPropertiesState((current) =>
+      typeof action === "function" ? action(current) : action
+    );
   }, []);
 
   const setAssistanceRequests: React.Dispatch<React.SetStateAction<AssistanceRequest[]>> = useCallback(
@@ -341,7 +366,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const addProperty = useCallback(
-    (
+    async (
       prop: Omit<Property, "id" | "inquiryCount" | "status" | "ownerName" | "ownerPhone" | "ownerEmail"> & {
         status?: Property["status"];
       }
@@ -353,22 +378,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             )
           : null;
 
-      void propertyService.create({
+      const created = await propertyService.create({
         ...prop,
-        ownerName: matchingProfile ? matchingProfile.ownerName : "Owner User",
-        ownerPhone: matchingProfile ? matchingProfile.mobile : "+91 99000 99000",
-        ownerEmail: isLoggedIn ? userEmail : "owner@example.com",
+        ownerName: matchingProfile?.ownerName ?? (userName || "Owner User"),
+        ownerPhone: matchingProfile?.mobile ?? userProfile?.phone ?? "+91 99000 99000",
+        ownerEmail: isLoggedIn ? userEmail : undefined,
       });
+      setPropertiesState((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
+      return created;
     },
-    [isLoggedIn, userRole, userEmail]
+    [isLoggedIn, userRole, userEmail, userName, userProfile?.phone]
   );
 
-  const updateProperty = useCallback((propertyId: string, updates: Partial<Property>) => {
-    void propertyService.update(propertyId, updates);
+  const updateProperty = useCallback(async (propertyId: string, updates: Partial<Property>) => {
+    const updated = await propertyService.update(propertyId, updates);
+    setPropertiesState((prev) => prev.map((p) => (p.id === propertyId ? updated : p)));
+    return updated;
   }, []);
 
-  const deleteProperty = useCallback((propertyId: string) => {
-    void propertyService.remove(propertyId);
+  const deleteProperty = useCallback(async (propertyId: string) => {
+    await propertyService.remove(propertyId);
+    setPropertiesState((prev) => prev.filter((p) => p.id !== propertyId));
   }, []);
 
   const deleteInquiry = useCallback((propertyId: string, index: number) => {
@@ -406,7 +436,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     () => ({
       selectedCity,
       setSelectedCity,
-      properties: store.properties,
+      properties,
       setProperties,
       favorites,
       toggleFavorite,
@@ -416,6 +446,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addProperty,
       updateProperty,
       deleteProperty,
+      refreshProperties,
+      propertiesReady,
       deleteInquiry,
       inquiries: store.inquiries,
       submitInquiry,
@@ -457,6 +489,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [
       selectedCity,
       setSelectedCity,
+      properties,
+      propertiesReady,
+      refreshProperties,
       store,
       setProperties,
       favorites,

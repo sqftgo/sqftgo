@@ -18,14 +18,14 @@ export default function AdminApprovalsPage() {
 
   const pending = properties.filter(p => p.status === "Pending Review");
 
-  const approve = (id: string, title: string) => {
-    updateProperty(id, { status: "Active" });
+  const approve = async (id: string, title: string) => {
+    await updateProperty(id, { status: "Active" });
     addLog({ action: "Property Approved", performedBy: userEmail, role: "Admin", target: title });
   };
 
-  const confirmReject = () => {
+  const confirmReject = async () => {
     if (!pendingReject) return;
-    deleteProperty(pendingReject.id);
+    await deleteProperty(pendingReject.id);
     addLog({ action: "Property Rejected", performedBy: userEmail, role: "Admin", target: pendingReject.title });
     setPendingReject(null);
   };

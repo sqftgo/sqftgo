@@ -1,6 +1,4 @@
-import { simulateNetwork } from "@/mocks/delay";
 import type { Property } from "@/types";
-import { getStore, patchStore } from "./store";
 
 export interface PropertyFilters {
   city?: string;
@@ -12,6 +10,8 @@ export interface PropertyFilters {
   ownerEmail?: string;
   featured?: boolean;
   search?: string;
+  /** When true, returns only the authenticated broker's listings (all statuses). */
+  mine?: boolean;
 }
 
 export type PropertyCreateInput = Omit<
@@ -32,65 +32,76 @@ export interface PropertyRepository {
   remove(id: string): Promise<void>;
 }
 
-function applyFilters(items: Property[], filters?: PropertyFilters): Property[] {
-  if (!filters) return items;
-  return items.filter((p) => {
-    if (filters.city && filters.city !== "All India" && p.city !== filters.city) return false;
-    if (filters.type && filters.type !== "any" && p.type !== filters.type) return false;
-    if (filters.purpose && p.purpose !== filters.purpose) return false;
-    if (filters.status && p.status !== filters.status) return false;
-    if (filters.ownerEmail && p.ownerEmail?.toLowerCase() !== filters.ownerEmail.toLowerCase()) return false;
-    if (filters.featured !== undefined && Boolean(p.featured) !== filters.featured) return false;
-    if (filters.minPrice !== undefined && p.price < filters.minPrice) return false;
-    if (filters.maxPrice !== undefined && p.price > filters.maxPrice) return false;
-    if (filters.search) {
-      const q = filters.search.toLowerCase();
-      const hay = `${p.title} ${p.locality} ${p.city} ${p.type}`.toLowerCase();
-      if (!hay.includes(q)) return false;
-    }
-    return true;
+async function apiJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
+  const res = await fetch(input, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init?.headers ?? {}),
+    },
+    credentials: "same-origin",
   });
+
+  const data = (await res.json().catch(() => ({}))) as T & { error?: string };
+  if (!res.ok) {
+    throw new Error(
+      typeof data === "object" && data && "error" in data && data.error
+        ? String(data.error)
+        : "Request failed"
+    );
+  }
+  return data;
 }
 
-export const mockPropertyRepository: PropertyRepository = {
+function toQuery(filters?: PropertyFilters): string {
+  if (!filters) return "";
+  const params = new URLSearchParams();
+  if (filters.city) params.set("city", filters.city);
+  if (filters.type) params.set("type", filters.type);
+  if (filters.purpose) params.set("purpose", filters.purpose);
+  if (filters.minPrice !== undefined) params.set("minPrice", String(filters.minPrice));
+  if (filters.maxPrice !== undefined) params.set("maxPrice", String(filters.maxPrice));
+  if (filters.status) params.set("status", filters.status);
+  if (filters.ownerEmail) params.set("ownerEmail", filters.ownerEmail);
+  if (filters.featured !== undefined) params.set("featured", String(filters.featured));
+  if (filters.search) params.set("search", filters.search);
+  if (filters.mine) params.set("mine", "1");
+  const qs = params.toString();
+  return qs ? `?${qs}` : "";
+}
+
+export const supabasePropertyRepository: PropertyRepository = {
   async list(filters) {
-    await simulateNetwork(120);
-    return applyFilters([...getStore().properties], filters);
+    return apiJson<Property[]>(`/api/properties${toQuery(filters)}`);
   },
 
   async getById(id) {
-    await simulateNetwork(80);
-    return getStore().properties.find((p) => p.id === id) ?? null;
+    try {
+      return await apiJson<Property>(`/api/properties/${id}`);
+    } catch {
+      return null;
+    }
   },
 
   async create(input) {
-    await simulateNetwork(180);
-    const property: Property = {
-      ...input,
-      id: `prop-${Date.now()}`,
-      inquiryCount: 0,
-      status: input.status ?? "Pending Review",
-      ownerName: input.ownerName ?? "Owner User",
-      ownerPhone: input.ownerPhone ?? "+91 99000 99000",
-      ownerEmail: input.ownerEmail ?? "owner@example.com",
-    };
-    patchStore({ properties: [property, ...getStore().properties] });
-    return property;
+    return apiJson<Property>("/api/properties", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
   },
 
   async update(id, updates) {
-    await simulateNetwork(140);
-    const next = getStore().properties.map((p) => (p.id === id ? { ...p, ...updates } : p));
-    const updated = next.find((p) => p.id === id);
-    if (!updated) throw new Error("Property not found");
-    patchStore({ properties: next });
-    return updated;
+    return apiJson<Property>(`/api/properties/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(updates),
+    });
   },
 
   async remove(id) {
-    await simulateNetwork(100);
-    patchStore({ properties: getStore().properties.filter((p) => p.id !== id) });
+    await apiJson<{ ok: boolean }>(`/api/properties/${id}`, {
+      method: "DELETE",
+    });
   },
 };
 
-export const propertyService: PropertyRepository = mockPropertyRepository;
+export const propertyService: PropertyRepository = supabasePropertyRepository;
