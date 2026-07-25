@@ -1,6 +1,4 @@
-import type { AssistanceRequest, CustomerReview, GeneralEnquiry, PropertyInquiry } from "@/types";
-import { getStore, patchStore } from "./store";
-import { simulateNetwork } from "@/mocks/delay";
+import type { AssistanceRequest, GeneralEnquiry, PropertyInquiry } from "@/types";
 import type { PropertyInquiryView } from "@/lib/mappers/inquiry";
 
 export interface InquiryRepository {
@@ -18,8 +16,6 @@ export interface InquiryRepository {
   listEnquiries(): Promise<GeneralEnquiry[]>;
   addEnquiry(enq: Omit<GeneralEnquiry, "id" | "date"> & { payload?: Record<string, unknown> }): Promise<GeneralEnquiry>;
   removeEnquiry(id: string): Promise<void>;
-  listReviews(): Promise<CustomerReview[]>;
-  addReview(rev: Omit<CustomerReview, "id" | "date">): Promise<CustomerReview>;
 }
 
 async function apiJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
@@ -60,7 +56,7 @@ function toRecord(rows: PropertyInquiryView[]): Record<string, PropertyInquiry[]
   return out;
 }
 
-/** Property inquiries + assistance/enquiries hit Supabase; reviews stay mock. */
+/** Property inquiries + assistance/enquiries hit Supabase. */
 export const supabaseInquiryRepository: InquiryRepository = {
   async listByProperty(propertyId) {
     const rows = await apiJson<PropertyInquiryView[]>(`/api/properties/${propertyId}/inquiries`);
@@ -156,22 +152,6 @@ export const supabaseInquiryRepository: InquiryRepository = {
 
   async removeEnquiry(id) {
     await apiJson<{ ok: boolean }>(`/api/enquiries/${id}`, { method: "DELETE" });
-  },
-
-  async listReviews() {
-    await simulateNetwork(80);
-    return [...getStore().reviews];
-  },
-
-  async addReview(rev) {
-    await simulateNetwork(120);
-    const item: CustomerReview = {
-      ...rev,
-      id: `rev-${Date.now()}`,
-      date: new Date().toISOString().split("T")[0],
-    };
-    patchStore({ reviews: [item, ...getStore().reviews] });
-    return item;
   },
 };
 

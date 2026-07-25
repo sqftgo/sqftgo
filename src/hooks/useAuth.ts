@@ -19,8 +19,8 @@ export function useAuth() {
     setUserProfile,
     logout,
     sessionReady,
-    mockUsers,
-    setMockUsers,
+    adminUsers,
+    setAdminUsers,
   } = useApp();
 
   const login = useCallback(
@@ -60,7 +60,7 @@ export function useAuth() {
     userName,
     userProfile,
     sessionReady,
-    mockUsers,
+    adminUsers,
     login,
     signup,
     logout,

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui";
 
 export default function AdminReportsPage() {
-  const { properties, mockUsers, inquiries, enquiries, directoryProfiles } = useApp();
+  const { properties, adminUsers, inquiries, enquiries, directoryProfiles } = useApp();
 
   const totalInquiries = Object.values(inquiries).reduce((a, b) => a + b.length, 0);
   const totalEnquiries = enquiries.length;
@@ -59,7 +59,7 @@ export default function AdminReportsPage() {
       />
 
       <KpiGrid>
-        <StatCard label="Total Users" value={mockUsers.filter(u => u.role === "user").length} icon={<Users className="w-4 h-4 text-indigo" />} tone="indigo" />
+        <StatCard label="Total Users" value={adminUsers.filter(u => u.role === "user").length} icon={<Users className="w-4 h-4 text-indigo" />} tone="indigo" />
         <StatCard label="Registered Dealers" value={totalDealers} icon={<Users className="w-4 h-4 text-purple-600" />} />
         <StatCard label="Active Listings" value={activeProperties} icon={<Building2 className="w-4 h-4 text-emerald-600" />} tone="success" />
         <StatCard label="Total Inquiries" value={totalInquiries + totalEnquiries} icon={<MessageSquare className="w-4 h-4 text-terracotta" />} tone="terracotta" />

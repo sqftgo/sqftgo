@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { StepProgress } from "@/components/ui";
 import { useApp } from "@/context/AppContext";
+import { AMENITIES as AMENITY_FALLBACK } from "@/constants";
+import { uploadDreamInspiration } from "@/lib/uploads/dreamInspiration";
 
 const STEPS = [
   "Basic Details",
@@ -26,14 +28,18 @@ const BUDGETS = ["Under ₹50 Lakhs", "₹50 Lakhs – ₹1 Crore", "₹1 Crore 
 const BEDROOMS = ["1 BHK", "2 BHK", "3 BHK", "4 BHK", "5+ BHK"];
 const SIZES = ["Under 800 sq. ft.", "800–1200 sq. ft.", "1200–1800 sq. ft.", "1800–2500 sq. ft.", "Above 2500 sq. ft.", "Not Sure"];
 const STYLES = ["Modern", "Luxury", "Minimalist", "Traditional", "Contemporary", "Eco-Friendly", "Not Sure"];
-const AMENITIES = ["Swimming Pool", "Gym", "Garden", "Children's Play Area", "Clubhouse", "Walking Track", "Sports Court", "Pet-Friendly Area", "Smart Home Features", "EV Charging", "24×7 Security", "Parking", "Lift", "Power Backup"];
 const FEATURES = ["Large Balcony", "Modular Kitchen", "Walk-in Closet", "Home Office", "Study Room", "Private Garden", "Terrace", "Home Theatre", "Smart Home Automation", "Spacious Living Room", "Extra Storage"];
 const MATTERS_MOST = ["Location", "Budget", "Safety", "Schools Nearby", "Public Transport", "Investment Value", "Peaceful Neighborhood", "Luxury Lifestyle", "Green Spaces", "Shopping Nearby", "Hospitals Nearby"];
 
 export default function DreamProjectButton() {
   const pathname = usePathname();
   const isDashboardRoute = pathname.startsWith("/dealer/") || pathname.startsWith("/admin");
-  const { addGeneralEnquiry, isLoggedIn, userEmail, userName, userProfile } = useApp();
+  const { addGeneralEnquiry, isLoggedIn, userEmail, userName, userProfile, amenities } = useApp();
+  const amenityOptions = useMemo(() => {
+    const live = amenities.filter((a) => a.active).map((a) => a.name);
+    return live.length > 0 ? live : [...AMENITY_FALLBACK];
+  }, [amenities]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -41,6 +47,7 @@ export default function DreamProjectButton() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -61,7 +68,7 @@ export default function DreamProjectButton() {
     features: [] as string[],
     mattersMost: [] as string[],
     description: "",
-    files: [] as File[],
+    inspirationUrls: [] as string[],
     contactName: "",
     contactEmail: "",
     contactPhone: "",
@@ -86,7 +93,7 @@ export default function DreamProjectButton() {
     }
   }, [isOpen, isLoggedIn, userName, userEmail, userProfile?.phone]);
 
-  const updateForm = (key: string, value: string | string[] | File[]) => {
+  const updateForm = (key: string, value: string | string[]) => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
@@ -100,6 +107,31 @@ export default function DreamProjectButton() {
         return { ...prev, [key]: [...current, value] };
       }
     });
+  };
+
+  const handleInspirationUpload = async (files: FileList | null) => {
+    if (!files?.length || uploading) return;
+    if (!isLoggedIn) {
+      setSubmitError("Sign in to attach inspiration photos.");
+      return;
+    }
+    setUploading(true);
+    setSubmitError(null);
+    try {
+      const urls: string[] = [];
+      for (const file of Array.from(files).slice(0, 4)) {
+        urls.push(await uploadDreamInspiration(file));
+      }
+      setFormData((prev) => ({
+        ...prev,
+        inspirationUrls: [...prev.inspirationUrls, ...urls].slice(0, 6),
+      }));
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Inspiration upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const nextStep = () => {
@@ -148,6 +180,7 @@ export default function DreamProjectButton() {
           amenities: formData.amenities,
           features: formData.features,
           mattersMost: formData.mattersMost,
+          inspirationUrls: formData.inspirationUrls,
         },
       });
       setIsSuccess(true);
@@ -495,7 +528,7 @@ export default function DreamProjectButton() {
                               Which amenities are important to you? <span className="text-charcoal/50 font-medium ml-1">(Select all that apply)</span>
                             </label>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                              {AMENITIES.map(amenity => (
+                              {amenityOptions.map(amenity => (
                                 <label key={amenity} className={`flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer transition-all ${
                                   formData.amenities.includes(amenity) ? "bg-terracotta/5 border-terracotta text-indigo" : "bg-white border-sand hover:border-terracotta/30 text-charcoal/70"
                                 }`}>
@@ -593,7 +626,7 @@ export default function DreamProjectButton() {
                           </h3>
 
                           <p className="text-xs sm:text-sm font-medium text-charcoal/70">
-                            How should our concierge team reach you? Inspiration uploads come in a later release.
+                            How should our concierge team reach you? Attach inspiration photos if you are signed in.
                           </p>
 
                           <div className="space-y-3">
@@ -630,9 +663,53 @@ export default function DreamProjectButton() {
                             />
                           </div>
 
-                          <div className="w-full h-28 border-2 border-dashed border-sand bg-sand/10 rounded-2xl flex flex-col items-center justify-center gap-2 opacity-60">
-                            <Upload className="w-4 h-4 text-terracotta" />
-                            <span className="text-[10px] sm:text-xs text-charcoal/50 font-medium">Inspiration uploads coming soon</span>
+                          <div className="space-y-3">
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp,image/gif"
+                              multiple
+                              className="hidden"
+                              onChange={(e) => void handleInspirationUpload(e.target.files)}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={uploading || formData.inspirationUrls.length >= 6}
+                              className="w-full h-28 border-2 border-dashed border-sand bg-sand/10 hover:bg-sand/20 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-60"
+                            >
+                              <Upload className="w-4 h-4 text-terracotta" />
+                              <span className="text-[10px] sm:text-xs text-charcoal/60 font-medium">
+                                {uploading
+                                  ? "Uploading…"
+                                  : isLoggedIn
+                                    ? "Add inspiration photos (max 6)"
+                                    : "Sign in to attach inspiration photos"}
+                              </span>
+                            </button>
+                            {formData.inspirationUrls.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {formData.inspirationUrls.map((url) => (
+                                  <div key={url} className="relative w-16 h-16 rounded-xl overflow-hidden border border-sand">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={url} alt="" className="w-full h-full object-cover" />
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setFormData((prev) => ({
+                                          ...prev,
+                                          inspirationUrls: prev.inspirationUrls.filter((u) => u !== url),
+                                        }))
+                                      }
+                                      className="absolute top-0.5 right-0.5 p-0.5 bg-white/90 rounded-md cursor-pointer"
+                                      aria-label="Remove photo"
+                                    >
+                                      <X className="w-3 h-3 text-charcoal/70" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : null}
                           </div>
 
                           {submitError ? (

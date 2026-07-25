@@ -44,6 +44,7 @@ export default function DealerNotificationsPage() {
       roleFilter="broker"
       notifications={notifications as DashboardNotification[]}
       preferences={DEALER_PREFERENCES}
+      prefsStorageKey="broker"
       initialPrefs={{
         leads: true,
         approvals: true,

@@ -81,7 +81,7 @@ Before real deploy:
 
 ### 4. Google / social Sign-In
 
-- [ ] Login UI Google button is still a stub — wire OAuth when ready
+See **[`REMAINING.md`](./REMAINING.md)** — Google OAuth + Dealer KYC are tracked there as deferred product work. Login Google button remains a stub until that phase.
 
 ### 5. Demo / seed hygiene
 

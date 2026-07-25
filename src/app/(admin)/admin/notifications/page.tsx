@@ -44,6 +44,7 @@ export default function AdminNotificationsPage() {
       roleFilter="admin"
       notifications={notifications as DashboardNotification[]}
       preferences={ADMIN_PREFERENCES}
+      prefsStorageKey="admin"
       initialPrefs={{
         registrations: true,
         approvals: true,
