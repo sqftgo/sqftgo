@@ -54,6 +54,7 @@ export type ProfileRow = {
   phone: string | null;
   avatar_url: string | null;
   bio: string | null;
+  city: string | null;
   role: AppRole;
   status: ProfileStatus;
   created_at: string;
@@ -67,6 +68,7 @@ export type ProfileInsert = {
   phone?: string | null;
   avatar_url?: string | null;
   bio?: string | null;
+  city?: string | null;
   role?: AppRole;
   status?: ProfileStatus;
   created_at?: string;
@@ -80,6 +82,7 @@ export type ProfileUpdate = {
   phone?: string | null;
   avatar_url?: string | null;
   bio?: string | null;
+  city?: string | null;
   role?: AppRole;
   status?: ProfileStatus;
   created_at?: string;

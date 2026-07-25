@@ -5,6 +5,7 @@ export interface UserProfile {
   phone?: string;
   avatar?: string;
   bio?: string;
+  city?: string;
   role: "user" | "broker" | "admin";
   joinedDate: string;
 }

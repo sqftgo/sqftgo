@@ -2,8 +2,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { ProfileRow } from "@/types/database";
 import { createRouteClient } from "@/lib/supabase/route";
 import { createServiceClient } from "@/lib/supabase/admin";
-import { jsonError, jsonOk } from "@/lib/api/auth";
+import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
+import { authSessionPayload } from "@/lib/mappers/profile";
+import { profileUpdateSchema, profileZodError } from "@/lib/validation/profile";
 
 export async function GET(request: NextRequest) {
   if (!hasSupabaseEnv()) {
@@ -50,21 +52,48 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  return applyCookies(
-    jsonOk({
-      email: profile.email,
-      role: profile.role,
-      name: profile.name,
-      profile: {
-        id: profile.id,
-        name: profile.name,
-        email: profile.email,
-        phone: profile.phone ?? undefined,
-        avatar: profile.avatar_url ?? undefined,
-        bio: profile.bio ?? undefined,
-        role: profile.role,
-        joinedDate: profile.created_at.split("T")[0] ?? profile.created_at,
-      },
-    })
-  );
+  return applyCookies(jsonOk(authSessionPayload(profile)));
+}
+
+export async function PATCH(request: NextRequest) {
+  if (!hasSupabaseEnv()) return jsonError("Supabase is not configured", 503);
+  if (!hasServiceRoleKey()) {
+    return jsonError("SUPABASE_SERVICE_ROLE_KEY is required to update profiles.", 503);
+  }
+
+  const { user, profile, error } = await authenticateApiRequest(request);
+  if (error || !user || !profile) return jsonError("Unauthorized", 401);
+  if (profile.status === "suspended") return jsonError("Forbidden", 403);
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonError("Invalid JSON body");
+  }
+
+  const parsed = profileUpdateSchema.safeParse(body);
+  if (!parsed.success) return jsonError(profileZodError(parsed.error));
+
+  const patch: Record<string, unknown> = {};
+  if (parsed.data.name !== undefined) patch.name = parsed.data.name;
+  if (parsed.data.phone !== undefined) patch.phone = parsed.data.phone;
+  if (parsed.data.bio !== undefined) patch.bio = parsed.data.bio;
+  if (parsed.data.city !== undefined) patch.city = parsed.data.city;
+  if (parsed.data.avatarUrl !== undefined) patch.avatar_url = parsed.data.avatarUrl;
+  if (Object.keys(patch).length === 0) return jsonError("No updates provided");
+
+  const admin = createServiceClient();
+  const { data, error: updateError } = await admin
+    .from("profiles")
+    .update(patch)
+    .eq("id", user.id)
+    .select("*")
+    .single();
+
+  if (updateError || !data) {
+    return jsonError(updateError?.message ?? "Unable to update profile", 500);
+  }
+
+  return jsonOk(authSessionPayload(data as ProfileRow));
 }

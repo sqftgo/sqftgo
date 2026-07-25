@@ -22,6 +22,13 @@ export interface AuthRepository {
   }): Promise<SignupResult>;
   logout(): Promise<void>;
   getSession(): Promise<AuthSession | null>;
+  updateProfile(input: {
+    name?: string;
+    phone?: string | null;
+    bio?: string | null;
+    city?: string | null;
+    avatarUrl?: string | null;
+  }): Promise<AuthSession>;
   resetPassword(email: string): Promise<void>;
   listUsers(): Promise<MockUser[]>;
   updateUser(id: string, updates: Partial<MockUser>): Promise<MockUser>;
@@ -126,6 +133,13 @@ export const supabaseAuthRepository: AuthRepository = {
     } catch {
       return null;
     }
+  },
+
+  async updateProfile(input) {
+    return apiJson<ApiSessionPayload>("/api/auth/me", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    });
   },
 
   async resetPassword(email) {
