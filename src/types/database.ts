@@ -522,6 +522,18 @@ export type MessageThreadReadRow = {
   last_read_at: string;
 };
 
+export type UserFavoriteRow = {
+  user_id: string;
+  property_id: string;
+  created_at: string;
+};
+
+export type UserFavoriteInsert = {
+  user_id: string;
+  property_id: string;
+  created_at?: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -603,6 +615,27 @@ export type Database = {
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      user_favorites: {
+        Row: UserFavoriteRow;
+        Insert: UserFavoriteInsert;
+        Update: Partial<UserFavoriteInsert>;
+        Relationships: [
+          {
+            foreignKeyName: "user_favorites_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "user_favorites_property_id_fkey";
+            columns: ["property_id"];
+            isOneToOne: false;
+            referencedRelation: "properties";
             referencedColumns: ["id"];
           },
         ];
