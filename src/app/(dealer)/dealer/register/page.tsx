@@ -42,23 +42,30 @@ export default function DealerRegisterPage() {
         password: form.password,
       });
 
-      addDirectoryProfile({
-        firmName: form.firmName,
-        ownerName: form.name,
-        email: form.email,
-        mobile: form.phone,
-        category: form.category as
-          | "Agent & Broker"
-          | "Property Consultant"
-          | "Builder & Developer"
-          | "Interior Decorator"
-          | "Architect",
-        city: form.city,
-        address: form.city,
-        description: "",
-        reraId: form.reraId || undefined,
-        website: "",
-      });
+      // Directory profile requires an authenticated session; skip until email confirm when needed.
+      if (result.status !== "confirm_email") {
+        try {
+          await addDirectoryProfile({
+            firmName: form.firmName,
+            ownerName: form.name,
+            email: form.email.trim().toLowerCase(),
+            mobile: form.phone,
+            category: form.category as
+              | "Agent & Broker"
+              | "Property Consultant"
+              | "Builder & Developer"
+              | "Interior Decorator"
+              | "Architect",
+            city: form.city,
+            address: form.city,
+            description: "",
+            reraId: form.reraId || undefined,
+            website: "",
+          });
+        } catch {
+          // Account created; directory entry can be completed later from dealer profile.
+        }
+      }
 
       if (result.status === "confirm_email") {
         setPendingConfirm(true);

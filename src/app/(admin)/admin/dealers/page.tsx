@@ -12,9 +12,10 @@ import {
 } from "@/components/ui";
 
 export default function AdminDealersPage() {
-  const { directoryProfiles, setDirectoryProfiles, addLog, userEmail } = useApp();
+  const { directoryProfiles, deleteDirectoryProfile, addLog, userEmail } = useApp();
   const [search, setSearch] = useState("");
   const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const dealers = directoryProfiles.filter(p => {
     const isDealerCat = p.category === "Agent & Broker" || p.category === "Property Consultant" || p.category === "Builder & Developer";
@@ -22,12 +23,17 @@ export default function AdminDealersPage() {
     return isDealerCat && matchSearch;
   });
 
-  const confirmDelete = () => {
-    if (!pendingDelete) return;
+  const confirmDelete = async () => {
+    if (!pendingDelete || deleting) return;
     const { id, name } = pendingDelete;
-    setDirectoryProfiles(prev => prev.filter(p => p.id !== id));
-    addLog({ action: "Dealer Removed", performedBy: userEmail, role: "Admin", target: name });
-    setPendingDelete(null);
+    setDeleting(true);
+    try {
+      await deleteDirectoryProfile(id);
+      addLog({ action: "Dealer Removed", performedBy: userEmail, role: "Admin", target: name });
+      setPendingDelete(null);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -108,7 +114,7 @@ export default function AdminDealersPage() {
       <ConfirmDialog
         open={Boolean(pendingDelete)}
         onClose={() => setPendingDelete(null)}
-        onConfirm={confirmDelete}
+        onConfirm={() => void confirmDelete()}
         title="Remove dealer?"
         description={pendingDelete ? `Remove dealer "${pendingDelete.name}" from the platform?` : undefined}
         confirmLabel="Remove"

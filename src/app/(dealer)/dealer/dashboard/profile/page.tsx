@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useApp } from "@/context/AppContext";
+import { useApp, type DirectoryProfile } from "@/context/AppContext";
 import {
   Save,
   User,
@@ -81,7 +81,7 @@ const TABS = [
 ];
 
 export default function DealerProfilePage() {
-  const { userEmail, directoryProfiles, setDirectoryProfiles, properties } = useApp();
+  const { userEmail, directoryProfiles, updateDirectoryProfile, properties } = useApp();
   const profile = directoryProfiles.find((p) => p.email.toLowerCase() === userEmail.toLowerCase());
   const myProperties = properties.filter(
     (p) => p.ownerEmail?.toLowerCase() === userEmail.toLowerCase()
@@ -121,17 +121,27 @@ export default function DealerProfilePage() {
     );
   };
 
-  const handleSave = (e?: React.FormEvent) => {
+  const handleSave = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    setDirectoryProfiles((prev) =>
-      prev.map((p) =>
-        p.email.toLowerCase() === userEmail.toLowerCase()
-          ? { ...p, ...form, category: form.category as any }
-          : p
-      )
-    );
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    if (!profile?.id) return;
+    try {
+      await updateDirectoryProfile(profile.id, {
+        firmName: form.firmName,
+        ownerName: form.ownerName,
+        category: form.category as DirectoryProfile["category"],
+        address: form.address,
+        mobile: form.mobile,
+        website: form.website,
+        reraId: form.reraId || undefined,
+        description: form.description,
+        specialties: form.specialties,
+        experience: form.experience || undefined,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch {
+      // Keep form values; toast-style saved flag reserved for success only.
+    }
   };
 
   const inputClass = "focus:border-indigo/40 focus:ring-indigo/10";
