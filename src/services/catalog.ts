@@ -1,6 +1,4 @@
-import { simulateNetwork } from "@/mocks/delay";
-import type { ActivityLog, Amenity, Category, Location, Notification } from "@/types";
-import { getStore, patchStore } from "./store";
+import type { ActivityLog, Amenity, Category, Location } from "@/types";
 
 async function apiJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
   const res = await fetch(input, {
@@ -23,8 +21,6 @@ async function apiJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
 }
 
 export interface CatalogRepository {
-  listNotifications(forRole?: Notification["forRole"]): Promise<Notification[]>;
-  markNotificationRead(id: string): Promise<void>;
   listCategories(opts?: { all?: boolean }): Promise<Category[]>;
   createCategory(input: { name: string; icon: string; active?: boolean }): Promise<Category>;
   updateCategory(
@@ -55,24 +51,8 @@ export interface CatalogRepository {
   addLog(log: Omit<ActivityLog, "id" | "timestamp">): Promise<ActivityLog>;
 }
 
-/** Categories/locations/logs hit Supabase; leftover notification mocks unused. */
+/** Categories / locations / amenities / logs hit Supabase via BFF. */
 export const supabaseCatalogRepository: CatalogRepository = {
-  async listNotifications(forRole) {
-    await simulateNetwork(80);
-    const all = getStore().notifications;
-    if (!forRole || forRole === "all") return [...all];
-    return all.filter((n) => n.forRole === forRole || n.forRole === "all");
-  },
-
-  async markNotificationRead(id) {
-    await simulateNetwork(60);
-    patchStore({
-      notifications: getStore().notifications.map((n) =>
-        n.id === id ? { ...n, read: true } : n
-      ),
-    });
-  },
-
   async listCategories(opts) {
     const qs = opts?.all ? "?all=1" : "";
     return apiJson<Category[]>(`/api/categories${qs}`);
