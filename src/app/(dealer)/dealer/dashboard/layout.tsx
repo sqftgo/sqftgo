@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { DashboardShell, type DashboardNavSection } from "@/components/layout/DashboardShell";
 import { DropdownMenu, Avatar } from "@/components/ui";
+import { findMyDirectoryProfile, filterMyProperties } from "@/lib/ownership";
 import {
   LayoutDashboard, Building2, Plus, MessageSquare, BarChart3,
   Mail, CreditCard, User, Settings, Bell, ChevronDown, ShieldAlert, LogOut,
@@ -18,6 +19,7 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
     userEmail,
     userRole,
     userName,
+    userProfile,
     logout,
     sessionReady,
     directoryProfiles,
@@ -27,11 +29,15 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
   } = useApp();
 
   const isBroker = isLoggedIn && (userRole === "broker" || userRole === "admin");
-  const brokerProfile = directoryProfiles.find(
-    (p) => p.email.toLowerCase() === userEmail.toLowerCase()
+  const brokerProfile = findMyDirectoryProfile(
+    directoryProfiles,
+    userProfile?.id,
+    userEmail
   );
-  const brokerProperties = properties.filter(
-    (p) => p.ownerEmail?.toLowerCase() === userEmail.toLowerCase()
+  const brokerProperties = filterMyProperties(
+    properties,
+    userProfile?.id,
+    userEmail
   );
   const inquiryCount = brokerProperties.reduce(
     (acc, p) => acc + (inquiries[p.id]?.length || 0),
@@ -161,7 +167,7 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
                 {brokerProfile?.ownerName || userName || "Dealer User"}
               </span>
               <span className="text-[9px] text-charcoal/40 font-semibold mt-0.5 uppercase tracking-wide">
-                Broker
+                Dealer
               </span>
             </div>
             <ChevronDown className="w-3 h-3 text-charcoal/40" />
@@ -191,6 +197,7 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
       }}
       onLogout={handleLogout}
       topBarExtra={topBarExtra}
+      publicSiteHref={brokerProfile?.id ? `/dealers/${brokerProfile.id}` : "/dealers"}
       publicSiteLabel="View Public Profile"
       ready={sessionReady}
       accessDenied={!isBroker ? accessDenied : undefined}

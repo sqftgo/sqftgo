@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
+import { clampPageParams } from "@/lib/api/client";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
@@ -15,12 +16,18 @@ export async function GET(request: NextRequest) {
   const categoryParam = searchParams.get("category")?.trim();
   const search = searchParams.get("search")?.trim().slice(0, 80);
   const mine = searchParams.get("mine") === "1" || searchParams.get("mine") === "true";
+  const { limit, offset } = clampPageParams(
+    searchParams.get("limit"),
+    searchParams.get("offset"),
+    { limit: 100, maxLimit: 200 }
+  );
 
   const supabase = hasServiceRoleKey() ? createServiceClient() : await createClient();
   let query = supabase
     .from("directory_profiles")
-    .select("*")
-    .order("created_at", { ascending: false });
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
 
   if (mine) {
     const { user, error } = await authenticateApiRequest(request);
@@ -45,10 +52,15 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const { data, error: listError } = await query;
+  const { data, error: listError, count } = await query;
   if (listError) return jsonError(listError.message, 500);
 
-  return jsonOk((data as DirectoryProfileRow[] | null)?.map(mapDealerRow) ?? []);
+  return jsonOk({
+    items: (data as DirectoryProfileRow[] | null)?.map(mapDealerRow) ?? [],
+    total: count ?? 0,
+    limit,
+    offset,
+  });
 }
 
 export async function POST(request: NextRequest) {

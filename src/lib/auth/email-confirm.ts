@@ -6,14 +6,17 @@ import { isProductionRuntime } from "@/lib/auth/urls";
  * - signup creates confirmed users (admin API)
  * - login auto-confirms stuck unconfirmed accounts then retries
  *
- * Defaults ON in non-production when the service role key is present.
- * Set AUTH_SKIP_EMAIL_CONFIRM=true to force on (incl. production staging).
- * Set AUTH_SKIP_EMAIL_CONFIRM=false to require email confirmation again.
+ * NEVER enabled in production (`NODE_ENV=production`), even if
+ * AUTH_SKIP_EMAIL_CONFIRM=true — that flag is for local/staging only.
+ *
+ * Local defaults ON when the service role key is present.
+ * Set AUTH_SKIP_EMAIL_CONFIRM=false to require confirmation locally.
  */
 export function skipEmailConfirmEnabled(): boolean {
+  if (isProductionRuntime()) return false;
   if (!hasServiceRoleKey()) return false;
   if (process.env.AUTH_SKIP_EMAIL_CONFIRM === "false") return false;
   if (process.env.AUTH_SKIP_EMAIL_CONFIRM === "true") return true;
   if (process.env.AUTH_DEV_AUTO_CONFIRM === "true") return true;
-  return !isProductionRuntime();
+  return true;
 }

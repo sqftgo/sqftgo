@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
+import { clampPageParams } from "@/lib/api/client";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
@@ -36,13 +37,22 @@ export async function GET(request: NextRequest) {
   const ownerEmail = searchParams.get("ownerEmail")?.trim().toLowerCase() ?? undefined;
   const minPrice = parseOptionalNumber(searchParams.get("minPrice"));
   const maxPrice = parseOptionalNumber(searchParams.get("maxPrice"));
+  const { limit, offset } = clampPageParams(
+    searchParams.get("limit"),
+    searchParams.get("offset"),
+    { limit: 100, maxLimit: 200 }
+  );
 
   const auth = await authenticateApiRequest(request);
   const isAdmin = auth.profile?.role === "admin" && auth.profile.status === "active";
 
   // User-scoped client so RLS enforces active / own / admin visibility.
   const supabase = await createClient();
-  let query = supabase.from("properties").select("*").order("created_at", { ascending: false });
+  let query = supabase
+    .from("properties")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
 
   if (mine) {
     if (!auth.user) return jsonError("Unauthorized", 401);
@@ -75,10 +85,15 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const { data, error } = await query;
+  const { data, error, count } = await query;
   if (error) return jsonError(error.message, 500);
 
-  return jsonOk((data as PropertyRow[] | null)?.map(mapPropertyRow) ?? []);
+  return jsonOk({
+    items: (data as PropertyRow[] | null)?.map(mapPropertyRow) ?? [],
+    total: count ?? 0,
+    limit,
+    offset,
+  });
 }
 
 export async function POST(request: NextRequest) {

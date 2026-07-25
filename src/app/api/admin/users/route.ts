@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
+import { clampPageParams } from "@/lib/api/client";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
@@ -30,15 +31,27 @@ export async function GET(request: NextRequest) {
     return jsonError("Forbidden", 403);
   }
 
+  const { limit, offset } = clampPageParams(
+    request.nextUrl.searchParams.get("limit"),
+    request.nextUrl.searchParams.get("offset"),
+    { limit: 100, maxLimit: 200 }
+  );
+
   const supabase = hasServiceRoleKey()
     ? createServiceClient()
     : await createClient();
 
-  const { data, error: listError } = await supabase
+  const { data, error: listError, count } = await supabase
     .from("profiles")
-    .select("*")
-    .order("created_at", { ascending: false });
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
 
   if (listError) return jsonError(listError.message, 500);
-  return jsonOk((data ?? []).map(toMockUser));
+  return jsonOk({
+    items: (data ?? []).map(toMockUser),
+    total: count ?? 0,
+    limit,
+    offset,
+  });
 }
