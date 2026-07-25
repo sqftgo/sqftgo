@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Filter, X, RefreshCw } from "lucide-react";
 import CustomSelect from "./CustomSelect";
+import { useApp } from "@/context/AppContext";
 import {
   CITIES,
   PROPERTY_TYPES,
@@ -49,6 +50,23 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   onClose,
   showBasicFilters = true,
 }) => {
+  const { categories, locations } = useApp();
+
+  const cityOptions = useMemo(() => {
+    const live = locations.filter((l) => l.active).map((l) => l.city);
+    const cities = live.length > 0 ? live : CITIES.filter((c) => c !== "All India");
+    return ["All India", ...cities.filter((c) => c !== "All India")].map((c) => ({
+      label: c,
+      value: c,
+    }));
+  }, [locations]);
+
+  const typeOptions = useMemo(() => {
+    const live = categories.filter((c) => c.active).map((c) => c.name);
+    const types = live.length > 0 ? live : [...PROPERTY_TYPES];
+    return [{ label: "All Types", value: "any" }, ...types.map((t) => ({ label: t, value: t }))];
+  }, [categories]);
+
   const handlePurposeChange = (purpose: "all" | "buy" | "sell" | "rent" | "lease") => {
     onFilterChange({ ...filters, purpose, minPrice: "", maxPrice: "" });
   };
@@ -164,7 +182,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             <div className="flex flex-col gap-2">
               <span className="text-xs font-bold text-indigo uppercase tracking-wide">City</span>
               <CustomSelect
-                options={CITIES.map((c) => ({ label: c, value: c }))}
+                options={cityOptions}
                 value={filters.city}
                 onChange={handleCityChange}
                 searchable
@@ -189,7 +207,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             <div className="flex flex-col gap-2">
               <span className="text-xs font-bold text-indigo uppercase tracking-wide">Property Type</span>
               <CustomSelect
-                options={[{ label: "All Types", value: "any" }, ...PROPERTY_TYPES.map((t) => ({ label: t, value: t }))]}
+                options={typeOptions}
                 value={filters.type}
                 onChange={handleTypeChange}
                 className="w-full"

@@ -2,18 +2,54 @@ import { simulateNetwork } from "@/mocks/delay";
 import type { ActivityLog, Category, Location, Notification } from "@/types";
 import { getStore, patchStore } from "./store";
 
+async function apiJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
+  const res = await fetch(input, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init?.headers ?? {}),
+    },
+    credentials: "same-origin",
+  });
+  const data = (await res.json().catch(() => ({}))) as T & { error?: string };
+  if (!res.ok) {
+    throw new Error(
+      typeof data === "object" && data && "error" in data && data.error
+        ? String(data.error)
+        : "Request failed"
+    );
+  }
+  return data;
+}
+
 export interface CatalogRepository {
   listNotifications(forRole?: Notification["forRole"]): Promise<Notification[]>;
   markNotificationRead(id: string): Promise<void>;
-  listCategories(): Promise<Category[]>;
-  updateCategories(categories: Category[]): Promise<Category[]>;
-  listLocations(): Promise<Location[]>;
-  updateLocations(locations: Location[]): Promise<Location[]>;
+  listCategories(opts?: { all?: boolean }): Promise<Category[]>;
+  createCategory(input: { name: string; icon: string; active?: boolean }): Promise<Category>;
+  updateCategory(
+    id: string,
+    updates: { name?: string; icon?: string; active?: boolean }
+  ): Promise<Category>;
+  deleteCategory(id: string): Promise<{ ok: boolean; deactivated?: boolean }>;
+  listLocations(opts?: { all?: boolean }): Promise<Location[]>;
+  createLocation(input: {
+    city: string;
+    state: string;
+    country: string;
+    active?: boolean;
+  }): Promise<Location>;
+  updateLocation(
+    id: string,
+    updates: { city?: string; state?: string; country?: string; active?: boolean }
+  ): Promise<Location>;
+  deleteLocation(id: string): Promise<{ ok: boolean; deactivated?: boolean }>;
   listLogs(): Promise<ActivityLog[]>;
   addLog(log: Omit<ActivityLog, "id" | "timestamp">): Promise<ActivityLog>;
 }
 
-export const mockCatalogRepository: CatalogRepository = {
+/** Categories/locations hit Supabase; notifications/logs remain mock leftovers. */
+export const supabaseCatalogRepository: CatalogRepository = {
   async listNotifications(forRole) {
     await simulateNetwork(80);
     const all = getStore().notifications;
@@ -30,26 +66,54 @@ export const mockCatalogRepository: CatalogRepository = {
     });
   },
 
-  async listCategories() {
-    await simulateNetwork(60);
-    return [...getStore().categories];
+  async listCategories(opts) {
+    const qs = opts?.all ? "?all=1" : "";
+    return apiJson<Category[]>(`/api/categories${qs}`);
   },
 
-  async updateCategories(categories) {
-    await simulateNetwork(100);
-    patchStore({ categories });
-    return categories;
+  async createCategory(input) {
+    return apiJson<Category>("/api/categories", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
   },
 
-  async listLocations() {
-    await simulateNetwork(60);
-    return [...getStore().locations];
+  async updateCategory(id, updates) {
+    return apiJson<Category>(`/api/categories/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(updates),
+    });
   },
 
-  async updateLocations(locations) {
-    await simulateNetwork(100);
-    patchStore({ locations });
-    return locations;
+  async deleteCategory(id) {
+    return apiJson<{ ok: boolean; deactivated?: boolean }>(`/api/categories/${id}`, {
+      method: "DELETE",
+    });
+  },
+
+  async listLocations(opts) {
+    const qs = opts?.all ? "?all=1" : "";
+    return apiJson<Location[]>(`/api/locations${qs}`);
+  },
+
+  async createLocation(input) {
+    return apiJson<Location>("/api/locations", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  async updateLocation(id, updates) {
+    return apiJson<Location>(`/api/locations/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(updates),
+    });
+  },
+
+  async deleteLocation(id) {
+    return apiJson<{ ok: boolean; deactivated?: boolean }>(`/api/locations/${id}`, {
+      method: "DELETE",
+    });
   },
 
   async listLogs() {
@@ -69,4 +133,4 @@ export const mockCatalogRepository: CatalogRepository = {
   },
 };
 
-export const catalogService: CatalogRepository = mockCatalogRepository;
+export const catalogService: CatalogRepository = supabaseCatalogRepository;

@@ -377,6 +377,52 @@ export type SiteVisitInsert = {
 
 export type SiteVisitUpdate = Partial<SiteVisitInsert>;
 
+export type CategoryRow = {
+  id: string;
+  name: string;
+  icon: string;
+  active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CategoryInsert = {
+  id?: string;
+  name: string;
+  icon?: string;
+  active?: boolean;
+  sort_order?: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type CategoryUpdate = Partial<CategoryInsert>;
+
+export type LocationRow = {
+  id: string;
+  city: string;
+  state: string;
+  country: string;
+  active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type LocationInsert = {
+  id?: string;
+  city: string;
+  state: string;
+  country?: string;
+  active?: boolean;
+  sort_order?: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type LocationUpdate = Partial<LocationInsert>;
+
 export type MessageThreadKindDb = "direct" | "support";
 export type MessageThreadStatusDb = "open" | "resolved" | "archived";
 
@@ -570,6 +616,18 @@ export type Database = {
         Row: MessageThreadReadRow;
         Insert: MessageThreadReadRow;
         Update: Partial<MessageThreadReadRow>;
+        Relationships: [];
+      };
+      categories: {
+        Row: CategoryRow;
+        Insert: CategoryInsert;
+        Update: CategoryUpdate;
+        Relationships: [];
+      };
+      locations: {
+        Row: LocationRow;
+        Insert: LocationInsert;
+        Update: LocationUpdate;
         Relationships: [];
       };
     };
