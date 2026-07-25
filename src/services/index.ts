@@ -1,4 +1,4 @@
-export { propertyService, mockPropertyRepository } from "./properties";
+export { propertyService, supabasePropertyRepository } from "./properties";
 export type { PropertyRepository, PropertyFilters, PropertyCreateInput } from "./properties";
 
 export { authService, supabaseAuthRepository } from "./auth";

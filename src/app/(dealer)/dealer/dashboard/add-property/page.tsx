@@ -6,8 +6,8 @@ import { PropertyForm, type PropertyFormSubmitData } from "@/components/property
 export default function AddPropertyPage() {
   const { addProperty, addLog, userEmail } = useApp();
 
-  const handleSubmit = (data: PropertyFormSubmitData) => {
-    addProperty({
+  const handleSubmit = async (data: PropertyFormSubmitData) => {
+    await addProperty({
       title: data.title,
       type: data.type,
       purpose: data.purpose,

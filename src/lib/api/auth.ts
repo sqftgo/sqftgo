@@ -2,7 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { User } from "@supabase/supabase-js";
 import type { Database, ProfileRow } from "@/types/database";
-import { getSupabaseEnv } from "@/lib/supabase/env";
+import { getSupabaseEnv, hasServiceRoleKey } from "@/lib/supabase/env";
+import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient as createServerCookieClient } from "@/lib/supabase/server";
 
 export type ApiAuthResult =
@@ -43,7 +44,8 @@ export async function authenticateApiRequest(
       return { user: null, profile: null, error: error?.message ?? "Unauthorized" };
     }
 
-    const { data: profile } = await supabase
+    const profileClient = hasServiceRoleKey() ? createServiceClient() : supabase;
+    const { data: profile } = await profileClient
       .from("profiles")
       .select("*")
       .eq("id", user.id)
@@ -62,7 +64,8 @@ export async function authenticateApiRequest(
     return { user: null, profile: null, error: error?.message ?? "Unauthorized" };
   }
 
-  const { data: profile } = await supabase
+  const profileClient = hasServiceRoleKey() ? createServiceClient() : supabase;
+  const { data: profile } = await profileClient
     .from("profiles")
     .select("*")
     .eq("id", user.id)

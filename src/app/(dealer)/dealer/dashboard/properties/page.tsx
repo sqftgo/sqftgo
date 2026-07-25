@@ -59,13 +59,15 @@ export default function DealerPropertiesPage() {
 
   const formatPrice = (v: number) => "₹" + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(v);
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!pendingDelete) return;
-    deleteProperty(pendingDelete.id);
+    await deleteProperty(pendingDelete.id);
     setPendingDelete(null);
   };
 
-  const handleStatusChange = (id: string, status: Property["status"]) => updateProperty(id, { status });
+  const handleStatusChange = async (id: string, status: Property["status"]) => {
+    await updateProperty(id, { status });
+  };
 
   const tableColumns: DataTableColumn<Property>[] = useMemo(
     () => [
@@ -154,18 +156,18 @@ export default function DealerPropertiesPage() {
                 icon: Edit2,
               },
               {
-                id: "status-active",
-                label: "Mark Active",
-                onClick: () => handleStatusChange(prop.id, "Active"),
+                id: "status-pending",
+                label: "Submit for Review",
+                onClick: () => void handleStatusChange(prop.id, "Pending Review"),
                 icon: CheckCircle2,
-                disabled: prop.status === "Active",
+                disabled: prop.status === "Pending Review" || prop.status === "Active",
               },
               {
-                id: "status-sold",
-                label: "Mark Sold",
-                onClick: () => handleStatusChange(prop.id, "Sold"),
+                id: "status-draft",
+                label: "Move to Draft",
+                onClick: () => void handleStatusChange(prop.id, "Draft"),
                 icon: XCircle,
-                disabled: prop.status === "Sold",
+                disabled: prop.status === "Draft" || prop.status === "Active",
               },
               {
                 id: "delete",
@@ -310,8 +312,8 @@ export default function DealerPropertiesPage() {
                     }
                     items={[
                       { id: "edit", label: "Edit Listing", href: `/dealer/dashboard/edit-property/${prop.id}`, icon: Edit2 },
-                      { id: "status-active", label: "Mark Active", onClick: () => handleStatusChange(prop.id, "Active"), icon: CheckCircle2, disabled: prop.status === "Active" },
-                      { id: "status-sold", label: "Mark Sold", onClick: () => handleStatusChange(prop.id, "Sold"), icon: XCircle, disabled: prop.status === "Sold" },
+                      { id: "status-pending", label: "Submit for Review", onClick: () => void handleStatusChange(prop.id, "Pending Review"), icon: CheckCircle2, disabled: prop.status === "Pending Review" || prop.status === "Active" },
+                      { id: "status-draft", label: "Move to Draft", onClick: () => void handleStatusChange(prop.id, "Draft"), icon: XCircle, disabled: prop.status === "Draft" || prop.status === "Active" },
                       { id: "delete", label: "Delete Listing", onClick: () => setPendingDelete({ id: prop.id, title: prop.title }), icon: Trash2, variant: "danger", dividerBefore: true }
                     ]}
                   />

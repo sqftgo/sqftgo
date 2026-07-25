@@ -39,14 +39,14 @@ export default function AdminPropertiesPage() {
     return matchSearch && matchStatus && matchCity;
   });
 
-  const handleStatusChange = (id: string, title: string, status: Property["status"]) => {
-    updateProperty(id, { status });
+  const handleStatusChange = async (id: string, title: string, status: Property["status"]) => {
+    await updateProperty(id, { status });
     addLog({ action: `Property Status → ${status}`, performedBy: userEmail, role: "Admin", target: title });
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!pendingDelete) return;
-    deleteProperty(pendingDelete.id);
+    await deleteProperty(pendingDelete.id);
     addLog({ action: "Property Deleted", performedBy: userEmail, role: "Admin", target: pendingDelete.title });
     setPendingDelete(null);
   };
