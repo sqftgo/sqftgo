@@ -3,8 +3,9 @@ import type { ProfileRow } from "@/types/database";
 import { createRouteClient } from "@/lib/supabase/route";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { jsonError } from "@/lib/api/auth";
-import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
-import { getSiteUrl, isProductionRuntime } from "@/lib/auth/urls";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { skipEmailConfirmEnabled } from "@/lib/auth/email-confirm";
+import { getSiteUrl } from "@/lib/auth/urls";
 import { authSessionPayload } from "@/lib/mappers/profile";
 
 type SignupBody = {
@@ -67,16 +68,11 @@ export async function POST(request: NextRequest) {
   const { supabase, applyCookies } = createRouteClient(request);
 
   /**
-   * Production: always use public signUp + email confirmation.
-   * Development only: optional Admin createUser to bypass email rate limits
-   * when SUPABASE_SERVICE_ROLE_KEY is configured.
+   * When email confirm is skipped (local/default, or AUTH_SKIP_EMAIL_CONFIRM),
+   * create a confirmed user via Admin API so signup can sign in immediately
+   * without Supabase sending a verification email.
    */
-  const allowDevAutoConfirm =
-    !isProductionRuntime() &&
-    hasServiceRoleKey() &&
-    process.env.AUTH_DEV_AUTO_CONFIRM === "true";
-
-  if (allowDevAutoConfirm) {
+  if (skipEmailConfirmEnabled()) {
     const admin = createServiceClient();
     const { data: created, error: createError } = await admin.auth.admin.createUser({
       email,
