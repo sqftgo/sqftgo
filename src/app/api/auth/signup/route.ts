@@ -5,6 +5,7 @@ import { createServiceClient } from "@/lib/supabase/admin";
 import { jsonError } from "@/lib/api/auth";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { getSiteUrl, isProductionRuntime } from "@/lib/auth/urls";
+import { authSessionPayload } from "@/lib/mappers/profile";
 
 type SignupBody = {
   email?: string;
@@ -13,24 +14,6 @@ type SignupBody = {
 };
 
 const MIN_PASSWORD_LENGTH = 8;
-
-function profilePayload(profile: ProfileRow) {
-  return {
-    email: profile.email,
-    role: profile.role,
-    name: profile.name,
-    profile: {
-      id: profile.id,
-      name: profile.name,
-      email: profile.email,
-      phone: profile.phone ?? undefined,
-      avatar: profile.avatar_url ?? undefined,
-      bio: profile.bio ?? undefined,
-      role: profile.role,
-      joinedDate: profile.created_at.split("T")[0] ?? profile.created_at,
-    },
-  };
-}
 
 async function loadProfile(
   supabase: ReturnType<typeof createRouteClient>["supabase"],
@@ -126,7 +109,7 @@ export async function POST(request: NextRequest) {
       profile = { ...profile, name };
     }
 
-    return applyCookies(NextResponse.json(profilePayload(profile), { status: 201 }));
+    return applyCookies(NextResponse.json(authSessionPayload(profile), { status: 201 }));
   }
 
   const { data, error } = await supabase.auth.signUp({
@@ -168,6 +151,6 @@ export async function POST(request: NextRequest) {
   }
 
   return applyCookies(
-    NextResponse.json({ status: "authenticated", ...profilePayload(profile) }, { status: 201 })
+    NextResponse.json({ status: "authenticated", ...authSessionPayload(profile) }, { status: 201 })
   );
 }

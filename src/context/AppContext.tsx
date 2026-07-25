@@ -121,6 +121,13 @@ interface AppContextType {
   setUserName: (name: string) => void;
   userProfile: UserProfile | null;
   setUserProfile: React.Dispatch<React.SetStateAction<UserProfile | null>>;
+  updateProfile: (input: {
+    name?: string;
+    phone?: string | null;
+    bio?: string | null;
+    city?: string | null;
+    avatarUrl?: string | null;
+  }) => Promise<UserProfile>;
   notifications: Notification[];
   notificationsReady: boolean;
   refreshNotifications: () => Promise<void>;
@@ -636,6 +643,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   );
   const setUserName = useCallback((name: string) => setUserNameState(name), []);
 
+  const updateProfile = useCallback(
+    async (input: {
+      name?: string;
+      phone?: string | null;
+      bio?: string | null;
+      city?: string | null;
+      avatarUrl?: string | null;
+    }) => {
+      const session = await authService.updateProfile(input);
+      setUserNameState(session.name);
+      setUserProfile(session.profile);
+      return session.profile;
+    },
+    []
+  );
+
   const logout = useCallback(async () => {
     setIsLoggedInState(false);
     setUserEmailState("");
@@ -1098,6 +1121,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setUserName,
       userProfile,
       setUserProfile,
+      updateProfile,
       notifications,
       notificationsReady,
       refreshNotifications,
@@ -1193,6 +1217,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       userName,
       setUserName,
       userProfile,
+      updateProfile,
       notifications,
       notificationsReady,
       refreshNotifications,

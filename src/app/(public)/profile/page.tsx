@@ -29,6 +29,7 @@ export default function ProfilePage() {
     userEmail,
     userRole,
     userName,
+    userProfile,
     favorites,
     properties,
     inquiries,
@@ -72,11 +73,28 @@ export default function ProfilePage() {
   const formatPrice = (v: number) =>
     "₹" + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(v);
 
+  const completionBits = [
+    Boolean(userProfile?.name || userName),
+    Boolean(userProfile?.phone),
+    Boolean(userProfile?.city),
+    Boolean(userProfile?.bio),
+    Boolean(userProfile?.avatar),
+  ];
+  const completion = Math.round(
+    (completionBits.filter(Boolean).length / completionBits.length) * 100
+  );
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-8">
       <Panel padding="lg" rounded="3xl" className="shadow-lg backdrop-blur-sm bg-white/80">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-          <Avatar name={displayName} size="xl" shape="rounded" tone="indigo" />
+          <Avatar
+            name={displayName}
+            src={userProfile?.avatar}
+            size="xl"
+            shape="rounded"
+            tone="indigo"
+          />
           <div className="flex-1">
             <div className="flex items-start justify-between flex-wrap gap-3">
               <div>
@@ -87,6 +105,22 @@ export default function ProfilePage() {
                   <Mail className="w-4 h-4 text-charcoal/40" />
                   <p className="text-sm text-charcoal/60 font-semibold">{userEmail}</p>
                 </div>
+                {(userProfile?.city || userProfile?.phone) && (
+                  <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-charcoal/55 font-semibold">
+                    {userProfile?.city ? (
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5" />
+                        {userProfile.city}
+                      </span>
+                    ) : null}
+                    {userProfile?.phone ? <span>{userProfile.phone}</span> : null}
+                  </div>
+                )}
+                {userProfile?.bio ? (
+                  <p className="mt-3 text-sm text-charcoal/65 font-medium max-w-xl">
+                    {userProfile.bio}
+                  </p>
+                ) : null}
               </div>
               <Badge tone={roleTone}>{userRole || "User"}</Badge>
             </div>
@@ -137,7 +171,7 @@ export default function ProfilePage() {
         <Link href="/profile/edit">
           <StatCard
             label="Profile Completion"
-            value="80%"
+            value={`${completion}%`}
             icon={<User className="w-4 h-4 text-indigo" />}
           />
         </Link>
