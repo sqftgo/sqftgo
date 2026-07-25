@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapPropertyRow, mapUpdateToPatch } from "@/lib/mappers/property";
+import { notifyRole, notifyUser } from "@/lib/notifications/server";
 import { propertyUpdateSchema, zodErrorMessage } from "@/lib/validation/property";
 import type { Property } from "@/types";
 import type { PropertyRow } from "@/types/database";
@@ -96,6 +97,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   // Never allow owner reassignment via API in Phase 1.
   delete patch.owner_id;
 
+  const previousStatus = row.status;
+
   const { data, error: updateError } = await admin
     .from("properties")
     .update(patch)
@@ -107,7 +110,43 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return jsonError(updateError?.message ?? "Unable to update property", 500);
   }
 
-  return jsonOk(mapPropertyRow(data as PropertyRow));
+  const updated = data as PropertyRow;
+  if (updated.status !== previousStatus) {
+    if (updated.status === "pending_review") {
+      void notifyRole("admin", {
+        title: "Listing awaiting review",
+        message: `“${updated.title}” was submitted for approval.`,
+        type: "warning",
+        eventKey: "property.pending_review",
+        entityType: "property",
+        entityId: updated.id,
+      });
+    } else if (updated.status === "active" && previousStatus === "pending_review") {
+      void notifyUser({
+        userId: updated.owner_id,
+        forRole: "broker",
+        title: "Listing approved",
+        message: `“${updated.title}” is now live on SqftGo.`,
+        type: "success",
+        eventKey: "property.approved",
+        entityType: "property",
+        entityId: updated.id,
+      });
+    } else if (updated.status === "draft" && previousStatus === "pending_review") {
+      void notifyUser({
+        userId: updated.owner_id,
+        forRole: "broker",
+        title: "Listing returned to draft",
+        message: `“${updated.title}” was moved back to draft and needs changes.`,
+        type: "warning",
+        eventKey: "property.returned_to_draft",
+        entityType: "property",
+        entityId: updated.id,
+      });
+    }
+  }
+
+  return jsonOk(mapPropertyRow(updated));
 }
 
 export async function DELETE(_request: NextRequest, context: RouteContext) {

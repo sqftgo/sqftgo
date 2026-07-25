@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapCreateToInsert, mapPropertyRow, toDbStatus } from "@/lib/mappers/property";
+import { notifyRole } from "@/lib/notifications/server";
 import {
   propertyCreateSchema,
   propertyStatusUiSchema,
@@ -162,5 +163,17 @@ export async function POST(request: NextRequest) {
     return jsonError(insertError?.message ?? "Unable to create property", 500);
   }
 
-  return jsonOk(mapPropertyRow(data as PropertyRow), { status: 201 });
+  const created = data as PropertyRow;
+  if (created.status === "pending_review") {
+    void notifyRole("admin", {
+      title: "Listing awaiting review",
+      message: `“${created.title}” was submitted for approval.`,
+      type: "warning",
+      eventKey: "property.pending_review",
+      entityType: "property",
+      entityId: created.id,
+    });
+  }
+
+  return jsonOk(mapPropertyRow(created), { status: 201 });
 }

@@ -3,6 +3,7 @@ import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapInquiryRow } from "@/lib/mappers/inquiry";
+import { notifyUser } from "@/lib/notifications/server";
 import { inquiryCreateSchema, inquiryZodError } from "@/lib/validation/inquiry";
 import type { PropertyInquiryRow, PropertyRow } from "@/types/database";
 
@@ -68,14 +69,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const admin = createServiceClient();
   const { data: property, error: propError } = await admin
     .from("properties")
-    .select("id, status")
+    .select("id, status, owner_id, title")
     .eq("id", propertyId)
     .maybeSingle();
 
   if (propError) return jsonError(propError.message, 500);
   if (!property) return jsonError("Property not found", 404);
 
-  const prop = property as Pick<PropertyRow, "id" | "status">;
+  const prop = property as Pick<PropertyRow, "id" | "status" | "owner_id" | "title">;
   if (prop.status !== "active") {
     return jsonError("Inquiries are only accepted on active listings", 400);
   }
@@ -98,5 +99,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
     return jsonError(insertError?.message ?? "Unable to submit inquiry", 500);
   }
 
-  return jsonOk(mapInquiryRow(data as PropertyInquiryRow), { status: 201 });
+  const inquiry = data as PropertyInquiryRow;
+  void notifyUser({
+    userId: prop.owner_id,
+    forRole: "broker",
+    title: "New property inquiry",
+    message: `${input.name} inquired about “${prop.title}”.`,
+    type: "info",
+    eventKey: "inquiry.created",
+    entityType: "property_inquiry",
+    entityId: inquiry.id,
+  });
+
+  return jsonOk(mapInquiryRow(inquiry), { status: 201 });
 }

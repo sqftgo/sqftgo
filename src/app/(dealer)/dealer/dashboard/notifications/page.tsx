@@ -31,7 +31,12 @@ const DEALER_PREFERENCES = [
 ];
 
 export default function DealerNotificationsPage() {
-  const { notifications, setNotifications, markNotificationRead } = useApp();
+  const {
+    notifications,
+    markNotificationRead,
+    markAllNotificationsRead,
+    deleteNotification,
+  } = useApp();
 
   return (
     <NotificationsPageShell
@@ -49,15 +54,15 @@ export default function DealerNotificationsPage() {
       preferencesTitle="Configure Alert Preferences"
       preferencesDescription="Customize when you receive push dashboard updates."
       preferencesButtonLabel="Preferences"
-      onMarkRead={markNotificationRead}
-      onMarkAll={() =>
-        setNotifications((prev) =>
-          prev.map((n) =>
-            n.forRole === "broker" || n.forRole === "all" ? { ...n, read: true } : n
-          )
-        )
-      }
-      onDelete={(id) => setNotifications((prev) => prev.filter((n) => n.id !== id))}
+      onMarkRead={(id) => {
+        void markNotificationRead(id);
+      }}
+      onMarkAll={() => {
+        void markAllNotificationsRead();
+      }}
+      onDelete={(id) => {
+        void deleteNotification(id);
+      }}
     />
   );
 }

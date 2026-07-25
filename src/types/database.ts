@@ -300,6 +300,43 @@ export type GeneralEnquiryInsert = {
 
 export type GeneralEnquiryUpdate = Partial<GeneralEnquiryInsert>;
 
+export type NotificationTypeDb = "info" | "success" | "warning" | "error";
+export type NotificationForRoleDb = "user" | "broker" | "admin" | "all";
+
+export type NotificationRow = {
+  id: string;
+  user_id: string;
+  for_role: NotificationForRoleDb;
+  title: string;
+  message: string;
+  type: NotificationTypeDb;
+  read: boolean;
+  event_key: string | null;
+  entity_type: string | null;
+  entity_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type NotificationInsert = {
+  id?: string;
+  user_id: string;
+  for_role?: NotificationForRoleDb;
+  title: string;
+  message: string;
+  type?: NotificationTypeDb;
+  read?: boolean;
+  event_key?: string | null;
+  entity_type?: string | null;
+  entity_id?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type NotificationUpdate = Partial<
+  Pick<NotificationInsert, "read" | "title" | "message" | "type" | "for_role">
+>;
+
 export type Database = {
   public: {
     Tables: {
@@ -371,6 +408,20 @@ export type Database = {
         Update: GeneralEnquiryUpdate;
         Relationships: [];
       };
+      notifications: {
+        Row: NotificationRow;
+        Insert: NotificationInsert;
+        Update: NotificationUpdate;
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -389,6 +440,8 @@ export type Database = {
       inquiry_status: InquiryStatusDb;
       directory_category: DirectoryCategoryDb;
       assistance_status: AssistanceStatusDb;
+      notification_type: NotificationTypeDb;
+      notification_for_role: NotificationForRoleDb;
     };
     CompositeTypes: {
       [_ in never]: never;

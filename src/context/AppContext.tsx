@@ -33,6 +33,7 @@ import {
   inquiryService,
   dealerService,
   catalogService,
+  notificationService,
   authService,
   type SessionSnapshot,
 } from "@/services";
@@ -114,8 +115,12 @@ interface AppContextType {
   userProfile: UserProfile | null;
   setUserProfile: React.Dispatch<React.SetStateAction<UserProfile | null>>;
   notifications: Notification[];
+  notificationsReady: boolean;
+  refreshNotifications: () => Promise<void>;
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
-  markNotificationRead: (id: string) => void;
+  markNotificationRead: (id: string) => Promise<void>;
+  markAllNotificationsRead: () => Promise<void>;
+  deleteNotification: (id: string) => Promise<void>;
   categories: Category[];
   setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
   locations: Location[];
@@ -200,6 +205,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [assistanceReady, setAssistanceReady] = useState(false);
   const [enquiries, setEnquiriesState] = useState<GeneralEnquiry[]>([]);
   const [enquiriesReady, setEnquiriesReady] = useState(false);
+  const [notifications, setNotificationsState] = useState<Notification[]>([]);
+  const [notificationsReady, setNotificationsReady] = useState(false);
   const [selectedCity, setSelectedCityState] = useState(defaultSession.selectedCity);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [compareList, setCompareList] = useState<string[]>([]);
@@ -284,6 +291,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!sessionReady) return;
     void refreshProperties();
   }, [sessionReady, isLoggedIn, userRole, refreshProperties]);
+
+  const refreshNotifications = useCallback(async () => {
+    if (!hasSupabaseEnv() || !isLoggedIn) {
+      setNotificationsState([]);
+      setNotificationsReady(true);
+      return;
+    }
+    try {
+      const rows = await notificationService.list();
+      setNotificationsState(rows);
+    } catch {
+      setNotificationsState([]);
+    } finally {
+      setNotificationsReady(true);
+    }
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (!sessionReady) return;
+    void refreshNotifications();
+  }, [sessionReady, isLoggedIn, userRole, refreshNotifications]);
 
   const refreshInquiries = useCallback(async () => {
     if (!hasSupabaseEnv() || !isLoggedIn) {
@@ -458,9 +486,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const setNotifications: React.Dispatch<React.SetStateAction<Notification[]>> = useCallback(
     (action) => {
-      const current = getStore().notifications;
-      const next = typeof action === "function" ? action(current) : action;
-      patchStore({ notifications: next });
+      setNotificationsState((current) =>
+        typeof action === "function" ? action(current) : action
+      );
     },
     []
   );
@@ -523,16 +551,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         ownerEmail: isLoggedIn ? userEmail : undefined,
       });
       setPropertiesState((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
+      void refreshNotifications();
       return created;
     },
-    [isLoggedIn, userRole, userEmail, userName, userProfile?.phone, directoryProfiles]
+    [
+      isLoggedIn,
+      userRole,
+      userEmail,
+      userName,
+      userProfile?.phone,
+      directoryProfiles,
+      refreshNotifications,
+    ]
   );
 
-  const updateProperty = useCallback(async (propertyId: string, updates: Partial<Property>) => {
-    const updated = await propertyService.update(propertyId, updates);
-    setPropertiesState((prev) => prev.map((p) => (p.id === propertyId ? updated : p)));
-    return updated;
-  }, []);
+  const updateProperty = useCallback(
+    async (propertyId: string, updates: Partial<Property>) => {
+      const updated = await propertyService.update(propertyId, updates);
+      setPropertiesState((prev) => prev.map((p) => (p.id === propertyId ? updated : p)));
+      void refreshNotifications();
+      return updated;
+    },
+    [refreshNotifications]
+  );
 
   const deleteProperty = useCallback(async (propertyId: string) => {
     await propertyService.remove(propertyId);
@@ -609,8 +650,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setDirectoryProfilesState((prev) => prev.filter((p) => p.id !== id));
   }, []);
 
-  const markNotificationRead = useCallback((id: string) => {
-    void catalogService.markNotificationRead(id);
+  const markNotificationRead = useCallback(async (id: string) => {
+    const updated = await notificationService.markRead(id);
+    setNotificationsState((prev) => prev.map((n) => (n.id === id ? updated : n)));
+  }, []);
+
+  const markAllNotificationsRead = useCallback(async () => {
+    await notificationService.markAllRead();
+    setNotificationsState((prev) => prev.map((n) => ({ ...n, read: true })));
+  }, []);
+
+  const deleteNotification = useCallback(async (id: string) => {
+    await notificationService.remove(id);
+    setNotificationsState((prev) => prev.filter((n) => n.id !== id));
   }, []);
 
   const addLog = useCallback((log: Omit<ActivityLog, "id" | "timestamp">) => {
@@ -667,9 +719,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setUserName,
       userProfile,
       setUserProfile,
-      notifications: store.notifications,
+      notifications,
+      notificationsReady,
+      refreshNotifications,
       setNotifications,
       markNotificationRead,
+      markAllNotificationsRead,
+      deleteNotification,
       categories: store.categories,
       setCategories,
       locations: store.locations,
@@ -732,8 +788,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       userName,
       setUserName,
       userProfile,
+      notifications,
+      notificationsReady,
+      refreshNotifications,
       setNotifications,
       markNotificationRead,
+      markAllNotificationsRead,
+      deleteNotification,
       setCategories,
       setLocations,
       addLog,
