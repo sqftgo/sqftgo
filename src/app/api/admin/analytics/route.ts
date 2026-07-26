@@ -19,6 +19,11 @@ export async function GET(request: NextRequest) {
 
   const supabase = await db();
 
+  const now = new Date();
+  const monthStart = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1)
+  ).toISOString();
+
   const [
     accounts,
     activeListings,
@@ -28,7 +33,8 @@ export async function GET(request: NextRequest) {
     dealers,
     siteVisits,
     activeProps,
-    inquiriesRows,
+    recentInquiriesRows,
+    monthlyCreatedAts,
   ] = await Promise.all([
     supabase.from("profiles").select("*", { count: "exact", head: true }),
     supabase
@@ -48,7 +54,11 @@ export async function GET(request: NextRequest) {
       .from("property_inquiries")
       .select("id, name, email, phone, message, created_at, property_id")
       .order("created_at", { ascending: false })
-      .limit(200),
+      .limit(5),
+    supabase
+      .from("property_inquiries")
+      .select("created_at")
+      .gte("created_at", monthStart),
   ]);
 
   const activeRows = (activeProps.data ?? []) as { price: number | string; city: string }[];
@@ -66,7 +76,7 @@ export async function GET(request: NextRequest) {
     .sort((a, b) => b.count - a.count)
     .slice(0, 12);
 
-  const inquiryList = (inquiriesRows.data ?? []) as {
+  const recent = (recentInquiriesRows.data ?? []) as {
     id: string;
     name: string;
     email: string;
@@ -77,13 +87,12 @@ export async function GET(request: NextRequest) {
   }[];
 
   const monthMap = new Map<string, number>();
-  const now = new Date();
   for (let i = 5; i >= 0; i--) {
     const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
     const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
     monthMap.set(key, 0);
   }
-  for (const row of inquiryList) {
+  for (const row of (monthlyCreatedAts.data ?? []) as { created_at: string }[]) {
     const d = new Date(row.created_at);
     const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
     if (monthMap.has(key)) monthMap.set(key, (monthMap.get(key) ?? 0) + 1);
@@ -92,8 +101,6 @@ export async function GET(request: NextRequest) {
     month,
     count,
   }));
-
-  const recent = inquiryList.slice(0, 5);
   const propIds = [...new Set(recent.map((r) => r.property_id))];
   const titleById = new Map<string, string>();
   if (propIds.length) {

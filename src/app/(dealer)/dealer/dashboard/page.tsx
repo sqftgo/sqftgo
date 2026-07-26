@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import {
@@ -8,9 +8,9 @@ import {
   MessageSquare,
   Plus,
   ArrowUpRight,
-  CreditCard,
   Calendar,
   MessageCircle,
+  BarChart3,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -63,10 +63,22 @@ export default function DealerDashboardPage() {
     .filter((v) => v.status === "Pending Approval" || v.status === "Confirmed")
     .slice(0, 5);
 
+  const myPropertyIds = useMemo(
+    () => new Set(myProperties.map((p) => p.id)),
+    [myProperties]
+  );
+
+  const myVisits = useMemo(
+    () => visits.filter((v) => myPropertyIds.has(v.propertyId)),
+    [visits, myPropertyIds]
+  );
+
+  const siteVisitCount = myVisits.length;
+
   const stats = [
     { label: "Active Listings", value: activeProps.length, icon: Building2, tone: "default" as const },
     { label: "New Leads", value: totalInquiries, icon: MessageSquare, tone: "default" as const },
-    { label: "Monthly Revenue", value: "₹45,000", icon: CreditCard, tone: "default" as const },
+    { label: "Site Visits", value: siteVisitCount, icon: Calendar, tone: "default" as const },
   ];
 
   const formatPrice = (v: number) => "₹" + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(v);
@@ -151,17 +163,31 @@ export default function DealerDashboardPage() {
         </Panel>
 
         <div className="space-y-6">
-          <Panel title="Property Views (Weekly)" description="Listing Views" padding="lg">
-            <div className="flex items-end gap-3 h-32 mt-2">
-              {[35, 52, 48, 70, 62, 85, 95].map((val, idx) => (
-                <div key={idx} className="flex-1 flex flex-col items-center gap-1.5">
-                  <div className="w-full bg-indigo/10 rounded-t-lg relative group transition-all" style={{ height: `${val}%` }}>
-                    <div className="absolute inset-x-0 bottom-0 bg-indigo rounded-t-lg h-0 group-hover:h-full transition-all" />
-                    <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-indigo text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">{val}0</span>
-                  </div>
-                  <span className="text-[8px] font-bold text-charcoal/40">Day {idx + 1}</span>
-                </div>
-              ))}
+          <Panel title="Analytics Summary" description="Your listing performance" padding="lg">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-charcoal/60 font-semibold">Active listings</span>
+                <span className="font-black text-indigo">{activeProps.length}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-charcoal/60 font-semibold">Total inquiries</span>
+                <span className="font-black text-indigo">{totalInquiries}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-charcoal/60 font-semibold">Site visits</span>
+                <span className="font-black text-indigo">{siteVisitCount}</span>
+              </div>
+              <p className="text-[10px] text-charcoal/40 font-semibold pt-1">
+                Property view tracking is not available yet.
+              </p>
+              <Link
+                href="/dealer/dashboard/analytics"
+                className="inline-flex items-center gap-1.5 mt-2 text-[10px] font-black uppercase tracking-wider text-indigo hover:underline"
+              >
+                <BarChart3 className="w-3.5 h-3.5" />
+                View full analytics
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
           </Panel>
 

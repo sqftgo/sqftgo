@@ -14,7 +14,8 @@ import {
   DashboardPageHeader,
   StatCard,
   KpiGrid,
-  ProgressBar,
+  MonthlyTrendChart,
+  CityDonutChart,
   Panel,
   DataTable,
   Alert,
@@ -49,10 +50,15 @@ export default function AdminAnalyticsPage() {
     };
   }, []);
 
-  const maxMonth = useMemo(
-    () => Math.max(1, ...(data?.monthlyInquiries.map((m) => m.count) ?? [1])),
-    [data]
-  );
+  const cityShare = useMemo(() => {
+    if (!data) return [];
+    const total = data.activeListings || 1;
+    return data.cityBreakdown.map((row) => ({
+      name: row.city,
+      count: row.count,
+      percent: Math.round((row.count / total) * 100),
+    }));
+  }, [data]);
 
   const columns: DataTableColumn<InquiryRow>[] = [
     {
@@ -150,17 +156,7 @@ export default function AdminAnalyticsPage() {
               title="Monthly property inquiries"
               description="Last 6 months from property_inquiries.created_at"
             >
-              <div className="space-y-3">
-                {data.monthlyInquiries.map((row) => (
-                  <div key={row.month} className="space-y-1">
-                    <div className="flex justify-between text-[11px] font-bold">
-                      <span>{row.month}</span>
-                      <span className="text-charcoal/45">{row.count}</span>
-                    </div>
-                    <ProgressBar value={Math.round((row.count / maxMonth) * 100)} />
-                  </div>
-                ))}
-              </div>
+              <MonthlyTrendChart data={data.monthlyInquiries} height={240} />
             </Panel>
 
             <Panel
@@ -168,27 +164,7 @@ export default function AdminAnalyticsPage() {
               title="Active listings by city"
               description="Current inventory"
             >
-              <div className="space-y-3">
-                {data.cityBreakdown.length === 0 ? (
-                  <p className="text-xs text-charcoal/45 font-semibold">No listings.</p>
-                ) : (
-                  data.cityBreakdown.map((row) => {
-                    const total = data.activeListings || 1;
-                    const percent = Math.round((row.count / total) * 100);
-                    return (
-                      <div key={row.city} className="space-y-1">
-                        <div className="flex justify-between text-[11px] font-bold">
-                          <span>{row.city}</span>
-                          <span className="text-charcoal/45">
-                            {row.count} · {percent}%
-                          </span>
-                        </div>
-                        <ProgressBar value={percent} />
-                      </div>
-                    );
-                  })
-                )}
-              </div>
+              <CityDonutChart data={cityShare} height={168} />
             </Panel>
           </div>
 

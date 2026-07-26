@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api/client";
-import type { PlatformAnalytics, PlatformSettings } from "@/types";
+import type { DealerAnalytics, PlatformAnalytics, PlatformSettings } from "@/types";
 
 export const platformService = {
   getSettings() {
@@ -13,5 +13,8 @@ export const platformService = {
   },
   getAnalytics() {
     return apiClient<PlatformAnalytics>("/api/admin/analytics");
+  },
+  getDealerAnalytics() {
+    return apiClient<DealerAnalytics>("/api/dealer/analytics");
   },
 };

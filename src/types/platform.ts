@@ -33,3 +33,34 @@ export type PlatformAnalytics = {
     propertyTitle: string;
   }[];
 };
+
+export type DealerAnalytics = {
+  listingsTotal: number;
+  listingsActive: number;
+  listingsPending: number;
+  listingsDraft: number;
+  listingsRejected: number;
+  inquiriesTotal: number;
+  visitsTotal: number;
+  visitsPending: number;
+  visitsConfirmed: number;
+  inventoryValueSum: number;
+  cityBreakdown: { city: string; count: number }[];
+  monthlyInquiries: { month: string; count: number }[];
+  topListings: {
+    id: string;
+    title: string;
+    city: string;
+    status: string;
+    inquiryCount: number;
+  }[];
+  listings: {
+    id: string;
+    title: string;
+    type: string;
+    city: string;
+    status: string;
+    inquiryCount: number;
+    price: number;
+  }[];
+};
