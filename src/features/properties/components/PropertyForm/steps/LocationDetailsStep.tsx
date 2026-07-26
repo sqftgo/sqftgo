@@ -1,7 +1,9 @@
 "use client";
 
 import { CITIES_WITHOUT_ALL, FURNISHING_OPTIONS } from "@/constants";
-import { CustomSelect, FormField, TextInput, SearchInput } from "@/components/ui";
+import CustomSelect from "@/components/ui/CustomSelect";
+import { FormField, TextInput } from "@/components/ui/FormField";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { labelClassName, selectBtnClass } from "../constants";
 import type { FormState, SetFormField } from "../types";
 

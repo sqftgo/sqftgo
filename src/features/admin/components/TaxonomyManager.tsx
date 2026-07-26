@@ -2,17 +2,15 @@
 
 import React, { useState } from "react";
 import { LayoutGrid, List, Plus, Search, Trash2, type LucideIcon } from "lucide-react";
-import {
-  DashboardPageHeader,
-  Alert,
-  Switch,
-  Badge,
-  ConfirmDialog,
-  Button,
-  TextInput,
-  Panel,
-  EmptyState,
-} from "@/components/ui";
+import { DashboardPageHeader } from "@/components/ui/DashboardPageHeader";
+import { Alert } from "@/components/ui/Alert";
+import { Switch } from "@/components/ui/Switch";
+import { Badge } from "@/components/ui/Badge";
+import { ConfirmDialog } from "@/components/ui/Dialog";
+import { Button } from "@/components/ui/Button";
+import { TextInput } from "@/components/ui/FormField";
+import { Panel } from "@/components/ui/Panel";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/lib/cn";
 
 export type TaxonomyLayout = "list" | "grid";

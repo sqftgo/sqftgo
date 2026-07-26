@@ -10,15 +10,11 @@ import {
   FURNISHING_OPTIONS,
   AMENITIES as AMENITY_FALLBACK,
 } from "@/constants";
-import {
-  CustomSelect,
-  FormField,
-  TextInput,
-  TextArea,
-  Alert,
-  Button,
-  SearchInput,
-} from "@/components/ui";
+import CustomSelect from "@/components/ui/CustomSelect";
+import { FormField, TextInput, TextArea } from "@/components/ui/FormField";
+import { Alert } from "@/components/ui/Alert";
+import { Button } from "@/components/ui/Button";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { PropertyCard } from "@/features/properties/components/PropertyCard";
 import {
   ChevronRight,

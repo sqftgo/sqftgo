@@ -1,6 +1,6 @@
 "use client";
 
-import { FormField, TextInput } from "@/components/ui";
+import { FormField, TextInput } from "@/components/ui/FormField";
 import type { FormState, SetFormField } from "../types";
 
 type PricingStepProps = {

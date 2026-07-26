@@ -3,7 +3,8 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
-import { PropertyCard, EmptyState } from "@/components/ui";
+import { EmptyState } from "@/components/ui";
+import { PropertyCard } from "@/features/properties";
 import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
 
