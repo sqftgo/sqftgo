@@ -34,6 +34,8 @@ export interface DashboardShellProps {
   getBadgeCount?: (badge?: string) => number;
   publicSiteHref?: string;
   publicSiteLabel?: string;
+  /** When false, hides the sidebar “View Public Site” footer link. Defaults to true. */
+  showPublicSiteLink?: boolean;
   onLogout: () => void;
   topBarExtra?: React.ReactNode;
   searchPlaceholder?: string;
@@ -81,6 +83,7 @@ interface SidebarContentProps {
   getBadgeCount?: (badge?: string) => number;
   publicSiteHref: string;
   publicSiteLabel: string;
+  showPublicSiteLink: boolean;
   onLogout: () => void;
   onNavClick: (href: string) => void;
   setSidebarOpen: (open: boolean) => void;
@@ -100,6 +103,7 @@ function SidebarContent({
   getBadgeCount,
   publicSiteHref,
   publicSiteLabel,
+  showPublicSiteLink,
   onLogout,
   onNavClick,
   setSidebarOpen,
@@ -184,18 +188,20 @@ function SidebarContent({
       </nav>
 
       <div className="p-4 border-t border-indigo/5 bg-white/40 space-y-1 shrink-0">
-        <Link
-          href={publicSiteHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cn(
-            "flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all",
-            idleHover
-          )}
-        >
-          <ExternalLink className={cn("w-4 h-4", iconIdle)} />
-          <span>{publicSiteLabel}</span>
-        </Link>
+        {showPublicSiteLink ? (
+          <Link
+            href={publicSiteHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(
+              "flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all",
+              idleHover
+            )}
+          >
+            <ExternalLink className={cn("w-4 h-4", iconIdle)} />
+            <span>{publicSiteLabel}</span>
+          </Link>
+        ) : null}
         <button
           type="button"
           onClick={onLogout}
@@ -220,6 +226,7 @@ function DashboardShellInner({
   getBadgeCount,
   publicSiteHref = "/",
   publicSiteLabel = "View Public Site",
+  showPublicSiteLink = true,
   onLogout,
   topBarExtra,
   searchPlaceholder = "Search dashboard...",
@@ -296,6 +303,7 @@ function DashboardShellInner({
     getBadgeCount,
     publicSiteHref,
     publicSiteLabel,
+    showPublicSiteLink,
     onLogout,
     onNavClick: setPendingHref,
     setSidebarOpen,

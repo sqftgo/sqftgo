@@ -7,15 +7,12 @@ import { useApp } from "@/context/AppContext";
 import {
   CITIES,
   PROPERTY_TYPES,
-  BUDGET_BUY_MIN_OPTIONS,
-  BUDGET_BUY_MAX_OPTIONS,
-  BUDGET_RENT_MIN_OPTIONS,
-  BUDGET_RENT_MAX_OPTIONS,
   SIZE_MIN_OPTIONS,
   SIZE_MAX_OPTIONS,
   BHK_OPTIONS,
   AMENITIES as AMENITY_FALLBACK,
 } from "@/constants";
+import { useBudgetPriceOptions } from "@/features/admin/hooks/useBudgetPriceOptions";
 
 export interface FilterState {
   city: string;
@@ -51,6 +48,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   showBasicFilters = true,
 }) => {
   const { categories, locations, amenities } = useApp();
+  const budgetOptions = useBudgetPriceOptions();
 
   const cityOptions = useMemo(() => {
     const live = locations.filter((l) => l.active).map((l) => l.city);
@@ -256,14 +254,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             </span>
             <div className="flex flex-col gap-2">
               <CustomSelect
-                options={filters.purpose === "rent" || filters.purpose === "lease" ? BUDGET_RENT_MIN_OPTIONS : BUDGET_BUY_MIN_OPTIONS}
+                options={filters.purpose === "rent" || filters.purpose === "lease" ? budgetOptions.rentMin : budgetOptions.buyMin}
                 value={filters.minPrice}
                 onChange={(val) => handlePriceChange("minPrice", val)}
                 className="w-full"
                 buttonClassName="bg-white border border-sand text-charcoal text-xs font-bold rounded-xl px-2.5 py-2.5 hover:border-terracotta transition-colors text-left"
               />
               <CustomSelect
-                options={filters.purpose === "rent" || filters.purpose === "lease" ? BUDGET_RENT_MAX_OPTIONS : BUDGET_BUY_MAX_OPTIONS}
+                options={filters.purpose === "rent" || filters.purpose === "lease" ? budgetOptions.rentMax : budgetOptions.buyMax}
                 value={filters.maxPrice}
                 onChange={(val) => handlePriceChange("maxPrice", val)}
                 className="w-full"

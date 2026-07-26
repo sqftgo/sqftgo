@@ -14,6 +14,7 @@ import {
 } from "@/components/ui";
 import { SlidersHorizontal, Info, MapPin, Grid, Map, X, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useBudgetPriceOptions } from "@/features/admin/hooks/useBudgetPriceOptions";
 
 const CITIES = [
   "Udaipur", "Jaipur", "Jodhpur", "Kota", "Bikaner", 
@@ -25,52 +26,6 @@ const CITIES = [
 const PROPERTY_TYPES = [
   "Home", "Villa", "Hotel", "Agricultural Land", "Apartment", 
   "Office Space", "Commercial Space", "Shop", "Industrial Plot"
-];
-
-const BUDGET_BUY_MIN_OPTIONS = [
-  { label: "Min Price", value: "" },
-  { label: "₹10 Lakhs", value: "1000000" },
-  { label: "₹25 Lakhs", value: "2500000" },
-  { label: "₹50 Lakhs", value: "5000000" },
-  { label: "₹75 Lakhs", value: "7500000" },
-  { label: "₹1 Crore", value: "10000000" },
-  { label: "₹2 Crores", value: "20000000" },
-  { label: "₹5 Crores", value: "50000000" },
-  { label: "₹10 Crores", value: "100000000" }
-];
-
-const BUDGET_BUY_MAX_OPTIONS = [
-  { label: "Max Price", value: "" },
-  { label: "₹25 Lakhs", value: "2500000" },
-  { label: "₹50 Lakhs", value: "5000000" },
-  { label: "₹75 Lakhs", value: "7500000" },
-  { label: "₹1 Crore", value: "10000000" },
-  { label: "₹2 Crores", value: "20000000" },
-  { label: "₹5 Crores", value: "50000000" },
-  { label: "₹10 Crores", value: "100000000" },
-  { label: "₹15 Crores", value: "150000000" }
-];
-
-const BUDGET_RENT_MIN_OPTIONS = [
-  { label: "Min Rent", value: "" },
-  { label: "₹5,000", value: "5000" },
-  { label: "₹10,000", value: "10000" },
-  { label: "₹15,000", value: "15000" },
-  { label: "₹20,000", value: "20000" },
-  { label: "₹30,000", value: "30000" },
-  { label: "₹50,000", value: "50000" },
-  { label: "₹1 Lakh", value: "100000" }
-];
-
-const BUDGET_RENT_MAX_OPTIONS = [
-  { label: "Max Rent", value: "" },
-  { label: "₹10,000", value: "10000" },
-  { label: "₹15,000", value: "15000" },
-  { label: "₹20,000", value: "20000" },
-  { label: "₹30,000", value: "30000" },
-  { label: "₹50,000", value: "50000" },
-  { label: "₹1 Lakh", value: "100000" },
-  { label: "₹2 Lakhs", value: "200000" }
 ];
 
 // Helper to filter listings based on criteria
@@ -140,6 +95,7 @@ const filterProperties = (list: Property[], filters: FilterState): Property[] =>
 function ListingsContent() {
   const searchParams = useSearchParams();
   const { properties, selectedCity, setSelectedCity, propertiesError, propertiesReady } = useApp();
+  const budgetOptions = useBudgetPriceOptions();
 
   // Initializing state with query parameters
   const [filters, setFilters] = useState<FilterState>({
@@ -432,7 +388,7 @@ function ListingsContent() {
           <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none">Budget Price Range</span>
           <div className="flex items-center gap-2">
             <CustomSelect
-              options={filters.purpose === "rent" || filters.purpose === "lease" ? BUDGET_RENT_MIN_OPTIONS : BUDGET_BUY_MIN_OPTIONS}
+              options={filters.purpose === "rent" || filters.purpose === "lease" ? budgetOptions.rentMin : budgetOptions.buyMin}
               value={filters.minPrice}
               onChange={(val) => handleFilterChange({ ...filters, minPrice: val })}
               className="w-full"
@@ -440,7 +396,7 @@ function ListingsContent() {
             />
             <span className="text-charcoal/30 text-xs font-bold font-sans">to</span>
             <CustomSelect
-              options={filters.purpose === "rent" || filters.purpose === "lease" ? BUDGET_RENT_MAX_OPTIONS : BUDGET_BUY_MAX_OPTIONS}
+              options={filters.purpose === "rent" || filters.purpose === "lease" ? budgetOptions.rentMax : budgetOptions.buyMax}
               value={filters.maxPrice}
               onChange={(val) => handleFilterChange({ ...filters, maxPrice: val })}
               className="w-full"

@@ -84,7 +84,7 @@ export default function AdminDashboardPage() {
       hint: `${analytics.accounts} accounts total`,
       icon: Users,
       tone: "indigo" as const,
-      link: "/admin/users",
+      link: null as string | null,
     },
     {
       label: "Dealers",
@@ -124,12 +124,12 @@ export default function AdminDashboardPage() {
       hint: `${analytics.propertyInquiries} property · ${analytics.generalEnquiries} general`,
       icon: MessageSquare,
       tone: "terracotta" as const,
-      link: "/admin/analytics",
+      link: "/admin/reports",
     },
   ];
 
   return (
-    <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="space-y-8 max-w-7xl mx-auto">
       <DashboardPageHeader
         title="Admin Dashboard"
         description="Live platform overview from database counts"
@@ -153,6 +153,15 @@ export default function AdminDashboardPage() {
       <KpiGrid className="xl:grid-cols-3">
         {stats.map((stat, i) => {
           const Icon = stat.icon;
+          const card = (
+            <StatCard
+              label={stat.label}
+              value={stat.value}
+              hint={stat.hint}
+              tone={stat.tone}
+              icon={<Icon className="w-4 h-4" />}
+            />
+          );
           return (
             <motion.div
               key={stat.label}
@@ -160,50 +169,17 @@ export default function AdminDashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.07 }}
             >
-              <Link href={stat.link} className="block">
-                <StatCard
-                  label={stat.label}
-                  value={stat.value}
-                  hint={stat.hint}
-                  tone={stat.tone}
-                  icon={<Icon className="w-4 h-4" />}
-                />
-              </Link>
+              {stat.link ? (
+                <Link href={stat.link} className="block">
+                  {card}
+                </Link>
+              ) : (
+                card
+              )}
             </motion.div>
           );
         })}
       </KpiGrid>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {pendingApprovals > 0 && (
-          <Alert
-            variant="warning"
-            title="Action Required"
-            description={`${pendingApprovals} listings awaiting review`}
-          >
-            <Link
-              href="/admin/approvals"
-              className="inline-block mt-3 px-4 py-2 bg-amber-500/10 border border-amber-500/30 text-amber-700 text-xs font-bold rounded-xl hover:bg-amber-500/20 transition-colors"
-            >
-              Review Now
-            </Link>
-          </Alert>
-        )}
-        <Link
-          href="/admin/users"
-          className="bg-white/80 border border-indigo/10 rounded-2xl p-5 flex items-center justify-between hover:shadow-md transition-shadow"
-        >
-          <div>
-            <p className="text-xs font-black text-charcoal/40 uppercase tracking-wider">
-              Management
-            </p>
-            <p className="text-base font-serif font-black text-charcoal mt-1">
-              View All Users
-            </p>
-          </div>
-          <ArrowUpRight className="w-5 h-5 text-charcoal/30" />
-        </Link>
-      </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <Panel
@@ -230,7 +206,7 @@ export default function AdminDashboardPage() {
                 .map((prop) => (
                 <Link
                   key={prop.id}
-                  href={`/admin/properties`}
+                  href="/admin/properties"
                   className="flex items-center gap-3 p-4 hover:bg-indigo/5 transition-colors"
                 >
                   <div className="w-10 h-10 rounded-xl overflow-hidden bg-sand/35 border border-indigo/5 shrink-0">
@@ -260,18 +236,7 @@ export default function AdminDashboardPage() {
           </div>
         </Panel>
 
-        <Panel
-          title="Recent Activity"
-          padding="none"
-          actions={
-            <Link
-              href="/admin/logs"
-              className="text-[10px] font-black text-terracotta/80 hover:text-terracotta uppercase tracking-wider flex items-center gap-1"
-            >
-              All <ArrowUpRight className="w-3 h-3" />
-            </Link>
-          }
-        >
+        <Panel title="Recent Activity" padding="none">
           <div className="divide-y divide-indigo/5">
             {activityLogs.length === 0 ? (
               <p className="p-6 text-xs text-charcoal/40 font-semibold">
