@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useApp, DirectoryProfile } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
+import type { DirectoryProfile } from "@/types";
 import { 
   Building, 
   User, 

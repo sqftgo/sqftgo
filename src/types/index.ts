@@ -1,6 +1,11 @@
 export type { Property, PropertyInquiry } from "./property";
-export type { UserProfile, MockUser } from "./user";
-export type { AssistanceRequest, GeneralEnquiry, CustomerReview } from "./inquiry";
+export type { UserProfile, MockUser, AuthRole } from "./user";
+export type {
+  AssistanceRequest,
+  GeneralEnquiry,
+  CustomerReview,
+  PropertyInquiryView,
+} from "./inquiry";
 export type { Notification, Category, Location, Amenity, ActivityLog, DirectoryProfile } from "./catalog";
 export type { VisitBooking, VisitStatusUi } from "./visit";
 export type {

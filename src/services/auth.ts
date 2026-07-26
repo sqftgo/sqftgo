@@ -1,7 +1,7 @@
-import type { MockUser, UserProfile } from "@/types";
+import type { AuthRole, MockUser, UserProfile } from "@/types";
 import { apiClient, type PaginatedResult } from "@/lib/api/client";
 
-export type AuthRole = "user" | "broker" | "admin";
+export type { AuthRole };
 
 export interface AuthSession {
   email: string;

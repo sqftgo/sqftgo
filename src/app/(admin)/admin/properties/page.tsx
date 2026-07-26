@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useMemo } from "react";
-import { useApp, Property } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
+import type { Property } from "@/types";
 import { Trash2, ExternalLink, MoreVertical, CheckCircle2, XCircle } from "lucide-react";
 import {
   DropdownMenu,

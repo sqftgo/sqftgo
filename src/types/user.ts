@@ -1,3 +1,5 @@
+export type AuthRole = "user" | "broker" | "admin";
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -6,7 +8,7 @@ export interface UserProfile {
   avatar?: string;
   bio?: string;
   city?: string;
-  role: "user" | "broker" | "admin";
+  role: AuthRole;
   joinedDate: string;
 }
 
@@ -14,7 +16,7 @@ export interface MockUser {
   id: string;
   name: string;
   email: string;
-  role: "user" | "broker" | "admin";
+  role: AuthRole;
   status: "active" | "suspended";
   joinedDate: string;
   inquiriesCount: number;

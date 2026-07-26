@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { useApp, Property } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
+import type { Property } from "@/types";
 import { CustomSelect, EmptyState } from "@/components/ui";
 import { PropertyCard, FilterPanel, type FilterState } from "@/features/properties";
 import { formatIndianCurrency } from "@/lib/format";

@@ -3,7 +3,8 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useApp, Property } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
+import type { Property } from "@/types";
 import {
   CITIES_WITHOUT_ALL,
   PROPERTY_TYPES,

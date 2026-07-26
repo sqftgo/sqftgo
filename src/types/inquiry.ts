@@ -1,3 +1,12 @@
+import type { InquiryStatusDb } from "./database";
+import type { PropertyInquiry } from "./property";
+
+export type PropertyInquiryView = PropertyInquiry & {
+  id: string;
+  propertyId: string;
+  status: InquiryStatusDb;
+};
+
 export interface AssistanceRequest {
   id: string;
   name: string;

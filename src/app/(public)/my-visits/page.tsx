@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { useApp, type VisitBooking } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
+import type { VisitBooking } from "@/types";
 import Link from "next/link";
 import { Calendar, MapPin, Phone, User, Clock, CheckCircle2, ChevronRight } from "lucide-react";
 import { Badge, ConfirmDialog, EmptyState, PageLoader } from "@/components/ui";

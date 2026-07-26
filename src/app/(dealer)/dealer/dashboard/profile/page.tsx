@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useApp, type DirectoryProfile } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
 import { kycService } from "@/services";
-import type { DealerKycRecord } from "@/types";
+import type { DealerKycRecord, DirectoryProfile } from "@/types";
 import {
   Save,
   User,

@@ -3,7 +3,7 @@ import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
-import type { AuthRole } from "@/services/auth";
+import type { AuthRole } from "@/types";
 import type { ProfileRow } from "@/types/database";
 
 type PatchBody = {

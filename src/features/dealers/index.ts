@@ -6,3 +6,4 @@ export {
   AGENT_DEALER_CATEGORIES,
   type DealerCategory,
 } from "./lib/is-dealer-category";
+export { useDirectoryProfiles } from "./hooks/useDirectoryProfiles";
