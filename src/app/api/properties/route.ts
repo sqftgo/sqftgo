@@ -1,47 +1,49 @@
 import { type NextRequest } from "next/server";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
-import { clampPageParams } from "@/lib/api/client";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
-import { mapCreateToInsert, mapPropertyRow, toDbStatus } from "@/lib/mappers/property";
+import { mapCreateToInsert, mapPropertyRow } from "@/lib/mappers/property";
 import { notifyRole } from "@/lib/notifications/server";
+import {
+  applyPropertyListFilters,
+  parsePropertyListParams,
+} from "@/lib/server/properties-list";
 import {
   propertyCreateSchema,
   propertyStatusUiSchema,
   zodErrorMessage,
 } from "@/lib/validation/property";
-import type { PropertyPurposeDb, PropertyRow, PropertyTypeDb } from "@/types/database";
-
-function parseOptionalNumber(value: string | null): number | undefined {
-  if (value == null || value === "") return undefined;
-  const n = Number(value);
-  return Number.isFinite(n) ? n : undefined;
-}
-
-function sanitizeSearch(raw: string): string {
-  return raw.replace(/[%_,.()]/g, " ").trim().slice(0, 80);
-}
+import type { PropertyRow } from "@/types/database";
 
 export async function GET(request: NextRequest) {
   if (!hasSupabaseEnv()) return jsonError("Supabase is not configured", 503);
 
-  const { searchParams } = request.nextUrl;
-  const mine = searchParams.get("mine") === "1" || searchParams.get("mine") === "true";
-  const statusParam = searchParams.get("status");
-  const city = searchParams.get("city") ?? undefined;
-  const type = searchParams.get("type") ?? undefined;
-  const purpose = searchParams.get("purpose") ?? undefined;
-  const featuredParam = searchParams.get("featured");
-  const searchRaw = searchParams.get("search")?.trim() ?? undefined;
-  const ownerEmail = searchParams.get("ownerEmail")?.trim().toLowerCase() ?? undefined;
-  const minPrice = parseOptionalNumber(searchParams.get("minPrice"));
-  const maxPrice = parseOptionalNumber(searchParams.get("maxPrice"));
-  const { limit, offset } = clampPageParams(
-    searchParams.get("limit"),
-    searchParams.get("offset"),
-    { limit: 100, maxLimit: 200 }
-  );
+  const {
+    mine,
+    statusParam,
+    city,
+    type,
+    purpose,
+    featuredParam,
+    searchRaw,
+    ownerEmail,
+    minPrice,
+    maxPrice,
+    limit,
+    offset,
+  } = parsePropertyListParams(request.nextUrl.searchParams);
+
+  const filters = {
+    statusParam,
+    city,
+    type,
+    purpose,
+    featuredParam,
+    searchRaw,
+    minPrice,
+    maxPrice,
+  };
 
   const auth = await authenticateApiRequest(request);
   const isAdmin = auth.profile?.role === "admin" && auth.profile.status === "active";
@@ -63,26 +65,9 @@ export async function GET(request: NextRequest) {
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (statusParam && statusParam !== "all") {
-      const parsed = propertyStatusUiSchema.safeParse(statusParam);
-      if (!parsed.success) return jsonError("Invalid status filter");
-      query = query.eq("status", toDbStatus(parsed.data));
-    }
-    if (city && city !== "All India") query = query.eq("city", city);
-    if (type && type !== "any") query = query.eq("type", type as PropertyTypeDb);
-    if (purpose) query = query.eq("purpose", purpose as PropertyPurposeDb);
-    if (featuredParam === "true") query = query.eq("featured", true);
-    if (featuredParam === "false") query = query.eq("featured", false);
-    if (minPrice !== undefined) query = query.gte("price", minPrice);
-    if (maxPrice !== undefined) query = query.lte("price", maxPrice);
-    if (searchRaw) {
-      const search = sanitizeSearch(searchRaw);
-      if (search) {
-        query = query.or(
-          `title.ilike.%${search}%,locality.ilike.%${search}%,city.ilike.%${search}%`
-        );
-      }
-    }
+    const filtered = applyPropertyListFilters(query, filters);
+    if ("error" in filtered) return jsonError(filtered.error);
+    query = filtered.query;
 
     const { data, error, count } = await query;
     if (error) return jsonError(error.message, 500);
@@ -120,32 +105,15 @@ export async function GET(request: NextRequest) {
     query = query.neq("status", "draft");
   }
 
-  if (statusParam && statusParam !== "all") {
-    const parsed = propertyStatusUiSchema.safeParse(statusParam);
-    if (!parsed.success) return jsonError("Invalid status filter");
-    query = query.eq("status", toDbStatus(parsed.data));
-  }
+  const filtered = applyPropertyListFilters(query, filters);
+  if ("error" in filtered) return jsonError(filtered.error);
+  query = filtered.query;
 
-  if (city && city !== "All India") query = query.eq("city", city);
-  if (type && type !== "any") query = query.eq("type", type as PropertyTypeDb);
-  if (purpose) query = query.eq("purpose", purpose as PropertyPurposeDb);
-  if (featuredParam === "true") query = query.eq("featured", true);
-  if (featuredParam === "false") query = query.eq("featured", false);
-  if (minPrice !== undefined) query = query.gte("price", minPrice);
-  if (maxPrice !== undefined) query = query.lte("price", maxPrice);
   if (ownerEmail) {
     if (!isAdmin && auth.profile?.email?.toLowerCase() !== ownerEmail) {
       return jsonError("Forbidden", 403);
     }
     query = query.ilike("owner_email", ownerEmail);
-  }
-  if (searchRaw) {
-    const search = sanitizeSearch(searchRaw);
-    if (search) {
-      query = query.or(
-        `title.ilike.%${search}%,locality.ilike.%${search}%,city.ilike.%${search}%`
-      );
-    }
   }
 
   const { data, error, count } = await query;
