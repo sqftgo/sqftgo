@@ -18,4 +18,4 @@ export type {
   DealerKycDocument,
   DealerKycRecord,
 } from "./kyc";
-export type { PlatformSettings, PlatformAnalytics } from "./platform";
+export type { PlatformSettings, PlatformAnalytics, DealerAnalytics } from "./platform";

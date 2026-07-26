@@ -1,90 +1,142 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { useApp } from "@/context/AppContext";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { platformService } from "@/services";
+import type { DealerAnalytics } from "@/types";
 import {
   MessageSquare,
   Building2,
-  MapPin,
   Filter,
   CheckCircle,
+  Calendar,
 } from "lucide-react";
 import {
   CustomSelect,
   DashboardPageHeader,
   StatCard,
   KpiGrid,
-  ProgressBar,
+  MonthlyTrendChart,
+  CityDonutChart,
   Panel,
   Badge,
-  Alert,
+  GlobalLoading,
+  ErrorState,
 } from "@/components/ui";
-import { filterMyProperties } from "@/lib/ownership";
 
 export default function DealerAnalyticsPage() {
-  const { properties, userEmail, userProfile, inquiries } = useApp();
+  const [data, setData] = useState<DealerAnalytics | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const myProps = useMemo(() => {
-    return filterMyProperties(properties, userProfile?.id, userEmail);
-  }, [properties, userProfile?.id, userEmail]);
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const analytics = await platformService.getDealerAnalytics();
+      setData(analytics);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load analytics");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const filteredProps = useMemo(() => {
-    return myProps.filter((p) => {
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const filteredListings = useMemo(() => {
+    if (!data) return [];
+    return data.listings.filter((p) => {
       if (categoryFilter !== "all" && p.type !== categoryFilter) return false;
       if (statusFilter !== "all" && p.status !== statusFilter) return false;
       return true;
     });
-  }, [myProps, categoryFilter, statusFilter]);
+  }, [data, categoryFilter, statusFilter]);
+
+  const filtersActive = categoryFilter !== "all" || statusFilter !== "all";
 
   const kpis = useMemo(() => {
-    const total = filteredProps.length;
-    const active = filteredProps.filter((p) => p.status === "Active").length;
-    const totalInqs = filteredProps.reduce(
-      (a, p) => a + (inquiries[p.id]?.length || 0),
-      0
-    );
-    return { total, active, totalInqs };
-  }, [filteredProps, inquiries]);
+    if (!data) return null;
+    if (!filtersActive) {
+      return {
+        total: data.listingsTotal,
+        active: data.listingsActive,
+        inquiries: data.inquiriesTotal,
+        visits: data.visitsTotal,
+      };
+    }
+    return {
+      total: filteredListings.length,
+      active: filteredListings.filter((p) => p.status === "Active").length,
+      inquiries: filteredListings.reduce((sum, p) => sum + p.inquiryCount, 0),
+      // Visits are not filterable per listing in the API yet.
+      visits: null as number | null,
+    };
+  }, [data, filteredListings, filtersActive]);
 
   const cityBreakdown = useMemo(() => {
-    const data = filteredProps.reduce((acc: Record<string, number>, p) => {
-      acc[p.city] = (acc[p.city] || 0) + 1;
-      return acc;
-    }, {});
-    const total = filteredProps.length || 1;
-    return Object.entries(data)
+    const total = filteredListings.length || 1;
+    const cityMap = new Map<string, number>();
+    for (const p of filteredListings) {
+      cityMap.set(p.city, (cityMap.get(p.city) ?? 0) + 1);
+    }
+    return [...cityMap.entries()]
       .sort((a, b) => b[1] - a[1])
       .map(([name, count]) => ({
         name,
         count,
         percent: Math.round((count / total) * 100),
       }));
-  }, [filteredProps]);
+  }, [filteredListings]);
 
   const categoryOptions = useMemo(() => {
-    const set = new Set(myProps.map((p) => p.type));
+    if (!data) return [{ label: "All Categories", value: "all" }];
+    const set = new Set(data.listings.map((p) => p.type));
     return [
       { label: "All Categories", value: "all" },
       ...Array.from(set).map((cat) => ({ label: cat, value: cat })),
     ];
-  }, [myProps]);
+  }, [data]);
 
   const topListings = useMemo(() => {
-    return [...filteredProps]
-      .sort(
-        (a, b) => (inquiries[b.id]?.length || 0) - (inquiries[a.id]?.length || 0)
-      )
+    return [...filteredListings]
+      .sort((a, b) => b.inquiryCount - a.inquiryCount)
       .slice(0, 5);
-  }, [filteredProps, inquiries]);
+  }, [filteredListings]);
+
+  if (loading) {
+    return <GlobalLoading label="Loading your analytics…" />;
+  }
+
+  if (error) {
+    return (
+      <ErrorState
+        title="Analytics unavailable"
+        message={error}
+        onRetry={() => void load()}
+      />
+    );
+  }
+
+  if (!data || !kpis) {
+    return (
+      <ErrorState
+        title="Analytics unavailable"
+        message="No analytics data returned."
+        onRetry={() => void load()}
+      />
+    );
+  }
 
   return (
     <div className="bg-[#faf8f5] min-h-full text-charcoal w-full space-y-6">
       <DashboardPageHeader
         title="Analytics & Trends"
-        description="Live metrics from your listings. Historical monthly trends are not stored yet."
+        description="Live metrics from your listings and inquiries."
         actions={
           <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
             <div className="flex items-center gap-1.5 bg-sand/20 border border-indigo/5 px-3 py-2 rounded-xl shrink-0">
@@ -105,8 +157,10 @@ export default function DealerAnalyticsPage() {
                 { label: "All Statuses", value: "all" },
                 { label: "Active", value: "Active" },
                 { label: "Pending Review", value: "Pending Review" },
+                { label: "Draft", value: "Draft" },
                 { label: "Rejected", value: "Rejected" },
-                { label: "Sold / Rented", value: "Sold" },
+                { label: "Sold", value: "Sold" },
+                { label: "Rented", value: "Rented" },
               ]}
               value={statusFilter}
               onChange={setStatusFilter}
@@ -117,11 +171,15 @@ export default function DealerAnalyticsPage() {
         }
       />
 
-      <KpiGrid className="lg:grid-cols-3 xl:grid-cols-3">
+      <KpiGrid>
         <StatCard
           label="Your listings"
           value={kpis.total}
-          hint="Matching current filters"
+          hint={
+            categoryFilter === "all" && statusFilter === "all"
+              ? "All your properties"
+              : "Matching current filters"
+          }
           tone="indigo"
           icon={<Building2 className="w-4 h-4" />}
         />
@@ -134,10 +192,25 @@ export default function DealerAnalyticsPage() {
         />
         <StatCard
           label="Customer Inquiries"
-          value={kpis.totalInqs}
-          hint="On filtered listings"
+          value={kpis.inquiries}
+          hint={
+            categoryFilter === "all" && statusFilter === "all"
+              ? "All property inquiries"
+              : "On filtered listings"
+          }
           tone="terracotta"
           icon={<MessageSquare className="w-4 h-4" />}
+        />
+        <StatCard
+          label="Site Visits"
+          value={kpis.visits ?? "—"}
+          hint={
+            filtersActive
+              ? "Clear filters to see visit totals"
+              : `${data.visitsPending} pending · ${data.visitsConfirmed} confirmed`
+          }
+          tone="warning"
+          icon={<Calendar className="w-4 h-4" />}
         />
       </KpiGrid>
 
@@ -145,13 +218,9 @@ export default function DealerAnalyticsPage() {
         <Panel
           className="lg:col-span-8"
           title="Monthly enquiry trends"
-          description="Not available"
+          description="Last 6 months from your property inquiries"
         >
-          <Alert
-            variant="warning"
-            title="No fabricated charts"
-            description="Historical monthly inquiry series are not stored yet. KPIs above use your live listing and inquiry data."
-          />
+          <MonthlyTrendChart data={data.monthlyInquiries} height={240} />
         </Panel>
 
         <Panel
@@ -159,28 +228,7 @@ export default function DealerAnalyticsPage() {
           title="Geographical Breakdown"
           description="Listings allocation by city hubs"
         >
-          {cityBreakdown.length === 0 ? (
-            <div className="flex items-center justify-center py-6 text-charcoal/30 text-xs font-semibold">
-              No city records found.
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {cityBreakdown.slice(0, 4).map((city) => (
-                <div key={city.name} className="space-y-1.5">
-                  <div className="flex justify-between items-center text-[10px] font-bold text-charcoal">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-indigo/60" />
-                      {city.name}
-                    </span>
-                    <span className="text-charcoal/40 font-semibold">
-                      {city.count} listings ({city.percent}%)
-                    </span>
-                  </div>
-                  <ProgressBar value={city.percent} tone="indigo" label={city.name} />
-                </div>
-              ))}
-            </div>
-          )}
+          <CityDonutChart data={cityBreakdown} height={168} />
         </Panel>
       </div>
 
@@ -205,7 +253,7 @@ export default function DealerAnalyticsPage() {
                   </p>
                 </div>
                 <Badge tone="primary" size="sm">
-                  {inquiries[p.id]?.length || 0} inquiries
+                  {p.inquiryCount} inquiries
                 </Badge>
               </div>
             ))}

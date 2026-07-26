@@ -12,6 +12,16 @@ export {
 export { Panel, type PanelProps } from "./Panel";
 export { Avatar, type AvatarProps, type AvatarSize, type AvatarTone, type AvatarShape } from "./Avatar";
 export { ProgressBar, type ProgressBarProps, type ProgressTone } from "./ProgressBar";
+export {
+  MonthlyTrendChart,
+  type MonthlyTrendPoint,
+  type MonthlyTrendChartProps,
+} from "./MonthlyTrendChart";
+export {
+  CityDonutChart,
+  type CitySharePoint,
+  type CityDonutChartProps,
+} from "./CityDonutChart";
 export { SettingsRow, type SettingsRowProps } from "./SettingsRow";
 export { DashboardPageHeader, type DashboardPageHeaderProps } from "./DashboardPageHeader";
 export { DataTable, type DataTableColumn, type DataTableProps } from "./DataTable";
