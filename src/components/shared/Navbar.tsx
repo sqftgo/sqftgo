@@ -6,7 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { MapPin, Plus, ChevronDown, User, Users, LogOut, Home, Search, MessageSquare, Briefcase, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CitySelectorDropdown, UserDropdown, Avatar } from "@/components/ui";
+import { CitySelectorDropdown, Avatar } from "@/components/ui";
+import { UserDropdown } from "@/features/auth";
 
 
 export const Navbar: React.FC = () => {

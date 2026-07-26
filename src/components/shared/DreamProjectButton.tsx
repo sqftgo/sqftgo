@@ -7,7 +7,7 @@ import {
   Sparkles, X, ChevronRight, ChevronLeft, Upload, Check, 
   Home, MapPin, Building2, Wallet, CalendarDays, UploadCloud 
 } from "lucide-react";
-import { StepProgress } from "@/components/ui";
+import StepProgress from "@/components/ui/StepProgress";
 import { useApp } from "@/context/AppContext";
 import { AMENITIES as AMENITY_FALLBACK } from "@/constants";
 import { uploadDreamInspiration } from "@/lib/uploads/dreamInspiration";

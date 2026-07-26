@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { propertyService } from "@/services";
-import { PropertyForm, type PropertyFormSubmitData } from "@/components/property";
+import { PropertyForm, type PropertyFormSubmitData } from "@/features/properties";
 import { isOwnProperty } from "@/lib/ownership";
 import { GlobalLoading } from "@/components/ui";
 import type { Property } from "@/types";

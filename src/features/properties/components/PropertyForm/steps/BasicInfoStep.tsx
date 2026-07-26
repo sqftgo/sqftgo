@@ -1,7 +1,8 @@
 "use client";
 
 import { PROPERTY_TYPES } from "@/constants";
-import { CustomSelect, FormField, TextInput, TextArea } from "@/components/ui";
+import CustomSelect from "@/components/ui/CustomSelect";
+import { FormField, TextInput, TextArea } from "@/components/ui/FormField";
 import { PURPOSES, selectBtnClass } from "../constants";
 import type { FormState, SetFormField } from "../types";
 

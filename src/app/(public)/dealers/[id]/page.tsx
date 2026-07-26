@@ -19,7 +19,7 @@ import {
   BadgeCheck, 
   AlertCircle,
 } from "lucide-react";
-import { PropertyCard } from "@/components/ui";
+import { PropertyCard } from "@/features/properties";
 import { filterDealerListings } from "@/lib/ownership";
 
 export default function DealerProfilePage() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { PostPropertyWizard } from "@/components/property";
+import { PostPropertyWizard } from "@/features/properties";
 
 export default function PostPropertyPage() {
   return <PostPropertyWizard />;

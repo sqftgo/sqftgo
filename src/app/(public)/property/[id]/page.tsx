@@ -4,7 +4,11 @@ import React, { use, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
-import { formatIndianCurrency, InquiryForm, VisitBookingForm, PropertyCard, Avatar } from "@/components/ui";
+import { Avatar } from "@/components/ui";
+import { PropertyCard } from "@/features/properties";
+import { formatIndianCurrency } from "@/lib/format";
+import { InquiryForm } from "@/features/inquiries";
+import { VisitBookingForm } from "@/features/visits";
 import { 
   MapPin, 
   BedDouble, 

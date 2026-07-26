@@ -41,12 +41,3 @@ export { default as CustomSelect, type SelectOption } from "./CustomSelect";
 export { default as DropdownMenu, type DropdownMenuItem } from "./DropdownMenu";
 export { default as StepProgress } from "./StepProgress";
 export { CitySelectorDropdown } from "./CitySelectorDropdown";
-
-/** @deprecated Import from `@/features/*` — kept for gradual migration */
-export { PropertyCard } from "@/features/properties/components/PropertyCard";
-export { formatIndianCurrency } from "@/lib/format";
-export { FilterPanel, type FilterState } from "@/features/properties/components/FilterPanel";
-export { InquiryForm } from "@/features/inquiries/components/InquiryForm";
-export { VisitBookingForm } from "@/features/visits/components/VisitBookingForm";
-export { default as CityMap } from "@/features/locations/components/CityMap";
-export { UserDropdown } from "@/features/auth/components/UserDropdown";

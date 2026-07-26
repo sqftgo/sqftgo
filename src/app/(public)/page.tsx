@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp, Property } from "@/context/AppContext";
 import { isAgentOrConsultantCategory } from "@/features/dealers";
-import { PropertyCard, formatIndianCurrency, CustomSelect } from "@/components/ui";
+import { CustomSelect } from "@/components/ui";
+import { PropertyCard } from "@/features/properties";
+import { formatIndianCurrency } from "@/lib/format";
 import {
   Compass,
   MapPin,

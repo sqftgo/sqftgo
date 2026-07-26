@@ -1,7 +1,7 @@
 "use client";
 
 import { useApp } from "@/context/AppContext";
-import { PropertyForm, type PropertyFormSubmitData } from "@/components/property";
+import { PropertyForm, type PropertyFormSubmitData } from "@/features/properties";
 
 export default function AddPropertyPage() {
   const { addProperty, addLog, userEmail } = useApp();

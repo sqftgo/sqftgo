@@ -2,7 +2,8 @@
 
 import React from "react";
 import { Upload, Plus, Trash } from "lucide-react";
-import { FormField, TextInput, TextArea, Button } from "@/components/ui";
+import { FormField, TextInput, TextArea } from "@/components/ui/FormField";
+import { Button } from "@/components/ui/Button";
 import type { FormState, SetFormField } from "../types";
 
 type MediaSeoStepProps = {
