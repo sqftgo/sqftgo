@@ -27,12 +27,3 @@ export type { FavoritesRepository } from "./favorites";
 
 export { platformService } from "./platform";
 export { kycService } from "./kyc";
-
-export {
-  getStore,
-  patchStore,
-  subscribeStore,
-  resetStore,
-  type AppStore,
-  type SessionSnapshot,
-} from "./store";
