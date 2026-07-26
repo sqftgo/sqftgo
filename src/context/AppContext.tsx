@@ -90,6 +90,7 @@ interface AppContextType {
   deleteProperty: (propertyId: string) => Promise<void>;
   refreshProperties: () => Promise<void>;
   propertiesReady: boolean;
+  propertiesLoading: boolean;
   propertiesError: string | null;
   deleteInquiry: (inquiryId: string) => Promise<void>;
   inquiries: Record<string, PropertyInquiry[]>;
@@ -271,6 +272,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const directoryProfiles = dealersQuery.data?.items ?? [];
   const adminUsers = adminUsersQuery.data?.items ?? [];
   const propertiesReady = propertiesQuery.isFetched || !hasSupabaseEnv();
+  const propertiesLoading =
+    propertiesQuery.isPending || (propertiesQuery.isFetching && !propertiesQuery.data);
   const propertiesError =
     propertiesQuery.isError && propertiesQuery.error instanceof Error
       ? propertiesQuery.error.message
@@ -1026,6 +1029,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       deleteProperty,
       refreshProperties,
       propertiesReady,
+      propertiesLoading,
       propertiesError,
       deleteInquiry,
       inquiries,
@@ -1100,6 +1104,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setSelectedCity,
       properties,
       propertiesReady,
+      propertiesLoading,
       propertiesError,
       refreshProperties,
       setProperties,
