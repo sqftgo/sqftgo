@@ -9,6 +9,20 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "ui-avatars.com" },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/dealer/dashboard/messages",
+        destination: "/dealer/dashboard/inquiries?tab=messages",
+        permanent: true,
+      },
+      {
+        source: "/dealer/dashboard/notifications",
+        destination: "/dealer/dashboard/settings",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

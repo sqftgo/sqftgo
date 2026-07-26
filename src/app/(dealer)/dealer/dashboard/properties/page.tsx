@@ -10,7 +10,6 @@ import {
   DropdownMenu,
   CustomSelect,
   DashboardPageHeader,
-  SearchInput,
   Badge,
   ConfirmDialog,
   DataTable,
@@ -27,7 +26,6 @@ export default function DealerPropertiesPage() {
   const searchParams = useSearchParams();
   const statusParam = searchParams.get("status") || "All";
 
-  const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState(statusParam);
   const [typeFilter, setTypeFilter] = useState("All");
   const [sortBy, setSortBy] = useState("newest");
@@ -57,14 +55,13 @@ export default function DealerPropertiesPage() {
 
   const myProperties = useMemo(() => {
     let props = filterMyProperties(properties, userProfile?.id, userEmail);
-    if (search) props = props.filter(p => p.title.toLowerCase().includes(search.toLowerCase()) || p.locality.toLowerCase().includes(search.toLowerCase()));
     if (statusFilter !== "All") props = props.filter(p => p.status === statusFilter);
     if (typeFilter !== "All") props = props.filter(p => p.type === typeFilter);
     if (sortBy === "price-asc") props = [...props].sort((a, b) => a.price - b.price);
     if (sortBy === "price-desc") props = [...props].sort((a, b) => b.price - a.price);
     if (sortBy === "inquiries") props = [...props].sort((a, b) => (inquiries[b.id]?.length || 0) - (inquiries[a.id]?.length || 0));
     return props;
-  }, [properties, userProfile?.id, userEmail, search, statusFilter, typeFilter, sortBy, inquiries]);
+  }, [properties, userProfile?.id, userEmail, statusFilter, typeFilter, sortBy, inquiries]);
 
   const formatPrice = (v: number) => "₹" + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(v);
 
@@ -195,7 +192,7 @@ export default function DealerPropertiesPage() {
   );
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto">
       <DashboardPageHeader
         title={statusFilter === "Draft" ? "Hold / Draft Properties" : "My Property Listings"}
         description={
@@ -234,38 +231,34 @@ export default function DealerPropertiesPage() {
         }
       />
 
-      <div className="flex flex-wrap gap-3 bg-white/60 border border-indigo/10 rounded-3xl p-4 shadow-sm">
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder="Search listings..."
-          accent="indigo"
-        />
-        <CustomSelect
-          options={statusOptions}
-          value={statusFilter}
-          onChange={setStatusFilter}
-          accent="indigo"
-          buttonClassName="bg-sand/30 border border-indigo/5 text-charcoal text-xs font-semibold px-4 py-2.5 rounded-xl"
-          className="w-44"
-        />
-        <CustomSelect
-          options={typeOptions}
-          value={typeFilter}
-          onChange={setTypeFilter}
-          accent="indigo"
-          buttonClassName="bg-sand/30 border border-indigo/5 text-charcoal text-xs font-semibold px-4 py-2.5 rounded-xl"
-          className="w-44"
-        />
-        <CustomSelect
-          options={sortOptions}
-          value={sortBy}
-          onChange={setSortBy}
-          accent="indigo"
-          buttonClassName="bg-sand/30 border border-indigo/5 text-charcoal text-xs font-semibold px-4 py-2.5 rounded-xl"
-          className="w-44"
-        />
-      </div>
+      {statusFilter !== "Draft" && (
+        <div className="flex flex-wrap gap-3 bg-white/60 border border-indigo/10 rounded-3xl p-4 shadow-sm">
+          <CustomSelect
+            options={statusOptions}
+            value={statusFilter}
+            onChange={setStatusFilter}
+            accent="indigo"
+            buttonClassName="bg-sand/30 border border-indigo/5 text-charcoal text-xs font-semibold px-4 py-2.5 rounded-xl"
+            className="w-44"
+          />
+          <CustomSelect
+            options={typeOptions}
+            value={typeFilter}
+            onChange={setTypeFilter}
+            accent="indigo"
+            buttonClassName="bg-sand/30 border border-indigo/5 text-charcoal text-xs font-semibold px-4 py-2.5 rounded-xl"
+            className="w-44"
+          />
+          <CustomSelect
+            options={sortOptions}
+            value={sortBy}
+            onChange={setSortBy}
+            accent="indigo"
+            buttonClassName="bg-sand/30 border border-indigo/5 text-charcoal text-xs font-semibold px-4 py-2.5 rounded-xl"
+            className="w-44"
+          />
+        </div>
+      )}
 
       {myProperties.length === 0 ? (
         <EmptyState

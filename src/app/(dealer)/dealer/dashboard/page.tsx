@@ -6,11 +6,8 @@ import { useApp } from "@/context/AppContext";
 import {
   Building2,
   MessageSquare,
-  Eye,
   Plus,
   ArrowUpRight,
-  CheckCircle2,
-  Heart,
   CreditCard,
   Calendar,
   MessageCircle,
@@ -22,7 +19,6 @@ import {
   KpiGrid,
   Badge,
   Avatar,
-  ProgressBar,
   Panel,
   Button,
 } from "@/components/ui";
@@ -69,23 +65,14 @@ export default function DealerDashboardPage() {
 
   const stats = [
     { label: "Active Listings", value: activeProps.length, icon: Building2, tone: "default" as const },
-    { label: "Total Views", value: activeProps.length * 142 + 258, icon: Eye, tone: "default" as const },
     { label: "New Leads", value: totalInquiries, icon: MessageSquare, tone: "default" as const },
-    { label: "Saved Properties", value: activeProps.length * 12 + 4, icon: Heart, tone: "default" as const },
     { label: "Monthly Revenue", value: "₹45,000", icon: CreditCard, tone: "default" as const },
-    { label: "Subscription Status", value: "Pro Plan", icon: CheckCircle2, tone: "default" as const }
   ];
 
   const formatPrice = (v: number) => "₹" + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(v);
 
-  const conversionItems = [
-    { label: "Direct Inquiries", percentage: 78, tone: "indigo" as const },
-    { label: "Platform Calls", percentage: 54, tone: "terracotta" as const },
-    { label: "Site Visits Schedule", percentage: 32, tone: "purple" as const },
-  ];
-
   return (
-    <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="space-y-8 max-w-7xl mx-auto">
       <DashboardPageHeader
         title={`Welcome back, ${brokerProfile?.ownerName?.split(" ")[0] || "Dealer"}`}
         description="Here is a comprehensive summary of your property listings and buyer actions."
@@ -99,7 +86,7 @@ export default function DealerDashboardPage() {
         }
       />
 
-      <KpiGrid className="lg:grid-cols-3 xl:grid-cols-6">
+      <KpiGrid className="lg:grid-cols-3 xl:grid-cols-3">
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
@@ -120,48 +107,6 @@ export default function DealerDashboardPage() {
           );
         })}
       </KpiGrid>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Panel title="Property Views (Weekly)" description="Listing Views" padding="lg">
-          <div className="flex items-end gap-3 h-32 mt-2">
-            {[35, 52, 48, 70, 62, 85, 95].map((val, idx) => (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-1.5">
-                <div className="w-full bg-indigo/10 rounded-t-lg relative group transition-all" style={{ height: `${val}%` }}>
-                  <div className="absolute inset-x-0 bottom-0 bg-indigo rounded-t-lg h-0 group-hover:h-full transition-all" />
-                  <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-indigo text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">{val}0</span>
-                </div>
-                <span className="text-[8px] font-bold text-charcoal/40">Day {idx + 1}</span>
-              </div>
-            ))}
-          </div>
-        </Panel>
-
-        <Panel title="Lead Conversion" description="Performance" padding="lg">
-          <div className="space-y-4 mt-2">
-            {conversionItems.map(item => (
-              <div key={item.label} className="space-y-1">
-                <div className="flex justify-between items-center text-[10px] font-bold">
-                  <span className="text-charcoal/65">{item.label}</span>
-                  <span className="text-charcoal">{item.percentage}%</span>
-                </div>
-                <ProgressBar value={item.percentage} tone={item.tone} label={item.label} />
-              </div>
-            ))}
-          </div>
-        </Panel>
-
-        <Panel title="Monthly Conversion Rate" description="Overview" padding="lg">
-          <div className="flex flex-col items-center justify-center py-4">
-            <div className="relative w-24 h-24 rounded-full border-[10px] border-indigo/5 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full border-[10px] border-t-terracotta border-r-terracotta border-b-indigo border-l-indigo animate-spin-slow opacity-80" />
-              <div className="text-center">
-                <span className="text-lg font-serif font-black text-charcoal">4.8%</span>
-                <p className="text-[8px] text-charcoal/40 font-bold uppercase tracking-wider leading-none">Target 5%</p>
-              </div>
-            </div>
-          </div>
-        </Panel>
-      </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <Panel
@@ -206,6 +151,20 @@ export default function DealerDashboardPage() {
         </Panel>
 
         <div className="space-y-6">
+          <Panel title="Property Views (Weekly)" description="Listing Views" padding="lg">
+            <div className="flex items-end gap-3 h-32 mt-2">
+              {[35, 52, 48, 70, 62, 85, 95].map((val, idx) => (
+                <div key={idx} className="flex-1 flex flex-col items-center gap-1.5">
+                  <div className="w-full bg-indigo/10 rounded-t-lg relative group transition-all" style={{ height: `${val}%` }}>
+                    <div className="absolute inset-x-0 bottom-0 bg-indigo rounded-t-lg h-0 group-hover:h-full transition-all" />
+                    <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-indigo text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">{val}0</span>
+                  </div>
+                  <span className="text-[8px] font-bold text-charcoal/40">Day {idx + 1}</span>
+                </div>
+              ))}
+            </div>
+          </Panel>
+
           <Panel title="Quick Actions" padding="md">
             <div className="grid grid-cols-2 gap-2">
               <Link href="/dealer/dashboard/add-property" className="p-3 bg-indigo/5 border border-indigo/10 rounded-2xl hover:bg-indigo hover:text-white transition-all text-center flex flex-col items-center gap-1.5 group">

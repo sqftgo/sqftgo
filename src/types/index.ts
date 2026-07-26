@@ -14,3 +14,10 @@ export type {
 export type { PlatformSettings, PlatformAnalytics } from "./platform";
 export type { KycStatus, DealerKycRecord, DealerKycDocument, KycDocumentType } from "./kyc";
 export type { Database, ProfileRow, AppRole, ProfileStatus } from "./database";
+export type {
+  KycStatus,
+  KycDocumentType,
+  DealerKycDocument,
+  DealerKycRecord,
+} from "./kyc";
+export type { PlatformSettings, PlatformAnalytics } from "./platform";
