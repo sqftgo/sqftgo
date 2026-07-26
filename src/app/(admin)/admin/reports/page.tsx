@@ -16,25 +16,26 @@ import {
 export default function AdminReportsPage() {
   const { properties, adminUsers, inquiries, enquiries, directoryProfiles } = useApp();
 
+  const reportProperties = properties.filter((p) => p.status !== "Draft");
   const totalInquiries = Object.values(inquiries).reduce((a, b) => a + b.length, 0);
   const totalEnquiries = enquiries.length;
-  const activeProperties = properties.filter(p => p.status === "Active").length;
+  const activeProperties = reportProperties.filter(p => p.status === "Active").length;
   const totalDealers = directoryProfiles.filter((p) =>
     isAgentOrConsultantCategory(p.category)
   ).length;
 
-  const cityReport = properties.reduce((acc: Record<string, number>, p) => {
+  const cityReport = reportProperties.reduce((acc: Record<string, number>, p) => {
     acc[p.city] = (acc[p.city] || 0) + 1;
     return acc;
   }, {});
 
-  const typeReport = properties.reduce((acc: Record<string, number>, p) => {
+  const typeReport = reportProperties.reduce((acc: Record<string, number>, p) => {
     acc[p.type] = (acc[p.type] || 0) + 1;
     return acc;
   }, {});
 
   const handleExport = () => {
-    const data = properties.map(p => ({
+    const data = reportProperties.map(p => ({
       ID: p.id, Title: p.title, Type: p.type, City: p.city, Price: p.price,
       Status: p.status, Owner: p.ownerName, Inquiries: inquiries[p.id]?.length || 0,
     }));

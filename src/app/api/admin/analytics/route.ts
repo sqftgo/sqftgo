@@ -26,6 +26,9 @@ export async function GET(request: NextRequest) {
 
   const [
     accounts,
+    buyerUsers,
+    brokerUsers,
+    propertiesTotal,
     activeListings,
     pendingReview,
     propertyInquiries,
@@ -37,6 +40,18 @@ export async function GET(request: NextRequest) {
     monthlyCreatedAts,
   ] = await Promise.all([
     supabase.from("profiles").select("*", { count: "exact", head: true }),
+    supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("role", "user"),
+    supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("role", "broker"),
+    supabase
+      .from("properties")
+      .select("*", { count: "exact", head: true })
+      .neq("status", "draft"),
     supabase
       .from("properties")
       .select("*", { count: "exact", head: true })
@@ -115,6 +130,9 @@ export async function GET(request: NextRequest) {
 
   const payload: PlatformAnalytics = {
     accounts: accounts.count ?? 0,
+    buyerUsers: buyerUsers.count ?? 0,
+    brokerUsers: brokerUsers.count ?? 0,
+    propertiesTotal: propertiesTotal.count ?? 0,
     activeListings: activeListings.count ?? 0,
     pendingReview: pendingReview.count ?? 0,
     propertyInquiries: propertyInquiries.count ?? 0,

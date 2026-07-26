@@ -14,6 +14,9 @@ export type PlatformSettings = {
 
 export type PlatformAnalytics = {
   accounts: number;
+  buyerUsers: number;
+  brokerUsers: number;
+  propertiesTotal: number;
   activeListings: number;
   pendingReview: number;
   propertyInquiries: number;
