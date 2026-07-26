@@ -11,7 +11,6 @@ export {
 } from "./Dialog";
 export { Panel, type PanelProps } from "./Panel";
 export { Avatar, type AvatarProps, type AvatarSize, type AvatarTone, type AvatarShape } from "./Avatar";
-export { ProgressBar, type ProgressBarProps, type ProgressTone } from "./ProgressBar";
 export {
   MonthlyTrendChart,
   type MonthlyTrendPoint,
@@ -44,12 +43,6 @@ export { default as StepProgress } from "./StepProgress";
 export { CitySelectorDropdown } from "./CitySelectorDropdown";
 
 /** @deprecated Import from `@/features/*` — kept for gradual migration */
-export {
-  NotificationsPageShell,
-  type NotificationsPageShellProps,
-  type NotificationPrefItem,
-  type DashboardNotification,
-} from "@/features/notifications/components/NotificationsPageShell";
 export { PropertyCard } from "@/features/properties/components/PropertyCard";
 export { formatIndianCurrency } from "@/lib/format";
 export { FilterPanel, type FilterState } from "@/features/properties/components/FilterPanel";
