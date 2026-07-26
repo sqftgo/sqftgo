@@ -59,7 +59,7 @@ const PLANS = [
  */
 export default function DealerSubscriptionPage() {
   return (
-    <div className="p-6 md:p-8 space-y-8 max-w-5xl mx-auto text-charcoal">
+    <div className="space-y-8 max-w-5xl mx-auto text-charcoal">
       <DashboardPageHeader
         title="Subscription Plans"
         description="Partner plan preview — billing is not enabled yet."

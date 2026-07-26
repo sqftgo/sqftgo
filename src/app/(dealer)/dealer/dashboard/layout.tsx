@@ -9,7 +9,7 @@ import { DashboardShell, type DashboardNavSection } from "@/components/layout/Da
 import { findMyDirectoryProfile } from "@/lib/ownership";
 import {
   LayoutDashboard, Building2, Plus, MessageSquare, BarChart3,
-  CreditCard, User, Settings, ShieldAlert, Bell,
+  CreditCard, User, Settings, ShieldAlert,
 } from "lucide-react";
 
 export default function DealerDashboardLayout({ children }: { children: React.ReactNode }) {
@@ -24,7 +24,6 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
     sessionReady,
     directoryProfiles,
     inquiries,
-    notifications,
   } = useApp();
 
   const myDirectoryQuery = useDealersQuery({ mine: true, limit: 5, offset: 0 });
@@ -42,16 +41,6 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
         0
       ),
     [inquiries]
-  );
-
-  const unreadNotificationCount = useMemo(
-    () =>
-      notifications.filter(
-        (n) =>
-          !n.read &&
-          (n.forRole === "broker" || n.forRole === "all")
-      ).length,
-    [notifications]
   );
 
   const handleLogout = () => {
@@ -88,12 +77,6 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
             label: "Communications",
             icon: MessageSquare,
             badge: "inquiries",
-          },
-          {
-            href: "/dealer/dashboard/notifications",
-            label: "Notifications",
-            icon: Bell,
-            badge: "notifications",
           },
         ],
       },
@@ -158,7 +141,6 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
       navSections={navSections}
       getBadgeCount={(badge) => {
         if (badge === "inquiries") return newInquiryCount;
-        if (badge === "notifications") return unreadNotificationCount;
         return 0;
       }}
       onLogout={handleLogout}

@@ -236,3 +236,51 @@ body {
     animation: none !important;
   }
 }
+
+/* Admin reports — Print PDF layout */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  html,
+  body {
+    background: white !important;
+    color: #1c2530 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .print-report,
+  .print-report * {
+    visibility: visible;
+  }
+
+  .print-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .print\:hidden,
+  aside,
+  header,
+  [aria-label="Open menu"] {
+    display: none !important;
+  }
+
+  .print-report .rounded-2xl,
+  .print-report .rounded-3xl {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border-color: rgba(28, 37, 48, 0.15) !important;
+  }
+}
