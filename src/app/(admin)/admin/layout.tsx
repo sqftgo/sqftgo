@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
+import { platformService } from "@/services";
 import { DashboardShell, type DashboardNavSection } from "@/components/layout/DashboardShell";
 import { DropdownMenu, Avatar } from "@/components/ui";
 import {
@@ -25,7 +26,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     notifications,
   } = useApp();
 
-  const pendingCount = properties.filter((p) => p.status === "Pending Review").length;
+  const [pendingFromAnalytics, setPendingFromAnalytics] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!sessionReady || userRole !== "admin") return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const analytics = await platformService.getAnalytics();
+        if (!cancelled) setPendingFromAnalytics(analytics.pendingReview);
+      } catch {
+        if (!cancelled) setPendingFromAnalytics(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionReady, userRole]);
+
+  const pendingFromProperties = properties.filter(
+    (p) => p.status === "Pending Review"
+  ).length;
+  const pendingCount = pendingFromAnalytics ?? pendingFromProperties;
   const unreadNotifCount = notifications.filter(
     (n) => !n.read && (n.forRole === "admin" || n.forRole === "all")
   ).length;

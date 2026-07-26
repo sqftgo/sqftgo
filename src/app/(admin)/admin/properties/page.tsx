@@ -22,7 +22,7 @@ export default function AdminPropertiesPage() {
 
   const cities = useMemo(() => [...new Set(properties.map(p => p.city))], [properties]);
 
-  const statusOptions = useMemo(() => ["All", "Active", "Pending Review", "Rejected", "Draft", "Sold", "Rented"].map(s => ({
+  const statusOptions = useMemo(() => ["All", "Active", "Pending Review", "Rejected", "Sold", "Rented"].map(s => ({
     label: s === "All" ? "All Statuses" : s,
     value: s
   })), []);
@@ -32,7 +32,13 @@ export default function AdminPropertiesPage() {
     ...cities.map(c => ({ label: c, value: c }))
   ], [cities]);
 
-  const filtered = properties.filter(p => {
+  // Drafts are dealer-private — never show in admin inventory.
+  const visibleProperties = useMemo(
+    () => properties.filter((p) => p.status !== "Draft"),
+    [properties]
+  );
+
+  const filtered = visibleProperties.filter(p => {
     const matchSearch = !search || p.title.toLowerCase().includes(search.toLowerCase()) || p.ownerName.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "All" || p.status === statusFilter;
     const matchCity = cityFilter === "All" || p.city === cityFilter;
@@ -100,7 +106,7 @@ export default function AdminPropertiesPage() {
           onChange={(e) => handleStatusChange(prop.id, prop.title, e.target.value as Property["status"])}
           className="bg-transparent cursor-pointer"
         >
-          {["Active", "Pending Review", "Sold", "Rented", "Draft"].map((s) => (
+          {["Active", "Pending Review", "Sold", "Rented", "Rejected"].map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
         </select>

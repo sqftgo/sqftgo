@@ -96,12 +96,29 @@ export async function GET(request: NextRequest) {
   }
 
   // User-scoped client so RLS enforces active / own / admin visibility.
-  const supabase = await createClient();
+  // Active admins use the service client so Bearer + cookie sessions both see
+  // pending/rejected inventory (RLS cookie-only sessions were undercounting).
+  // Drafts stay dealer-private — never returned on admin marketplace lists.
+  if (isAdmin && statusParam) {
+    const parsed = propertyStatusUiSchema.safeParse(statusParam);
+    if (parsed.success && parsed.data === "Draft") {
+      return jsonOk({ items: [], total: 0, limit, offset });
+    }
+  }
+
+  const supabase =
+    isAdmin && hasServiceRoleKey()
+      ? createServiceClient()
+      : await createClient();
   let query = supabase
     .from("properties")
     .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
+
+  if (isAdmin) {
+    query = query.neq("status", "draft");
+  }
 
   if (statusParam && statusParam !== "all") {
     const parsed = propertyStatusUiSchema.safeParse(statusParam);
