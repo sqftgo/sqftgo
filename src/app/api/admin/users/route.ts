@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import type { ProfileRow } from "@/types/database";
 
-function toMockUser(row: ProfileRow) {
+function toAdminUser(row: ProfileRow) {
   return {
     id: row.id,
     name: row.name,
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
 
   if (listError) return jsonError(listError.message, 500);
   return jsonOk({
-    items: (data ?? []).map(toMockUser),
+    items: (data ?? []).map(toAdminUser),
     total: count ?? 0,
     limit,
     offset,

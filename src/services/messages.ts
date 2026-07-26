@@ -20,7 +20,7 @@ export interface MessageRepository {
   ): Promise<MessageThread>;
 }
 
-export const supabaseMessageRepository: MessageRepository = {
+export const messageApi: MessageRepository = {
   async listThreads(opts) {
     const params = new URLSearchParams();
     if (opts?.kind) params.set("kind", opts.kind);
@@ -55,4 +55,7 @@ export const supabaseMessageRepository: MessageRepository = {
   },
 };
 
-export const messageService: MessageRepository = supabaseMessageRepository;
+export const messageService: MessageRepository = messageApi;
+
+/** @deprecated Use messageApi */
+export const supabaseMessageRepository = messageApi;

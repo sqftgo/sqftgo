@@ -12,7 +12,7 @@ export interface AssistanceRepository {
 }
 
 /** Assistance requests BFF client (`/api/assistance`). */
-export const supabaseAssistanceRepository: AssistanceRepository = {
+export const assistanceApi: AssistanceRepository = {
   async list() {
     return apiClient<AssistanceRequest[]>("/api/assistance");
   },
@@ -36,4 +36,7 @@ export const supabaseAssistanceRepository: AssistanceRepository = {
   },
 };
 
-export const assistanceService: AssistanceRepository = supabaseAssistanceRepository;
+export const assistanceService: AssistanceRepository = assistanceApi;
+
+/** @deprecated Use assistanceApi */
+export const supabaseAssistanceRepository = assistanceApi;

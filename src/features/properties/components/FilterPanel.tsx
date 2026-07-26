@@ -12,7 +12,7 @@ import {
   BHK_OPTIONS,
   AMENITIES as AMENITY_FALLBACK,
 } from "@/constants";
-import { useBudgetPriceOptions } from "@/features/admin/hooks/useBudgetPriceOptions";
+import { useBudgetPriceOptions } from "@/features/admin";
 
 export interface FilterState {
   city: string;

@@ -8,7 +8,7 @@ export interface NotificationRepository {
   remove(id: string): Promise<void>;
 }
 
-export const supabaseNotificationRepository: NotificationRepository = {
+export const notificationApi: NotificationRepository = {
   async list(opts) {
     const qs = opts?.unread ? "?unread=1" : "";
     return apiClient<Notification[]>(`/api/notifications${qs}`);
@@ -33,4 +33,7 @@ export const supabaseNotificationRepository: NotificationRepository = {
   },
 };
 
-export const notificationService: NotificationRepository = supabaseNotificationRepository;
+export const notificationService: NotificationRepository = notificationApi;
+
+/** @deprecated Use notificationApi */
+export const supabaseNotificationRepository = notificationApi;

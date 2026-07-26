@@ -33,7 +33,7 @@ export interface CatalogRepository {
 }
 
 /** Categories / locations / amenities / logs hit Supabase via BFF. */
-export const supabaseCatalogRepository: CatalogRepository = {
+export const catalogApi: CatalogRepository = {
   async listCategories(opts) {
     const qs = opts?.all ? "?all=1" : "";
     return apiClient<Category[]>(`/api/categories${qs}`);
@@ -126,4 +126,7 @@ export const supabaseCatalogRepository: CatalogRepository = {
   },
 };
 
-export const catalogService: CatalogRepository = supabaseCatalogRepository;
+export const catalogService: CatalogRepository = catalogApi;
+
+/** @deprecated Use catalogApi */
+export const supabaseCatalogRepository = catalogApi;

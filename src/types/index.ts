@@ -1,5 +1,5 @@
 export type { Property, PropertyInquiry } from "./property";
-export type { UserProfile, MockUser, AuthRole } from "./user";
+export type { UserProfile, AdminUser, MockUser, AuthRole } from "./user";
 export type {
   AssistanceRequest,
   GeneralEnquiry,

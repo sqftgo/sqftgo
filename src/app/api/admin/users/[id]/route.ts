@@ -13,7 +13,7 @@ type PatchBody = {
   status?: "active" | "suspended";
 };
 
-function toMockUser(row: ProfileRow) {
+function toAdminUser(row: ProfileRow) {
   return {
     id: row.id,
     name: row.name,
@@ -106,5 +106,5 @@ export async function PATCH(
     return jsonError(updateError?.message ?? "User not found", 404);
   }
 
-  return jsonOk(toMockUser(data));
+  return jsonOk(toAdminUser(data));
 }

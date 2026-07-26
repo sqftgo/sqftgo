@@ -4,7 +4,8 @@ import React, { useMemo, useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { MapPin } from "lucide-react";
 import { TextInput } from "@/components/ui";
-import { TaxonomyManager } from "@/features/admin/components/TaxonomyManager";
+import { TaxonomyManager } from "@/features/admin";
+
 
 export default function AdminLocationsPage() {
   const {
