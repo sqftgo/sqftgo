@@ -1,6 +1,6 @@
 import { apiClient } from "@/lib/api/client";
-import type { AssistanceRequest, GeneralEnquiry, PropertyInquiry } from "@/types";
-import type { PropertyInquiryView } from "@/lib/mappers/inquiry";
+import type { PropertyInquiry, PropertyInquiryView } from "@/types";
+import { toInquiryRecord } from "@/lib/mappers/inquiry";
 
 export interface InquiryRepository {
   listByProperty(propertyId: string): Promise<PropertyInquiry[]>;
@@ -10,34 +10,9 @@ export interface InquiryRepository {
   remove(propertyId: string, index: number): Promise<void>;
   removeById(inquiryId: string): Promise<void>;
   updateStatus(inquiryId: string, status: "new" | "read" | "archived"): Promise<PropertyInquiryView>;
-  listAssistance(): Promise<AssistanceRequest[]>;
-  addAssistance(req: Omit<AssistanceRequest, "id" | "status">): Promise<AssistanceRequest>;
-  updateAssistance(id: string, updates: { status?: AssistanceRequest["status"]; notes?: string }): Promise<AssistanceRequest>;
-  removeAssistance(id: string): Promise<void>;
-  listEnquiries(): Promise<GeneralEnquiry[]>;
-  addEnquiry(enq: Omit<GeneralEnquiry, "id" | "date"> & { payload?: Record<string, unknown> }): Promise<GeneralEnquiry>;
-  removeEnquiry(id: string): Promise<void>;
 }
 
-function toRecord(rows: PropertyInquiryView[]): Record<string, PropertyInquiry[]> {
-  const out: Record<string, PropertyInquiry[]> = {};
-  for (const row of rows) {
-    const entry: PropertyInquiry = {
-      id: row.id,
-      name: row.name,
-      email: row.email,
-      phone: row.phone,
-      message: row.message,
-      date: row.date,
-      status: row.status,
-    };
-    if (!out[row.propertyId]) out[row.propertyId] = [];
-    out[row.propertyId].push(entry);
-  }
-  return out;
-}
-
-/** Property inquiries + assistance/enquiries hit Supabase. */
+/** Property inquiries BFF client. */
 export const supabaseInquiryRepository: InquiryRepository = {
   async listByProperty(propertyId) {
     const rows = await apiClient<PropertyInquiryView[]>(`/api/properties/${propertyId}/inquiries`);
@@ -54,7 +29,7 @@ export const supabaseInquiryRepository: InquiryRepository = {
 
   async listAll() {
     const rows = await apiClient<PropertyInquiryView[]>("/api/inquiries");
-    return toRecord(rows);
+    return toInquiryRecord(rows);
   },
 
   async listFlat(opts) {
@@ -96,43 +71,6 @@ export const supabaseInquiryRepository: InquiryRepository = {
       method: "PATCH",
       body: JSON.stringify({ status }),
     });
-  },
-
-  async listAssistance() {
-    return apiClient<AssistanceRequest[]>("/api/assistance");
-  },
-
-  async addAssistance(req) {
-    return apiClient<AssistanceRequest>("/api/assistance", {
-      method: "POST",
-      body: JSON.stringify(req),
-    });
-  },
-
-  async updateAssistance(id, updates) {
-    return apiClient<AssistanceRequest>(`/api/assistance/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(updates),
-    });
-  },
-
-  async removeAssistance(id) {
-    await apiClient<{ ok: boolean }>(`/api/assistance/${id}`, { method: "DELETE" });
-  },
-
-  async listEnquiries() {
-    return apiClient<GeneralEnquiry[]>("/api/enquiries");
-  },
-
-  async addEnquiry(enq) {
-    return apiClient<GeneralEnquiry>("/api/enquiries", {
-      method: "POST",
-      body: JSON.stringify(enq),
-    });
-  },
-
-  async removeEnquiry(id) {
-    await apiClient<{ ok: boolean }>(`/api/enquiries/${id}`, { method: "DELETE" });
   },
 };
 

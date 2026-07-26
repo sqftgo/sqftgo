@@ -3,7 +3,8 @@
 import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useApp, Property } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
+import type { Property } from "@/types";
 import { isAgentOrConsultantCategory } from "@/features/dealers";
 import { CustomSelect } from "@/components/ui";
 import { PropertyCard } from "@/features/properties";

@@ -3,7 +3,8 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useApp, Property } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
+import type { Property } from "@/types";
 import { usePropertiesQuery } from "@/hooks/queries/marketplace";
 import { Plus, Edit2, Trash2, ExternalLink, Building2, CheckCircle2, XCircle, Grid, List, MoreVertical } from "lucide-react";
 import { motion } from "framer-motion";

@@ -1,11 +1,7 @@
-import type { PropertyInquiry } from "@/types";
-import type { InquiryStatusDb, PropertyInquiryRow } from "@/types/database";
+import type { PropertyInquiry, PropertyInquiryView } from "@/types";
+import type { PropertyInquiryRow } from "@/types/database";
 
-export type PropertyInquiryView = PropertyInquiry & {
-  id: string;
-  propertyId: string;
-  status: InquiryStatusDb;
-};
+export type { PropertyInquiryView };
 
 export function mapInquiryRow(row: PropertyInquiryRow): PropertyInquiryView {
   return {
