@@ -27,3 +27,10 @@ export type { FavoritesRepository } from "./favorites";
 
 export { platformService } from "./platform";
 export { kycService } from "./kyc";
+
+export { assistanceService, supabaseAssistanceRepository } from "./assistance";
+export type { AssistanceRepository } from "./assistance";
+
+export { enquiryService, supabaseEnquiryRepository } from "./enquiries";
+export type { EnquiryRepository } from "./enquiries";
+
