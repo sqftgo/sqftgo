@@ -12,7 +12,7 @@ import MainWrapper from "@/components/shared/MainWrapper";
 config.autoAddCss = false;
 import Footer from "@/components/shared/Footer";
 import DepthBackground from "@/components/shared/DepthBackground";
-import DreamProjectButton from "@/components/shared/DreamProjectButton";
+import { DreamProjectButton } from "@/features/leads";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
