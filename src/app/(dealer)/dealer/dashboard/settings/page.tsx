@@ -8,7 +8,6 @@ import {
   Bell,
   Globe,
   Shield,
-  CreditCard,
   Trash2,
   AlertTriangle,
   User,
@@ -24,7 +23,6 @@ import {
   Switch,
   FormField,
   TextInput,
-  Badge,
   CustomSelect,
 } from "@/components/ui";
 
@@ -43,7 +41,6 @@ export default function DealerSettingsPage() {
     emailNotifications: true,
     smsNotifications: false,
     marketingEmails: true,
-    publicProfile: true,
     showPhone: true,
     showEmail: false,
     language: "en",
@@ -93,7 +90,7 @@ export default function DealerSettingsPage() {
   };
 
   return (
-    <div className="p-6 md:p-8 bg-[#faf8f5] min-h-screen text-charcoal w-full space-y-6">
+    <div className="bg-[#faf8f5] min-h-full text-charcoal w-full space-y-6">
       <DashboardPageHeader
         title="Settings"
         description="Configure system configurations, security preferences, and invoices."
@@ -241,20 +238,6 @@ export default function DealerSettingsPage() {
           </div>
 
           <SettingsRow
-            label="Visible Public Profile"
-            description="Display your brokerage agency in the public directories so users can search you."
-            icon={<Shield className="w-4 h-4" />}
-            accent="indigo"
-          >
-            <Switch
-              accent="indigo"
-              checked={form.publicProfile}
-              onCheckedChange={(v) => set("publicProfile", v)}
-              aria-label="Visible Public Profile"
-            />
-          </SettingsRow>
-
-          <SettingsRow
             label="Display Contact Number"
             description="Show your direct phone number on search property detail panels."
             icon={<Shield className="w-4 h-4" />}
@@ -281,33 +264,6 @@ export default function DealerSettingsPage() {
               aria-label="Display Public Email"
             />
           </SettingsRow>
-        </Panel>
-
-        <Panel padding="lg" rounded="3xl" className="space-y-4">
-          <div className="flex items-center gap-2.5 pb-3 border-b border-indigo/5">
-            <CreditCard className="w-4 h-4 text-indigo" />
-            <h2 className="text-sm font-serif font-black text-charcoal">Billing Summary</h2>
-          </div>
-
-          <div className="bg-sand/20 rounded-2xl p-5 border border-indigo/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <Badge tone="primary" size="sm">
-                  Pro Partner
-                </Badge>
-                <span className="text-xs text-charcoal font-bold">Plan Active</span>
-              </div>
-              <p className="text-[10px] text-charcoal/45 font-semibold mt-1.5 leading-relaxed">
-                Next billing invoice date: <strong className="text-indigo">15 August 2026</strong>.
-              </p>
-            </div>
-
-            <div className="flex items-baseline gap-1 bg-white/70 border border-indigo/5 px-4 py-2.5 rounded-xl shadow-xs self-start md:self-auto">
-              <span className="text-xs text-charcoal/50 font-bold">Amount:</span>
-              <span className="text-base font-serif font-black text-charcoal">₹1,500</span>
-              <span className="text-[10px] text-charcoal/40 font-semibold">/month</span>
-            </div>
-          </div>
         </Panel>
 
         <Panel

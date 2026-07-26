@@ -1,9 +1,23 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { useApp } from "@/context/AppContext";
-import { Send, Trash2, MessageSquare, CheckCircle2, Phone, Mail, MoreVertical } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  Send,
+  Trash2,
+  MessageSquare,
+  CheckCircle2,
+  Phone,
+  Mail,
+  MoreVertical,
+  Plus,
+  X,
+} from "lucide-react";
 import { motion } from "framer-motion";
+import { useApp } from "@/context/AppContext";
+import { messageService } from "@/services";
+import type { ChatMessage, MessageThread, MessageThreadDetail } from "@/types";
+import { filterMyProperties } from "@/lib/ownership";
 import {
   DropdownMenu,
   DashboardPageHeader,
@@ -13,10 +27,24 @@ import {
   Dialog,
   Button,
   TextArea,
+  TextInput,
+  EmptyState,
+  PageLoader,
 } from "@/components/ui";
-import { filterMyProperties } from "@/lib/ownership";
+import { cn } from "@/lib/cn";
 
-export default function DealerInquiriesPage() {
+type CommTab = "inquiries" | "messages";
+
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${Math.max(1, mins)}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 48) return `${hours}h ago`;
+  return new Date(iso).toLocaleDateString("en-IN");
+}
+
+function InquiriesPanel() {
   const { properties, userEmail, userProfile, inquiries, deleteInquiry } = useApp();
   const [search, setSearch] = useState("");
   const [replyModal, setReplyModal] = useState<{
@@ -83,25 +111,23 @@ export default function DealerInquiriesPage() {
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-5xl mx-auto text-charcoal">
-      <DashboardPageHeader
-        title="Customer Inquiries"
-        description={`${allInquiries.length} inquiries received on your properties`}
-        actions={
-          <SearchInput
-            value={search}
-            onChange={setSearch}
-            placeholder="Search inquiries..."
-            accent="indigo"
-            containerClassName="w-full sm:w-64 flex-none min-w-0"
-          />
-        }
-      />
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search inquiries..."
+          accent="indigo"
+          containerClassName="w-full sm:w-64 flex-none min-w-0"
+        />
+      </div>
 
       {allInquiries.length === 0 ? (
         <div className="bg-white/80 border border-indigo/10 rounded-3xl p-16 text-center shadow-sm">
           <MessageSquare className="w-12 h-12 text-indigo/20 mx-auto mb-4" />
-          <p className="text-charcoal/50 font-semibold text-sm">No inquiries yet. They will appear here when buyers contact you.</p>
+          <p className="text-charcoal/50 font-semibold text-sm">
+            No inquiries yet. They will appear here when buyers contact you.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
@@ -122,7 +148,9 @@ export default function DealerInquiriesPage() {
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span className="text-xs font-black text-charcoal">{inq.name}</span>
-                    <span className="text-[9px] text-charcoal/40 font-bold uppercase tracking-wider">{inq.date}</span>
+                    <span className="text-[9px] text-charcoal/40 font-bold uppercase tracking-wider">
+                      {inq.date}
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-1 text-[9px] font-black text-indigo uppercase tracking-wider">
@@ -157,7 +185,10 @@ export default function DealerInquiriesPage() {
                   accent="indigo"
                   align="right"
                   trigger={
-                    <button type="button" className="p-2 hover:bg-indigo/5 text-charcoal/40 hover:text-indigo rounded-xl transition-all cursor-pointer">
+                    <button
+                      type="button"
+                      className="p-2 hover:bg-indigo/5 text-charcoal/40 hover:text-indigo rounded-xl transition-all cursor-pointer"
+                    >
                       <MoreVertical className="w-4 h-4" />
                     </button>
                   }
@@ -189,7 +220,9 @@ export default function DealerInquiriesPage() {
         footer={
           replySent ? undefined : (
             <>
-              <Button variant="ghost" size="sm" onClick={closeReply}>Cancel</Button>
+              <Button variant="ghost" size="sm" onClick={closeReply}>
+                Cancel
+              </Button>
               <Button
                 variant="secondary"
                 size="sm"
@@ -207,7 +240,9 @@ export default function DealerInquiriesPage() {
         {replySent ? (
           <div className="text-center py-6">
             <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
-            <p className="text-emerald-700 font-bold text-sm">Reply sent! Marking inquiry as resolved...</p>
+            <p className="text-emerald-700 font-bold text-sm">
+              Reply sent! Marking inquiry as resolved...
+            </p>
           </div>
         ) : (
           <TextArea
@@ -228,6 +263,423 @@ export default function DealerInquiriesPage() {
         confirmLabel="Dismiss"
         tone="danger"
       />
+    </div>
+  );
+}
+
+function MessagesPanel() {
+  const { userEmail, sessionReady, isLoggedIn } = useApp();
+  const [threads, setThreads] = useState<MessageThread[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<MessageThreadDetail | null>(null);
+  const [newMsg, setNewMsg] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [compose, setCompose] = useState({
+    participantEmail: "",
+    subject: "",
+    body: "",
+  });
+
+  const refreshThreads = useCallback(async () => {
+    const rows = await messageService.listThreads();
+    setThreads(rows);
+  }, []);
+
+  useEffect(() => {
+    if (!sessionReady || !isLoggedIn) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        await refreshThreads();
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Unable to load messages");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionReady, isLoggedIn, refreshThreads]);
+
+  const openThread = async (id: string) => {
+    setActiveId(id);
+    setError(null);
+    try {
+      const d = await messageService.getThread(id);
+      setDetail(d);
+      setThreads((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, unread: false } : t))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to open conversation");
+    }
+  };
+
+  const handleSend = async () => {
+    if (!newMsg.trim() || !activeId || sending) return;
+    setSending(true);
+    setError(null);
+    try {
+      const msg = await messageService.reply(activeId, newMsg.trim());
+      setDetail((prev) =>
+        prev
+          ? {
+              ...prev,
+              messages: [...prev.messages, msg],
+              lastMessage: msg.body,
+              lastMessageAt: msg.createdAt,
+            }
+          : prev
+      );
+      setNewMsg("");
+      await refreshThreads();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to send message");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleCompose = async () => {
+    if (sending) return;
+    setSending(true);
+    setError(null);
+    try {
+      const created = await messageService.createThread({
+        participantEmail: compose.participantEmail,
+        subject: compose.subject,
+        body: compose.body,
+        kind: "direct",
+      });
+      setComposeOpen(false);
+      setCompose({ participantEmail: "", subject: "", body: "" });
+      await refreshThreads();
+      await openThread(created.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to start conversation");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const counterpartName = useMemo(() => {
+    if (!detail) return "";
+    const other = detail.participants.find(
+      (p) => p.email.toLowerCase() !== userEmail.toLowerCase()
+    );
+    return other?.name ?? detail.subject;
+  }, [detail, userEmail]);
+
+  if (!sessionReady || loading) {
+    return <PageLoader label="Loading messages..." />;
+  }
+
+  return (
+    <div className="space-y-4 flex flex-col min-h-[calc(100vh-220px)]">
+      <div className="flex justify-end shrink-0">
+        <Button variant="secondary" size="sm" onClick={() => setComposeOpen(true)}>
+          <Plus className="w-4 h-4" /> Compose
+        </Button>
+      </div>
+
+      {error ? (
+        <p className="text-xs font-semibold text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2 shrink-0">
+          {error}
+        </p>
+      ) : null}
+
+      <div className="bg-white/80 border border-indigo/10 rounded-3xl overflow-hidden flex flex-1 shadow-sm min-h-0">
+        <div className="w-full sm:w-72 border-r border-indigo/5 flex flex-col shrink-0 max-h-[50vh] sm:max-h-none">
+          <div className="p-4 border-b border-indigo/5 bg-white/40">
+            <p className="text-[10px] font-black text-charcoal/40 uppercase tracking-widest">
+              Conversations
+            </p>
+          </div>
+          <div className="flex-1 overflow-y-auto no-scrollbar">
+            {threads.length === 0 ? (
+              <p className="p-4 text-xs text-charcoal/40 font-semibold">
+                No conversations yet. Compose to start one.
+              </p>
+            ) : (
+              threads.map((t) => {
+                const other =
+                  t.participants.find(
+                    (p) => p.email.toLowerCase() !== userEmail.toLowerCase()
+                  ) ?? t.participants[0];
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => {
+                      void openThread(t.id);
+                    }}
+                    className={`w-full flex items-center gap-3 p-4 text-left border-b border-indigo/5 hover:bg-indigo/5 transition-colors cursor-pointer ${
+                      activeId === t.id ? "bg-indigo/5" : ""
+                    }`}
+                  >
+                    <Avatar name={other?.name ?? t.subject} size="md" shape="rounded" tone="indigo" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-center">
+                        <p className="text-xs font-bold text-charcoal truncate">
+                          {other?.name ?? t.subject}
+                        </p>
+                        <p className="text-[9px] text-charcoal/30 font-semibold">
+                          {relativeTime(t.lastMessageAt)}
+                        </p>
+                      </div>
+                      <p className="text-[10px] text-charcoal/50 font-semibold truncate mt-0.5">
+                        {t.lastMessage || t.subject}
+                      </p>
+                    </div>
+                    {t.unread && (
+                      <div className="w-2.5 h-2.5 bg-terracotta rounded-full shrink-0" />
+                    )}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        <div className="hidden sm:flex flex-1 flex-col bg-sand/10 min-w-0">
+          {detail && activeId ? (
+            <>
+              <div className="p-4 border-b border-indigo/5 bg-white/60">
+                <p className="text-sm font-bold text-charcoal">{counterpartName}</p>
+                <p className="text-[10px] text-charcoal/40 font-semibold mt-0.5">
+                  {detail.subject}
+                </p>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {detail.messages.map((m: ChatMessage) => {
+                  const isMe =
+                    detail.participants.find((p) => p.id === m.senderId)?.email.toLowerCase() ===
+                    userEmail.toLowerCase();
+                  return (
+                    <div
+                      key={m.id}
+                      className={`flex ${isMe ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`max-w-xs px-4 py-2.5 rounded-2xl text-xs font-bold ${
+                          isMe
+                            ? "bg-indigo text-white shadow-sm"
+                            : "bg-white border border-indigo/10 text-charcoal"
+                        }`}
+                      >
+                        {m.body}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="p-4 border-t border-indigo/5 bg-white flex gap-3">
+                <TextInput
+                  value={newMsg}
+                  onChange={(e) => setNewMsg(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") void handleSend();
+                  }}
+                  placeholder="Type a message..."
+                  className="flex-1"
+                />
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    void handleSend();
+                  }}
+                  disabled={sending}
+                  aria-label="Send"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center p-6">
+              <EmptyState
+                title="No conversation selected"
+                description="Select a buyer from the list or compose a new message"
+                icon={<MessageSquare className="w-8 h-8 text-indigo/40" />}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile thread view */}
+      {detail && activeId ? (
+        <div className="sm:hidden bg-white/80 border border-indigo/10 rounded-3xl overflow-hidden flex flex-col shadow-sm min-h-[320px]">
+          <div className="p-4 border-b border-indigo/5 bg-white/60">
+            <p className="text-sm font-bold text-charcoal">{counterpartName}</p>
+            <p className="text-[10px] text-charcoal/40 font-semibold mt-0.5">{detail.subject}</p>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[40vh]">
+            {detail.messages.map((m: ChatMessage) => {
+              const isMe =
+                detail.participants.find((p) => p.id === m.senderId)?.email.toLowerCase() ===
+                userEmail.toLowerCase();
+              return (
+                <div key={m.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                  <div
+                    className={`max-w-xs px-4 py-2.5 rounded-2xl text-xs font-bold ${
+                      isMe
+                        ? "bg-indigo text-white shadow-sm"
+                        : "bg-white border border-indigo/10 text-charcoal"
+                    }`}
+                  >
+                    {m.body}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="p-4 border-t border-indigo/5 bg-white flex gap-3">
+            <TextInput
+              value={newMsg}
+              onChange={(e) => setNewMsg(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void handleSend();
+              }}
+              placeholder="Type a message..."
+              className="flex-1"
+            />
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                void handleSend();
+              }}
+              disabled={sending}
+              aria-label="Send"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {composeOpen ? (
+        <div className="fixed inset-0 z-50 bg-charcoal/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl border border-indigo/10 w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-serif font-black text-lg text-indigo">New Conversation</h3>
+              <button
+                type="button"
+                onClick={() => setComposeOpen(false)}
+                className="p-1.5 rounded-full hover:bg-sand/40"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <TextInput
+              value={compose.participantEmail}
+              onChange={(e) => setCompose({ ...compose, participantEmail: e.target.value })}
+              placeholder="Recipient email (must have a SqftGo account)"
+            />
+            <TextInput
+              value={compose.subject}
+              onChange={(e) => setCompose({ ...compose, subject: e.target.value })}
+              placeholder="Subject"
+            />
+            <textarea
+              value={compose.body}
+              onChange={(e) => setCompose({ ...compose, body: e.target.value })}
+              rows={4}
+              placeholder="First message..."
+              className="w-full border border-sand rounded-xl px-3 py-2 text-sm font-medium"
+            />
+            <Button
+              variant="secondary"
+              size="md"
+              className="w-full"
+              disabled={sending}
+              onClick={() => {
+                void handleCompose();
+              }}
+            >
+              Start Conversation
+            </Button>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export default function DealerCommunicationsPage() {
+  return (
+    <React.Suspense fallback={<PageLoader label="Loading communications..." />}>
+      <CommunicationsContent />
+    </React.Suspense>
+  );
+}
+
+function CommunicationsContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const activeTab: CommTab = tabParam === "messages" ? "messages" : "inquiries";
+
+  const setTab = (tab: CommTab) => {
+    const href =
+      tab === "messages"
+        ? "/dealer/dashboard/inquiries?tab=messages"
+        : "/dealer/dashboard/inquiries";
+    router.replace(href, { scroll: false });
+  };
+
+  return (
+    <div className="space-y-6 max-w-5xl mx-auto text-charcoal">
+      <DashboardPageHeader
+        title="Communications"
+        description="Customer inquiries and direct messages in one place"
+      />
+
+      <div
+        className="flex gap-1 bg-sand/35 border border-indigo/5 p-1 rounded-2xl w-full sm:w-fit"
+        role="tablist"
+        aria-label="Communications sections"
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "inquiries"}
+          onClick={() => setTab("inquiries")}
+          className={cn(
+            "flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-colors cursor-pointer",
+            activeTab === "inquiries"
+              ? "bg-white text-indigo shadow-sm"
+              : "text-charcoal/45 hover:text-charcoal"
+          )}
+        >
+          Inquiries
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "messages"}
+          onClick={() => setTab("messages")}
+          className={cn(
+            "flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-colors cursor-pointer",
+            activeTab === "messages"
+              ? "bg-white text-indigo shadow-sm"
+              : "text-charcoal/45 hover:text-charcoal"
+          )}
+        >
+          Messages
+        </button>
+      </div>
+
+      {activeTab === "inquiries" ? <InquiriesPanel /> : <MessagesPanel />}
     </div>
   );
 }

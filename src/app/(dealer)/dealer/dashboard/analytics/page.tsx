@@ -3,7 +3,6 @@
 import React, { useState, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
 import {
-  TrendingUp,
   MessageSquare,
   Building2,
   MapPin,
@@ -47,8 +46,7 @@ export default function DealerAnalyticsPage() {
       (a, p) => a + (inquiries[p.id]?.length || 0),
       0
     );
-    const inqRate = total === 0 ? "0" : (totalInqs / total).toFixed(1);
-    return { total, active, totalInqs, inqRate };
+    return { total, active, totalInqs };
   }, [filteredProps, inquiries]);
 
   const cityBreakdown = useMemo(() => {
@@ -83,7 +81,7 @@ export default function DealerAnalyticsPage() {
   }, [filteredProps, inquiries]);
 
   return (
-    <div className="p-6 md:p-8 bg-[#faf8f5] min-h-screen text-charcoal w-full space-y-6">
+    <div className="bg-[#faf8f5] min-h-full text-charcoal w-full space-y-6">
       <DashboardPageHeader
         title="Analytics & Trends"
         description="Live metrics from your listings. Historical monthly trends are not stored yet."
@@ -119,7 +117,7 @@ export default function DealerAnalyticsPage() {
         }
       />
 
-      <KpiGrid>
+      <KpiGrid className="lg:grid-cols-3 xl:grid-cols-3">
         <StatCard
           label="Your listings"
           value={kpis.total}
@@ -140,13 +138,6 @@ export default function DealerAnalyticsPage() {
           hint="On filtered listings"
           tone="terracotta"
           icon={<MessageSquare className="w-4 h-4" />}
-        />
-        <StatCard
-          label="Average Leads / listing"
-          value={kpis.inqRate}
-          hint="Inquiries ÷ listings"
-          tone="default"
-          icon={<TrendingUp className="w-4 h-4" />}
         />
       </KpiGrid>
 

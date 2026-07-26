@@ -37,6 +37,8 @@ export interface DashboardShellProps {
   onLogout: () => void;
   topBarExtra?: React.ReactNode;
   searchPlaceholder?: string;
+  /** When true, hides the sticky top bar (search + extras). Mobile menu toggle remains available. */
+  hideTopBar?: boolean;
   ready?: boolean;
   accessDenied?: React.ReactNode;
 }
@@ -199,6 +201,7 @@ export function DashboardShell({
   onLogout,
   topBarExtra,
   searchPlaceholder = "Search dashboard...",
+  hideTopBar = false,
   ready = true,
   accessDenied,
 }: DashboardShellProps) {
@@ -239,9 +242,9 @@ export function DashboardShell({
       const matchesQuery = Object.entries(item.query).every(([key, value]) => searchParams.get(key) === value);
       return pathname === item.href && matchesQuery;
     } else {
-      // If this item has no query param, but the URL does, it shouldn't be active if it's the exact same pathname
+      // Deactivate plain path items when a status-filtered sibling (e.g. Drafts) is active
       const searchParams = new URLSearchParams(window.location.search);
-      if (searchParams.toString() !== "" && pathname === item.href) {
+      if (searchParams.get("status") && pathname === item.href) {
         return false;
       }
     }
@@ -308,26 +311,37 @@ export function DashboardShell({
       </AnimatePresence>
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-indigo/5 z-30 px-6 py-4 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              aria-label="Open menu"
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 hover:bg-indigo/5 rounded-xl text-indigo transition-colors cursor-pointer"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-            <SearchInput
-              placeholder={searchPlaceholder}
-              aria-label={searchPlaceholder}
-              accent={accent === "terracotta" ? "terracotta" : "indigo"}
-              containerClassName="hidden sm:block flex-none min-w-0 w-56"
-              className="py-2"
-            />
-          </div>
-          {topBarExtra}
-        </header>
+        {hideTopBar ? (
+          <button
+            type="button"
+            aria-label="Open menu"
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden fixed top-4 left-4 z-30 p-2.5 bg-white/90 backdrop-blur-md border border-indigo/10 shadow-sm hover:bg-indigo/5 rounded-xl text-indigo transition-colors cursor-pointer"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        ) : (
+          <header className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-indigo/5 z-30 px-6 py-4 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                aria-label="Open menu"
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden p-2 hover:bg-indigo/5 rounded-xl text-indigo transition-colors cursor-pointer"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <SearchInput
+                placeholder={searchPlaceholder}
+                aria-label={searchPlaceholder}
+                accent={accent === "terracotta" ? "terracotta" : "indigo"}
+                containerClassName="hidden sm:block flex-none min-w-0 w-56"
+                className="py-2"
+              />
+            </div>
+            {topBarExtra}
+          </header>
+        )}
 
         <main className="flex-1 overflow-y-auto p-6 md:p-8">{children}</main>
       </div>

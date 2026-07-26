@@ -12,3 +12,10 @@ export type {
   MessageThreadStatus,
 } from "./message";
 export type { Database, ProfileRow, AppRole, ProfileStatus } from "./database";
+export type {
+  KycStatus,
+  KycDocumentType,
+  DealerKycDocument,
+  DealerKycRecord,
+} from "./kyc";
+export type { PlatformSettings, PlatformAnalytics } from "./platform";
