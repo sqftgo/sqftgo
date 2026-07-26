@@ -10,3 +10,12 @@ export { PostPropertyWizard } from "./components/PostPropertyWizard";
 export { formatIndianCurrency } from "@/lib/format";
 export { useFavorites } from "./hooks/useFavorites";
 export { usePropertyMutations } from "./hooks/usePropertyMutations";
+
+export {
+  PropertyDetailView,
+  PropertyDetailGallery,
+  PropertyDetailHeader,
+  PropertyDetailInfo,
+  PropertyDetailSidebar,
+  PropertyDetailMobileContact,
+} from "./components/PropertyDetail";
