@@ -4,11 +4,12 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
+import { useDealersQuery } from "@/hooks";
 import { DashboardShell, type DashboardNavSection } from "@/components/layout/DashboardShell";
-import { findMyDirectoryProfile, filterMyProperties } from "@/lib/ownership";
+import { findMyDirectoryProfile } from "@/lib/ownership";
 import {
   LayoutDashboard, Building2, Plus, MessageSquare, BarChart3,
-  CreditCard, User, Settings, ShieldAlert,
+  CreditCard, User, Settings, ShieldAlert, Bell,
 } from "lucide-react";
 
 export default function DealerDashboardLayout({ children }: { children: React.ReactNode }) {
@@ -23,23 +24,34 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
     sessionReady,
     directoryProfiles,
     inquiries,
-    properties,
+    notifications,
   } = useApp();
 
+  const myDirectoryQuery = useDealersQuery({ mine: true, limit: 5, offset: 0 });
+  const myDirectory = myDirectoryQuery.data?.items?.[0];
+
   const isBroker = isLoggedIn && (userRole === "broker" || userRole === "admin");
-  const brokerProfile = findMyDirectoryProfile(
-    directoryProfiles,
-    userProfile?.id,
-    userEmail
+  const brokerProfile =
+    myDirectory ??
+    findMyDirectoryProfile(directoryProfiles, userProfile?.id, userEmail);
+
+  const newInquiryCount = useMemo(
+    () =>
+      Object.values(inquiries).reduce(
+        (acc, rows) => acc + rows.filter((row) => !row.status || row.status === "new").length,
+        0
+      ),
+    [inquiries]
   );
-  const brokerProperties = filterMyProperties(
-    properties,
-    userProfile?.id,
-    userEmail
-  );
-  const inquiryCount = brokerProperties.reduce(
-    (acc, p) => acc + (inquiries[p.id]?.length || 0),
-    0
+
+  const unreadNotificationCount = useMemo(
+    () =>
+      notifications.filter(
+        (n) =>
+          !n.read &&
+          (n.forRole === "broker" || n.forRole === "all")
+      ).length,
+    [notifications]
   );
 
   const handleLogout = () => {
@@ -76,6 +88,12 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
             label: "Communications",
             icon: MessageSquare,
             badge: "inquiries",
+          },
+          {
+            href: "/dealer/dashboard/notifications",
+            label: "Notifications",
+            icon: Bell,
+            badge: "notifications",
           },
         ],
       },
@@ -123,6 +141,13 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
     </div>
   );
 
+  const publicSiteHref = brokerProfile?.id
+    ? `/dealers/${brokerProfile.id}`
+    : "/dealer/dashboard/profile";
+  const publicSiteLabel = brokerProfile?.id
+    ? "View Public Profile"
+    : "Complete Dealer Profile";
+
   return (
     <DashboardShell
       portalLabel="Dealer Portal"
@@ -132,13 +157,14 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
       profileInitial={brokerProfile?.ownerName?.charAt(0) || "D"}
       navSections={navSections}
       getBadgeCount={(badge) => {
-        if (badge === "inquiries") return inquiryCount;
+        if (badge === "inquiries") return newInquiryCount;
+        if (badge === "notifications") return unreadNotificationCount;
         return 0;
       }}
       onLogout={handleLogout}
       hideTopBar
-      publicSiteHref={brokerProfile?.id ? `/dealers/${brokerProfile.id}` : "/dealers"}
-      publicSiteLabel="View Public Profile"
+      publicSiteHref={publicSiteHref}
+      publicSiteLabel={publicSiteLabel}
       ready={sessionReady}
       accessDenied={!isBroker ? accessDenied : undefined}
     >

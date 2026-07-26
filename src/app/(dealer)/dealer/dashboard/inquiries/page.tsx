@@ -15,9 +15,9 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useApp } from "@/context/AppContext";
-import { messageService } from "@/services";
+import { inquiryService, messageService } from "@/services";
+import { usePropertiesQuery } from "@/hooks";
 import type { ChatMessage, MessageThread, MessageThreadDetail } from "@/types";
-import { filterMyProperties } from "@/lib/ownership";
 import {
   DropdownMenu,
   DashboardPageHeader,
@@ -45,31 +45,43 @@ function relativeTime(iso: string): string {
 }
 
 function InquiriesPanel() {
-  const { properties, userEmail, userProfile, inquiries, deleteInquiry } = useApp();
+  const { inquiries, refreshInquiries } = useApp();
+  const mineQuery = usePropertiesQuery({ mine: true, limit: 100 });
   const [search, setSearch] = useState("");
   const [replyModal, setReplyModal] = useState<{
     id: string;
     name: string;
+    email: string;
     propertyId: string;
     propertyTitle: string;
   } | null>(null);
   const [replyMsg, setReplyMsg] = useState("");
   const [replySent, setReplySent] = useState(false);
+  const [replyError, setReplyError] = useState<string | null>(null);
   const [pendingDismiss, setPendingDismiss] = useState<{ inquiryId: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const myProperties = filterMyProperties(properties, userProfile?.id, userEmail);
+  const propertyMeta = useMemo(() => {
+    const titles = new Map<string, string>();
+    const images = new Map<string, string | undefined>();
+    for (const p of mineQuery.data?.items ?? []) {
+      titles.set(p.id, p.title);
+      images.set(p.id, p.images?.[0]);
+    }
+    return { titles, images };
+  }, [mineQuery.data?.items]);
 
   const allInquiries = useMemo(() => {
-    return myProperties
-      .flatMap((p) =>
-        (inquiries[p.id] || []).map((inq) => ({
+    return Object.entries(inquiries)
+      .flatMap(([propertyId, rows]) =>
+        rows.map((inq) => ({
           ...inq,
-          propertyId: p.id,
-          propertyTitle: p.title,
-          propertyImage: p.images?.[0],
+          propertyId,
+          propertyTitle: propertyMeta.titles.get(propertyId) ?? "Property",
+          propertyImage: propertyMeta.images.get(propertyId),
         }))
       )
+      .filter((inq) => inq.status !== "archived")
       .filter(
         (inq) =>
           !search ||
@@ -77,23 +89,46 @@ function InquiriesPanel() {
           inq.propertyTitle.toLowerCase().includes(search.toLowerCase())
       )
       .sort((a, b) => b.date.localeCompare(a.date));
-  }, [myProperties, inquiries, search]);
+  }, [inquiries, propertyMeta, search]);
 
   const closeReply = () => {
     setReplyModal(null);
     setReplySent(false);
     setReplyMsg("");
+    setReplyError(null);
   };
 
   const handleReply = async () => {
-    if (!replyModal?.id || busy) return;
-    setReplySent(true);
+    if (!replyModal?.id || !replyMsg.trim() || busy) return;
+    setBusy(true);
+    setReplyError(null);
+    try {
+      await messageService.createThread({
+        subject: `Re: ${replyModal.propertyTitle}`,
+        participantEmail: replyModal.email,
+        body: replyMsg.trim(),
+        kind: "direct",
+        propertyId: replyModal.propertyId,
+      });
+      await inquiryService.updateStatus(replyModal.id, "read");
+      await refreshInquiries();
+      setReplySent(true);
+      window.setTimeout(() => {
+        closeReply();
+      }, 1500);
+    } catch (err) {
+      setReplyError(err instanceof Error ? err.message : "Unable to send reply");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const markAsRead = async (inquiryId: string) => {
+    if (busy) return;
     setBusy(true);
     try {
-      await deleteInquiry(replyModal.id);
-      closeReply();
-    } catch {
-      setReplySent(false);
+      await inquiryService.updateStatus(inquiryId, "read");
+      await refreshInquiries();
     } finally {
       setBusy(false);
     }
@@ -103,7 +138,8 @@ function InquiriesPanel() {
     if (!pendingDismiss?.inquiryId || busy) return;
     setBusy(true);
     try {
-      await deleteInquiry(pendingDismiss.inquiryId);
+      await inquiryService.updateStatus(pendingDismiss.inquiryId, "archived");
+      await refreshInquiries();
       setPendingDismiss(null);
     } finally {
       setBusy(false);
@@ -142,7 +178,9 @@ function InquiriesPanel() {
               <div className="flex gap-4 items-start md:items-center flex-1 min-w-0">
                 <div className="relative shrink-0">
                   <Avatar name={inq.name} size="lg" shape="rounded" tone="indigo" />
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white animate-pulse" />
+                  {(!inq.status || inq.status === "new") && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-terracotta rounded-full border-2 border-white animate-pulse" />
+                  )}
                 </div>
 
                 <div className="min-w-0 flex-1 space-y-1">
@@ -171,6 +209,7 @@ function InquiriesPanel() {
                     setReplyModal({
                       id: inq.id!,
                       name: inq.name,
+                      email: inq.email,
                       propertyId: inq.propertyId,
                       propertyTitle: inq.propertyTitle,
                     })
@@ -196,12 +235,19 @@ function InquiriesPanel() {
                     { id: "call", label: `Call: ${inq.phone}`, href: `tel:${inq.phone}`, icon: Phone },
                     { id: "email", label: `Email: ${inq.email}`, href: `mailto:${inq.email}`, icon: Mail },
                     {
+                      id: "read",
+                      label: "Mark as read",
+                      onClick: () => inq.id && void markAsRead(inq.id),
+                      icon: CheckCircle2,
+                      disabled: inq.status === "read" || inq.status === "archived",
+                      dividerBefore: true,
+                    },
+                    {
                       id: "dismiss",
-                      label: "Dismiss Inquiry",
+                      label: "Archive Inquiry",
                       onClick: () => inq.id && setPendingDismiss({ inquiryId: inq.id }),
                       icon: Trash2,
                       variant: "danger",
-                      dividerBefore: true,
                     },
                   ]}
                 />
@@ -245,12 +291,19 @@ function InquiriesPanel() {
             </p>
           </div>
         ) : (
-          <TextArea
-            value={replyMsg}
-            onChange={(e) => setReplyMsg(e.target.value)}
-            rows={5}
-            placeholder={`Dear ${replyModal?.name},\n\nThank you for your interest...`}
-          />
+          <div className="space-y-3">
+            {replyError ? (
+              <p className="text-xs font-semibold text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+                {replyError}
+              </p>
+            ) : null}
+            <TextArea
+              value={replyMsg}
+              onChange={(e) => setReplyMsg(e.target.value)}
+              rows={5}
+              placeholder={`Dear ${replyModal?.name},\n\nThank you for your interest...`}
+            />
+          </div>
         )}
       </Dialog>
 
@@ -258,9 +311,9 @@ function InquiriesPanel() {
         open={Boolean(pendingDismiss)}
         onClose={() => setPendingDismiss(null)}
         onConfirm={() => void confirmDismiss()}
-        title="Dismiss inquiry?"
-        description="Dismiss this inquiry? It will be removed from your inbox."
-        confirmLabel="Dismiss"
+        title="Archive inquiry?"
+        description="Archive this inquiry? It will be hidden from your inbox."
+        confirmLabel="Archive"
         tone="danger"
       />
     </div>

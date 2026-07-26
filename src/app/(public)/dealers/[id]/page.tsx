@@ -1,9 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
+import { dealerService } from "@/services";
+import type { DirectoryProfile } from "@/types";
 import { 
   ArrowLeft, 
   MapPin, 
@@ -23,17 +25,56 @@ import { filterDealerListings } from "@/lib/ownership";
 export default function DealerProfilePage() {
   const params = useParams();
   const router = useRouter();
-  const { directoryProfiles, properties, directoryProfilesReady, directoryProfilesError } = useApp();
+  const { directoryProfiles, properties, directoryProfilesReady } = useApp();
 
   const profileId = params.id as string;
-  const profile = directoryProfiles.find(p => p.id === profileId);
+  const cached = useMemo(
+    () => directoryProfiles.find((p) => p.id === profileId) ?? null,
+    [directoryProfiles, profileId]
+  );
+  const [profile, setProfile] = useState<DirectoryProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const brokerProperties = React.useMemo(() => {
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (cached) {
+        setProfile(cached);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+      setLoadError(null);
+      try {
+        const fetched = await dealerService.getById(profileId);
+        if (cancelled) return;
+        if (fetched) {
+          setProfile(fetched);
+        } else if (!cached) {
+          setProfile(null);
+          setLoadError("not_found");
+        }
+      } catch (err) {
+        if (cancelled) return;
+        if (!cached) {
+          setLoadError(err instanceof Error ? err.message : "Unable to load dealer profile");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [profileId, cached]);
+
+  const brokerProperties = useMemo(() => {
     if (!profile) return [];
     return filterDealerListings(properties, profile);
   }, [properties, profile]);
 
-  if (!directoryProfilesReady) {
+  if (loading || (!profile && !directoryProfilesReady && !loadError)) {
     return (
       <main className="min-h-screen bg-cream pt-32 flex flex-col items-center justify-center">
         <p className="text-charcoal/60 font-semibold">Loading dealer profile…</p>
@@ -41,11 +82,11 @@ export default function DealerProfilePage() {
     );
   }
 
-  if (directoryProfilesError && !profile) {
+  if (loadError && loadError !== "not_found" && !profile) {
     return (
       <main className="min-h-screen bg-cream pt-32 flex flex-col items-center justify-center px-4">
         <h1 className="text-3xl font-serif font-black text-charcoal mb-4">Unable to load directory</h1>
-        <p className="text-charcoal/60 mb-8 text-center max-w-md">{directoryProfilesError}</p>
+        <p className="text-charcoal/60 mb-8 text-center max-w-md">{loadError}</p>
         <button onClick={() => router.back()} className="px-6 py-3 bg-indigo text-white rounded-xl font-bold">
           Go Back
         </button>
@@ -100,6 +141,7 @@ export default function DealerProfilePage() {
             <span>BACK TO DEALERS</span>
           </button>
         </div>
+
 
         {/* Cover Banner */}
         <div className="relative h-44 md:h-56 w-full bg-gradient-to-r from-indigo via-indigo-hover to-charcoal rounded-[2rem] overflow-hidden border border-sand/40 shadow-inner">

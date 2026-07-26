@@ -1,21 +1,53 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useApp } from "@/context/AppContext";
+import { propertyService } from "@/services";
 import { PropertyForm, type PropertyFormSubmitData } from "@/components/property";
 import { isOwnProperty } from "@/lib/ownership";
+import { GlobalLoading } from "@/components/ui";
+import type { Property } from "@/types";
 
 export default function EditPropertyPage() {
   const router = useRouter();
   const params = useParams();
-  const { properties, userEmail, userProfile, updateProperty, addLog } = useApp();
+  const id = params.id as string;
+  const { userEmail, userProfile, updateProperty, addLog } = useApp();
+  const [prop, setProp] = useState<Property | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false);
 
-  const prop = properties.find(
-    (p) =>
-      p.id === params.id && isOwnProperty(p, userProfile?.id, userEmail)
-  );
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setAccessDenied(false);
+      try {
+        const fetched = await propertyService.getById(id);
+        if (cancelled) return;
+        if (!fetched || !isOwnProperty(fetched, userProfile?.id, userEmail)) {
+          setAccessDenied(true);
+          setProp(null);
+        } else {
+          setProp(fetched);
+        }
+      } catch {
+        if (!cancelled) setAccessDenied(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, userProfile?.id, userEmail]);
 
-  if (!prop) {
+  if (loading) {
+    return <GlobalLoading label="Loading property…" />;
+  }
+
+  if (accessDenied || !prop) {
     return (
       <div className="p-8 text-center bg-[#faf8f5] min-h-screen flex flex-col items-center justify-center">
         <div className="bg-white/80 border border-sand rounded-3xl p-8 max-w-sm w-full">

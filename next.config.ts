@@ -7,6 +7,17 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "maps.google.com" },
       { protocol: "https", hostname: "content.jdmagicbox.com" },
       { protocol: "https", hostname: "ui-avatars.com" },
+      // Uploaded listing images from Supabase Storage
+      {
+        protocol: "https",
+        hostname: "iwldglorfloyupayvmxd.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
     ],
   },
   async redirects() {
@@ -14,11 +25,6 @@ const nextConfig: NextConfig = {
       {
         source: "/dealer/dashboard/messages",
         destination: "/dealer/dashboard/inquiries?tab=messages",
-        permanent: true,
-      },
-      {
-        source: "/dealer/dashboard/notifications",
-        destination: "/dealer/dashboard/settings",
         permanent: true,
       },
     ];
