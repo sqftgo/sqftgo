@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { ExternalLink, LogOut, Menu, X, type LucideIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/cn";
@@ -43,6 +43,33 @@ export interface DashboardShellProps {
   accessDenied?: React.ReactNode;
 }
 
+function navItemHref(item: DashboardNavItem): string {
+  if (!item.query) return item.href;
+  return `${item.href}?${new URLSearchParams(item.query).toString()}`;
+}
+
+function NavUpdateDot({ active }: { active: boolean }) {
+  return (
+    <span
+      className="relative flex h-2 w-2 shrink-0"
+      aria-hidden
+    >
+      <span
+        className={cn(
+          "absolute inline-flex h-full w-full animate-ping rounded-full opacity-70",
+          active ? "bg-white" : "bg-terracotta"
+        )}
+      />
+      <span
+        className={cn(
+          "relative inline-flex h-2 w-2 rounded-full",
+          active ? "bg-white" : "bg-terracotta"
+        )}
+      />
+    </span>
+  );
+}
+
 interface SidebarContentProps {
   brandIcon?: React.ReactNode;
   portalLabel: string;
@@ -55,6 +82,7 @@ interface SidebarContentProps {
   publicSiteHref: string;
   publicSiteLabel: string;
   onLogout: () => void;
+  onNavClick: (href: string) => void;
   setSidebarOpen: (open: boolean) => void;
   activeClasses: string;
   idleHover: string;
@@ -73,6 +101,7 @@ function SidebarContent({
   publicSiteHref,
   publicSiteLabel,
   onLogout,
+  onNavClick,
   setSidebarOpen,
   activeClasses,
   idleHover,
@@ -121,19 +150,21 @@ function SidebarContent({
             {section.items.map((item) => {
               const Icon = item.icon;
               const match = isActive(item);
-              const badgeCount = getBadgeCount?.(item.badge) ?? 0;
-              const href = item.query
-                ? `${item.href}?${new URLSearchParams(item.query).toString()}`
-                : item.href;
+              const hasUpdate = (getBadgeCount?.(item.badge) ?? 0) > 0;
+              const href = navItemHref(item);
               return (
                 <Link
                   key={item.label}
                   href={href}
-                  onClick={() => setSidebarOpen(false)}
+                  onClick={() => {
+                    onNavClick(href);
+                    setSidebarOpen(false);
+                  }}
                   className={cn(
                     "flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all duration-200 group",
                     match ? activeClasses : idleHover
                   )}
+                  aria-current={match ? "page" : undefined}
                 >
                   <div className="flex items-center gap-2.5">
                     <Icon
@@ -144,16 +175,7 @@ function SidebarContent({
                     />
                     <span>{item.label}</span>
                   </div>
-                  {badgeCount > 0 && (
-                    <span
-                      className={cn(
-                        "text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shrink-0",
-                        match ? "bg-white/20 text-white" : "bg-terracotta text-white"
-                      )}
-                    >
-                      {badgeCount}
-                    </span>
-                  )}
+                  {hasUpdate ? <NavUpdateDot active={match} /> : null}
                 </Link>
               );
             })}
@@ -165,6 +187,7 @@ function SidebarContent({
         <Link
           href={publicSiteHref}
           target="_blank"
+          rel="noopener noreferrer"
           className={cn(
             "flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all",
             idleHover
@@ -186,14 +209,13 @@ function SidebarContent({
   );
 }
 
-export function DashboardShell({
+function DashboardShellInner({
   children,
   portalLabel,
   accent = "terracotta",
   brandIcon,
   profileName,
   profileEmail,
-  profileInitial,
   navSections,
   getBadgeCount,
   publicSiteHref = "/",
@@ -206,7 +228,14 @@ export function DashboardShell({
   accessDenied,
 }: DashboardShellProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchKey = searchParams.toString();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname, searchKey]);
 
   const activeClasses =
     accent === "terracotta"
@@ -234,21 +263,26 @@ export function DashboardShell({
   }
 
   const isActive = (item: DashboardNavItem) => {
-    if (typeof window === "undefined") {
-      return item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
+    const href = navItemHref(item);
+    if (pendingHref) {
+      return pendingHref === href;
     }
+
     if (item.query) {
-      const searchParams = new URLSearchParams(window.location.search);
-      const matchesQuery = Object.entries(item.query).every(([key, value]) => searchParams.get(key) === value);
+      const matchesQuery = Object.entries(item.query).every(
+        ([key, value]) => searchParams.get(key) === value
+      );
       return pathname === item.href && matchesQuery;
-    } else {
-      // Deactivate plain path items when a status-filtered sibling (e.g. Drafts) is active
-      const searchParams = new URLSearchParams(window.location.search);
-      if (searchParams.get("status") && pathname === item.href) {
-        return false;
-      }
     }
-    return item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+    // Plain path items yield to query-filtered siblings (e.g. Drafts).
+    if (searchParams.get("status") && pathname === item.href) {
+      return false;
+    }
+
+    return item.exact
+      ? pathname === item.href
+      : pathname === item.href || pathname.startsWith(`${item.href}/`);
   };
 
   const sidebarContentProps: SidebarContentProps = {
@@ -263,6 +297,7 @@ export function DashboardShell({
     publicSiteHref,
     publicSiteLabel,
     onLogout,
+    onNavClick: setPendingHref,
     setSidebarOpen,
     activeClasses,
     idleHover,
@@ -346,6 +381,20 @@ export function DashboardShell({
         <main className="flex-1 overflow-y-auto p-6 md:p-8">{children}</main>
       </div>
     </div>
+  );
+}
+
+export function DashboardShell(props: DashboardShellProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-cream">
+          <PageLoader label="Loading portal…" />
+        </div>
+      }
+    >
+      <DashboardShellInner {...props} />
+    </Suspense>
   );
 }
 

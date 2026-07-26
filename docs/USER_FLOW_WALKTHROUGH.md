@@ -160,7 +160,8 @@ Log in as broker.
 - [ ] `/dealer/dashboard/messages` — threads load (if any); send a reply
 - [ ] `/dealer/dashboard/notifications` — unread / mark read
 - [ ] `/dealer/dashboard/analytics` — numbers load (even if zero)
-- [ ] `/dealer/dashboard/profile` — firm fields save; **KYC tab is UI-only for now** (expected — see Remaining)
+- [ ] `/dealer/dashboard/profile` — firm fields save; KYC tab submits real draft/pending KYC (admin reviews at `/admin/kyc`)
+- [ ] Optional: `pnpm seed:dealer-demo` — adds pending listing, inquiry, visits, KYC draft, notifications for clearer checks
 - [ ] `/dealer/dashboard/subscription` — page loads (may be marketing/UI only)
 - [ ] `/dealer/dashboard/settings` — password change path (if present)
 
@@ -242,7 +243,7 @@ Track these as product/ops backlog, not “broken click”:
 | Area | Status | Where tracked |
 |------|--------|----------------|
 | Google OAuth login/signup | Stub | [`REMAINING.md`](./REMAINING.md) |
-| Dealer KYC / bank / docs | UI theater | [`REMAINING.md`](./REMAINING.md) |
+| Dealer KYC / bank / docs | KYC API live; bank/social still stubs | Profile KYC + `/admin/kyc` |
 | Customer reviews | Not shipped | [`REMAINING.md`](./REMAINING.md) |
 | Forgot-password email | Needs Custom SMTP / SES | Auth SMTP; free Supabase mail ~2/hr |
 | Email confirm in production | Skipped in local via `AUTH_SKIP_EMAIL_CONFIRM` | Re-enable when SMTP ready |

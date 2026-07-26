@@ -46,6 +46,55 @@ export async function GET(request: NextRequest) {
   const auth = await authenticateApiRequest(request);
   const isAdmin = auth.profile?.role === "admin" && auth.profile.status === "active";
 
+  // Owner inventory (`mine`) must bypass public RLS (active-only for non-owners).
+  // Authenticate first, then read with the service client filtered to auth.user.id.
+  if (mine) {
+    if (!auth.user || !auth.profile) return jsonError("Unauthorized", 401);
+    if (auth.profile.status === "suspended") return jsonError("Forbidden", 403);
+    if (!hasServiceRoleKey()) {
+      return jsonError("SUPABASE_SERVICE_ROLE_KEY is required for mine listings.", 503);
+    }
+
+    const admin = createServiceClient();
+    let query = admin
+      .from("properties")
+      .select("*", { count: "exact" })
+      .eq("owner_id", auth.user.id)
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (statusParam && statusParam !== "all") {
+      const parsed = propertyStatusUiSchema.safeParse(statusParam);
+      if (!parsed.success) return jsonError("Invalid status filter");
+      query = query.eq("status", toDbStatus(parsed.data));
+    }
+    if (city && city !== "All India") query = query.eq("city", city);
+    if (type && type !== "any") query = query.eq("type", type as PropertyTypeDb);
+    if (purpose) query = query.eq("purpose", purpose as PropertyPurposeDb);
+    if (featuredParam === "true") query = query.eq("featured", true);
+    if (featuredParam === "false") query = query.eq("featured", false);
+    if (minPrice !== undefined) query = query.gte("price", minPrice);
+    if (maxPrice !== undefined) query = query.lte("price", maxPrice);
+    if (searchRaw) {
+      const search = sanitizeSearch(searchRaw);
+      if (search) {
+        query = query.or(
+          `title.ilike.%${search}%,locality.ilike.%${search}%,city.ilike.%${search}%`
+        );
+      }
+    }
+
+    const { data, error, count } = await query;
+    if (error) return jsonError(error.message, 500);
+
+    return jsonOk({
+      items: (data as PropertyRow[] | null)?.map(mapPropertyRow) ?? [],
+      total: count ?? 0,
+      limit,
+      offset,
+    });
+  }
+
   // User-scoped client so RLS enforces active / own / admin visibility.
   const supabase = await createClient();
   let query = supabase
@@ -54,10 +103,7 @@ export async function GET(request: NextRequest) {
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
-  if (mine) {
-    if (!auth.user) return jsonError("Unauthorized", 401);
-    query = query.eq("owner_id", auth.user.id);
-  } else if (statusParam && statusParam !== "all") {
+  if (statusParam && statusParam !== "all") {
     const parsed = propertyStatusUiSchema.safeParse(statusParam);
     if (!parsed.success) return jsonError("Invalid status filter");
     query = query.eq("status", toDbStatus(parsed.data));

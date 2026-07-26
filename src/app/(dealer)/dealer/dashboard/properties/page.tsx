@@ -26,7 +26,7 @@ const TYPE_OPTIONS = ["All", "Villa", "Apartment", "Home", "Office Space", "Shop
 
 export default function DealerPropertiesPage() {
   const { updateProperty, deleteProperty } = useApp();
-  const myPropertiesQuery = usePropertiesQuery({ mine: true, limit: 50, offset: 0 });
+  const myPropertiesQuery = usePropertiesQuery({ mine: true, limit: 100, offset: 0 });
   const properties = myPropertiesQuery.data?.items ?? [];
   const propertiesLoading =
     myPropertiesQuery.isPending || (myPropertiesQuery.isFetching && !myPropertiesQuery.data);

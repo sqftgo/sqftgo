@@ -19,16 +19,20 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   const auth = await authenticateApiRequest(request);
   const isAdmin = auth.profile?.role === "admin" && auth.profile.status === "active";
-  const useService = hasServiceRoleKey() && isAdmin;
 
-  const supabase = useService ? createServiceClient() : await createClient();
+  // Prefer service client when available so owners can load draft/pending via Bearer
+  // or cookie-less clients; visibility is enforced below.
+  const supabase =
+    hasServiceRoleKey() && auth.user
+      ? createServiceClient()
+      : await createClient();
   const { data, error } = await supabase.from("properties").select("*").eq("id", id).maybeSingle();
 
   if (error) return jsonError(error.message, 500);
   if (!data) return jsonError("Property not found", 404);
 
   const row = data as PropertyRow;
-  const isOwner = auth.user?.id === row.owner_id;
+  const isOwner = Boolean(auth.user?.id && auth.user.id === row.owner_id);
   if (row.status !== "active" && !isOwner && !isAdmin) {
     return jsonError("Property not found", 404);
   }

@@ -12,6 +12,7 @@
     "supabase:reset": "supabase db reset",
     "supabase:status": "supabase status",
     "seed:demo-users": "node scripts/seed-demo-users.mjs",
+    "seed:dealer-demo": "node scripts/seed-dealer-demo.mjs",
     "auth:confirm-and-seed": "node scripts/confirm-and-seed-auth.mjs",
     "auth:verify": "node scripts/verify-auth-prod.mjs"
   },

@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
+import { usePropertiesQuery } from "@/hooks";
 import {
   Building2,
   MessageSquare,
@@ -21,12 +22,12 @@ import {
   Avatar,
   Panel,
   Button,
+  GlobalLoading,
 } from "@/components/ui";
-import { findMyDirectoryProfile, filterMyProperties } from "@/lib/ownership";
+import { findMyDirectoryProfile } from "@/lib/ownership";
 
 export default function DealerDashboardPage() {
   const {
-    properties,
     inquiries,
     userEmail,
     userProfile,
@@ -35,33 +36,42 @@ export default function DealerDashboardPage() {
     updateVisit,
   } = useApp();
 
+  const mineQuery = usePropertiesQuery({ mine: true, limit: 100, offset: 0 });
+  const myProperties = mineQuery.data?.items ?? [];
+
   const brokerProfile = findMyDirectoryProfile(
     directoryProfiles,
     userProfile?.id,
     userEmail
   );
-  const myProperties = filterMyProperties(properties, userProfile?.id, userEmail);
+
+  const propertyTitles = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const p of myProperties) map.set(p.id, p.title);
+    return map;
+  }, [myProperties]);
 
   const activeProps = myProperties.filter((p) => p.status === "Active");
 
-  const totalInquiries = myProperties.reduce(
-    (a, p) => a + (inquiries[p.id]?.length || 0),
-    0
+  const totalInquiries = useMemo(
+    () => Object.values(inquiries).reduce((a, rows) => a + rows.length, 0),
+    [inquiries]
   );
-  const recentInquiries = myProperties
-    .flatMap((p) =>
-      (inquiries[p.id] || []).map((inq) => ({
-        ...inq,
-        propertyTitle: p.title,
-        propId: p.id,
-      }))
-    )
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 4);
 
-  const upcomingVisits = visits
-    .filter((v) => v.status === "Pending Approval" || v.status === "Confirmed")
-    .slice(0, 5);
+  const recentInquiries = useMemo(
+    () =>
+      Object.entries(inquiries)
+        .flatMap(([propId, rows]) =>
+          rows.map((inq) => ({
+            ...inq,
+            propertyTitle: propertyTitles.get(propId) ?? "Property",
+            propId,
+          }))
+        )
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .slice(0, 4),
+    [inquiries, propertyTitles]
+  );
 
   const myPropertyIds = useMemo(
     () => new Set(myProperties.map((p) => p.id)),
@@ -73,6 +83,10 @@ export default function DealerDashboardPage() {
     [visits, myPropertyIds]
   );
 
+  const upcomingVisits = myVisits
+    .filter((v) => v.status === "Pending Approval" || v.status === "Confirmed")
+    .slice(0, 5);
+
   const siteVisitCount = myVisits.length;
 
   const stats = [
@@ -82,6 +96,10 @@ export default function DealerDashboardPage() {
   ];
 
   const formatPrice = (v: number) => "₹" + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(v);
+
+  if (mineQuery.isPending && !mineQuery.data) {
+    return <GlobalLoading label="Loading dashboard…" />;
+  }
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
