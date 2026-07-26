@@ -13,7 +13,7 @@ export interface InquiryRepository {
 }
 
 /** Property inquiries BFF client. */
-export const supabaseInquiryRepository: InquiryRepository = {
+export const inquiryApi: InquiryRepository = {
   async listByProperty(propertyId) {
     const rows = await apiClient<PropertyInquiryView[]>(`/api/properties/${propertyId}/inquiries`);
     return rows.map((r) => ({
@@ -74,4 +74,7 @@ export const supabaseInquiryRepository: InquiryRepository = {
   },
 };
 
-export const inquiryService: InquiryRepository = supabaseInquiryRepository;
+export const inquiryService: InquiryRepository = inquiryApi;
+
+/** @deprecated Use inquiryApi */
+export const supabaseInquiryRepository = inquiryApi;

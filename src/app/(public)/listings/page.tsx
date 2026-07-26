@@ -10,7 +10,7 @@ import { formatIndianCurrency } from "@/lib/format";
 import { CityMap } from "@/features/locations";
 import { SlidersHorizontal, Info, MapPin, Grid, Map, X, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useBudgetPriceOptions } from "@/features/admin/hooks/useBudgetPriceOptions";
+import { useBudgetPriceOptions } from "@/features/admin";
 
 const CITIES = [
   "Udaipur", "Jaipur", "Jodhpur", "Kota", "Bikaner", 

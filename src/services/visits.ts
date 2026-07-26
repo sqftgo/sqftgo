@@ -24,7 +24,7 @@ export interface VisitRepository {
   update(id: string, updates: VisitUpdatePayload): Promise<VisitBooking>;
 }
 
-export const supabaseVisitRepository: VisitRepository = {
+export const visitApi: VisitRepository = {
   async list(opts) {
     const qs = opts?.status ? `?status=${encodeURIComponent(opts.status)}` : "";
     return apiClient<VisitBooking[]>(`/api/visits${qs}`);
@@ -45,4 +45,7 @@ export const supabaseVisitRepository: VisitRepository = {
   },
 };
 
-export const visitService: VisitRepository = supabaseVisitRepository;
+export const visitService: VisitRepository = visitApi;
+
+/** @deprecated Use visitApi */
+export const supabaseVisitRepository = visitApi;

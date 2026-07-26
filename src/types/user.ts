@@ -12,7 +12,7 @@ export interface UserProfile {
   joinedDate: string;
 }
 
-export interface MockUser {
+export interface AdminUser {
   id: string;
   name: string;
   email: string;
@@ -21,3 +21,6 @@ export interface MockUser {
   joinedDate: string;
   inquiriesCount: number;
 }
+
+/** @deprecated Use AdminUser */
+export type MockUser = AdminUser;

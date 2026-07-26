@@ -33,7 +33,7 @@ function toQuery(filters?: DealerFilters): string {
   return qs ? `?${qs}` : "";
 }
 
-export const supabaseDealerRepository: DealerRepository = {
+export const dealerApi: DealerRepository = {
   async listProfilesPage(filters) {
     return apiClient<PaginatedResult<DirectoryProfile>>(`/api/dealers${toQuery(filters)}`);
   },
@@ -79,4 +79,7 @@ export const supabaseDealerRepository: DealerRepository = {
   },
 };
 
-export const dealerService: DealerRepository = supabaseDealerRepository;
+export const dealerService: DealerRepository = dealerApi;
+
+/** @deprecated Use dealerApi */
+export const supabaseDealerRepository = dealerApi;

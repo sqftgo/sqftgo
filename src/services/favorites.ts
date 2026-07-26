@@ -5,7 +5,7 @@ export interface FavoritesRepository {
   remove(propertyId: string): Promise<void>;
 }
 
-export const supabaseFavoritesRepository: FavoritesRepository = {
+export const favoritesApi: FavoritesRepository = {
   async list() {
     return apiClient<string[]>("/api/favorites");
   },
@@ -24,4 +24,7 @@ export const supabaseFavoritesRepository: FavoritesRepository = {
   },
 };
 
-export const favoritesService: FavoritesRepository = supabaseFavoritesRepository;
+export const favoritesService: FavoritesRepository = favoritesApi;
+
+/** @deprecated Use favoritesApi */
+export const supabaseFavoritesRepository = favoritesApi;

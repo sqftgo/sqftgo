@@ -55,7 +55,7 @@ function toQuery(filters?: PropertyFilters): string {
   return qs ? `?${qs}` : "";
 }
 
-export const supabasePropertyRepository: PropertyRepository = {
+export const propertyApi: PropertyRepository = {
   async listPage(filters) {
     return apiClient<PaginatedResult<Property>>(`/api/properties${toQuery(filters)}`);
   },
@@ -92,4 +92,7 @@ export const supabasePropertyRepository: PropertyRepository = {
   },
 };
 
-export const propertyService: PropertyRepository = supabasePropertyRepository;
+export const propertyService: PropertyRepository = propertyApi;
+
+/** @deprecated Use propertyApi */
+export const supabasePropertyRepository = propertyApi;

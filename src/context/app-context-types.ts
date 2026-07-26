@@ -7,7 +7,7 @@ import type {
   Location,
   Amenity,
   ActivityLog,
-  MockUser,
+  AdminUser,
   AssistanceRequest,
   GeneralEnquiry,
   DirectoryProfile,
@@ -150,8 +150,8 @@ export interface AppContextType {
   logsReady: boolean;
   refreshLogs: () => Promise<void>;
   addLog: (log: Omit<ActivityLog, "id" | "timestamp">) => void;
-  adminUsers: MockUser[];
-  setAdminUsers: React.Dispatch<React.SetStateAction<MockUser[]>>;
+  adminUsers: AdminUser[];
+  setAdminUsers: React.Dispatch<React.SetStateAction<AdminUser[]>>;
 
   logout: () => Promise<void>;
   sessionReady: boolean;

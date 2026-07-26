@@ -10,7 +10,7 @@ import {
 } from "@/hooks/queries/marketplace";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import type { PaginatedResult } from "@/lib/api/client";
-import type { DirectoryProfile, MockUser } from "@/types";
+import type { DirectoryProfile, AdminUser } from "@/types";
 import { dealerService } from "@/services";
 
 export function useDirectoryProfiles() {
@@ -50,11 +50,11 @@ export function useDirectoryProfiles() {
     [queryClient]
   );
 
-  const setAdminUsers: Dispatch<SetStateAction<MockUser[]>> = useCallback(
+  const setAdminUsers: Dispatch<SetStateAction<AdminUser[]>> = useCallback(
     (action) => {
       queryClient.setQueryData(
         queryKeys.adminUsers.list(DEFAULT_LIST_PAGE),
-        (prev: PaginatedResult<MockUser> | undefined) => {
+        (prev: PaginatedResult<AdminUser> | undefined) => {
           const current = prev?.items ?? [];
           const nextItems = typeof action === "function" ? action(current) : action;
           return {

@@ -19,7 +19,8 @@ import {
   type PriceOption,
   type PriceRangeConfig,
   type PriceRangeGroupKey,
-} from "@/features/admin/data/priceRanges";
+} from "@/features/admin";
+
 
 export default function AdminPricingPage() {
   const [config, setConfig] = useState<PriceRangeConfig>(DEFAULT_PRICE_RANGES);

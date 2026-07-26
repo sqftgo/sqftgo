@@ -1,4 +1,4 @@
-import type { AuthRole, MockUser, UserProfile } from "@/types";
+import type { AdminUser, AuthRole, UserProfile } from "@/types";
 import { apiClient, type PaginatedResult } from "@/lib/api/client";
 
 export type { AuthRole };
@@ -31,12 +31,12 @@ export interface AuthRepository {
     avatarUrl?: string | null;
   }): Promise<AuthSession>;
   resetPassword(email: string): Promise<void>;
-  listUsers(params?: { limit?: number; offset?: number }): Promise<MockUser[]>;
+  listUsers(params?: { limit?: number; offset?: number }): Promise<AdminUser[]>;
   listUsersPage(params?: {
     limit?: number;
     offset?: number;
-  }): Promise<PaginatedResult<MockUser>>;
-  updateUser(id: string, updates: Partial<MockUser>): Promise<MockUser>;
+  }): Promise<PaginatedResult<AdminUser>>;
+  updateUser(id: string, updates: Partial<AdminUser>): Promise<AdminUser>;
 }
 
 type ApiSessionPayload = {
@@ -49,7 +49,7 @@ type ApiSessionPayload = {
   message?: string;
 };
 
-export const supabaseAuthRepository: AuthRepository = {
+export const authApi: AuthRepository = {
   async login(email, password) {
     const trimmed = email.trim().toLowerCase();
     if (!trimmed || !password) {
@@ -141,7 +141,7 @@ export const supabaseAuthRepository: AuthRepository = {
     if (params?.limit !== undefined) qs.set("limit", String(params.limit));
     if (params?.offset !== undefined) qs.set("offset", String(params.offset));
     const q = qs.toString();
-    return apiClient<PaginatedResult<MockUser>>(
+    return apiClient<PaginatedResult<AdminUser>>(
       `/api/admin/users${q ? `?${q}` : ""}`,
       { method: "GET" }
     );
@@ -153,7 +153,7 @@ export const supabaseAuthRepository: AuthRepository = {
   },
 
   async updateUser(id, updates) {
-    return apiClient<MockUser>(`/api/admin/users/${id}`, {
+    return apiClient<AdminUser>(`/api/admin/users/${id}`, {
       method: "PATCH",
       body: JSON.stringify({
         name: updates.name,
@@ -165,4 +165,7 @@ export const supabaseAuthRepository: AuthRepository = {
   },
 };
 
-export const authService: AuthRepository = supabaseAuthRepository;
+export const authService: AuthRepository = authApi;
+
+/** @deprecated Use authApi */
+export const supabaseAuthRepository = authApi;

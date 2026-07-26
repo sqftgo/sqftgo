@@ -10,7 +10,7 @@ export interface EnquiryRepository {
 }
 
 /** General enquiries BFF client (`/api/enquiries`). */
-export const supabaseEnquiryRepository: EnquiryRepository = {
+export const enquiryApi: EnquiryRepository = {
   async list() {
     return apiClient<GeneralEnquiry[]>("/api/enquiries");
   },
@@ -27,4 +27,7 @@ export const supabaseEnquiryRepository: EnquiryRepository = {
   },
 };
 
-export const enquiryService: EnquiryRepository = supabaseEnquiryRepository;
+export const enquiryService: EnquiryRepository = enquiryApi;
+
+/** @deprecated Use enquiryApi */
+export const supabaseEnquiryRepository = enquiryApi;
