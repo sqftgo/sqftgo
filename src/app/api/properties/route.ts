@@ -165,6 +165,38 @@ export async function POST(request: NextRequest) {
   }
 
   const admin = createServiceClient();
+
+  // Enforce platform listing policy for brokers (admins bypass).
+  if (!isAdmin) {
+    const { data: settings } = await admin
+      .from("platform_settings")
+      .select("require_listing_approval, max_listings_per_dealer")
+      .eq("id", 1)
+      .maybeSingle();
+
+    const requireApproval = settings?.require_listing_approval !== false;
+    const maxListings = settings?.max_listings_per_dealer ?? null;
+
+    if (requireApproval && status !== "Draft") {
+      status = "Pending Review";
+    }
+
+    if (maxListings != null && maxListings >= 1) {
+      const { count, error: countError } = await admin
+        .from("properties")
+        .select("id", { count: "exact", head: true })
+        .eq("owner_id", user.id)
+        .neq("status", "rejected");
+      if (countError) return jsonError(countError.message, 500);
+      if ((count ?? 0) >= maxListings) {
+        return jsonError(
+          `Listing limit reached (${maxListings}). Remove or archive a listing before adding another.`,
+          403
+        );
+      }
+    }
+  }
+
   const insert = mapCreateToInsert({
     ownerId: user.id,
     title: input.title,

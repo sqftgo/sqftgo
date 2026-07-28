@@ -69,7 +69,10 @@ export async function updateSession(request: NextRequest) {
   const isAdminRoute = pathname.startsWith("/admin");
   const isDealerDashboard = pathname.startsWith("/dealer/dashboard");
   const isAccountRoute =
-    pathname.startsWith("/settings") || pathname.startsWith("/profile");
+    pathname.startsWith("/settings") ||
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/my-inquiries") ||
+    pathname.startsWith("/my-visits");
   const isProtected = isAdminRoute || isDealerDashboard || isAccountRoute;
 
   // Production must fail closed: never expose protected UI without auth config.
