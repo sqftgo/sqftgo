@@ -1,22 +1,23 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Compass } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Compass, Sparkles, HeartHandshake } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 import { DESTINATIONS, TAGS, type Destination } from "@/features/destinations";
 import DestinationHero from "@/features/destinations/components/DestinationHero";
 import DestinationsFilter from "@/features/destinations/components/DestinationsFilter";
 import DestinationCard from "@/features/destinations/components/DestinationCard";
-import DestinationDrawer from "@/features/destinations/components/DestinationDrawer";
 
 export default function DestinationsPage() {
+  const router = useRouter();
   const { properties, selectedCity } = useApp();
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [limitToSelectedCityRegion, setLimitToSelectedCityRegion] = useState(true);
+  const [onlyWeddingDestinations, setOnlyWeddingDestinations] = useState(false);
 
   // Identify the region of the selected city
   const selectedCityRegion = useMemo(() => {
@@ -56,19 +57,29 @@ export default function DestinationsPage() {
     return stats;
   }, [cityPropertiesMap]);
 
-  // Filtered list of destinations based on tag, search query, and navbar selected city region
+  // Total wedding venues and unique properties across all destinations
+  const totalWeddingHighlights = useMemo(() => {
+    return DESTINATIONS.reduce((acc, d) => {
+      const v = d.weddingVenues?.length || 0;
+      const p = d.uniqueWeddingProperties?.length || 0;
+      return acc + v + p;
+    }, 0);
+  }, []);
+
+  // Filtered list of destinations based on tag, search query, navbar selected city region, and wedding filter
   const filteredDestinations = useMemo(() => {
     return DESTINATIONS.filter(d => {
       const matchesRegion = !limitToSelectedCityRegion || selectedCityRegion === "All" || d.tag === selectedCityRegion;
       const matchesTag = activeFilter === "All" || d.tag === activeFilter;
+      const matchesWedding = !onlyWeddingDestinations || (d.weddingVenues?.length > 0 || d.uniqueWeddingProperties?.length > 0);
       const matchesSearch = searchQuery.trim() === "" ||
         d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         d.vibe.toLowerCase().includes(searchQuery.toLowerCase()) ||
         d.tag.toLowerCase().includes(searchQuery.toLowerCase()) ||
         d.title.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesRegion && matchesTag && matchesSearch;
+      return matchesRegion && matchesTag && matchesWedding && matchesSearch;
     });
-  }, [activeFilter, searchQuery, selectedCityRegion, limitToSelectedCityRegion]);
+  }, [activeFilter, searchQuery, selectedCityRegion, limitToSelectedCityRegion, onlyWeddingDestinations]);
 
   // Get autocomplete suggestions
   const autocompleteSuggestions = useMemo(() => {
@@ -80,9 +91,7 @@ export default function DestinationsPage() {
   }, [searchQuery]);
 
   const handleSelectSuggestion = (dest: Destination) => {
-    setSelectedDestination(dest);
-    setSearchQuery("");
-    setShowSuggestions(false);
+    router.push(`/destinations/${dest.name.toLowerCase()}`);
   };
 
   return (
@@ -104,6 +113,35 @@ export default function DestinationsPage() {
       {/* 2. DEDICATED CITY REGIONS & FILTER GRID */}
       <section className="relative py-12 px-4 md:px-8 max-w-7xl mx-auto w-full z-20 -mt-12 text-left bg-white rounded-[32px] shadow-xl border border-indigo/5 p-6 md:p-10 mb-16">
         
+        {/* Wedding Highlights Callout Banner */}
+        <div className="mb-8 p-4 md:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-100/40 to-terracotta/10 border border-amber-300/50 flex flex-col md:flex-row items-center justify-between gap-4 text-xs md:text-sm text-indigo">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md">
+              <HeartHandshake className="w-5 h-5" />
+            </div>
+            <div>
+              <strong className="block text-indigo font-serif font-black text-base leading-tight">
+                Destination Weddings & Heritage Venues
+              </strong>
+              <span className="text-charcoal/70 font-medium">
+                Showing <strong className="text-amber-800 font-bold">{totalWeddingHighlights}+ curated wedding places & luxury palatial estates</strong> across India.
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setOnlyWeddingDestinations(!onlyWeddingDestinations)}
+            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer shrink-0 flex items-center gap-1.5 border ${
+              onlyWeddingDestinations
+                ? "bg-amber-600 border-amber-600 text-white shadow-amber-600/20 shadow-lg"
+                : "bg-white border-amber-300 hover:bg-amber-50 text-amber-900"
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <span>{onlyWeddingDestinations ? "Showing Wedding Hotspots" : "Filter Wedding Hotspots"}</span>
+          </button>
+        </div>
+
         {/* Centered Symmetric Region Filters */}
         <DestinationsFilter
           tags={TAGS}
@@ -135,7 +173,7 @@ export default function DestinationsPage() {
           </div>
         )}
 
-        {/* Dynamic Cards Grid with Uniform Heights */}
+        {/* Dynamic Cards Grid - Links Directly to City Page Layout */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-center mt-12">
           {filteredDestinations.length > 0 ? (
             filteredDestinations.map((dest) => (
@@ -143,8 +181,7 @@ export default function DestinationsPage() {
                 key={dest.name}
                 dest={dest}
                 propertyCount={cityPropertiesMap[dest.name.toLowerCase()] || 0}
-                onSelect={setSelectedDestination}
-                className="h-[460px]"
+                className="h-[400px]"
               />
             ))
           ) : (
@@ -158,13 +195,6 @@ export default function DestinationsPage() {
           )}
         </div>
       </section>
-
-      {/* 4. IMMERSIVE DETAIL DRAWER PANEL */}
-      <DestinationDrawer
-        selectedDestination={selectedDestination}
-        setSelectedDestination={setSelectedDestination}
-        cityPropertiesMap={cityPropertiesMap}
-      />
 
     </div>
   );

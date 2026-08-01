@@ -1,7 +1,10 @@
+"use client";
+
 import React, { useState } from "react";
 import Link from "next/link";
-import { X, Star, TrendingUp, MapPin, BookOpen, Phone, ExternalLink, ArrowRight, Compass } from "lucide-react";
-import { Destination } from "../data/destinations";
+import { X, Star, TrendingUp, MapPin, BookOpen, Phone, ExternalLink, Compass, Users, Sparkles, HeartHandshake, CheckCircle2, ShieldCheck, ArrowRight } from "lucide-react";
+import { Destination, WeddingVenue, WeddingProperty } from "../data/destinations";
+import WeddingInquiryModal from "./WeddingInquiryModal";
 
 interface DestinationDrawerProps {
   selectedDestination: Destination | null;
@@ -14,13 +17,20 @@ export default function DestinationDrawer({
   setSelectedDestination,
   cityPropertiesMap,
 }: DestinationDrawerProps) {
-  const [activeTab, setActiveTab] = useState<"overview" | "zones">("overview");
+  const [activeTab, setActiveTab] = useState<"wedding-venues" | "wedding-properties" | "overview" | "zones">("wedding-venues");
+  const [inquiryTarget, setInquiryTarget] = useState<{
+    item: WeddingVenue | WeddingProperty;
+    type: "venue" | "property";
+  } | null>(null);
 
   if (!selectedDestination) return null;
 
+  const venues = selectedDestination.weddingVenues || [];
+  const uniqueProperties = selectedDestination.uniqueWeddingProperties || [];
+
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
-      {/* Self-contained lightweight Vanilla CSS Keyframe animations */}
+      {/* Vanilla CSS keyframes */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; }
@@ -41,12 +51,12 @@ export default function DestinationDrawer({
       {/* Dark glass backdrop overlay */}
       <div
         onClick={() => setSelectedDestination(null)}
-        className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs animate-fade-in-quick"
+        className="absolute inset-0 bg-slate-950/70 backdrop-blur-xs animate-fade-in-quick"
       />
 
       {/* Drawer Container Panel */}
       <div
-        className="relative z-50 w-full sm:w-[520px] bg-white text-charcoal shadow-2xl h-full overflow-y-auto flex flex-col no-scrollbar animate-slide-in-quick"
+        className="relative z-50 w-full sm:w-[580px] bg-white text-charcoal shadow-2xl h-full overflow-y-auto flex flex-col no-scrollbar animate-slide-in-quick"
       >
         {/* Header Cover Image */}
         <div className="relative h-64 md:h-72 w-full bg-sand overflow-hidden flex-shrink-0 animate-fade-in-quick">
@@ -55,7 +65,7 @@ export default function DestinationDrawer({
             alt={selectedDestination.name} 
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-black/40" />
           
           {/* Close absolute button */}
           <button
@@ -66,53 +76,252 @@ export default function DestinationDrawer({
             <X className="w-5 h-5" />
           </button>
 
-          <div className="absolute bottom-4 left-6 right-6">
+          <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between">
             <span className="text-[9px] font-black text-amber-200 bg-indigo/90 px-3 py-1 rounded-lg uppercase tracking-widest border border-indigo/20 shadow-md">
               {selectedDestination.tag}
+            </span>
+            <span className="text-[10px] font-black text-white bg-amber-600/90 px-3 py-1 rounded-lg uppercase tracking-widest border border-amber-400/30 shadow-md flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-amber-200" />
+              <span>Wedding Destination</span>
             </span>
           </div>
         </div>
 
         {/* Dynamic Title Block */}
-        <div className="px-6 md:px-8 pt-6 pb-2 text-left flex flex-col gap-1">
-          <h2 className="text-3xl md:text-4xl font-serif font-black text-indigo tracking-tight leading-none">
-            {selectedDestination.name}
-          </h2>
+        <div className="px-6 md:px-8 pt-5 pb-2 text-left flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <h2 className="text-3xl md:text-4xl font-serif font-black text-indigo tracking-tight leading-none">
+              {selectedDestination.name}
+            </h2>
+            <span className="text-xs font-black text-amber-700 bg-amber-100 border border-amber-300 px-3 py-1 rounded-full uppercase tracking-wider">
+              {selectedDestination.vibe}
+            </span>
+          </div>
           <p className="text-xs font-black uppercase text-terracotta tracking-wider flex items-center gap-1.5 mt-1">
             <Star className="w-3.5 h-3.5 fill-current" />
-            <span>{selectedDestination.title} &bull; {selectedDestination.vibe}</span>
+            <span>{selectedDestination.title} &bull; Growth Score {selectedDestination.investmentIndex}</span>
           </p>
         </div>
 
-        {/* Branded Tab Selectors */}
-        <div className="flex border-b border-sand pb-px px-6 md:px-8 mt-4 text-left">
+        {/* 4 Branded Tab Selectors */}
+        <div className="flex border-b border-sand pb-px px-6 md:px-8 mt-3 text-left overflow-x-auto no-scrollbar gap-1">
+          <button
+            type="button"
+            onClick={() => setActiveTab("wedding-venues")}
+            className={`px-3 pb-3 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
+              activeTab === "wedding-venues"
+                ? "border-terracotta text-terracotta font-extrabold"
+                : "border-transparent text-charcoal/60 hover:text-indigo font-semibold"
+            }`}
+          >
+            <span>💒 Wedding Places</span>
+            <span className="bg-terracotta/10 text-terracotta px-1.5 py-0.5 rounded-md text-[10px]">
+              {venues.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("wedding-properties")}
+            className={`px-3 pb-3 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
+              activeTab === "wedding-properties"
+                ? "border-terracotta text-terracotta font-extrabold"
+                : "border-transparent text-charcoal/60 hover:text-indigo font-semibold"
+            }`}
+          >
+            <span>💎 Unique Estates</span>
+            <span className="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-md text-[10px]">
+              {uniqueProperties.length}
+            </span>
+          </button>
+
           <button
             type="button"
             onClick={() => setActiveTab("overview")}
-            className={`flex-1 pb-3 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer border-b-2 text-center ${
+            className={`px-3 pb-3 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
               activeTab === "overview"
                 ? "border-terracotta text-terracotta font-extrabold"
-                : "border-transparent text-charcoal/50 hover:text-indigo font-semibold"
+                : "border-transparent text-charcoal/60 hover:text-indigo font-semibold"
             }`}
           >
-            🏛️ Overview & History
+            <span>🏛️ History</span>
           </button>
+
           <button
             type="button"
             onClick={() => setActiveTab("zones")}
-            className={`flex-1 pb-3 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer border-b-2 text-center ${
+            className={`px-3 pb-3 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
               activeTab === "zones"
                 ? "border-terracotta text-terracotta font-extrabold"
-                : "border-transparent text-charcoal/50 hover:text-indigo font-semibold"
+                : "border-transparent text-charcoal/60 hover:text-indigo font-semibold"
             }`}
           >
-            🗺️ Zones & Map
+            <span>🗺️ Map</span>
           </button>
         </div>
 
         {/* Body Content Details */}
         <div className="p-6 md:p-8 flex-1 flex flex-col gap-6 text-left">
-          {activeTab === "overview" ? (
+          
+          {/* TAB 1: WEDDING PLACES (VENUES) */}
+          {activeTab === "wedding-venues" && (
+            <div className="flex flex-col gap-5">
+              <div className="bg-amber-500/10 border border-amber-300/40 rounded-2xl p-4 text-xs text-amber-900 font-semibold flex items-start gap-2.5">
+                <HeartHandshake className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="block text-amber-950 font-black text-xs uppercase tracking-wider">
+                    Curated Wedding Places in {selectedDestination.name}
+                  </strong>
+                  Explore top palaces, fort resorts, and lakeside venues for hosting luxury destination weddings.
+                </div>
+              </div>
+
+              {venues.length > 0 ? (
+                venues.map((venue) => (
+                  <div 
+                    key={venue.id}
+                    className="bg-white border border-sand hover:border-amber-300 rounded-3xl overflow-hidden shadow-md transition-all flex flex-col group"
+                  >
+                    <div className="relative h-44 w-full bg-sand/30 overflow-hidden">
+                      <img 
+                        src={venue.image} 
+                        alt={venue.name} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
+                      
+                      <span className="absolute top-3 left-3 text-[9px] font-black uppercase tracking-widest bg-black/60 backdrop-blur-md text-amber-200 px-3 py-1 rounded-full border border-white/20">
+                        {venue.type}
+                      </span>
+                      <span className="absolute top-3 right-3 text-[9px] font-black uppercase tracking-wider bg-terracotta text-white px-3 py-1 rounded-full shadow-md">
+                        {venue.pricePerEvent}
+                      </span>
+
+                      <div className="absolute bottom-3 left-4 right-4 text-white">
+                        <h4 className="text-xl font-serif font-black drop-shadow-md">{venue.name}</h4>
+                        <p className="text-[10px] text-amber-200 font-bold uppercase tracking-wider">{venue.vibe}</p>
+                      </div>
+                    </div>
+
+                    <div className="p-5 flex flex-col gap-3">
+                      <p className="text-xs text-charcoal/80 font-medium leading-relaxed">
+                        {venue.description}
+                      </p>
+
+                      <div className="flex items-center gap-2 text-xs font-bold text-indigo">
+                        <Users className="w-4 h-4 text-terracotta shrink-0" />
+                        <span>Capacity: <strong className="text-charcoal">{venue.capacity}</strong></span>
+                      </div>
+
+                      {/* Highlights */}
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {venue.highlights.map((h, i) => (
+                          <span 
+                            key={i}
+                            className="bg-sand/30 text-charcoal/80 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-sand flex items-center gap-1"
+                          >
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                            <span>{h}</span>
+                          </span>
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={() => setInquiryTarget({ item: venue, type: "venue" })}
+                        className="mt-2 w-full py-3 bg-indigo hover:bg-indigo-hover text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <Sparkles className="w-4 h-4 text-amber-300" />
+                        <span>Inquire & Book Venue</span>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-charcoal/50 text-center py-8">No specific wedding venues listed for this destination.</p>
+              )}
+            </div>
+          )}
+
+          {/* TAB 2: UNIQUE WEDDING PROPERTIES */}
+          {activeTab === "wedding-properties" && (
+            <div className="flex flex-col gap-5">
+              <div className="bg-indigo/5 border border-indigo/15 rounded-2xl p-4 text-xs text-indigo-950 font-semibold flex items-start gap-2.5">
+                <ShieldCheck className="w-5 h-5 text-indigo shrink-0 mt-0.5" />
+                <div>
+                  <strong className="block text-indigo font-black text-xs uppercase tracking-wider">
+                    Unique Wedding Properties in {selectedDestination.name}
+                  </strong>
+                  Palatial estates, heritage havelis, and fort villas available for sale or long-term lease, specifically outfitted for hosting destination weddings.
+                </div>
+              </div>
+
+              {uniqueProperties.length > 0 ? (
+                uniqueProperties.map((prop) => (
+                  <div 
+                    key={prop.id}
+                    className="bg-white border border-sand hover:border-indigo/40 rounded-3xl overflow-hidden shadow-md transition-all flex flex-col group"
+                  >
+                    <div className="relative h-44 w-full bg-sand/30 overflow-hidden">
+                      <img 
+                        src={prop.image} 
+                        alt={prop.title} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
+                      
+                      <span className="absolute top-3 left-3 text-[9px] font-black uppercase tracking-widest bg-black/60 backdrop-blur-md text-amber-200 px-3 py-1 rounded-full border border-white/20">
+                        {prop.propertyType}
+                      </span>
+                      <span className="absolute top-3 right-3 text-[9px] font-black uppercase tracking-wider bg-emerald-600 text-white px-3.5 py-1 rounded-full shadow-md">
+                        {prop.price}
+                      </span>
+
+                      <div className="absolute bottom-3 left-4 right-4 text-white">
+                        <h4 className="text-lg font-serif font-black drop-shadow-md">{prop.title}</h4>
+                        <p className="text-[10px] text-white/70 font-semibold">{prop.location}</p>
+                      </div>
+                    </div>
+
+                    <div className="p-5 flex flex-col gap-3">
+                      <p className="text-xs text-charcoal/80 font-medium leading-relaxed">
+                        {prop.description}
+                      </p>
+
+                      <div className="bg-sand/30 border border-sand rounded-xl p-2.5 text-[11px] font-bold text-indigo">
+                        <span>📐 Specs: {prop.specs}</span>
+                      </div>
+
+                      {/* Key features */}
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {prop.features.map((f, i) => (
+                          <span 
+                            key={i}
+                            className="bg-sand/20 text-charcoal/80 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-sand flex items-center gap-1"
+                          >
+                            <Sparkles className="w-3 h-3 text-amber-600" />
+                            <span>{f}</span>
+                          </span>
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={() => setInquiryTarget({ item: prop, type: "property" })}
+                        className="mt-2 w-full py-3 bg-terracotta hover:bg-terracotta-hover text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <ShieldCheck className="w-4 h-4 text-amber-200" />
+                        <span>Inquire / Schedule Private Tour</span>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-charcoal/50 text-center py-8">No specific wedding properties listed for this destination.</p>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: OVERVIEW & HISTORY */}
+          {activeTab === "overview" && (
             <>
               {/* Sourcing Real-Estate Metrics Panel */}
               <div className="bg-sand/30 border border-sand rounded-3xl p-5 flex flex-col gap-4">
@@ -177,7 +386,10 @@ export default function DestinationDrawer({
                 </a>
               </div>
             </>
-          ) : (
+          )}
+
+          {/* TAB 4: ZONES & MAP */}
+          {activeTab === "zones" && (
             <>
               {/* Best Residential Zones */}
               <div className="flex flex-col gap-3">
@@ -203,7 +415,7 @@ export default function DestinationDrawer({
                   <Compass className="w-4 h-4 text-indigo" />
                   <span>Interactive Regional Map</span>
                 </h4>
-                <div className="w-full h-56 rounded-3xl overflow-hidden border border-sand bg-sand/15 shadow-inner">
+                <div className="w-full h-64 rounded-3xl overflow-hidden border border-sand bg-sand/15 shadow-inner">
                   <iframe
                     title={`${selectedDestination.name} Regional Location Map`}
                     width="100%"
@@ -220,18 +432,37 @@ export default function DestinationDrawer({
           )}
 
           {/* Drawer Footer Actions */}
-          <div className="mt-auto border-t border-sand pt-6 flex flex-col">
+          <div className="mt-auto border-t border-sand pt-6 flex flex-col gap-3">
+            <Link
+              href={`/destinations/${selectedDestination.name.toLowerCase()}`}
+              onClick={() => setSelectedDestination(null)}
+              className="flex items-center justify-center gap-2 p-3.5 bg-terracotta hover:bg-terracotta-hover text-white font-extrabold text-xs tracking-wider uppercase rounded-2xl shadow-md transition-colors text-center cursor-pointer w-full"
+            >
+              <span>Explore Dedicated {selectedDestination.name} Page</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+
             <Link
               href={`/listings?city=${selectedDestination.name}`}
               onClick={() => setSelectedDestination(null)}
-              className="flex items-center justify-center gap-2 p-3.5 bg-indigo hover:bg-indigo-hover text-white font-extrabold text-xs tracking-wider uppercase rounded-2xl shadow-md transition-colors text-center cursor-pointer w-full"
+              className="flex items-center justify-center gap-2 p-3 bg-sand/30 hover:bg-sand/60 text-charcoal font-extrabold text-xs tracking-wider uppercase rounded-2xl border border-sand transition-colors text-center cursor-pointer w-full"
             >
-              <span>View Listings</span>
-              <ExternalLink className="w-4 h-4" />
+              <span>View All Properties in {selectedDestination.name}</span>
+              <ExternalLink className="w-4 h-4 text-charcoal/60" />
             </Link>
           </div>
         </div>
       </div>
+
+      {/* Inquiry Modal */}
+      {inquiryTarget && (
+        <WeddingInquiryModal
+          item={inquiryTarget.item}
+          itemType={inquiryTarget.type}
+          destinationName={selectedDestination.name}
+          onClose={() => setInquiryTarget(null)}
+        />
+      )}
     </div>
   );
 }
