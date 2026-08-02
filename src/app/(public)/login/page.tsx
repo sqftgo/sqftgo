@@ -41,7 +41,7 @@ const SLIDES = [
 function AuthForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, signup } = useAuth();
+  const { login, signup, loginWithGoogle } = useAuth();
 
   const initialTab = searchParams.get("tab") === "signup" ? "signup" : "login";
   const [activeTab, setActiveTab] = useState<"login" | "signup">(initialTab);
@@ -81,6 +81,17 @@ function AuthForm() {
       setFormError(null);
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    const err = searchParams.get("error");
+    if (!err) return;
+    const messages: Record<string, string> = {
+      auth_callback_failed: "Google sign-in failed. Please try again.",
+      auth_callback_missing_code: "Google sign-in was cancelled or incomplete.",
+      auth_not_configured: "Authentication is not configured on this server.",
+    };
+    setFormError(messages[err] ?? "Sign-in failed. Please try again.");
+  }, [searchParams]);
 
   const redirectAfterAuth = (role: "user" | "broker" | "admin") => {
     const next = safeRedirectPath(searchParams.get("next"), "");
@@ -154,6 +165,18 @@ function AuthForm() {
       params.delete("tab");
     }
     router.replace(`/login?${params.toString()}`);
+  };
+
+  const handleGoogleSignIn = async () => {
+    setFormError(null);
+    setFormSuccess(null);
+    setIsSubmitting(true);
+    try {
+      await loginWithGoogle(searchParams.get("next"));
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Google sign-in failed");
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -374,13 +397,14 @@ function AuthForm() {
 
             <button
               type="button"
-              onClick={() => setFormError("Google Sign-In is not configured yet.")}
-              className="w-full flex items-center justify-center gap-2.5 px-4 py-3.5 rounded-2xl border border-sand bg-white hover:bg-slate-50 text-charcoal hover:border-indigo/40 shadow-sm active:scale-[0.99] transition-all font-bold text-xs tracking-wide cursor-pointer"
+              disabled={isSubmitting}
+              onClick={() => void handleGoogleSignIn()}
+              className="w-full flex items-center justify-center gap-2.5 px-4 py-3.5 rounded-2xl border border-sand bg-white hover:bg-slate-50 text-charcoal hover:border-indigo/40 shadow-sm active:scale-[0.99] transition-all font-bold text-xs tracking-wide cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
             >
               <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" fill="currentColor" />
               </svg>
-              <span>Continue with Google</span>
+              <span>{isSubmitting ? "Redirecting to Google..." : "Continue with Google"}</span>
             </button>
           </div>
 

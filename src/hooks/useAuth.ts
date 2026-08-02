@@ -13,6 +13,7 @@ export function useAuth() {
     sessionReady,
     login,
     signup,
+    loginWithGoogle,
     logout,
   } = useAuthContext();
 
@@ -28,6 +29,7 @@ export function useAuth() {
     adminUsers,
     login,
     signup,
+    loginWithGoogle,
     logout,
   };
 }

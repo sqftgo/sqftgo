@@ -11,15 +11,14 @@ Auth-specific checklist: see also [`AUTH_REMAINING.md`](./AUTH_REMAINING.md).
 
 ### 1. Google / social Sign-In + Sign-Up
 
-**Today:** Login page Google button is a stub (`"Google Sign-In is not configured yet."`).
+**App wiring:** Done — login page calls `signInWithOAuth({ provider: "google" })` → `/auth/callback`.
 
-**To ship:**
+**Still needed (dashboard / ops):**
 
-1. Supabase Dashboard → Authentication → Providers → enable **Google** (client ID/secret from Google Cloud Console).
-2. Add redirect URLs: `https://YOUR_DOMAIN/auth/callback` and localhost for local.
-3. Wire login + signup UI to `supabase.auth.signInWithOAuth({ provider: "google" })` (cookie SSR path).
-4. Ensure `handle_new_user` / profiles trigger still creates `profiles` row for OAuth users (name/email from metadata).
-5. Harsh tests: OAuth happy path, cancel, existing email link, middleware role routing.
+1. Supabase → Authentication → Providers → enable **Google** (paste Client ID + Client Secret).
+2. Supabase → Authentication → URL configuration → Redirect URLs include `http://localhost:3000/auth/callback` (and prod domain later).
+3. Apply migration `20260802120000_oauth_profile_metadata.sql` (Google `full_name` / `picture` → profile).
+4. Harsh tests: happy path, cancel, existing email link, role routing.
 
 **Out of scope until then:** Apple/Facebook, account linking UX.
 
