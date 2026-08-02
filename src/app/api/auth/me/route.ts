@@ -7,52 +7,33 @@ import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { authSessionPayload } from "@/lib/mappers/profile";
 import { profileUpdateSchema, profileZodError } from "@/lib/validation/profile";
 
+function hasBearer(request: NextRequest) {
+  return request.headers.get("authorization")?.toLowerCase().startsWith("bearer ") ?? false;
+}
+
 export async function GET(request: NextRequest) {
   if (!hasSupabaseEnv()) {
     return jsonError("Supabase is not configured", 503);
   }
 
-  const { supabase, applyCookies } = createRouteClient(request);
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    return jsonError("Unauthorized", 401);
-  }
-
-  let profile: ProfileRow | null = null;
-
-  if (hasServiceRoleKey()) {
-    const admin = createServiceClient();
-    const { data } = await admin
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .maybeSingle();
-    profile = data;
-  } else {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .maybeSingle();
-    profile = data;
-  }
-
-  if (!profile) {
+  const { user, profile, error } = await authenticateApiRequest(request);
+  if (error || !user || !profile) {
     return jsonError("Unauthorized", 401);
   }
 
   if (profile.status === "suspended") {
-    await supabase.auth.signOut({ scope: "global" });
-    return applyCookies(
-      NextResponse.json({ error: "This account has been suspended" }, { status: 403 })
-    );
+    // Cookie clients: clear session. Bearer clients just get 403.
+    if (!hasBearer(request)) {
+      const { supabase, applyCookies } = createRouteClient(request);
+      await supabase.auth.signOut({ scope: "global" });
+      return applyCookies(
+        NextResponse.json({ error: "This account has been suspended" }, { status: 403 })
+      );
+    }
+    return jsonError("This account has been suspended", 403);
   }
 
-  return applyCookies(jsonOk(authSessionPayload(profile)));
+  return jsonOk(authSessionPayload(profile));
 }
 
 export async function PATCH(request: NextRequest) {

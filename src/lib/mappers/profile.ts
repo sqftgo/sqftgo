@@ -15,11 +15,24 @@ export function mapProfileRow(profile: ProfileRow): UserProfile {
   };
 }
 
-export function authSessionPayload(profile: ProfileRow) {
+/**
+ * Session JSON for web cookie clients and Expo Bearer clients.
+ * Web uses email/role/name/profile; mobile also needs id/status/accessToken.
+ */
+export function authSessionPayload(
+  profile: ProfileRow,
+  accessToken?: string | null
+) {
+  const mapped = mapProfileRow(profile);
   return {
     email: profile.email,
     role: profile.role,
     name: profile.name,
-    profile: mapProfileRow(profile),
+    profile: mapped,
+    id: profile.id,
+    phone: profile.phone ?? undefined,
+    status: profile.status,
+    joinedDate: mapped.joinedDate,
+    ...(accessToken ? { accessToken } : {}),
   };
 }

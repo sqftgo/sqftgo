@@ -119,5 +119,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  return applyCookies(NextResponse.json(authSessionPayload(profile)));
+  return applyCookies(
+    NextResponse.json(
+      authSessionPayload(profile, data.session?.access_token ?? null)
+    )
+  );
 }
