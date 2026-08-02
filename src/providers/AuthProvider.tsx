@@ -32,6 +32,7 @@ type AuthContextValue = {
     | { status: "authenticated"; session: AuthSession }
     | { status: "confirm_email"; email: string; message: string }
   >;
+  loginWithGoogle: (nextPath?: string | null) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (input: {
     name?: string;
@@ -178,6 +179,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [applySession, queryClient]
   );
 
+  const loginWithGoogle = useCallback(async (nextPath?: string | null) => {
+    await authService.loginWithGoogle(nextPath);
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await authService.logout();
@@ -213,6 +218,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       userProfile,
       login,
       signup,
+      loginWithGoogle,
       logout,
       updateProfile,
       applySession,
@@ -226,6 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       userProfile,
       login,
       signup,
+      loginWithGoogle,
       logout,
       updateProfile,
       applySession,

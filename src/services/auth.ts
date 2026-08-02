@@ -1,5 +1,7 @@
 import type { AdminUser, AuthRole, UserProfile } from "@/types";
 import { apiClient, type PaginatedResult } from "@/lib/api/client";
+import { safeRedirectPath } from "@/lib/auth/urls";
+import { createClient } from "@/lib/supabase/client";
 
 export type { AuthRole };
 
@@ -21,6 +23,8 @@ export interface AuthRepository {
     email: string;
     password: string;
   }): Promise<SignupResult>;
+  /** Starts Google OAuth (browser redirect). Resolves only on error; success leaves the page. */
+  loginWithGoogle(nextPath?: string | null): Promise<void>;
   logout: () => Promise<void>;
   getSession(): Promise<AuthSession | null>;
   updateProfile(input: {
@@ -102,6 +106,29 @@ export const authApi: AuthRepository = {
         profile: data.profile,
       },
     };
+  },
+
+  async loginWithGoogle(nextPath) {
+    if (typeof window === "undefined") {
+      throw new Error("Google sign-in must run in the browser");
+    }
+
+    const next = safeRedirectPath(nextPath, "/");
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo,
+        queryParams: {
+          prompt: "select_account",
+        },
+      },
+    });
+
+    if (error) {
+      throw new Error(error.message || "Google sign-in failed");
+    }
   },
 
   async logout() {

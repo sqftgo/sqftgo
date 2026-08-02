@@ -9,7 +9,7 @@ import { getSiteUrl, safeRedirectPath } from "@/lib/auth/urls";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const next = safeRedirectPath(url.searchParams.get("next"), "/");
+  let next = safeRedirectPath(url.searchParams.get("next"), "/");
   const type = url.searchParams.get("type");
 
   const site = getSiteUrl({ nextUrl: { origin: url.origin } });
@@ -29,6 +29,22 @@ export async function GET(request: Request) {
   // Password recovery → force user to set a new password
   if (type === "recovery" || next === "/update-password") {
     return NextResponse.redirect(`${site}/update-password`);
+  }
+
+  // Default home → send dealers/admins to their portals after Google/email confirm
+  if (next === "/") {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (profile?.role === "admin") next = "/admin";
+      else if (profile?.role === "broker") next = "/dealer/dashboard";
+    }
   }
 
   return NextResponse.redirect(`${site}${next}`);
