@@ -528,18 +528,35 @@ export default function DreamProjectButton() {
                               Which amenities are important to you? <span className="text-charcoal/50 font-medium ml-1">(Select all that apply)</span>
                             </label>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                              {amenityOptions.map(amenity => (
-                                <label key={amenity} className={`flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer transition-all ${
-                                  formData.amenities.includes(amenity) ? "bg-terracotta/5 border-terracotta text-indigo" : "bg-white border-sand hover:border-terracotta/30 text-charcoal/70"
-                                }`}>
-                                  <div className={`w-3.5 h-3.5 rounded-[4px] border flex items-center justify-center transition-colors ${
-                                    formData.amenities.includes(amenity) ? "bg-terracotta border-terracotta" : "border-sand/80 bg-sand/20"
-                                  }`}>
-                                    {formData.amenities.includes(amenity) && <Check className="w-2.5 h-2.5 text-white" />}
-                                  </div>
-                                  <span className="text-[10px] sm:text-[11px] font-semibold select-none leading-tight">{amenity}</span>
-                                </label>
-                              ))}
+                              {amenityOptions.map((amenity) => {
+                                const selected = formData.amenities.includes(amenity);
+                                return (
+                                  <button
+                                    key={amenity}
+                                    type="button"
+                                    onClick={() => toggleArrayItem("amenities", amenity)}
+                                    aria-pressed={selected}
+                                    className={`flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer transition-all text-left ${
+                                      selected
+                                        ? "bg-terracotta/5 border-terracotta text-indigo"
+                                        : "bg-white border-sand hover:border-terracotta/30 text-charcoal/70"
+                                    }`}
+                                  >
+                                    <div
+                                      className={`w-3.5 h-3.5 shrink-0 rounded-[4px] border flex items-center justify-center transition-colors ${
+                                        selected
+                                          ? "bg-terracotta border-terracotta"
+                                          : "border-sand/80 bg-sand/20"
+                                      }`}
+                                    >
+                                      {selected ? <Check className="w-2.5 h-2.5 text-white" /> : null}
+                                    </div>
+                                    <span className="text-[10px] sm:text-[11px] font-semibold select-none leading-tight">
+                                      {amenity}
+                                    </span>
+                                  </button>
+                                );
+                              })}
                             </div>
                           </div>
 

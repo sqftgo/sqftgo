@@ -13,8 +13,11 @@
     "supabase:status": "supabase status",
     "seed:demo-users": "node scripts/seed-demo-users.mjs",
     "seed:dealer-demo": "node scripts/seed-dealer-demo.mjs",
+    "seed:home-catalog": "node scripts/seed-home-catalog.mjs",
     "auth:confirm-and-seed": "node scripts/confirm-and-seed-auth.mjs",
-    "auth:verify": "node scripts/verify-auth-prod.mjs"
+    "auth:verify": "node scripts/verify-auth-prod.mjs",
+    "user-flow:verify": "node scripts/verify-user-flow.mjs",
+    "user-flow:verify:ui": "node scripts/verify-user-flow-ui.mjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
