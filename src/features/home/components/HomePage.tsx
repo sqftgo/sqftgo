@@ -5,7 +5,6 @@ import { HomeTopPicks } from "./HomeTopPicks";
 import { HomeProminentProjects } from "./HomeProminentProjects";
 import { HomeHighlightedProjects } from "./HomeHighlightedProjects";
 import { HomeTrustedDevelopers } from "./HomeTrustedDevelopers";
-import { HomeResearchInsights } from "./HomeResearchInsights";
 import { HomeRecommendedSellers } from "./HomeRecommendedSellers";
 import { HomeNewlyAdded } from "./HomeNewlyAdded";
 import { HomeSellCta } from "./HomeSellCta";
@@ -19,7 +18,6 @@ export function HomePage() {
       <HomeProminentProjects />
       <HomeHighlightedProjects />
       <HomeTrustedDevelopers />
-      <HomeResearchInsights />
       <HomeRecommendedSellers />
       <HomeNewlyAdded />
       <HomeSellCta />

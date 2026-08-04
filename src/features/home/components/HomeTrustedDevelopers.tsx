@@ -18,6 +18,8 @@ export function HomeTrustedDevelopers() {
   const developersScrollRef = useRef<HTMLDivElement>(null);
   const builders = directoryProfiles.filter((p) => p.category === "Builder & Developer");
 
+  if (builders.length === 0) return null;
+
   return (
     <>
       {/* 5. PROJECTS BY TRUSTED DEVELOPERS (Housing's Builders Showcases) */}

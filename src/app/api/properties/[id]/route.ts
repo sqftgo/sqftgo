@@ -20,12 +20,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const auth = await authenticateApiRequest(request);
   const isAdmin = auth.profile?.role === "admin" && auth.profile.status === "active";
 
-  // Prefer service client when available so owners can load draft/pending via Bearer
-  // or cookie-less clients; visibility is enforced below.
-  const supabase =
-    hasServiceRoleKey() && auth.user
-      ? createServiceClient()
-      : await createClient();
+  // Prefer service client when configured so shared/deep links work for guests
+  // (anon RLS can miss rows depending on policy). Visibility is enforced below:
+  // non-active listings only for owner/admin.
+  const supabase = hasServiceRoleKey() ? createServiceClient() : await createClient();
   const { data, error } = await supabase.from("properties").select("*").eq("id", id).maybeSingle();
 
   if (error) return jsonError(error.message, 500);

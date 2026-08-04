@@ -20,6 +20,8 @@ export function HomeRecommendedSellers() {
   const sellersScrollRef = useRef<HTMLDivElement>(null);
   const sellers = directoryProfiles.filter((p) => isAgentOrConsultantCategory(p.category));
 
+  if (sellers.length === 0) return null;
+
   return (
     <>
       {/* 7. RECOMMENDED SELLERS SECTION (Housing's Certified Agents) */}
