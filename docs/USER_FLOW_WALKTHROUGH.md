@@ -213,8 +213,9 @@ Log in as admin (may need direct URL `/login` then `/admin`).
 
 | # | What broke or felt unfinished | Severity |
 |---|-------------------------------|----------|
-| 1 | | |
-| 2 | | |
+| 1 | `/admin/pricing` still saves price ranges in browser localStorage (not shared DB) | P3 |
+| 2 | `/admin/notifications`, `/admin/logs`, `/admin/roles`, `/admin/profile`, `/admin/analytics` routes not separate pages (reports covers analytics KPIs) | P3 |
+| 3 | Inventory list APIs still default to `limit: 100` | P3 |
 
 ---
 

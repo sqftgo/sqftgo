@@ -58,6 +58,7 @@ export function mapPropertyRow(row: PropertyRow): Property {
     ownerId: row.owner_id,
     inquiryCount: row.inquiry_count,
     status: toUiStatus(row.status),
+    rejectionReason: row.rejection_reason ?? null,
     featured: row.featured,
     reraApproved: row.rera_approved,
     reraId: row.rera_id ?? undefined,
@@ -162,6 +163,11 @@ export function mapUpdateToPatch(updates: Partial<Property>): PropertyUpdate {
   if (updates.ownerEmail !== undefined) patch.owner_email = updates.ownerEmail;
   if (updates.inquiryCount !== undefined) patch.inquiry_count = updates.inquiryCount;
   if (updates.status !== undefined) patch.status = toDbStatus(updates.status);
+  if (updates.rejectionReason !== undefined) {
+    patch.rejection_reason = updates.rejectionReason?.trim()
+      ? updates.rejectionReason.trim()
+      : null;
+  }
   if (updates.featured !== undefined) patch.featured = updates.featured;
   if (updates.reraApproved !== undefined) patch.rera_approved = updates.reraApproved;
   if (updates.reraId !== undefined) patch.rera_id = updates.reraId;

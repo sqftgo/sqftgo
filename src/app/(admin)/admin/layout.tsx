@@ -18,6 +18,8 @@ import {
   FileText,
   MessageSquare,
   Shield,
+  Users,
+  Settings,
 } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -71,6 +73,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {
         title: "Directory",
         items: [
+          { href: "/admin/users", label: "Users", icon: Users },
           { href: "/admin/dealers", label: "Dealers", icon: Briefcase },
           { href: "/admin/kyc", label: "KYC Reviews", icon: Shield },
         ],
@@ -96,6 +99,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         items: [
           { href: "/admin/reports", label: "Reports", icon: FileText },
           { href: "/admin/messages", label: "Messages", icon: MessageSquare },
+          { href: "/admin/settings", label: "Settings", icon: Settings },
         ],
       },
     ],
