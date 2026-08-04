@@ -62,7 +62,9 @@ export function HomeHighlightedProjects() {
                 </h3>
                 <p className="text-slate-300 text-xs font-medium leading-relaxed max-w-md mb-2">
                   {[property.locality, property.city].filter(Boolean).join(", ")}
-                  {property.bhk > 0 ? ` · ${property.bhk} BHK ${property.type}` : ` · ${property.type}`}
+                  {(property.bhk ?? 0) > 0
+                    ? ` · ${property.bhk} BHK ${property.type}`
+                    : ` · ${property.type}`}
                 </p>
                 <p className="text-white/90 text-sm font-serif font-black mb-5">{priceLabel}</p>
                 <button

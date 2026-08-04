@@ -64,7 +64,7 @@ export function HomeProminentProjects() {
             const image = project.images?.[0];
             const priceLabel = formatIndianCurrency(project.price, project.purpose);
             const bhkLabel =
-              project.bhk > 0
+              (project.bhk ?? 0) > 0
                 ? `${project.bhk} BHK ${project.type}`
                 : project.type;
 
