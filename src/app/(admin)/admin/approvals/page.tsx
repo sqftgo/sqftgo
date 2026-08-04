@@ -1,6 +1,9 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useApp } from "@/context/AppContext";
+import { propertyService } from "@/services";
+import type { Property } from "@/types";
 import { CheckCircle2, XCircle, MapPin, Bed, Square, Clock } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -16,25 +19,49 @@ import {
 } from "@/components/ui";
 
 export default function AdminApprovalsPage() {
-  const { properties, updateProperty, addLog, userEmail } = useApp();
+  const { updateProperty, addLog, userEmail, refreshProperties } = useApp();
+  const [pending, setPending] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
   const [pendingReject, setPendingReject] = useState<{ id: string; title: string } | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const pending = properties.filter((p) => p.status === "Pending Review");
+  const load = useCallback(async () => {
+    setLoading(true);
+    setActionError(null);
+    try {
+      const page = await propertyService.listPage({
+        status: "Pending Review",
+        limit: 100,
+        offset: 0,
+      });
+      setPending(page.items);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Unable to load approval queue");
+      setPending([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const approve = async (id: string, title: string) => {
     setActionError(null);
     setBusy(true);
     try {
-      await updateProperty(id, { status: "Active" });
+      await updateProperty(id, { status: "Active", rejectionReason: null });
       addLog({
         action: "Property Approved",
         performedBy: userEmail,
         role: "Admin",
         target: title,
       });
+      setPending((prev) => prev.filter((p) => p.id !== id));
+      void refreshProperties();
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Unable to approve listing");
     } finally {
@@ -52,15 +79,20 @@ export default function AdminApprovalsPage() {
     setActionError(null);
     setBusy(true);
     try {
-      await updateProperty(pendingReject.id, { status: "Rejected" });
+      await updateProperty(pendingReject.id, {
+        status: "Rejected",
+        rejectionReason: reason,
+      });
       addLog({
         action: `Property Rejected: ${reason.slice(0, 120)}`,
         performedBy: userEmail,
         role: "Admin",
         target: pendingReject.title,
       });
+      setPending((prev) => prev.filter((p) => p.id !== pendingReject.id));
       setPendingReject(null);
       setRejectReason("");
+      void refreshProperties();
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Unable to reject listing");
     } finally {
@@ -68,17 +100,22 @@ export default function AdminApprovalsPage() {
     }
   };
 
-  const formatPrice = (v: number) =>
-    "₹" + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(v);
+  const formatPrice = useMemo(
+    () => (v: number) =>
+      "₹" + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(v),
+    []
+  );
 
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
       <DashboardPageHeader
         title="Property Approval Queue"
         description={
-          pending.length > 0
-            ? `${pending.length} listings waiting for review`
-            : "All listings are up to date"
+          loading
+            ? "Loading listings…"
+            : pending.length > 0
+              ? `${pending.length} listings waiting for review`
+              : "All listings are up to date"
         }
       />
 
@@ -91,7 +128,9 @@ export default function AdminApprovalsPage() {
         />
       ) : null}
 
-      {pending.length === 0 ? (
+      {loading ? (
+        <Alert variant="info" title="Loading" description="Fetching pending listings…" />
+      ) : pending.length === 0 ? (
         <EmptyState
           title="All caught up!"
           description="No listings pending review."

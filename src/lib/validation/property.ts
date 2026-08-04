@@ -90,6 +90,14 @@ export const propertyCreateSchema = z.object({
 
 export const propertyUpdateSchema = propertyCreateSchema.partial().extend({
   inquiryCount: z.number().int().min(0).optional(),
+  rejectionReason: z
+    .union([z.string().trim().max(1000), z.literal(""), z.null()])
+    .optional()
+    .transform((v) => {
+      if (v === undefined) return undefined;
+      if (v === null || v === "") return null;
+      return v;
+    }),
 });
 
 export type PropertyCreateInput = z.infer<typeof propertyCreateSchema>;

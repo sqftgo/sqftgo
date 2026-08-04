@@ -116,6 +116,7 @@ export type PropertyRow = {
   owner_email: string | null;
   inquiry_count: number;
   status: PropertyStatusDb;
+  rejection_reason: string | null;
   featured: boolean;
   rera_approved: boolean;
   rera_id: string | null;
@@ -154,6 +155,7 @@ export type PropertyInsert = {
   owner_email?: string | null;
   inquiry_count?: number;
   status?: PropertyStatusDb;
+  rejection_reason?: string | null;
   featured?: boolean;
   rera_approved?: boolean;
   rera_id?: string | null;

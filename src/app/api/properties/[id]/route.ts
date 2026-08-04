@@ -84,6 +84,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (updates.featured === true) {
       return jsonError("Brokers cannot feature listings", 403);
     }
+    if (updates.rejectionReason !== undefined) {
+      return jsonError("Brokers cannot set rejection feedback", 403);
+    }
     if (
       updates.status &&
       updates.status !== "Draft" &&
@@ -91,6 +94,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     ) {
       return jsonError("Brokers cannot set this status", 403);
     }
+  }
+
+  if (updates.status === "Rejected") {
+    const reason = updates.rejectionReason?.trim();
+    if (!reason) {
+      return jsonError("A rejection reason is required", 400);
+    }
+    updates.rejectionReason = reason;
+  } else if (updates.status === "Active" || updates.status === "Pending Review") {
+    // Clear stale feedback when approving or resubmitting.
+    updates.rejectionReason = null;
   }
 
   const patch = mapUpdateToPatch(updates);
@@ -146,11 +160,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         entityId: updated.id,
       });
     } else if (updated.status === "rejected" && previousStatus === "pending_review") {
+      const reason = updated.rejection_reason?.trim();
       void notifyUser({
         userId: updated.owner_id,
         forRole: "broker",
         title: "Listing rejected",
-        message: `“${updated.title}” was not approved. Review feedback in your dashboard and resubmit when ready.`,
+        message: reason
+          ? `“${updated.title}” was not approved: ${reason}`
+          : `“${updated.title}” was not approved. Review feedback in your dashboard and resubmit when ready.`,
         type: "error",
         eventKey: "property.rejected",
         entityType: "property",

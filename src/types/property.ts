@@ -35,6 +35,8 @@ export interface Property {
   ownerId?: string;
   inquiryCount: number;
   status: "Active" | "Pending Review" | "Sold" | "Rented" | "Draft" | "Rejected";
+  /** Admin feedback when Rejected; cleared on approve / resubmit. */
+  rejectionReason?: string | null;
   featured?: boolean;
   reraApproved?: boolean;
   reraId?: string;

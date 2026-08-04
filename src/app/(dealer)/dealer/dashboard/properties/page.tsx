@@ -166,9 +166,16 @@ export default function DealerPropertiesPage() {
         key: "status",
         header: "Status",
         render: (prop) => (
-          <Badge status={prop.status} size="sm">
-            {prop.status}
-          </Badge>
+          <div className="space-y-1 max-w-[180px]">
+            <Badge status={prop.status} size="sm">
+              {prop.status}
+            </Badge>
+            {prop.status === "Rejected" && prop.rejectionReason ? (
+              <p className="text-[10px] text-rose-600 font-semibold leading-snug line-clamp-2">
+                {prop.rejectionReason}
+              </p>
+            ) : null}
+          </div>
         ),
       },
       {
@@ -316,6 +323,11 @@ export default function DealerPropertiesPage() {
                   <span className="text-[9px] font-black text-indigo/60 uppercase tracking-widest">{prop.type} · For {prop.purpose}</span>
                   <h3 className="text-sm font-bold text-charcoal line-clamp-1 mt-1">{prop.title}</h3>
                   <p className="text-[10px] text-charcoal/50 font-semibold mt-0.5">{prop.locality}, {prop.city}</p>
+                  {prop.status === "Rejected" && prop.rejectionReason ? (
+                    <p className="mt-2 text-[10px] font-semibold text-rose-600/90 leading-relaxed line-clamp-3 bg-rose-500/5 border border-rose-500/15 rounded-xl px-2.5 py-2">
+                      Rejected: {prop.rejectionReason}
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="flex items-end justify-between border-t border-indigo/5 pt-3">
