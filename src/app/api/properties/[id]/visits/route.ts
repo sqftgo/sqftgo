@@ -30,7 +30,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     return jsonError("SUPABASE_SERVICE_ROLE_KEY is required to book visits.", 503);
   }
 
-  const limited = enforcePublicRateLimit(request, "propertyVisit");
+  const limited = await enforcePublicRateLimit(request, "propertyVisit");
   if (limited) return limited;
 
   const { id: propertyId } = await context.params;
