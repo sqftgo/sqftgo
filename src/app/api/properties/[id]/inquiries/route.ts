@@ -50,7 +50,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 export async function POST(request: NextRequest, context: RouteContext) {
   if (!hasSupabaseEnv()) return jsonError("Supabase is not configured", 503);
 
-  const limited = enforcePublicRateLimit(request, "propertyInquiry");
+  const limited = await enforcePublicRateLimit(request, "propertyInquiry");
   if (limited) return limited;
 
   const { id: propertyId } = await context.params;

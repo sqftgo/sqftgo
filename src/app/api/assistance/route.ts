@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     return jsonError("SUPABASE_SERVICE_ROLE_KEY is required to submit assistance requests.", 503);
   }
 
-  const limited = enforcePublicRateLimit(request, "assistance");
+  const limited = await enforcePublicRateLimit(request, "assistance");
   if (limited) return limited;
 
   let body: unknown;

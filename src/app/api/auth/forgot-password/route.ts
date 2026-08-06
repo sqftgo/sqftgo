@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     return jsonError("Supabase is not configured", 503);
   }
 
-  const limited = enforceAuthRateLimit(
+  const limited = await enforceAuthRateLimit(
     request,
     "forgotPassword",
     "Too many reset attempts. Please try again shortly."
