@@ -1,5 +1,10 @@
 import { type NextRequest } from "next/server";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
+import {
+  extForImageMime,
+  isAllowedImageMime,
+  verifyAllowedImageBytes,
+} from "@/lib/security/image-magic";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 
@@ -7,25 +12,14 @@ export const runtime = "nodejs";
 
 const BUCKET = "dream-inspiration";
 const MAX_BYTES = 5 * 1024 * 1024;
-const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
-
-function extForMime(mime: string): string {
-  switch (mime) {
-    case "image/png":
-      return "png";
-    case "image/webp":
-      return "webp";
-    case "image/gif":
-      return "gif";
-    default:
-      return "jpg";
-  }
-}
 
 export async function POST(request: NextRequest) {
   if (!hasSupabaseEnv()) return jsonError("Supabase is not configured", 503);
   if (!hasServiceRoleKey()) {
-    return jsonError("SUPABASE_SERVICE_ROLE_KEY is required to upload inspiration images.", 503);
+    return jsonError(
+      "SUPABASE_SERVICE_ROLE_KEY is required to upload inspiration images.",
+      503
+    );
   }
 
   const { user, profile, error } = await authenticateApiRequest(request);
@@ -44,7 +38,11 @@ export async function POST(request: NextRequest) {
     return jsonError("file is required");
   }
 
-  if (!ALLOWED_TYPES.has(file.type)) {
+  if (
+    file.type &&
+    file.type !== "application/octet-stream" &&
+    !isAllowedImageMime(file.type)
+  ) {
     return jsonError("Only JPEG, PNG, WebP, and GIF images are allowed");
   }
   if (file.size <= 0 || file.size > MAX_BYTES) {
@@ -52,11 +50,14 @@ export async function POST(request: NextRequest) {
   }
 
   const bytes = Buffer.from(await file.arrayBuffer());
-  const path = `${user.id}/${crypto.randomUUID()}.${extForMime(file.type)}`;
+  const checked = verifyAllowedImageBytes(bytes, file.type);
+  if (!checked.ok) return jsonError(checked.error);
+
+  const path = `${user.id}/${crypto.randomUUID()}.${extForImageMime(checked.mime)}`;
 
   const admin = createServiceClient();
   const { error: uploadError } = await admin.storage.from(BUCKET).upload(path, bytes, {
-    contentType: file.type,
+    contentType: checked.mime,
     upsert: false,
   });
 
