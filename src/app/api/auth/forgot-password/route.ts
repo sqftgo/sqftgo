@@ -2,11 +2,7 @@ import { type NextRequest } from "next/server";
 import { createRouteClient } from "@/lib/supabase/route";
 import { jsonError, jsonOk } from "@/lib/api/auth";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import {
-  AUTH_RATE_LIMITS,
-  checkRateLimit,
-  clientIpKey,
-} from "@/lib/auth/rate-limit";
+import { enforceAuthRateLimit } from "@/lib/auth/rate-limit";
 import { getSiteUrl } from "@/lib/auth/urls";
 
 type Body = { email?: string };
@@ -16,14 +12,12 @@ export async function POST(request: NextRequest) {
     return jsonError("Supabase is not configured", 503);
   }
 
-  const rate = checkRateLimit(
-    `auth:forgot:${clientIpKey(request)}`,
-    AUTH_RATE_LIMITS.forgotPassword.limit,
-    AUTH_RATE_LIMITS.forgotPassword.windowMs
+  const limited = enforceAuthRateLimit(
+    request,
+    "forgotPassword",
+    "Too many reset attempts. Please try again shortly."
   );
-  if (!rate.ok) {
-    return jsonError("Too many reset attempts. Please try again shortly.", 429);
-  }
+  if (limited) return limited;
 
   let body: Body;
   try {

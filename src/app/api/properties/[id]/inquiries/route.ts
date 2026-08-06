@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
+import { enforcePublicRateLimit } from "@/lib/auth/rate-limit";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapInquiryRow } from "@/lib/mappers/inquiry";
@@ -48,6 +49,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
 export async function POST(request: NextRequest, context: RouteContext) {
   if (!hasSupabaseEnv()) return jsonError("Supabase is not configured", 503);
+
+  const limited = enforcePublicRateLimit(request, "propertyInquiry");
+  if (limited) return limited;
 
   const { id: propertyId } = await context.params;
   if (!propertyId) return jsonError("Property id is required");

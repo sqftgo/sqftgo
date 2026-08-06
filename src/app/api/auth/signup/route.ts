@@ -5,11 +5,7 @@ import { createServiceClient } from "@/lib/supabase/admin";
 import { jsonError } from "@/lib/api/auth";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { skipEmailConfirmEnabled } from "@/lib/auth/email-confirm";
-import {
-  AUTH_RATE_LIMITS,
-  checkRateLimit,
-  clientIpKey,
-} from "@/lib/auth/rate-limit";
+import { enforceAuthRateLimit } from "@/lib/auth/rate-limit";
 import { getSiteUrl } from "@/lib/auth/urls";
 import { authSessionPayload } from "@/lib/mappers/profile";
 
@@ -48,14 +44,12 @@ export async function POST(request: NextRequest) {
     return jsonError("Supabase is not configured", 503);
   }
 
-  const rate = checkRateLimit(
-    `auth:signup:${clientIpKey(request)}`,
-    AUTH_RATE_LIMITS.signup.limit,
-    AUTH_RATE_LIMITS.signup.windowMs
+  const limited = enforceAuthRateLimit(
+    request,
+    "signup",
+    "Too many signup attempts. Please try again shortly."
   );
-  if (!rate.ok) {
-    return jsonError("Too many signup attempts. Please try again shortly.", 429);
-  }
+  if (limited) return limited;
 
   let body: SignupBody;
   try {
