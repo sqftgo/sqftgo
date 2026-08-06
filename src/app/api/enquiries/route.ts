@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
+import { enforcePublicRateLimit } from "@/lib/auth/rate-limit";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapEnquiryRow } from "@/lib/mappers/leads";
@@ -33,6 +34,9 @@ export async function POST(request: NextRequest) {
   if (!hasServiceRoleKey()) {
     return jsonError("SUPABASE_SERVICE_ROLE_KEY is required to submit enquiries.", 503);
   }
+
+  const limited = enforcePublicRateLimit(request, "enquiry");
+  if (limited) return limited;
 
   let body: unknown;
   try {

@@ -4,11 +4,7 @@ import { createRouteClient } from "@/lib/supabase/route";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { jsonError } from "@/lib/api/auth";
 import { skipEmailConfirmEnabled } from "@/lib/auth/email-confirm";
-import {
-  AUTH_RATE_LIMITS,
-  checkRateLimit,
-  clientIpKey,
-} from "@/lib/auth/rate-limit";
+import { enforceAuthRateLimit } from "@/lib/auth/rate-limit";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { authSessionPayload } from "@/lib/mappers/profile";
 
@@ -36,14 +32,12 @@ export async function POST(request: NextRequest) {
     return jsonError("Supabase is not configured", 503);
   }
 
-  const rate = checkRateLimit(
-    `auth:login:${clientIpKey(request)}`,
-    AUTH_RATE_LIMITS.login.limit,
-    AUTH_RATE_LIMITS.login.windowMs
+  const limited = enforceAuthRateLimit(
+    request,
+    "login",
+    "Too many login attempts. Please try again shortly."
   );
-  if (!rate.ok) {
-    return jsonError("Too many login attempts. Please try again shortly.", 429);
-  }
+  if (limited) return limited;
 
   let body: AuthBody;
   try {

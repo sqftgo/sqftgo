@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
+import { enforcePublicRateLimit } from "@/lib/auth/rate-limit";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapVisitRow, type SiteVisitJoined } from "@/lib/mappers/visit";
@@ -28,6 +29,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
   if (!hasServiceRoleKey()) {
     return jsonError("SUPABASE_SERVICE_ROLE_KEY is required to book visits.", 503);
   }
+
+  const limited = enforcePublicRateLimit(request, "propertyVisit");
+  if (limited) return limited;
 
   const { id: propertyId } = await context.params;
   if (!propertyId) return jsonError("Property id is required");
