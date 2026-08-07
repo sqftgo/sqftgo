@@ -11,7 +11,8 @@ export function buildContentSecurityPolicy(): string {
     // Next.js App Router still requires unsafe-inline/eval for runtime chunks
     // until a nonce-based middleware CSP is introduced.
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-    "style-src 'self' 'unsafe-inline'",
+    // Google Fonts CSS is loaded from fonts.googleapis.com (see globals.css).
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     [
       "img-src 'self' data: blob:",
       "https://*.supabase.co",
@@ -22,7 +23,8 @@ export function buildContentSecurityPolicy(): string {
       "https://content.jdmagicbox.com",
       "https://ui-avatars.com",
     ].join(" "),
-    "font-src 'self' data:",
+    // Font files are served from fonts.gstatic.com after the CSS loads.
+    "font-src 'self' data: https://fonts.gstatic.com",
     [
       "connect-src 'self'",
       "https://*.supabase.co",
@@ -35,8 +37,12 @@ export function buildContentSecurityPolicy(): string {
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
-    "upgrade-insecure-requests",
   ];
+
+  // Only on HTTPS deployments — breaks http://localhost if applied in dev.
+  if (process.env.NODE_ENV === "production") {
+    directives.push("upgrade-insecure-requests");
+  }
 
   return directives.join("; ");
 }
