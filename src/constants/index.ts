@@ -1,4 +1,4 @@
-export { CITIES, CITIES_WITHOUT_ALL } from "./cities";
+export { ALL_INDIA_CITY, CITIES, CITIES_WITHOUT_ALL } from "./cities";
 export {
   PROPERTY_TYPES,
   BUDGET_BUY_MIN_OPTIONS,

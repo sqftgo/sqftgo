@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import type { DirectoryProfile } from "@/types";
@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import CustomSelect from "@/components/ui/CustomSelect";
+import { useActiveCities } from "@/hooks/useActiveCities";
 
 const CATEGORIES = [
   "Agent & Broker",
@@ -32,43 +33,28 @@ const CATEGORIES = [
   "Home Shifting/Deep Cleaning"
 ];
 
-const CITIES = [
-  "Udaipur",
-  "Jaipur",
-  "Jodhpur",
-  "Kota",
-  "Bikaner",
-  "Jaisalmer",
-  "Rajsamand",
-  "Pali",
-  "Pushkar",
-  "Alwar",
-  "Ahmedabad",
-  "Surat",
-  "Gandhinagar",
-  "Kutch",
-  "Anand",
-  "Rajkot",
-  "Shimla",
-  "Dharamshala",
-  "Chandigarh",
-  "Agra"
-];
-
 export default function RegisterServicePage() {
   const { addDirectoryProfile, isLoggedIn } = useApp();
+  const { cities, cityOptionsWithoutAll, locationsReady } = useActiveCities();
 
   const [formData, setFormData] = useState<Omit<DirectoryProfile, "id">>({
     firmName: "",
     ownerName: "",
     category: CATEGORIES[0] as DirectoryProfile["category"],
-    city: "Udaipur",
+    city: "",
     address: "",
     email: "",
     website: "",
     mobile: "",
     description: ""
   });
+
+  useEffect(() => {
+    if (!locationsReady || cities.length === 0) return;
+    if (!formData.city || !cities.some((c) => c.toLowerCase() === formData.city.toLowerCase())) {
+      setFormData((prev) => ({ ...prev, city: cities[0] ?? "" }));
+    }
+  }, [locationsReady, cities, formData.city]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -205,7 +191,7 @@ export default function RegisterServicePage() {
                       <span>City *</span>
                     </label>
                     <CustomSelect
-                      options={CITIES.map((c) => ({ label: c, value: c }))}
+                      options={cityOptionsWithoutAll}
                       value={formData.city}
                       onChange={(val) => setFormData({ ...formData, city: val })}
                       placeholder="Select City"

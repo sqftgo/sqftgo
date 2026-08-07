@@ -10,13 +10,7 @@ import { CityMap } from "@/features/locations";
 import { SlidersHorizontal, Info, MapPin, Grid, Map, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useBudgetPriceOptions } from "@/features/admin";
-
-const CITIES = [
-  "Udaipur", "Jaipur", "Jodhpur", "Kota", "Bikaner", 
-  "Jaisalmer", "Rajsamand", "Pali", "Pushkar", "Alwar", 
-  "Ahmedabad", "Surat", "Gandhinagar", "Kutch", "Anand", 
-  "Rajkot", "Shimla", "Chandigarh", "Dharamshala", "Agra"
-];
+import { useActiveCities } from "@/hooks/useActiveCities";
 
 const PROPERTY_TYPES = [
   "Home", "Villa", "Hotel", "Agricultural Land", "Apartment", 
@@ -91,6 +85,7 @@ function ListingsContent() {
   const searchParams = useSearchParams();
   const { properties, selectedCity, setSelectedCity, propertiesError, propertiesReady } = useApp();
   const budgetOptions = useBudgetPriceOptions();
+  const { cityOptions } = useActiveCities();
 
   // Initializing state with query parameters
   const [filters, setFilters] = useState<FilterState>({
@@ -235,7 +230,7 @@ function ListingsContent() {
         <div className="flex flex-col gap-1.5 min-w-[130px] flex-grow md:flex-grow-0">
           <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none">City</span>
           <CustomSelect
-            options={CITIES.map(c => ({ label: c, value: c }))}
+            options={cityOptions}
             value={filters.city}
             onChange={(val) => handleFilterChange({ ...filters, city: val })}
             searchable

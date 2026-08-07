@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { CustomSelect } from "@/components/ui";
@@ -11,24 +11,33 @@ import {
   Home as HomeIcon,
 } from "lucide-react";
 import {
-  CITIES,
   PROPERTY_TYPES,
   BUDGET_OPTIONS_BUY,
   BUDGET_OPTIONS_RENT,
 } from "../data/constants";
+import { useActiveCities } from "@/hooks/useActiveCities";
 
 export function HomeHero() {
   const router = useRouter();
   const { setSelectedCity } = useApp();
+  const { cities, cityOptionsWithoutAll, locationsReady } = useActiveCities();
 
   const [heroTab, setHeroTab] = useState<"buy" | "rent" | "plots" | "commercial">("buy");
-  const [searchCity, setSearchCity] = useState("Udaipur");
+  const [searchCity, setSearchCity] = useState("");
   const [searchLocality, setSearchLocality] = useState("");
   const [searchType, setSearchType] = useState("any");
   const [searchBudget, setSearchBudget] = useState("any");
 
+  useEffect(() => {
+    if (!locationsReady || cities.length === 0) return;
+    if (!searchCity || !cities.some((c) => c.toLowerCase() === searchCity.toLowerCase())) {
+      setSearchCity(cities[0] ?? "");
+    }
+  }, [locationsReady, cities, searchCity]);
+
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!searchCity) return;
     setSelectedCity(searchCity);
     const params = new URLSearchParams();
     params.set("city", searchCity);
@@ -125,10 +134,10 @@ export function HomeHero() {
                     <div className="flex flex-col min-w-0 flex-1">
                       <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none mb-1">Select City</span>
                       <CustomSelect
-                        options={CITIES.map((c) => ({ label: c, value: c }))}
+                        options={cityOptionsWithoutAll}
                         value={searchCity}
                         onChange={setSearchCity}
-                        placeholder="Select City"
+                        placeholder={locationsReady ? "Select City" : "Loading cities…"}
                         searchable
                         buttonClassName="text-sm font-bold text-charcoal py-0 cursor-pointer"
                         inlineChevron

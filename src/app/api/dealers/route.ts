@@ -5,6 +5,7 @@ import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapDealerCreateToInsert, mapDealerRow } from "@/lib/mappers/dealer";
+import { requireActiveCity } from "@/lib/server/active-city";
 import { dealerCreateSchema, dealerZodError, directoryCategorySchema } from "@/lib/validation/dealer";
 import type { DirectoryProfileRow } from "@/types/database";
 
@@ -105,7 +106,13 @@ export async function POST(request: NextRequest) {
     return jsonError("A directory profile with this email already exists", 409);
   }
 
-  const insert = mapDealerCreateToInsert(parsed.data, user.id);
+  const cityCheck = await requireActiveCity(admin, parsed.data.city);
+  if (!cityCheck.ok) return jsonError(cityCheck.error, 400);
+
+  const insert = mapDealerCreateToInsert(
+    { ...parsed.data, city: cityCheck.location.city },
+    user.id
+  );
   // Admins may create unlinked samples by omitting link — still link to self for normal path.
   if (isAdmin && body && typeof body === "object" && "linkUser" in body && (body as { linkUser?: boolean }).linkUser === false) {
     insert.user_id = null;

@@ -1,9 +1,10 @@
 "use client";
 
-import { CITIES_WITHOUT_ALL, FURNISHING_OPTIONS } from "@/constants";
+import { FURNISHING_OPTIONS } from "@/constants";
 import CustomSelect from "@/components/ui/CustomSelect";
 import { FormField, TextInput } from "@/components/ui/FormField";
 import { SearchInput } from "@/components/ui/SearchInput";
+import { useActiveCities } from "@/hooks/useActiveCities";
 import { labelClassName, selectBtnClass } from "../constants";
 import type { FormState, SetFormField } from "../types";
 
@@ -13,6 +14,8 @@ type LocationDetailsStepProps = {
 };
 
 export function LocationDetailsStep({ form, set }: LocationDetailsStepProps) {
+  const { cityOptionsWithoutAll, findLocation, locationsReady } = useActiveCities();
+
   return (
     <div className="space-y-6">
       <div className="text-left">
@@ -26,10 +29,17 @@ export function LocationDetailsStep({ form, set }: LocationDetailsStepProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField label="City" required>
             <CustomSelect
-              options={CITIES_WITHOUT_ALL.map((c) => ({ label: c, value: c }))}
+              options={cityOptionsWithoutAll}
               value={form.city}
-              onChange={(val) => set("city", val)}
+              onChange={(val) => {
+                set("city", val);
+                const loc = findLocation(val);
+                if (loc) {
+                  set("state", loc.state);
+                }
+              }}
               searchable
+              placeholder={locationsReady ? "Select city" : "Loading cities…"}
               buttonClassName={selectBtnClass}
             />
           </FormField>

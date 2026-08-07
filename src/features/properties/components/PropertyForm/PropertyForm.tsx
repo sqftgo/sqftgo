@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import type { Property } from "@/types";
 import { useApp } from "@/context/AppContext";
 import {
-  CITIES_WITHOUT_ALL,
   PROPERTY_TYPES,
   FURNISHING_OPTIONS,
   AMENITIES as AMENITY_FALLBACK,
 } from "@/constants";
+import { useActiveCities } from "@/hooks/useActiveCities";
 import CustomSelect from "@/components/ui/CustomSelect";
 import { FormField, TextInput, TextArea } from "@/components/ui/FormField";
 import { Alert } from "@/components/ui/Alert";
@@ -49,6 +49,7 @@ export type { PropertyFormProps, PropertyFormSubmitData } from "./types";
 export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormProps) {
   const router = useRouter();
   const { amenities } = useApp();
+  const { cityOptionsWithoutAll, findLocation, locationsReady } = useActiveCities();
   const amenityOptions = useMemo(() => {
     const live = amenities.filter((a) => a.active).map((a) => a.name);
     return live.length > 0 ? live : [...AMENITY_FALLBACK];
@@ -616,10 +617,15 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField label="City">
                     <CustomSelect
-                      options={CITIES_WITHOUT_ALL.map((c) => ({ label: c, value: c }))}
+                      options={cityOptionsWithoutAll}
                       value={form.city}
-                      onChange={(val) => set("city", val)}
+                      onChange={(val) => {
+                        set("city", val);
+                        const loc = findLocation(val);
+                        if (loc) set("state", loc.state);
+                      }}
                       searchable
+                      placeholder={locationsReady ? "Select city" : "Loading cities…"}
                       buttonClassName={selectBtnClass}
                     />
                   </FormField>

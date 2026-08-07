@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapDealerRow, mapDealerUpdateToPatch } from "@/lib/mappers/dealer";
+import { requireActiveCity } from "@/lib/server/active-city";
 import { dealerUpdateSchema, dealerZodError } from "@/lib/validation/dealer";
 import type { DirectoryProfileRow } from "@/types/database";
 
@@ -77,6 +78,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         .maybeSingle();
       if (clash) return jsonError("A directory profile with this email already exists", 409);
     }
+  }
+
+  if (parsed.data.city !== undefined) {
+    const cityCheck = await requireActiveCity(admin, parsed.data.city);
+    if (!cityCheck.ok) return jsonError(cityCheck.error, 400);
+    parsed.data.city = cityCheck.location.city;
   }
 
   const patch = mapDealerUpdateToPatch(parsed.data);

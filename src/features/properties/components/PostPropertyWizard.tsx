@@ -6,11 +6,11 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import type { Property } from "@/types";
 import {
-  CITIES_WITHOUT_ALL,
   PROPERTY_TYPES,
   FURNISHING_OPTIONS,
   AMENITIES as AMENITY_FALLBACK,
 } from "@/constants";
+import { useActiveCities } from "@/hooks/useActiveCities";
 import StepProgress from "@/components/ui/StepProgress";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Alert } from "@/components/ui/Alert";
@@ -36,6 +36,7 @@ type PostPropertyWizardProps = {
 export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
   const router = useRouter();
   const { addProperty, isLoggedIn, userEmail, userRole, amenities } = useApp();
+  const { cities, cityOptionsWithoutAll, locationsReady } = useActiveCities();
   const amenityOptions = useMemo(() => {
     const live = amenities.filter((a) => a.active).map((a) => a.name);
     return live.length > 0 ? live : [...AMENITY_FALLBACK];
@@ -58,7 +59,7 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
 
   const [purpose, setPurpose] = useState<"buy" | "sell" | "rent" | "lease">("buy");
   const [type, setType] = useState<Property["type"]>("Apartment");
-  const [city, setCity] = useState("Udaipur");
+  const [city, setCity] = useState("");
   const [locality, setLocality] = useState("");
   const [bhk, setBhk] = useState<string>("3");
   const [size, setSize] = useState<string>("");
@@ -70,6 +71,13 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (!locationsReady || cities.length === 0) return;
+    if (!city || !cities.some((c) => c.toLowerCase() === city.toLowerCase())) {
+      setCity(cities[0] ?? "");
+    }
+  }, [locationsReady, cities, city]);
 
   if (!mounted || !canPost) {
     return (
@@ -254,9 +262,9 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
                 onChange={(e) => setCity(e.target.value)}
                 className="w-full bg-white border border-sand text-charcoal rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-terracotta cursor-pointer"
               >
-                {CITIES_WITHOUT_ALL.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+                {cityOptionsWithoutAll.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
                   </option>
                 ))}
               </select>

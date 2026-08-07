@@ -9,6 +9,7 @@ import {
   applyPropertyListFilters,
   parsePropertyListParams,
 } from "@/lib/server/properties-list";
+import { requireActiveCity } from "@/lib/server/active-city";
 import {
   propertyCreateSchema,
   propertyStatusUiSchema,
@@ -166,6 +167,12 @@ export async function POST(request: NextRequest) {
 
   const admin = createServiceClient();
 
+  const cityCheck = await requireActiveCity(admin, input.city);
+  if (!cityCheck.ok) return jsonError(cityCheck.error, 400);
+  const city = cityCheck.location.city;
+  const state = input.state?.trim() || cityCheck.location.state;
+  const country = input.country?.trim() || cityCheck.location.country;
+
   // Enforce platform listing policy for brokers (admins bypass).
   if (!isAdmin) {
     const { data: settings } = await admin
@@ -207,9 +214,9 @@ export async function POST(request: NextRequest) {
     bathrooms: input.bathrooms,
     parking: input.parking,
     yearBuilt: input.yearBuilt,
-    city: input.city,
-    state: input.state,
-    country: input.country,
+    city,
+    state,
+    country,
     locality: input.locality,
     size: input.size,
     furnished: input.furnished,
