@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Property } from "@/types";
 import { formatIndianCurrency } from "@/lib/format";
@@ -11,7 +10,7 @@ interface PropertyDetailHeaderProps {
   property: Property;
   isSaved: boolean;
   onToggleFavorite: (id: string) => void;
-  /** When "nav", render breadcrumbs only; when "price", render title/price block. */
+  /** When "nav", render back control only; when "price", render title/price block. */
   variant: "nav" | "price";
 }
 
@@ -36,28 +35,16 @@ export function PropertyDetailHeader({
 
   if (variant === "nav") {
     return (
-      <>
-      {/* Breadcrumbs and navigation */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <nav className="flex flex-wrap items-center gap-1.5 text-[11px] md:text-xs font-bold text-charcoal/50 tracking-wide">
-          <Link href="/" className="hover:text-terracotta transition-colors">HOME</Link>
-          <span>/</span>
-          <Link href="/listings" className="hover:text-terracotta transition-colors">PROPERTIES</Link>
-          <span>/</span>
-          <Link href={`/listings?city=${encodeURIComponent(property.city)}`} className="hover:text-terracotta transition-colors">{property.city.toUpperCase()}</Link>
-          <span>/</span>
-          <span className="text-indigo font-extrabold">{property.locality.toUpperCase()}</span>
-        </nav>
-
+      <div className="flex items-center justify-start mb-6">
         <button
+          type="button"
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-xs font-black text-charcoal/65 hover:text-indigo group transition-colors self-start md:self-auto"
+          className="flex items-center gap-1.5 text-xs font-black text-charcoal/65 hover:text-indigo group transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-          <span>BACK TO SEARCH</span>
+          <span>BACK</span>
         </button>
       </div>
-      </>
     );
   }
 
