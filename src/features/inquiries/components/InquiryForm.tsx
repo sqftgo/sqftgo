@@ -9,9 +9,14 @@ import { Avatar } from "@/components/ui/Avatar";
 
 interface InquiryFormProps {
   property: Property;
+  /** Called after a successful inquiry submit (e.g. close a parent modal). */
+  onSuccess?: () => void;
 }
 
-export const InquiryForm: React.FC<InquiryFormProps> = ({ property }) => {
+export const InquiryForm: React.FC<InquiryFormProps> = ({
+  property,
+  onSuccess,
+}) => {
   const { submitInquiry } = useApp();
   const [formData, setFormData] = useState({
     name: "",
@@ -40,6 +45,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({ property }) => {
         message:
           "Hi, I am interested in this property and would like to receive more details. Please contact me.",
       });
+      onSuccess?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to send inquiry. Please try again.");
     } finally {
