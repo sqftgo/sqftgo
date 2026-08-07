@@ -9,6 +9,7 @@ import { useApp } from "@/context/AppContext";
 import { formatIndianCurrency } from "@/lib/format";
 import { motion } from "framer-motion";
 import { Avatar } from "@/components/ui/Avatar";
+import { ContactOwnerModal } from "@/features/inquiries";
 
 export { formatIndianCurrency } from "@/lib/format";
 
@@ -30,6 +31,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
 }) => {
   const { favorites, toggleFavorite } = useApp();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [contactOpen, setContactOpen] = useState(false);
 
   const isFavorite = isFavoriteProp ?? favorites.includes(property.id);
   const handleToggleFavorite = () => {
@@ -234,15 +236,26 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             </div>
           </div>
 
-          <Link
-            href={`/property/${property.id}`}
-            className="w-full py-2 px-3.5 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white text-center font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5"
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setContactOpen(true);
+            }}
+            className="w-full py-2 px-3.5 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white text-center font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Phone className="w-3.5 h-3.5" />
             <span>Contact Owner</span>
-          </Link>
+          </button>
         </div>
       </div>
+
+      <ContactOwnerModal
+        property={property}
+        open={contactOpen}
+        onClose={() => setContactOpen(false)}
+      />
     </motion.div>
   );
 };

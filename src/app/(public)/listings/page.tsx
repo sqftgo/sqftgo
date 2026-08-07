@@ -6,9 +6,8 @@ import { useApp } from "@/context/AppContext";
 import type { Property } from "@/types";
 import { CustomSelect, EmptyState } from "@/components/ui";
 import { PropertyCard, FilterPanel, type FilterState } from "@/features/properties";
-import { formatIndianCurrency } from "@/lib/format";
 import { CityMap } from "@/features/locations";
-import { SlidersHorizontal, Info, MapPin, Grid, Map, X, Search } from "lucide-react";
+import { SlidersHorizontal, Info, MapPin, Grid, Map, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useBudgetPriceOptions } from "@/features/admin";
 
@@ -189,67 +188,6 @@ function ListingsContent() {
     });
   };
 
-  // Active Filter Chips calculation
-  const getActiveChips = () => {
-    const chips: { label: string; key: keyof FilterState; value?: string }[] = [];
-    if (filters.city) chips.push({ label: `City: ${filters.city}`, key: "city" });
-    if (filters.locality) chips.push({ label: `Locality: ${filters.locality}`, key: "locality" });
-    if (filters.purpose !== "all") chips.push({ label: `Purpose: ${filters.purpose}`, key: "purpose" });
-    if (filters.type !== "any") chips.push({ label: `Type: ${filters.type}`, key: "type" });
-    
-    if (filters.minPrice) {
-      const minVal = parseInt(filters.minPrice);
-      const minText = formatIndianCurrency(minVal, filters.purpose === "all" ? "buy" : filters.purpose);
-      chips.push({ label: `Min: ${minText}`, key: "minPrice" });
-    }
-    if (filters.maxPrice) {
-      const maxVal = parseInt(filters.maxPrice);
-      const maxText = formatIndianCurrency(maxVal, filters.purpose === "all" ? "buy" : filters.purpose);
-      chips.push({ label: `Max: ${maxText}`, key: "maxPrice" });
-    }
-    if (filters.minSize) {
-      chips.push({ label: `Min Size: ${filters.minSize} sq.ft.`, key: "minSize" });
-    }
-    if (filters.maxSize) {
-      chips.push({ label: `Max Size: ${filters.maxSize} sq.ft.`, key: "maxSize" });
-    }
-    if (filters.reraApprovedOnly) chips.push({ label: "RERA Registered", key: "reraApprovedOnly" });
-    if (filters.featuredOnly) chips.push({ label: "Featured Collection", key: "featuredOnly" });
-    filters.bhk.forEach((b) => chips.push({ label: `${b} BHK`, key: "bhk", value: b }));
-    filters.furnishing.forEach((f) => chips.push({ label: f, key: "furnishing", value: f }));
-    (filters.selectedAmenities || []).forEach((a) => chips.push({ label: a, key: "selectedAmenities", value: a }));
-    return chips;
-  };
-
-  const removeChip = (chip: { label: string; key: keyof FilterState; value?: string }) => {
-    if (chip.key === "bhk") {
-      handleFilterChange({
-        ...filters,
-        bhk: filters.bhk.filter((b) => b !== chip.value)
-      });
-    } else if (chip.key === "furnishing") {
-      handleFilterChange({
-        ...filters,
-        furnishing: filters.furnishing.filter((f) => f !== chip.value)
-      });
-    } else if (chip.key === "selectedAmenities") {
-      handleFilterChange({
-        ...filters,
-        selectedAmenities: (filters.selectedAmenities || []).filter((a) => a !== chip.value)
-      });
-    } else if (chip.key === "purpose") {
-      handleFilterChange({ ...filters, purpose: "all", minPrice: "", maxPrice: "" });
-    } else if (chip.key === "type") {
-      handleFilterChange({ ...filters, type: "any" });
-    } else if (chip.key === "reraApprovedOnly" || chip.key === "featuredOnly") {
-      handleFilterChange({ ...filters, [chip.key]: false });
-    } else if (chip.key === "city") {
-      handleFilterChange({ ...filters, city: "Udaipur" });
-    } else {
-      handleFilterChange({ ...filters, [chip.key]: "" });
-    }
-  };
-
   // 1. Filtered listings
   const filteredList = filterProperties(properties, filters);
 
@@ -277,8 +215,6 @@ function ListingsContent() {
     exit: { opacity: 0, y: -15, scale: 0.98, transition: { duration: 0.15 } }
   };
 
-  const activeChips = getActiveChips();
-
   return (
     <div className="container mx-auto px-4 md:px-6 max-w-7xl pb-20 pt-6">
 
@@ -292,35 +228,6 @@ function ListingsContent() {
           Loading properties…
         </div>
       ) : null}
-      
-      {/* Premium Header Banner Card */}
-      <div className="w-full rounded-3xl bg-cream/90 border border-sand p-6 md:p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-terracotta/5 rounded-full blur-[80px] pointer-events-none" />
-        
-        <div className="flex flex-col gap-2 relative z-10 text-left">
-          <h1 className="text-3xl md:text-4xl font-serif font-black text-indigo tracking-tight">
-            Properties in {filters.city}
-          </h1>
-          <p className="text-charcoal/70 text-xs font-semibold">
-            Browse restored heritage havelis, luxury villas, offices, and plots in {filters.city}.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-6 relative z-10 border-t md:border-t-0 md:border-l border-sand pt-4 md:pt-0 md:pl-8">
-          <div className="flex flex-col text-left">
-            <span className="text-2xl font-serif font-black text-indigo">
-              {sortedList.length}
-            </span>
-            <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest mt-1">Matching listings</span>
-          </div>
-          <div className="flex flex-col text-left border-l border-sand pl-6">
-            <span className="text-2xl font-serif font-black text-terracotta">
-              {sortedList.filter(p => p.featured).length}
-            </span>
-            <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest mt-1">Featured</span>
-          </div>
-        </div>
-      </div>
 
       {/* Horizontal Filter Header Bar (99acres / Housing.com inspired) */}
       <div className="w-full bg-white border border-sand rounded-3xl p-4 md:p-5 shadow-md grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-nowrap gap-4 items-end mb-4 z-20 relative text-left">
@@ -412,33 +319,6 @@ function ListingsContent() {
           </button>
         </div>
       </div>
-
-      {/* Filter Chips Row */}
-      {activeChips.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mb-6 text-left">
-          <span className="text-[10px] font-bold text-charcoal/40 uppercase tracking-wider">Active Filters:</span>
-          {activeChips.map((chip) => (
-            <span
-              key={chip.label}
-              className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-sand/35 text-indigo border border-sand"
-            >
-              <span>{chip.label}</span>
-              <button
-                onClick={() => removeChip(chip)}
-                className="p-0.5 rounded-full hover:bg-sand text-charcoal/50 hover:text-terracotta cursor-pointer"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </span>
-          ))}
-          <button
-            onClick={resetFilters}
-            className="text-[10px] font-black text-terracotta uppercase hover:underline ml-2 cursor-pointer"
-          >
-            Clear All
-          </button>
-        </div>
-      )}
 
       {/* Main Results Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-4">
