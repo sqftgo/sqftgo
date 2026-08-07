@@ -123,23 +123,14 @@ export default function DealerProfilePage() {
     <main className="min-h-screen bg-cream pt-24 pb-24 px-4 md:px-6">
       <div className="max-w-6xl mx-auto w-full">
 
-        {/* Navigation Breadcrumbs & Back Button */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 text-left">
-          <nav className="flex flex-wrap items-center gap-1.5 text-[11px] md:text-xs font-bold text-charcoal/50 tracking-wide">
-            <Link href="/" className="hover:text-terracotta transition-colors">HOME</Link>
-            <span>/</span>
-            <Link href="/dealers" className="hover:text-terracotta transition-colors">DEALERS</Link>
-            <span>/</span>
-            <span className="text-indigo font-extrabold">{profile.firmName.toUpperCase()}</span>
-          </nav>
-
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-1.5 text-xs font-black text-charcoal/65 hover:text-indigo group transition-colors self-start md:self-auto cursor-pointer"
+        <div className="mb-6 text-left">
+          <Link
+            href="/dealers"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-charcoal/65 hover:text-indigo group transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
             <span>BACK TO DEALERS</span>
-          </button>
+          </Link>
         </div>
 
 

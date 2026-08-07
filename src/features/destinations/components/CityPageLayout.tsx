@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { 
   MapPin, Star, TrendingUp, IndianRupee, Sparkles, 
-  HeartHandshake, ChevronRight, Phone, Compass, BookOpen, 
-  Users, CheckCircle2, ShieldCheck, ArrowRight, Home
+  HeartHandshake, Phone, Compass, BookOpen, 
+  Users, CheckCircle2, ShieldCheck, ArrowRight, ArrowLeft
 } from "lucide-react";
 import { Destination, WeddingVenue, WeddingProperty, DESTINATIONS } from "../data/destinations";
 import WeddingInquiryModal from "./WeddingInquiryModal";
@@ -44,20 +44,14 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/70 to-black/60" />
         </div>
 
-        {/* Breadcrumb Navigation */}
-        <div className="relative z-10 max-w-7xl mx-auto w-full flex items-center gap-2 text-xs font-bold text-white/70">
-          <Link href="/" className="hover:text-amber-300 transition-colors flex items-center gap-1">
-            <Home className="w-3.5 h-3.5" />
-            <span>Home</span>
+        <div className="relative z-10 max-w-7xl mx-auto w-full">
+          <Link
+            href="/destinations"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-white/80 hover:text-amber-300 group transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+            <span>BACK TO DESTINATIONS</span>
           </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-white/40" />
-          <Link href="/destinations" className="hover:text-amber-300 transition-colors">
-            Destinations
-          </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-white/40" />
-          <span className="text-amber-300">{destination.tag}</span>
-          <ChevronRight className="w-3.5 h-3.5 text-white/40" />
-          <span className="text-white font-extrabold">{destination.name} Wedding Places</span>
         </div>
 
         {/* Main City Title Content */}
