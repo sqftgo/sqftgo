@@ -5,7 +5,6 @@ import { Filter, X, RefreshCw } from "lucide-react";
 import CustomSelect from "@/components/ui/CustomSelect";
 import { useApp } from "@/context/AppContext";
 import {
-  CITIES,
   PROPERTY_TYPES,
   SIZE_MIN_OPTIONS,
   SIZE_MAX_OPTIONS,
@@ -13,6 +12,7 @@ import {
   AMENITIES as AMENITY_FALLBACK,
 } from "@/constants";
 import { useBudgetPriceOptions } from "@/features/admin";
+import { useActiveCities } from "@/hooks/useActiveCities";
 
 export interface FilterState {
   city: string;
@@ -47,17 +47,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   onClose,
   showBasicFilters = true,
 }) => {
-  const { categories, locations, amenities } = useApp();
+  const { categories, amenities } = useApp();
+  const { cityOptions } = useActiveCities();
   const budgetOptions = useBudgetPriceOptions();
-
-  const cityOptions = useMemo(() => {
-    const live = locations.filter((l) => l.active).map((l) => l.city);
-    const cities = live.length > 0 ? live : CITIES.filter((c) => c !== "All India");
-    return ["All India", ...cities.filter((c) => c !== "All India")].map((c) => ({
-      label: c,
-      value: c,
-    }));
-  }, [locations]);
 
   const typeOptions = useMemo(() => {
     const live = categories.filter((c) => c.active).map((c) => c.name);

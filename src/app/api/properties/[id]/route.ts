@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapPropertyRow, mapUpdateToPatch } from "@/lib/mappers/property";
 import { notifyRole, notifyUser } from "@/lib/notifications/server";
+import { requireActiveCity } from "@/lib/server/active-city";
 import { propertyUpdateSchema, zodErrorMessage } from "@/lib/validation/property";
 import type { Property } from "@/types";
 import type { PropertyRow } from "@/types/database";
@@ -94,6 +95,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     ) {
       return jsonError("Brokers cannot set this status", 403);
     }
+  }
+
+  if (updates.city !== undefined) {
+    const cityCheck = await requireActiveCity(admin, updates.city);
+    if (!cityCheck.ok) return jsonError(cityCheck.error, 400);
+    updates.city = cityCheck.location.city;
+    if (updates.state === undefined) updates.state = cityCheck.location.state;
+    if (updates.country === undefined) updates.country = cityCheck.location.country;
   }
 
   if (updates.status === "Rejected") {

@@ -8,12 +8,13 @@ import { MapPin, Plus, ChevronDown, User, Users, LogOut, Home, Search, MessageSq
 import { motion, AnimatePresence } from "framer-motion";
 import { CitySelectorDropdown, Avatar } from "@/components/ui";
 import { UserDropdown } from "@/features/auth";
-
+import { useActiveCities } from "@/hooks/useActiveCities";
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { selectedCity, setSelectedCity, isLoggedIn, logout, userEmail, favorites, userRole } = useApp();
+  const { cities: activeCities } = useActiveCities();
   
   const [isScrolled, setIsScrolled] = useState(false);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
@@ -172,6 +173,7 @@ export const Navbar: React.FC = () => {
                         selectedCity={selectedCity}
                         onSelectCity={handleCityChange}
                         onClose={() => setShowCityDropdown(false)}
+                        cities={activeCities}
                         align="right"
                       />
                     </motion.div>

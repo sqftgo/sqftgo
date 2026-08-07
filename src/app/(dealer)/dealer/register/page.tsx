@@ -1,8 +1,9 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveCities } from "@/hooks/useActiveCities";
 import Link from "next/link";
 import { Building2, CheckCircle2, Eye, EyeOff } from "lucide-react";
 
@@ -10,6 +11,7 @@ export default function DealerRegisterPage() {
   const router = useRouter();
   const { addDirectoryProfile } = useApp();
   const { signup } = useAuth();
+  const { cities, cityOptionsWithoutAll, locationsReady } = useActiveCities();
   const [step, setStep] = useState(0);
   const [done, setDone] = useState(false);
   const [pendingConfirm, setPendingConfirm] = useState(false);
@@ -18,9 +20,16 @@ export default function DealerRegisterPage() {
   const [showPw, setShowPw] = useState(false);
   const [form, setForm] = useState({
     name: "", firmName: "", email: "", phone: "", password: "", confirmPassword: "",
-    reraId: "", city: "Udaipur", category: "Agent & Broker",
+    reraId: "", city: "", category: "Agent & Broker",
   });
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+
+  useEffect(() => {
+    if (!locationsReady || cities.length === 0) return;
+    if (!form.city || !cities.some((c) => c.toLowerCase() === form.city.toLowerCase())) {
+      set("city", cities[0] ?? "");
+    }
+  }, [locationsReady, cities, form.city]);
 
   const handleRegister = async () => {
     setError(null);
@@ -154,7 +163,7 @@ export default function DealerRegisterPage() {
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-black text-white/50 uppercase tracking-wider">Primary City</label>
                 <select value={form.city} onChange={e => set("city", e.target.value)} className="bg-white/5 border border-white/10 text-white text-sm font-semibold px-4 py-3 rounded-xl focus:outline-none cursor-pointer">
-                  {["Udaipur", "Jaipur", "Jodhpur", "Jaisalmer", "Kota", "Ahmedabad", "Surat"].map(c => <option key={c} value={c}>{c}</option>)}
+                  {cityOptionsWithoutAll.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </select>
               </div>
               {error && (
