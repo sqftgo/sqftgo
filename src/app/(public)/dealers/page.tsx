@@ -10,20 +10,25 @@ import { motion } from "framer-motion";
 export default function DealersPage() {
   const { directoryProfiles, selectedCity } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  /** null = no category chip selected (show all dealers for the city). */
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const dealerProfiles = directoryProfiles.filter((p) =>
     isAgentOrConsultantCategory(p.category)
   );
 
-  const categories = ["All", ...Array.from(new Set(dealerProfiles.map(p => p.category)))];
+  // Hide "All" and "Agent & Broker" chips for now — keep other category filters only.
+  const categories = Array.from(new Set(dealerProfiles.map((p) => p.category))).filter(
+    (c) => c !== "Agent & Broker"
+  );
 
-  const filteredProfiles = dealerProfiles.filter(profile => {
+  const filteredProfiles = dealerProfiles.filter((profile) => {
     const matchesCity = profile.city.toLowerCase() === selectedCity.toLowerCase();
-    const matchesSearch = profile.address.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          profile.firmName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          profile.ownerName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "All" || profile.category === selectedCategory;
+    const matchesSearch =
+      profile.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      profile.firmName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      profile.ownerName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !selectedCategory || profile.category === selectedCategory;
     return matchesCity && matchesSearch && matchesCategory;
   });
 
@@ -56,21 +61,26 @@ export default function DealersPage() {
             <Search className="w-5 h-5 text-charcoal/40 absolute left-4 top-1/2 -translate-y-1/2" />
           </div>
 
-          <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar">
-            {categories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`whitespace-nowrap px-6 py-3.5 rounded-2xl text-xs font-bold transition-all duration-300 ${
-                  selectedCategory === cat 
-                  ? "bg-indigo text-white shadow-md" 
-                  : "bg-white border border-sand text-charcoal hover:border-indigo/30"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+          {categories.length > 0 ? (
+            <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() =>
+                    setSelectedCategory((prev) => (prev === cat ? null : cat))
+                  }
+                  className={`whitespace-nowrap px-6 py-3.5 rounded-2xl text-xs font-bold transition-all duration-300 cursor-pointer ${
+                    selectedCategory === cat
+                      ? "bg-indigo text-white shadow-md"
+                      : "bg-white border border-sand text-charcoal hover:border-indigo/30"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
 
         {/* Dealers Grid */}
