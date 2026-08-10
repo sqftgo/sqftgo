@@ -179,12 +179,12 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
       </div>
 
       <div className={`flex flex-col md:flex-row flex-grow bg-white ${isListLayout ? "md:divide-x md:divide-sand" : ""}`}>
-        <Link href={`/property/${property.id}`} className="flex flex-col flex-grow p-5 text-left justify-between min-w-0">
-          <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col flex-grow p-5 text-left justify-between min-w-0">
+          <Link href={`/property/${property.id}`} className="flex flex-col gap-1.5 group/title">
             <span className="text-[9px] font-bold text-indigo bg-indigo/5 border border-indigo/10 px-2.5 py-0.5 rounded-md tracking-wider uppercase w-fit">
               {property.type}
             </span>
-            <h3 className="font-serif font-black text-lg text-charcoal line-clamp-1 group-hover:text-terracotta transition-colors duration-200 mt-1">
+            <h3 className="font-serif font-black text-lg text-charcoal line-clamp-1 group-hover/title:text-terracotta transition-colors duration-200 mt-1">
               {property.title}
             </h3>
             <div className="flex items-center gap-1 text-charcoal/60 text-xs mb-1.5">
@@ -196,7 +196,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             {isListLayout && (
               <p className="text-charcoal/60 text-xs line-clamp-2 leading-relaxed mb-3">{property.description}</p>
             )}
-          </div>
+          </Link>
 
           <div className="flex items-center gap-3.5 text-[10px] text-charcoal/50 font-bold uppercase tracking-widest pt-3 border-t border-sand">
             {property.bhk && (
@@ -209,7 +209,34 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             <span className="w-1.5 h-1.5 rounded-full bg-sand" />
             <span className="truncate">{property.furnished}</span>
           </div>
-        </Link>
+
+          {/* Grid Layout Bottom Price & Contact Owner Trigger */}
+          {!isListLayout && (
+            <div className="pt-3.5 mt-3.5 border-t border-sand flex items-center justify-between gap-2">
+              <div className="flex flex-col min-w-0">
+                <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none">
+                  Price
+                </span>
+                <span className="text-base font-serif font-black text-terracotta mt-0.5 truncate">
+                  {formatIndianCurrency(property.price, property.purpose)}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setContactOpen(true);
+                }}
+                className="py-2 px-3.5 rounded-xl bg-terracotta hover:bg-terracotta-hover active:scale-95 text-white font-bold text-xs shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                <span>Contact Owner</span>
+              </button>
+            </div>
+          )}
+        </div>
 
         <div
           className={`p-5 flex flex-col justify-between items-stretch text-left md:w-56 bg-cream/10 ${
