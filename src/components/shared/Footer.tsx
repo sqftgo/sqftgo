@@ -174,11 +174,6 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/hub" className="hover:text-terracotta hover:translate-x-0.5 transition-all duration-200 inline-block">
-                  Sourcing Hub
-                </Link>
-              </li>
-              <li>
                 <Link href="/favorites" className="hover:text-terracotta hover:translate-x-0.5 transition-all duration-200 inline-block">
                   Favorites Stays
                 </Link>

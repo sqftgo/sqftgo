@@ -12,7 +12,6 @@ import {
   Briefcase, 
   Plus, 
   Search, 
-  Compass, 
   Sliders,
   Sparkles,
   Calendar
@@ -21,6 +20,8 @@ import { motion } from "framer-motion";
 
 interface UserDropdownProps {
   userEmail: string;
+  userName?: string;
+  userAvatar?: string | null;
   userRole: "user" | "broker" | "admin" | null;
   onClose: () => void;
   onLogout: () => void;
@@ -29,6 +30,8 @@ interface UserDropdownProps {
 
 export const UserDropdown: React.FC<UserDropdownProps> = ({
   userEmail,
+  userName,
+  userAvatar,
   userRole,
   onClose,
   onLogout,
@@ -37,9 +40,8 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
   const router = useRouter();
   const isAdmin = userRole === "admin" || userEmail === "admin@sqftgo.com";
   const isBroker = userRole === "broker";
-  
-  // Create email initials (e.g. "AD" for admin, or first letter of user email)
-  const initial = userEmail ? userEmail.charAt(0).toUpperCase() : "U";
+  const displayName = (userName || "").trim() || userEmail;
+  const initial = displayName ? displayName.charAt(0).toUpperCase() : "U";
 
   const handleLogoutClick = () => {
     onLogout();
@@ -67,13 +69,23 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
 
       {/* Account Info Profile Header */}
       <div className="p-4 bg-sand/30 border-b border-sand/40 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-2xl bg-indigo text-white flex items-center justify-center font-extrabold text-sm shadow-md shadow-indigo/25">
-          {initial}
+        <div className="w-10 h-10 rounded-2xl bg-indigo text-white flex items-center justify-center font-extrabold text-sm shadow-md shadow-indigo/25 overflow-hidden shrink-0">
+          {userAvatar ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={userAvatar} alt="" className="w-full h-full object-cover" />
+          ) : (
+            initial
+          )}
         </div>
         <div className="flex flex-col min-w-0">
           <span className="text-xs font-bold text-charcoal truncate" title={userEmail}>
-            {userEmail}
+            {displayName}
           </span>
+          {displayName !== userEmail ? (
+            <span className="text-[10px] font-semibold text-charcoal/45 truncate" title={userEmail}>
+              {userEmail}
+            </span>
+          ) : null}
           <span className="text-[9px] font-black tracking-wider uppercase mt-0.5 flex items-center gap-1">
             {isAdmin ? (
               <>
@@ -171,24 +183,6 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             </Link>
 
             <Link
-              href="/hub"
-              onClick={handleItemClick}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-charcoal/80 hover:text-indigo hover:bg-sand/30 transition-all group"
-            >
-              <Compass className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
-              <span>Explore Sourcing Hub</span>
-            </Link>
-
-            <Link
-              href="/listings"
-              onClick={handleItemClick}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-charcoal/80 hover:text-indigo hover:bg-sand/30 transition-all group"
-            >
-              <Building className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
-              <span>Browse Properties</span>
-            </Link>
-
-            <Link
               href="/services"
               onClick={handleItemClick}
               className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-charcoal/80 hover:text-indigo hover:bg-sand/30 transition-all group"
@@ -207,21 +201,12 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             </div>
 
             <Link
-              href="/hub"
+              href="/profile"
               onClick={handleItemClick}
               className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-charcoal/80 hover:text-indigo hover:bg-sand/30 transition-all group"
             >
-              <Compass className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
-              <span>Explore Sourcing Hub</span>
-            </Link>
-
-            <Link
-              href="/listings"
-              onClick={handleItemClick}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-charcoal/80 hover:text-indigo hover:bg-sand/30 transition-all group"
-            >
-              <Building className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
-              <span>Browse Properties</span>
+              <User className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
+              <span>My Profile</span>
             </Link>
 
             <Link
