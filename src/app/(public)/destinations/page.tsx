@@ -2,13 +2,14 @@
 
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Compass, Sparkles, HeartHandshake } from "lucide-react";
+import { Compass, Sparkles, HeartHandshake, LayoutGrid, List, ArrowUpDown, Building2 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 import { DESTINATIONS, TAGS, type Destination } from "@/features/destinations";
 import DestinationHero from "@/features/destinations/components/DestinationHero";
 import DestinationsFilter from "@/features/destinations/components/DestinationsFilter";
 import DestinationCard from "@/features/destinations/components/DestinationCard";
+import DestinationDrawer from "@/features/destinations/components/DestinationDrawer";
 
 export default function DestinationsPage() {
   const router = useRouter();
@@ -19,15 +20,20 @@ export default function DestinationsPage() {
   const [limitToSelectedCityRegion, setLimitToSelectedCityRegion] = useState(true);
   const [onlyWeddingDestinations, setOnlyWeddingDestinations] = useState(false);
 
+  // New Card Layout & Sorting States
+  const [viewMode, setViewMode] = useState<"grid" | "compact">("grid");
+  const [sortBy, setSortBy] = useState<"recommended" | "properties" | "score" | "name" | "wedding">("recommended");
+  const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null);
+
   // Identify the region of the selected city
   const selectedCityRegion = useMemo(() => {
     const found = DESTINATIONS.find(d => d.name.toLowerCase() === selectedCity.toLowerCase());
     if (found) return found.tag;
-    
+
     const rajasthanFallback = ["pali", "alwar"];
     const gujaratFallback = ["gandhinagar", "kutch", "anand"];
     const nameLower = selectedCity.toLowerCase();
-    
+
     if (rajasthanFallback.includes(nameLower)) return "Rajasthan";
     if (gujaratFallback.includes(nameLower)) return "Gujarat";
     return "All";
@@ -47,10 +53,10 @@ export default function DestinationsPage() {
   const tagStats = useMemo(() => {
     const stats: { [key: string]: { cities: number; listings: number } } = {};
     TAGS.forEach(tag => {
-      const cities = tag === "All" 
-        ? DESTINATIONS 
+      const cities = tag === "All"
+        ? DESTINATIONS
         : DESTINATIONS.filter(d => d.tag === tag);
-      
+
       const listings = cities.reduce((acc, c) => acc + (cityPropertiesMap[c.name.toLowerCase()] || 0), 0);
       stats[tag] = { cities: cities.length, listings };
     });
@@ -81,10 +87,25 @@ export default function DestinationsPage() {
     });
   }, [activeFilter, searchQuery, selectedCityRegion, limitToSelectedCityRegion, onlyWeddingDestinations]);
 
+  // Sorted list of destinations
+  const sortedDestinations = useMemo(() => {
+    const list = [...filteredDestinations];
+    if (sortBy === "properties") {
+      list.sort((a, b) => (cityPropertiesMap[b.name.toLowerCase()] || 0) - (cityPropertiesMap[a.name.toLowerCase()] || 0));
+    } else if (sortBy === "score") {
+      list.sort((a, b) => (parseFloat(b.investmentIndex || "0") - parseFloat(a.investmentIndex || "0")));
+    } else if (sortBy === "name") {
+      list.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortBy === "wedding") {
+      list.sort((a, b) => ((b.weddingVenues?.length || 0) + (b.uniqueWeddingProperties?.length || 0)) - ((a.weddingVenues?.length || 0) + (a.uniqueWeddingProperties?.length || 0)));
+    }
+    return list;
+  }, [filteredDestinations, sortBy, cityPropertiesMap]);
+
   // Get autocomplete suggestions
   const autocompleteSuggestions = useMemo(() => {
     if (!searchQuery.trim()) return [];
-    return DESTINATIONS.filter(d => 
+    return DESTINATIONS.filter(d =>
       d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       d.vibe.toLowerCase().includes(searchQuery.toLowerCase())
     ).slice(0, 5);
@@ -96,7 +117,7 @@ export default function DestinationsPage() {
 
   return (
     <div className="flex flex-col w-full min-h-screen relative bg-cream/30">
-      
+
       {/* 1. HERO SECTION (Editorial Search & Gradient) */}
       <DestinationHero
         searchQuery={searchQuery}
@@ -111,36 +132,7 @@ export default function DestinationsPage() {
       />
 
       {/* 2. DEDICATED CITY REGIONS & FILTER GRID */}
-      <section className="relative py-12 px-4 md:px-8 max-w-7xl mx-auto w-full z-20 -mt-12 text-left bg-white rounded-[32px] shadow-xl border border-indigo/5 p-6 md:p-10 mb-16">
-        
-        {/* Wedding Highlights Callout Banner */}
-        <div className="mb-8 p-4 md:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-100/40 to-terracotta/10 border border-amber-300/50 flex flex-col md:flex-row items-center justify-between gap-4 text-xs md:text-sm text-indigo">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md">
-              <HeartHandshake className="w-5 h-5" />
-            </div>
-            <div>
-              <strong className="block text-indigo font-serif font-black text-base leading-tight">
-                Destination Weddings & Heritage Venues
-              </strong>
-              <span className="text-charcoal/70 font-medium">
-                Showing <strong className="text-amber-800 font-bold">{totalWeddingHighlights}+ curated wedding places & luxury palatial estates</strong> across India.
-              </span>
-            </div>
-          </div>
-
-          <button
-            onClick={() => setOnlyWeddingDestinations(!onlyWeddingDestinations)}
-            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer shrink-0 flex items-center gap-1.5 border ${
-              onlyWeddingDestinations
-                ? "bg-amber-600 border-amber-600 text-white shadow-amber-600/20 shadow-lg"
-                : "bg-white border-amber-300 hover:bg-amber-50 text-amber-900"
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>{onlyWeddingDestinations ? "Showing Wedding Hotspots" : "Filter Wedding Hotspots"}</span>
-          </button>
-        </div>
+      <section className="relative py-12 px-4 md:px-8 max-w-7xl mx-auto w-full z-20 -mt-12 text-left bg-white rounded-2xl shadow-xl border border-indigo/5 p-6 md:p-10 mb-16">
 
         {/* Centered Symmetric Region Filters */}
         <DestinationsFilter
@@ -156,7 +148,7 @@ export default function DestinationsPage() {
         />
 
         {limitToSelectedCityRegion && selectedCityRegion !== "All" && (
-          <div className="mb-8 p-4 rounded-2xl bg-indigo/5 border border-indigo/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs md:text-sm font-semibold text-indigo animate-fade-in">
+          <div className="mb-8 p-4 rounded-sm bg-indigo/5 border border-indigo/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs md:text-sm font-semibold text-indigo animate-fade-in">
             <div className="flex items-center gap-2">
               <Compass className="w-5 h-5 text-terracotta animate-spin" style={{ animationDuration: '4s' }} />
               <span>
@@ -173,15 +165,79 @@ export default function DestinationsPage() {
           </div>
         )}
 
-        {/* Dynamic Cards Grid - Links Directly to City Page Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-center mt-12">
-          {filteredDestinations.length > 0 ? (
-            filteredDestinations.map((dest) => (
+        {/* Card Controls Toolbar: Counter, Sort Dropdown & Layout Mode Toggle */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-4 px-2 border-b border-sand/60 mb-8">
+          <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-indigo">
+            <span className="bg-indigo/10 text-indigo px-3 py-1 rounded-md text-xs font-black">
+              {sortedDestinations.length} {sortedDestinations.length === 1 ? "Destination" : "Destinations"}
+            </span>
+            <span className="text-charcoal/60 font-normal">
+              available in this view
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            {/* Sort Select */}
+            <div className="flex items-center gap-2 bg-sand/30 border border-sand px-3 py-1.5 rounded-xl text-xs font-bold text-indigo">
+              <ArrowUpDown className="w-3.5 h-3.5 text-indigo/60" />
+              <span className="text-charcoal/60 font-semibold hidden md:inline">Sort:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="bg-transparent text-xs font-black text-indigo focus:outline-none cursor-pointer"
+              >
+                <option value="recommended">Recommended</option>
+                <option value="properties">Most Properties</option>
+                <option value="score">Highest Growth Score</option>
+                <option value="wedding">Wedding Hotspots</option>
+                <option value="name">Alphabetical (A-Z)</option>
+              </select>
+            </div>
+
+            {/* View Mode Toggle Buttons */}
+            <div className="flex items-center bg-sand/40 border border-sand p-1 rounded-xl gap-1">
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${viewMode === "grid"
+                  ? "bg-white text-indigo shadow-xs font-bold"
+                  : "text-charcoal/50 hover:text-indigo"
+                  }`}
+                title="Grid View"
+                aria-label="Grid View Mode"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode("compact")}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${viewMode === "compact"
+                  ? "bg-white text-indigo shadow-xs font-bold"
+                  : "text-charcoal/50 hover:text-indigo"
+                  }`}
+                title="Compact List View"
+                aria-label="Compact List View Mode"
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Dynamic Cards Layout (Grid or Compact) */}
+        <div
+          className={
+            viewMode === "grid"
+              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-center"
+              : "flex flex-col gap-6"
+          }
+        >
+          {sortedDestinations.length > 0 ? (
+            sortedDestinations.map((dest) => (
               <DestinationCard
                 key={dest.name}
                 dest={dest}
                 propertyCount={cityPropertiesMap[dest.name.toLowerCase()] || 0}
-                className="h-[400px]"
+                onSelect={(selected) => setSelectedDestination(selected)}
+                viewMode={viewMode}
               />
             ))
           ) : (
@@ -196,6 +252,14 @@ export default function DestinationsPage() {
         </div>
       </section>
 
+      {/* Destination Quick Detail Drawer */}
+      <DestinationDrawer
+        selectedDestination={selectedDestination}
+        setSelectedDestination={setSelectedDestination}
+        cityPropertiesMap={cityPropertiesMap}
+      />
+
     </div>
   );
 }
+
