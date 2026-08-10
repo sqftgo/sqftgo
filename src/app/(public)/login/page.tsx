@@ -95,17 +95,17 @@ function AuthForm() {
 
   const redirectAfterAuth = (role: "user" | "broker" | "admin") => {
     const next = safeRedirectPath(searchParams.get("next"), "");
-    if (next) {
-      router.push(next);
+    // Admins/brokers always land in their portal unless `next` is already in-portal.
+    // A leftover ?next=/profile (etc.) must not dump them on the public site UI.
+    if (role === "admin") {
+      router.push(next.startsWith("/admin") ? next : "/admin");
       return;
     }
-    if (role === "admin") {
-      router.push("/admin");
-    } else if (role === "broker") {
-      router.push("/dealer/dashboard");
-    } else {
-      router.push("/");
+    if (role === "broker") {
+      router.push(next.startsWith("/dealer") ? next : "/dealer/dashboard");
+      return;
     }
+    router.push(next || "/");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
