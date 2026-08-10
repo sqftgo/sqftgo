@@ -86,12 +86,24 @@ export async function POST(request: NextRequest, context: RouteContext) {
   }
 
   const input = parsed.data;
+
+  // When signed in, bind inquiry to the account email so "My Inquiries" can find it.
+  const { user, profile } = await authenticateApiRequest(request);
+  const boundEmail =
+    user && profile?.email
+      ? profile.email.toLowerCase()
+      : input.email.toLowerCase();
+  const boundName =
+    user && profile?.name?.trim()
+      ? profile.name.trim()
+      : input.name;
+
   const { data, error: insertError } = await admin
     .from("property_inquiries")
     .insert({
       property_id: propertyId,
-      name: input.name,
-      email: input.email.toLowerCase(),
+      name: boundName,
+      email: boundEmail,
       phone: input.phone,
       message: input.message,
       status: "new",
@@ -108,7 +120,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     userId: prop.owner_id,
     forRole: "broker",
     title: "New property inquiry",
-    message: `${input.name} inquired about “${prop.title}”.`,
+    message: `${boundName} inquired about “${prop.title}”.`,
     type: "info",
     eventKey: "inquiry.created",
     entityType: "property_inquiry",

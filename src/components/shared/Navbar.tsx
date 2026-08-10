@@ -13,7 +13,18 @@ import { useActiveCities } from "@/hooks/useActiveCities";
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const { selectedCity, setSelectedCity, isLoggedIn, logout, userEmail, favorites, userRole } = useApp();
+  const {
+    selectedCity,
+    setSelectedCity,
+    isLoggedIn,
+    logout,
+    userEmail,
+    userName,
+    userProfile,
+    favorites,
+    userRole,
+  } = useApp();
+  const displayName = (userName || userProfile?.name || "").trim() || userEmail;
   const { cities: activeCities } = useActiveCities();
   
   const [isScrolled, setIsScrolled] = useState(false);
@@ -192,13 +203,16 @@ export const Navbar: React.FC = () => {
                     className="flex items-center gap-2 px-2 py-2 sm:px-3 text-xs sm:text-sm font-bold text-charcoal bg-sand hover:bg-sand/80 rounded-xl transition-all duration-200 shadow-sm"
                   >
                     <Avatar
-                      name={userEmail || "U"}
+                      name={displayName || "U"}
+                      src={userProfile?.avatar || null}
                       size="xs"
                       shape="square"
                       tone="indigo"
                       className="w-5 h-5 text-[10px] bg-indigo text-white border-0"
                     />
-                    <span className="hidden sm:inline max-w-[100px] truncate text-charcoal">{userEmail}</span>
+                    <span className="hidden sm:inline max-w-[100px] truncate text-charcoal" title={userEmail}>
+                      {displayName}
+                    </span>
                     <ChevronDown className={`hidden sm:inline w-3.5 h-3.5 text-charcoal/50 transition-transform duration-200 ${showUserDropdown ? "rotate-180" : ""}`} />
                   </button>
 
@@ -219,6 +233,8 @@ export const Navbar: React.FC = () => {
                         >
                           <UserDropdown
                             userEmail={userEmail}
+                            userName={displayName}
+                            userAvatar={userProfile?.avatar}
                             userRole={userRole}
                             onClose={() => setShowUserDropdown(false)}
                             onLogout={() => {

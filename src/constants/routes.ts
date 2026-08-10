@@ -12,7 +12,6 @@ export const ROUTES = {
   services: "/services",
   servicesRegister: "/services/register",
   postProperty: "/post-property",
-  hub: "/hub",
   help: "/help",
   privacy: "/privacy",
   terms: "/terms",

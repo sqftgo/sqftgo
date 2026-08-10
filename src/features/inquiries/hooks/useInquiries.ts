@@ -27,8 +27,13 @@ export function useInquiries({
       setInquiriesReady(true);
       return;
     }
+    setInquiriesReady(false);
     try {
-      if (userRole === "user") {
+      // Buyers always use mine=1. Brokers/admins list owned/all.
+      // While role is still null after login, prefer mine=1 (safe for buyers).
+      if (userRole === "broker" || userRole === "admin") {
+        setInquiriesState(await inquiryService.listAll());
+      } else {
         const rows = await inquiryService.listFlat({ mine: true });
         const out: Record<string, PropertyInquiry[]> = {};
         for (const row of rows) {
@@ -45,8 +50,6 @@ export function useInquiries({
           out[row.propertyId].push(entry);
         }
         setInquiriesState(out);
-      } else {
-        setInquiriesState(await inquiryService.listAll());
       }
     } catch {
       setInquiriesState({});
@@ -56,7 +59,10 @@ export function useInquiries({
   }, [isLoggedIn, userRole]);
 
   useEffect(() => {
-    if (!sessionReady) return;
+    if (!sessionReady) {
+      setInquiriesReady(false);
+      return;
+    }
     void refreshInquiries();
   }, [sessionReady, isLoggedIn, userRole, refreshInquiries]);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { Property } from "@/types";
 import { useApp } from "@/context/AppContext";
 import { Send, CheckCircle2, User, Mail, Phone, MessageSquare, CheckCircle, ShieldAlert } from "lucide-react";
@@ -13,21 +13,33 @@ interface InquiryFormProps {
   onSuccess?: () => void;
 }
 
+const DEFAULT_MESSAGE =
+  "Hi, I am interested in this property and would like to receive more details. Please contact me.";
+
 export const InquiryForm: React.FC<InquiryFormProps> = ({
   property,
   onSuccess,
 }) => {
-  const { submitInquiry } = useApp();
+  const { submitInquiry, isLoggedIn, userEmail, userName } = useApp();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
-    message: "Hi, I am interested in this property and would like to receive more details. Please contact me.",
+    message: DEFAULT_MESSAGE,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [agreeToTrustTerms, setAgreeToTrustTerms] = useState(false);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    setFormData((prev) => ({
+      ...prev,
+      name: prev.name || userName || "",
+      email: userEmail || prev.email,
+    }));
+  }, [isLoggedIn, userEmail, userName]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,15 +47,20 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({
     setIsSubmitting(true);
     setError(null);
     try {
-      await submitInquiry(property.id, formData);
+      const payload = {
+        ...formData,
+        // Keep inquiry tied to the account so My Inquiries can list it.
+        email: isLoggedIn && userEmail ? userEmail : formData.email,
+        name: formData.name || userName || formData.email,
+      };
+      await submitInquiry(property.id, payload);
       setIsSuccess(true);
       setAgreeToTrustTerms(false);
       setFormData({
-        name: "",
-        email: "",
+        name: isLoggedIn ? userName || "" : "",
+        email: isLoggedIn ? userEmail || "" : "",
         phone: "",
-        message:
-          "Hi, I am interested in this property and would like to receive more details. Please contact me.",
+        message: DEFAULT_MESSAGE,
       });
       onSuccess?.();
     } catch (err) {
@@ -136,11 +153,19 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({
                   required
                   placeholder="e.g. rahul@example.com"
                   value={formData.email}
+                  readOnly={isLoggedIn && Boolean(userEmail)}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-white border border-sand rounded-xl py-2.5 pl-10 pr-4 focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta text-charcoal font-medium"
+                  className={`w-full bg-white border border-sand rounded-xl py-2.5 pl-10 pr-4 focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta text-charcoal font-medium ${
+                    isLoggedIn && userEmail ? "bg-sand/20 cursor-not-allowed" : ""
+                  }`}
                 />
                 <Mail className="absolute left-3.5 top-3.5 w-4.5 h-4.5 text-terracotta/75" />
               </div>
+              {isLoggedIn && userEmail ? (
+                <p className="text-[10px] text-charcoal/45 font-semibold">
+                  Using your account email so this shows under My Inquiries.
+                </p>
+              ) : null}
             </div>
 
             {/* Phone */}
