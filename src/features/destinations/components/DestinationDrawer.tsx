@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { X, Star, TrendingUp, MapPin, BookOpen, Phone, ExternalLink, Compass, Users, Sparkles, HeartHandshake, CheckCircle2, ShieldCheck, ArrowRight } from "lucide-react";
 import { Destination, WeddingVenue, WeddingProperty } from "../data/destinations";
@@ -30,24 +31,6 @@ export default function DestinationDrawer({
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
-      {/* Vanilla CSS keyframes */}
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slideIn {
-          from { transform: translate3d(100%, 0, 0); }
-          to { transform: translate3d(0, 0, 0); }
-        }
-        .animate-fade-in-quick {
-          animation: fadeIn 0.25s ease-out forwards;
-        }
-        .animate-slide-in-quick {
-          animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-      `}</style>
-
       {/* Dark glass backdrop overlay */}
       <div
         onClick={() => setSelectedDestination(null)}
@@ -60,10 +43,12 @@ export default function DestinationDrawer({
       >
         {/* Header Cover Image */}
         <div className="relative h-64 md:h-72 w-full bg-sand overflow-hidden flex-shrink-0 animate-fade-in-quick">
-          <img 
-            src={selectedDestination.image} 
-            alt={selectedDestination.name} 
-            className="w-full h-full object-cover"
+          <Image
+            src={selectedDestination.image}
+            alt={selectedDestination.name}
+            fill
+            className="object-cover"
+            sizes="580px"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-black/40" />
           
@@ -183,10 +168,12 @@ export default function DestinationDrawer({
                     className="bg-white border border-sand hover:border-amber-300 rounded-3xl overflow-hidden shadow-md transition-all flex flex-col group"
                   >
                     <div className="relative h-44 w-full bg-sand/30 overflow-hidden">
-                      <img 
-                        src={venue.image} 
-                        alt={venue.name} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      <Image
+                        src={venue.image}
+                        alt={venue.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="540px"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
                       
@@ -262,10 +249,12 @@ export default function DestinationDrawer({
                     className="bg-white border border-sand hover:border-indigo/40 rounded-3xl overflow-hidden shadow-md transition-all flex flex-col group"
                   >
                     <div className="relative h-44 w-full bg-sand/30 overflow-hidden">
-                      <img 
-                        src={prop.image} 
-                        alt={prop.title} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      <Image
+                        src={prop.image}
+                        alt={prop.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="540px"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
                       

@@ -1,5 +1,6 @@
 import React from "react";
-import { Compass, Search, X, MapPin, Building } from "lucide-react";
+import Image from "next/image";
+import { Search, X, Building } from "lucide-react";
 import { Destination } from "../data/destinations";
 
 interface DestinationHeroProps {
@@ -12,6 +13,9 @@ interface DestinationHeroProps {
   totalDestinations: number;
   totalProperties: number;
   cityPropertiesMap: { [key: string]: number };
+  // Fix 4: real computed stats instead of hardcoded values
+  avgGrowthScore: string;
+  totalWeddingHotspots: number;
 }
 
 export default function DestinationHero({
@@ -24,6 +28,8 @@ export default function DestinationHero({
   totalDestinations,
   totalProperties,
   cityPropertiesMap,
+  avgGrowthScore,
+  totalWeddingHotspots,
 }: DestinationHeroProps) {
   const popularSearches = ["Udaipur", "Jaipur", "Shimla", "Ahmedabad"];
 
@@ -32,12 +38,15 @@ export default function DestinationHero({
       {/* Luxury Background Hero Container */}
       <div className="max-w-7xl mx-auto w-full relative rounded-[40px] bg-indigo overflow-hidden min-h-[500px] md:min-h-[560px] flex flex-col justify-between p-8 md:p-12 shadow-2xl border border-white/5 group">
         
-        {/* Background Image with slow hover parallax zoom effect */}
+        {/* Fix 3: next/image with slow hover parallax zoom effect */}
         <div className="absolute inset-0 overflow-hidden rounded-[40px] select-none pointer-events-none z-0">
-          <img
-            src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=2000&auto=format&fit=crop"
+          <Image
+            src="/DestinationHero.png"
             alt="Royal Rajasthan Palace"
-            className="w-full h-full object-cover object-center scale-100 group-hover:scale-105 transition-transform duration-[8000ms] ease-out"
+            fill
+            className="object-cover object-center scale-100 group-hover:scale-105 transition-transform duration-[8000ms] ease-out"
+            sizes="100vw"
+            priority
           />
           {/* Dark gradient overlay for text contrast and premium feel */}
           <div className="absolute inset-0 bg-gradient-to-b from-indigo/50 via-indigo/40 to-indigo/80" />
@@ -125,11 +134,16 @@ export default function DestinationHero({
                           className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-sand/40 text-xs font-bold text-charcoal transition-colors cursor-pointer"
                         >
                           <div className="flex items-center gap-3">
-                            <img
-                              src={dest.image}
-                              alt={dest.name}
-                              className="w-8 h-8 rounded-lg object-cover flex-shrink-0 border border-sand"
-                            />
+                            {/* Fix 3: next/image in autocomplete dropdown */}
+                            <div className="relative w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 border border-sand">
+                              <Image
+                                src={dest.image}
+                                alt={dest.name}
+                                fill
+                                className="object-cover"
+                                sizes="32px"
+                              />
+                            </div>
                             <div className="flex flex-col text-left">
                               <span className="text-charcoal font-bold text-sm leading-tight">{dest.name}</span>
                               <span className="text-[10px] text-charcoal/40 font-semibold">{dest.vibe}</span>
@@ -152,13 +166,13 @@ export default function DestinationHero({
           </div>
         </div>
 
-        {/* Stats Dashboard Grid (Lightweight, Premium layout matching homepage) */}
+        {/* Fix 4: Stats Dashboard — computed real values instead of hardcoded */}
         <div className="relative z-10 w-full flex flex-wrap items-center justify-center gap-x-12 gap-y-4 pt-6 border-t border-white/10 max-w-4xl mx-auto mb-4">
           {[
             { value: `${totalDestinations}`, label: "Heritage Cities" },
             { value: `${totalProperties}`, label: "Verified Listings" },
-            { value: "9.4/10", label: "Growth Score" },
-            { value: "100%", label: "Curated Vibe" }
+            { value: avgGrowthScore, label: "Avg Growth Score" },
+            { value: `${totalWeddingHotspots}`, label: "Wedding Hotspots" },
           ].map((stat, i) => (
             <div key={i} className="flex flex-col items-center gap-0.5 min-w-[120px] text-center">
               <span className="text-xl sm:text-2xl font-serif font-black text-white leading-none">
