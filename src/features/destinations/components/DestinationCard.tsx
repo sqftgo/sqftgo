@@ -3,32 +3,22 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, MapPin, Eye } from "lucide-react";
+import { ArrowRight, MapPin } from "lucide-react";
 import { Destination } from "../data/destinations";
 
 interface DestinationCardProps {
   dest: Destination;
   propertyCount?: number;
-  onSelect?: (dest: Destination) => void;
   className?: string;
   viewMode?: "grid" | "compact";
 }
 
 export default function DestinationCard({
   dest,
-  onSelect,
   className = "",
   viewMode = "grid",
 }: DestinationCardProps) {
   const targetUrl = `/destinations/${dest.name.toLowerCase()}`;
-
-  const handleQuickView = (e: React.MouseEvent) => {
-    if (onSelect) {
-      e.preventDefault();
-      e.stopPropagation();
-      onSelect(dest);
-    }
-  };
 
   // Compact Horizontal List Layout
   if (viewMode === "compact") {
@@ -84,18 +74,6 @@ export default function DestinationCard({
                 <span>Explore Destination</span>
                 <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform text-[#0F172A]" />
               </Link>
-
-              {onSelect && (
-                <button
-                  onClick={handleQuickView}
-                  aria-label={`Quick View ${dest.name}`}
-                  className="h-11 px-3.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-                  title="Quick View Destination Details"
-                >
-                  <Eye className="w-4 h-4" />
-                  <span className="hidden sm:inline">Quick Preview</span>
-                </button>
-              )}
             </div>
           </div>
         </div>
@@ -165,17 +143,6 @@ export default function DestinationCard({
               <span>Explore {dest.name}</span>
               <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1.5 transition-transform duration-300 text-[#0F172A]" />
             </Link>
-
-            {onSelect && (
-              <button
-                onClick={handleQuickView}
-                className="h-12 px-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs flex items-center justify-center transition-colors cursor-pointer shrink-0"
-                title="Quick View Destination Details"
-                aria-label={`Quick View ${dest.name}`}
-              >
-                <Eye className="w-4 h-4 text-amber-200" />
-              </button>
-            )}
           </div>
 
         </div>
