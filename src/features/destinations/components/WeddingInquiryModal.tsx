@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Calendar, Users, Send, CheckCircle2, Phone, Sparkles } from "lucide-react";
+import { X, Calendar, Users, Send, CheckCircle2, Phone, Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { WeddingVenue, WeddingProperty } from "../data/destinations";
+import { useApp } from "@/context/AppContext";
 
 interface WeddingInquiryModalProps {
   item: WeddingVenue | WeddingProperty | null;
@@ -17,7 +18,10 @@ export default function WeddingInquiryModal({
   destinationName,
   onClose,
 }: WeddingInquiryModalProps) {
+  const { addGeneralEnquiry } = useApp();
   const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -33,17 +37,51 @@ export default function WeddingInquiryModal({
   const venue = isVenue ? (item as WeddingVenue) : null;
   const property = !isVenue ? (item as WeddingProperty) : null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const itemName = isVenue ? venue!.name : property!.title;
+  const itemPrice = isVenue ? venue!.pricePerEvent : property!.price;
+  const itemSubtype = isVenue ? venue!.type : property!.propertyType;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setIsLoading(true);
+    setErrorMsg(null);
+    try {
+      await addGeneralEnquiry({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        mobile: formData.phone.trim(),
+        city: destinationName,
+        propertyType: isVenue ? "Wedding Venue" : "Wedding Property",
+        budget: itemPrice,
+        remarks: `Inquiry for: ${itemName} (${itemSubtype}) in ${destinationName}`,
+        message: formData.notes.trim() || undefined,
+        payload: {
+          itemId: isVenue ? venue!.id : property!.id,
+          itemName,
+          itemType,
+          destinationName,
+          eventDate: formData.eventDate || null,
+          guestCount: formData.guestCount || null,
+        },
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setErrorMsg(
+        err instanceof Error
+          ? err.message
+          : "Unable to send inquiry. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       {/* Dark backdrop */}
-      <div 
+      <div
         onClick={onClose}
-        className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm animate-fade-in-quick" 
+        className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm animate-fade-in-quick"
       />
 
       {/* Modal Container */}
@@ -51,7 +89,7 @@ export default function WeddingInquiryModal({
         {/* Top Header Bar */}
         <div className="relative bg-indigo p-6 text-white overflow-hidden">
           <div className="absolute top-0 right-0 w-40 h-40 bg-terracotta/20 rounded-full blur-3xl pointer-events-none" />
-          
+
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
@@ -68,11 +106,11 @@ export default function WeddingInquiryModal({
           </div>
 
           <h3 className="text-2xl font-serif font-black text-white leading-tight">
-            {isVenue ? venue?.name : property?.title}
+            {itemName}
           </h3>
 
           <p className="text-xs text-white/70 font-semibold mt-1">
-            {isVenue ? `${venue?.type} • ${venue?.pricePerEvent}` : `${property?.propertyType} • ${property?.price}`}
+            {itemSubtype} • {itemPrice}
           </p>
         </div>
 
@@ -86,7 +124,9 @@ export default function WeddingInquiryModal({
               <div>
                 <h4 className="text-2xl font-serif font-black text-indigo">Inquiry Sent Successfully!</h4>
                 <p className="text-xs text-charcoal/70 font-semibold max-w-sm mx-auto mt-2 leading-relaxed">
-                  Our Concierge Lead for <strong className="text-terracotta">{destinationName}</strong> will contact you within 2 hours with availability, custom pricing, and private tour arrangements.
+                  Our Concierge Lead for{" "}
+                  <strong className="text-terracotta">{destinationName}</strong> will contact you
+                  within 2 hours with availability, custom pricing, and private tour arrangements.
                 </p>
               </div>
               <button
@@ -100,7 +140,7 @@ export default function WeddingInquiryModal({
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="flex items-center gap-2 bg-amber-50 border border-amber-200/80 rounded-2xl p-3 text-xs text-amber-900 font-semibold">
                 <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
-                <span>Get direct quote, event date availability & site visit invitation.</span>
+                <span>Get direct quote, event date availability &amp; site visit invitation.</span>
               </div>
 
               <div>
@@ -195,12 +235,29 @@ export default function WeddingInquiryModal({
                 />
               </div>
 
+              {errorMsg && (
+                <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-semibold">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="mt-2 flex items-center justify-center gap-2 w-full py-4 bg-terracotta hover:bg-terracotta-hover text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg transition-all cursor-pointer"
+                disabled={isLoading}
+                className="mt-2 flex items-center justify-center gap-2 w-full py-4 bg-terracotta hover:bg-terracotta-hover disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg transition-all cursor-pointer"
               >
-                <span>Submit Destination Inquiry</span>
-                <Send className="w-4 h-4" />
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Sending Inquiry...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Submit Destination Inquiry</span>
+                    <Send className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </form>
           )}

@@ -1,6 +1,4 @@
-"use client";
-
-import React, { use } from "react";
+import React from "react";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 import { DESTINATIONS } from "@/features/destinations";
@@ -10,10 +8,10 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default function CityDetailPage({ params }: PageProps) {
-  const resolvedParams = use(params);
+export default async function CityDetailPage({ params }: PageProps) {
+  const { slug } = await params;
+  const slugLower = decodeURIComponent(slug).toLowerCase();
 
-  const slugLower = decodeURIComponent(resolvedParams.slug).toLowerCase();
   const destination = DESTINATIONS.find(
     (d) => d.name.toLowerCase() === slugLower
   );
@@ -26,7 +24,7 @@ export default function CityDetailPage({ params }: PageProps) {
         </div>
         <h2 className="font-serif font-black text-2xl text-indigo mb-2">Destination Not Found</h2>
         <p className="text-sm text-charcoal/70 mb-8 max-w-md text-center">
-          The destination "{resolvedParams.slug}" you are looking for does not exist or has been moved.
+          The destination &quot;{slug}&quot; you are looking for does not exist or has been moved.
         </p>
         <Link
           href="/destinations"
@@ -38,7 +36,5 @@ export default function CityDetailPage({ params }: PageProps) {
     );
   }
 
-  return (
-    <CityPageLayout destination={destination} />
-  );
+  return <CityPageLayout destination={destination} />;
 }

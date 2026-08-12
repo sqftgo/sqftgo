@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, MapPin, Sparkles, Building2, TrendingUp, Eye, Coins } from "lucide-react";
+import { ArrowRight, MapPin, Eye } from "lucide-react";
 import { Destination } from "../data/destinations";
 
 interface DestinationCardProps {
@@ -15,13 +16,10 @@ interface DestinationCardProps {
 
 export default function DestinationCard({
   dest,
-  propertyCount = 0,
   onSelect,
   className = "",
   viewMode = "grid",
 }: DestinationCardProps) {
-  const venueCount = dest.weddingVenues?.length || 0;
-  const uniquePropCount = dest.uniqueWeddingProperties?.length || 0;
   const targetUrl = `/destinations/${dest.name.toLowerCase()}`;
 
   const handleQuickView = (e: React.MouseEvent) => {
@@ -38,12 +36,14 @@ export default function DestinationCard({
       <div
         className={`group relative flex flex-col md:flex-row items-stretch rounded-3xl overflow-hidden bg-[#0F172A] border border-white/10 shadow-lg hover:shadow-2xl hover:border-amber-400/40 transition-all duration-300 hover:-translate-y-1 cursor-pointer ${className}`}
       >
-        {/* Compact Image */}
+        {/* Fix 3: next/image */}
         <div className="relative md:w-2/5 h-48 md:h-auto overflow-hidden bg-slate-900 flex-shrink-0">
-          <img
+          <Image
             src={dest.image}
             alt={dest.name}
-            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 brightness-90 saturate-110"
+            fill
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 brightness-90 saturate-110"
+            sizes="(max-width: 768px) 100vw, 40vw"
           />
           <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-slate-950 via-slate-950/40 to-transparent pointer-events-none" />
           
@@ -62,17 +62,7 @@ export default function DestinationCard({
                 <h3 className="text-2xl font-serif font-black text-white tracking-tight">
                   {dest.name}
                 </h3>
-                <span className="text-[9px] font-black text-amber-300 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/30 uppercase tracking-widest">
-                  {dest.vibe}
-                </span>
               </div>
-              
-              {dest.investmentIndex && (
-                <span className="text-[10px] font-extrabold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-500/30 flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" />
-                  <span>Score {dest.investmentIndex}</span>
-                </span>
-              )}
             </div>
 
             <p className="text-[10px] text-amber-200/90 font-bold uppercase tracking-wider mb-2">
@@ -85,28 +75,6 @@ export default function DestinationCard({
           </div>
 
           <div>
-            {/* Dynamic Stats Row */}
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-white/90 text-[11px] font-bold">
-                <Building2 className="w-3.5 h-3.5 text-amber-400" />
-                <span>{propertyCount} Properties</span>
-              </span>
-
-              {(venueCount > 0 || uniquePropCount > 0) && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-bold">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>{venueCount + uniquePropCount} Wedding Hotspots</span>
-                </span>
-              )}
-
-              {dest.averagePrice && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-white/80 text-[11px] font-medium">
-                  <Coins className="w-3.5 h-3.5 text-amber-300" />
-                  <span>Avg {dest.averagePrice}</span>
-                </span>
-              )}
-            </div>
-
             {/* CTAs */}
             <div className="flex items-center gap-3">
               <Link
@@ -120,6 +88,7 @@ export default function DestinationCard({
               {onSelect && (
                 <button
                   onClick={handleQuickView}
+                  aria-label={`Quick View ${dest.name}`}
                   className="h-11 px-3.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                   title="Quick View Destination Details"
                 >
@@ -140,12 +109,14 @@ export default function DestinationCard({
       className={`group relative flex flex-col rounded-3xl overflow-hidden bg-[#0F172A] border border-white/10 shadow-xl hover:shadow-2xl hover:border-amber-400/40 transition-all duration-500 hover:-translate-y-2 cursor-pointer min-h-[460px] ${className}`}
       aria-label={`Explore ${dest.name} wedding places and available villas`}
     >
-      {/* Cover Photo with Sunset luxury filter grading */}
+      {/* Fix 3: next/image — Cover Photo with Sunset luxury filter grading */}
       <div className="absolute inset-0 z-0 bg-[#0F172A] overflow-hidden">
-        <img
+        <Image
           src={dest.image}
           alt={dest.name}
-          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 brightness-[85%] saturate-[115%]"
+          fill
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 brightness-[85%] saturate-[115%]"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
 
         {/* Multi-layered Vignette Dark Gradients */}
@@ -161,36 +132,18 @@ export default function DestinationCard({
           <span>{dest.tag}</span>
         </div>
 
-        {/* Right Badges: Wedding & Rating */}
-        <div className="flex items-center gap-2">
-          {dest.investmentIndex && (
-            <div className="bg-emerald-950/70 backdrop-blur-md border border-emerald-500/40 text-emerald-300 text-[9px] font-extrabold h-7 flex items-center gap-1 px-2.5 rounded-full shadow-md">
-              <TrendingUp className="w-3 h-3 text-emerald-400" />
-              <span>{dest.investmentIndex}</span>
-            </div>
-          )}
-
-          {(venueCount > 0 || uniquePropCount > 0) && (
-            <div className="bg-gradient-to-r from-amber-500/90 to-amber-700/90 backdrop-blur-md border border-amber-300/40 text-white text-[9px] font-black uppercase tracking-wider h-7 flex items-center gap-1 px-2.5 rounded-full shadow-md">
-              <Sparkles className="w-3 h-3 text-amber-200" />
-              <span className="hidden sm:inline">Wedding Hotspot</span>
-            </div>
-          )}
-        </div>
+        {/* Right Badges: Wedding & Rating removed */}
       </div>
 
       {/* Bottom Content Area */}
       <div className="relative z-10 flex flex-col justify-end mt-auto p-6 text-left">
         <div className="flex flex-col gap-2">
 
-          {/* City Name & Vibe Header */}
+          {/* City Name Header */}
           <div className="flex items-center justify-between gap-3 w-full">
             <h3 className="text-3xl sm:text-4xl font-serif font-black text-white leading-none tracking-tight drop-shadow-lg group-hover:text-amber-100 transition-colors">
               {dest.name}
             </h3>
-            <span className="text-[9px] font-black text-amber-300 bg-amber-400/15 px-2.5 py-1 rounded-md border border-amber-400/30 uppercase tracking-widest leading-none flex-shrink-0 backdrop-blur-xs">
-              {dest.vibe}
-            </span>
           </div>
 
           {/* Subtitle */}
@@ -201,48 +154,7 @@ export default function DestinationCard({
           {/* 2-Line Description */}
           <p className="text-xs text-white/80 font-normal leading-relaxed my-1 line-clamp-2">
             {dest.desc}
-          </p>
-
-          {/* Dynamic Stats Chips Row */}
-          <div className="flex flex-wrap items-center gap-1.5 my-1.5">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/10 backdrop-blur-md border border-white/15 text-white/90 text-[10px] font-bold">
-              <Building2 className="w-3 h-3 text-amber-400" />
-              <span>{propertyCount} Properties</span>
-            </span>
-
-            {(venueCount > 0 || uniquePropCount > 0) && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-500/20 backdrop-blur-md border border-amber-400/30 text-amber-200 text-[10px] font-bold">
-                <Sparkles className="w-3 h-3 text-amber-300" />
-                <span>{venueCount + uniquePropCount} Venues</span>
-              </span>
-            )}
-
-            {dest.averagePrice && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/10 backdrop-blur-md border border-white/15 text-white/80 text-[10px] font-medium">
-                <Coins className="w-3 h-3 text-amber-300" />
-                <span className="truncate max-w-[140px]">{dest.averagePrice}</span>
-              </span>
-            )}
-          </div>
-
-          {/* Top Localities Pills (Preview) */}
-          {dest.topLocalities && dest.topLocalities.length > 0 && (
-            <div className="hidden sm:flex items-center gap-1 overflow-hidden opacity-90 my-0.5">
-              <span className="text-[9px] text-amber-200/70 font-semibold uppercase tracking-wider flex-shrink-0">
-                Top Areas:
-              </span>
-              <div className="flex items-center gap-1 truncate">
-                {dest.topLocalities.slice(0, 3).map((loc) => (
-                  <span
-                    key={loc}
-                    className="text-[9px] font-medium text-white/70 bg-white/5 border border-white/10 px-1.5 py-0.5 rounded"
-                  >
-                    {loc}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+          </p>          {/* Stats, badges, and top areas removed */}
 
           {/* CTAs Row */}
           <div className="mt-3 flex items-center gap-2 w-full">
@@ -271,4 +183,3 @@ export default function DestinationCard({
     </div>
   );
 }
-

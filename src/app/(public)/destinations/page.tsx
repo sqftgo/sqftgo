@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Compass, Sparkles, HeartHandshake, LayoutGrid, List, ArrowUpDown, Building2 } from "lucide-react";
+import { Compass, LayoutGrid, List, ArrowUpDown, HeartHandshake } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 import { DESTINATIONS, TAGS, type Destination } from "@/features/destinations";
@@ -18,9 +18,9 @@ export default function DestinationsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [limitToSelectedCityRegion, setLimitToSelectedCityRegion] = useState(true);
-  const [onlyWeddingDestinations, setOnlyWeddingDestinations] = useState(false);
+  const [onlyWeddingDestinations, setOnlyWeddingDestinations] = useState(false); // Fix 5
 
-  // New Card Layout & Sorting States
+  // Card Layout & Sorting States
   const [viewMode, setViewMode] = useState<"grid" | "compact">("grid");
   const [sortBy, setSortBy] = useState<"recommended" | "properties" | "score" | "name" | "wedding">("recommended");
   const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null);
@@ -63,12 +63,20 @@ export default function DestinationsPage() {
     return stats;
   }, [cityPropertiesMap]);
 
-  // Total wedding venues and unique properties across all destinations
-  const totalWeddingHighlights = useMemo(() => {
+  // Fix 4: Compute real average growth score from DESTINATIONS data
+  const avgGrowthScore = useMemo(() => {
+    const scores = DESTINATIONS
+      .map(d => parseFloat(d.investmentIndex?.split("/")[0] || "0"))
+      .filter(s => s > 0);
+    if (scores.length === 0) return "N/A";
+    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+    return `${avg.toFixed(1)}/10`;
+  }, []);
+
+  // Fix 4: Total wedding hotspots (venues + unique properties)
+  const totalWeddingHotspots = useMemo(() => {
     return DESTINATIONS.reduce((acc, d) => {
-      const v = d.weddingVenues?.length || 0;
-      const p = d.uniqueWeddingProperties?.length || 0;
-      return acc + v + p;
+      return acc + (d.weddingVenues?.length || 0) + (d.uniqueWeddingProperties?.length || 0);
     }, 0);
   }, []);
 
@@ -118,7 +126,7 @@ export default function DestinationsPage() {
   return (
     <div className="flex flex-col w-full min-h-screen relative bg-cream/30">
 
-      {/* 1. HERO SECTION (Editorial Search & Gradient) */}
+      {/* 1. HERO SECTION — Fix 4: pass computed stats */}
       <DestinationHero
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -129,6 +137,8 @@ export default function DestinationsPage() {
         totalDestinations={DESTINATIONS.length}
         totalProperties={properties.length}
         cityPropertiesMap={cityPropertiesMap}
+        avgGrowthScore={avgGrowthScore}
+        totalWeddingHotspots={totalWeddingHotspots}
       />
 
       {/* 2. DEDICATED CITY REGIONS & FILTER GRID */}
@@ -165,7 +175,7 @@ export default function DestinationsPage() {
           </div>
         )}
 
-        {/* Card Controls Toolbar: Counter, Sort Dropdown & Layout Mode Toggle */}
+        {/* Card Controls Toolbar: Counter, Sort Dropdown, Wedding Toggle & Layout Mode Toggle */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-4 px-2 border-b border-sand/60 mb-8">
           <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-indigo">
             <span className="bg-indigo/10 text-indigo px-3 py-1 rounded-md text-xs font-black">
@@ -176,14 +186,33 @@ export default function DestinationsPage() {
             </span>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end flex-wrap">
+
+            {/* Fix 5: Wedding Only Toggle Button */}
+            <button
+              onClick={() => setOnlyWeddingDestinations((v) => !v)}
+              suppressHydrationWarning
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black border transition-all cursor-pointer ${
+                onlyWeddingDestinations
+                  ? "bg-amber-500 border-amber-600 text-white shadow-md shadow-amber-500/30"
+                  : "bg-white border-sand text-charcoal/70 hover:border-amber-400 hover:text-amber-700"
+              }`}
+              title="Show only wedding hotspot destinations"
+            >
+              <HeartHandshake className="w-3.5 h-3.5" />
+              <span>Wedding Only</span>
+              {onlyWeddingDestinations && (
+                <span className="w-1.5 h-1.5 rounded-full bg-white inline-block ml-0.5" />
+              )}
+            </button>
+
             {/* Sort Select */}
             <div className="flex items-center gap-2 bg-sand/30 border border-sand px-3 py-1.5 rounded-xl text-xs font-bold text-indigo">
               <ArrowUpDown className="w-3.5 h-3.5 text-indigo/60" />
               <span className="text-charcoal/60 font-semibold hidden md:inline">Sort:</span>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
                 className="bg-transparent text-xs font-black text-indigo focus:outline-none cursor-pointer"
               >
                 <option value="recommended">Recommended</option>
@@ -245,8 +274,18 @@ export default function DestinationsPage() {
               <Compass className="w-12 h-12 text-charcoal/30 mx-auto mb-4 animate-bounce" />
               <h3 className="font-serif font-black text-xl text-indigo mb-1">No matching destinations</h3>
               <p className="text-xs font-semibold text-charcoal/50">
-                Try adjusting filters or searching for another keyword.
+                {onlyWeddingDestinations
+                  ? "No wedding hotspot destinations match your current filters."
+                  : "Try adjusting filters or searching for another keyword."}
               </p>
+              {onlyWeddingDestinations && (
+                <button
+                  onClick={() => setOnlyWeddingDestinations(false)}
+                  className="mt-4 px-4 py-2 rounded-xl bg-amber-100 border border-amber-300 text-amber-800 text-xs font-black hover:bg-amber-200 transition-colors cursor-pointer"
+                >
+                  Remove Wedding Filter
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -262,4 +301,3 @@ export default function DestinationsPage() {
     </div>
   );
 }
-
