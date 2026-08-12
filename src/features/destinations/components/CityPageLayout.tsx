@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { 
-  MapPin, Star, Sparkles, 
-  Phone, Compass, BookOpen, 
+import {
+  MapPin, Star, Sparkles,
+  Phone, Compass, BookOpen,
   Users, CheckCircle2, ShieldCheck, ArrowRight, ArrowLeft
 } from "lucide-react";
 import { Destination, WeddingVenue, WeddingProperty, DESTINATIONS } from "../data/destinations";
@@ -47,95 +47,50 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
 
   return (
     <div className="min-h-screen bg-cream/30 flex flex-col text-charcoal relative">
-      
+
       {/* 1. HERO HEADER SECTION */}
-      <div className="relative min-h-[360px] md:min-h-[420px] w-full bg-[#0F172A] text-white overflow-hidden flex flex-col justify-between p-8 md:p-14">
-        {/* cover image */}
-        <div className="absolute inset-0 z-0 select-none pointer-events-none">
-          <Image
-            src={destination.image}
-            alt={destination.name}
-            fill
-            className="object-cover sepia-[12%] brightness-[75%] saturate-[125%] scale-100 transition-transform duration-[6000ms] hover:scale-105"
-            sizes="100vw"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0F172A]/40 via-[#0F172A]/70 to-[#0F172A]" />
-          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#0F172A] to-transparent" />
-        </div>
+      <section className="relative pt-2 pb-12 text-charcoal overflow-hidden z-10 px-4 md:px-6 bg-[#faf8f5]">
+        {/* Luxury Background Hero Container */}
+        <div className="max-w-7xl mx-auto w-full relative rounded-[40px] bg-indigo overflow-hidden min-h-[500px] md:min-h-[560px] flex flex-col justify-between p-8 md:p-12 shadow-2xl border border-white/5 group">
 
-        <div className="relative z-10 max-w-7xl mx-auto w-full">
-          <Link
-            href="/destinations"
-            className="inline-flex items-center gap-2.5 text-[10px] font-black uppercase tracking-widest text-white/80 hover:text-amber-300 group transition-all"
-          >
-            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 group-hover:bg-white/20 transition-all border border-white/5">
-              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-            </span>
-            <span>BACK TO ALL DESTINATIONS</span>
-          </Link>
-        </div>
-
-        {/* Main City Title Content */}
-        <div className="relative z-10 max-w-7xl mx-auto w-full py-8 text-left flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="bg-black/55 backdrop-blur-md border border-white/15 text-amber-200 text-[10px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
-              <MapPin className="w-3.5 h-3.5 text-amber-400" />
-              <span>{destination.tag}</span>
-            </span>
+          {/* Cover image with zoom effect */}
+          <div className="absolute inset-0 overflow-hidden rounded-[40px] select-none pointer-events-none z-0">
+            <Image
+              src={destination.image}
+              alt={destination.name}
+              fill
+              className="object-cover object-center scale-100 group-hover:scale-105 transition-transform duration-[8000ms] ease-out brightness-[75%] saturate-[125%]"
+              sizes="100vw"
+              priority
+            />
+            {/* Dark gradient overlay for text contrast and premium feel */}
+            <div className="absolute inset-0 bg-gradient-to-b from-indigo/50 via-indigo/45 to-indigo/85" />
+            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-indigo/90 to-transparent" />
           </div>
 
-          <h1 className="text-4xl sm:text-6xl md:text-8xl font-serif font-black text-white leading-none tracking-tight drop-shadow-2xl">
-            {destination.name}
-          </h1>
+          {/* Main City Title Content */}
+          <div className="w-full relative z-20 flex flex-col items-center justify-center text-center gap-4 mt-4 md:mt-8">
+            <div className="flex flex-wrap items-center justify-center gap-2.5">
+              <span className="bg-black/55 backdrop-blur-md border border-white/15 text-amber-200 text-[10px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+                <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                <span>{destination.tag}</span>
+              </span>
+            </div>
 
-          <p className="text-sm sm:text-lg text-amber-200/90 font-serif font-bold tracking-wide flex items-center gap-2.5 max-w-3xl drop-shadow-md">
-            <Star className="w-4 h-4 fill-amber-300 text-amber-300 shrink-0" />
-            <span>{destination.title} &bull; Showcase of royal wedding venues &amp; heritage estates.</span>
-          </p>
-        </div>
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black text-white leading-none tracking-tight drop-shadow-2xl">
+              {destination.name}
+            </h1>
 
-        <div className="h-2" />
-      </div>
-
-      {/* 2. STICKY SUB-HEADER TAB NAVIGATION — Elegant Floating Glass Capsule */}
-      <div className="sticky top-0 z-30 py-4 px-4 md:px-8 bg-transparent pointer-events-none">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 bg-white/90 backdrop-blur-xl rounded-full shadow-[0_12px_40px_rgba(28,37,48,0.12)] border border-sand/65 p-2 pointer-events-auto flex-wrap sm:flex-nowrap">
-          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar shrink-0 w-full sm:w-auto px-2">
-            {[
-              { id: "venues", label: "💒 Wedding Venues", count: venues.length },
-              { id: "estates", label: "💎 Celebration Villas", count: uniqueProperties.length },
-              { id: "zones", label: "📍 Locality Map" },
-              { id: "history", label: "🏛️ History & Concierge" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => scrollTo(tab.id)}
-                className="px-4 py-2 rounded-full text-[10px] md:text-[11px] font-extrabold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 text-charcoal/75 hover:text-indigo hover:bg-sand/40 shrink-0"
-              >
-                <span>{tab.label}</span>
-                {tab.count !== undefined && (
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-black bg-sand text-charcoal/60">
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            ))}
+            <p className="text-white/85 text-xs sm:text-sm md:text-base font-semibold max-w-2xl leading-relaxed text-center drop-shadow-md">
+              <span className="text-amber-200 font-extrabold">{destination.title}</span> &bull; Showcase of royal wedding venues &amp; heritage estates.
+            </p>
           </div>
-
-          <a
-            href={`tel:${destination.agentPhone}`}
-            className="hidden sm:flex items-center gap-2.5 px-6 py-3 bg-indigo text-white rounded-full text-xs font-black uppercase tracking-widest hover:bg-indigo-hover transition-all duration-300 shadow-md hover:shadow-indigo/25 mr-1 hover:-translate-y-0.5 active:translate-y-0 shrink-0"
-          >
-            <Phone className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
-            <span>Call Concierge</span>
-          </a>
         </div>
-      </div>
+      </section>
 
       {/* 3. MAIN PAGE CONTENT BODY */}
       <main className="max-w-7xl mx-auto w-full px-4 md:px-8 py-8 flex flex-col gap-16 text-left">
-        
+
         {/* SECTION 1: BEST WEDDING PLACES */}
         <section id="venues" className="flex flex-col gap-8 scroll-mt-24">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-sand/80 pb-5">
@@ -155,7 +110,7 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {venues.length > 0 ? (
               venues.map((venue) => (
-                <div 
+                <div
                   key={venue.id}
                   className="bg-white border border-sand hover:border-amber-400/40 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col group hover:-translate-y-1.5"
                 >
@@ -168,7 +123,7 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
                       sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                    
+
                     <span className="absolute top-4 left-4 text-[9px] font-black uppercase tracking-widest bg-black/60 backdrop-blur-md text-amber-200 px-3 py-1 rounded-full border border-white/15">
                       {venue.type}
                     </span>
@@ -195,7 +150,7 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
                     {/* Highlights */}
                     <div className="flex flex-wrap gap-1.5">
                       {venue.highlights.map((h, i) => (
-                        <span 
+                        <span
                           key={i}
                           className="bg-sand/20 text-charcoal/80 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-sand/40 flex items-center gap-1"
                         >
@@ -209,7 +164,6 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
                       onClick={() => setInquiryTarget({ item: venue, type: "venue" })}
                       className="mt-2 w-full py-4 bg-indigo hover:bg-indigo-hover text-white text-xs font-black uppercase tracking-widest rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0"
                     >
-                      <Sparkles className="w-4 h-4 text-amber-300" />
                       <span>Inquire &amp; Book Venue</span>
                     </button>
                   </div>
@@ -242,7 +196,7 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {uniqueProperties.length > 0 ? (
               uniqueProperties.map((prop) => (
-                <div 
+                <div
                   key={prop.id}
                   className="bg-white border border-sand hover:border-indigo/35 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col md:flex-row group hover:-translate-y-1.5"
                 >
@@ -255,7 +209,7 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
                       sizes="(max-width: 768px) 100vw, 40vw"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    
+
                     <span className="absolute top-4 left-4 text-[9px] font-black uppercase tracking-widest bg-black/60 backdrop-blur-md text-amber-200 px-3 py-1 rounded-full border border-white/15">
                       {prop.propertyType}
                     </span>
@@ -283,7 +237,7 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
                     <div className="flex flex-col gap-3">
                       <div className="flex flex-wrap gap-1.5">
                         {prop.features.map((f, i) => (
-                          <span 
+                          <span
                             key={i}
                             className="bg-sand/20 text-charcoal/80 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-sand flex items-center gap-1"
                           >
@@ -328,17 +282,17 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="bg-white border border-sand rounded-3xl p-6 flex flex-col gap-4 shadow-lg hover:shadow-xl transition-all">
               <h3 className="text-base font-serif font-black text-indigo flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-terracotta" />
                 <span>Prime Localities</span>
               </h3>
 
               <div className="flex flex-wrap gap-2">
                 {destination.topLocalities.map((loc) => (
-                  <span 
+                  <span
                     key={loc}
-                    className="bg-sand/30 border border-sand/55 text-charcoal font-bold text-xs px-3.5 py-2.5 rounded-xl hover:border-indigo/40 hover:text-indigo transition-all shadow-xs"
+                    className="bg-sand/30 flex items-center gap-1
+                     border border-sand/55 text-charcoal font-bold text-xs px-3.5 py-2.5 rounded-xl hover:border-indigo/40 hover:text-indigo transition-all shadow-xs"
                   >
-                    📍 {loc}
+                    <MapPin className="w-5 h-5 text-terracotta" /> {loc}
                   </span>
                 ))}
               </div>
@@ -366,62 +320,6 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
           </div>
         </section>
 
-        {/* SECTION 4: HISTORY & CONCIERGE LEAD */}
-        <section id="history" className="grid grid-cols-1 lg:grid-cols-3 gap-8 scroll-mt-24 pt-6 border-t border-sand/60">
-          
-          {/* Heritage manuscript card design */}
-          <div className="lg:col-span-2 bg-white border border-sand rounded-3xl p-8 flex flex-col gap-5 shadow-lg border-double-ruled relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-sand/15 rounded-full blur-xl pointer-events-none" />
-            
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-indigo" />
-              <span className="text-[10px] font-black uppercase text-indigo tracking-widest">Heritage Context</span>
-            </div>
-
-            <h2 className="text-3xl font-serif font-black text-indigo">
-              Historical Background of {destination.name}
-            </h2>
-
-            <p className="text-xs sm:text-sm text-charcoal/85 leading-relaxed font-semibold italic font-serif bg-sand/10 p-4 rounded-xl border border-sand/30">
-              &quot;{destination.history}&quot;
-            </p>
-          </div>
-
-          {/* Concierge Black Card style */}
-          <div className="bg-[#0F172A] border border-amber-500/20 text-white rounded-3xl p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden group hover:border-amber-400/40 transition-colors">
-            <div className="absolute top-0 right-0 w-44 h-44 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo/20 rounded-full blur-2xl pointer-events-none" />
-
-            <div className="flex flex-col gap-5 relative z-10">
-              <span className="text-[9px] font-black uppercase tracking-widest text-amber-300 bg-amber-500/20 px-3.5 py-1.5 rounded-full border border-amber-400/30 w-fit">
-                Designated City Concierge
-              </span>
-
-              <div className="flex items-center gap-4 mt-1">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-charcoal flex items-center justify-center font-serif font-black text-2xl shadow-xl border border-amber-300 transition-transform group-hover:scale-105 duration-500">
-                  {destination.agentName.charAt(0)}
-                </div>
-                <div className="flex flex-col">
-                  <h3 className="text-2xl font-serif font-black text-white leading-tight tracking-tight">{destination.agentName}</h3>
-                  <span className="text-xs text-white/50 font-bold uppercase tracking-wider mt-1">{destination.agentPhone}</span>
-                </div>
-              </div>
-
-              <p className="text-xs text-white/70 font-semibold leading-relaxed mt-2">
-                Specialized in luxury palatial acquisitions, off-market celebration villas, and royal wedding venue bookings across {destination.name}.
-              </p>
-            </div>
-
-            <a
-              href={`tel:${destination.agentPhone}`}
-              className="mt-8 flex items-center justify-center gap-2.5 py-4 bg-amber-400 hover:bg-amber-300 text-[#0F172A] font-black text-xs uppercase tracking-widest rounded-2xl shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0"
-            >
-              <Phone className="w-4 h-4" />
-              <span>Call Concierge Agent</span>
-            </a>
-          </div>
-        </section>
-
         {/* RELATED DESTINATIONS */}
         <section className="flex flex-col gap-6 pt-10 border-t border-sand">
           <div className="flex items-center justify-between">
@@ -442,7 +340,7 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {relatedDestinations.map(d => (
-              <Link 
+              <Link
                 key={d.name}
                 href={`/destinations/${d.name.toLowerCase()}`}
                 className="group bg-white border border-sand rounded-3xl overflow-hidden shadow-md hover:shadow-xl hover:border-amber-400/35 transition-all p-4.5 flex items-center gap-4 hover:-translate-y-1"

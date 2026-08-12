@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { Compass, LayoutGrid, List, ArrowUpDown, HeartHandshake } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
@@ -9,21 +8,16 @@ import { DESTINATIONS, TAGS, type Destination } from "@/features/destinations";
 import DestinationHero from "@/features/destinations/components/DestinationHero";
 import DestinationsFilter from "@/features/destinations/components/DestinationsFilter";
 import DestinationCard from "@/features/destinations/components/DestinationCard";
-import DestinationDrawer from "@/features/destinations/components/DestinationDrawer";
 
 export default function DestinationsPage() {
-  const router = useRouter();
   const { properties, selectedCity } = useApp();
   const [activeFilter, setActiveFilter] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [limitToSelectedCityRegion, setLimitToSelectedCityRegion] = useState(true);
   const [onlyWeddingDestinations, setOnlyWeddingDestinations] = useState(false); // Fix 5
 
   // Card Layout & Sorting States
   const [viewMode, setViewMode] = useState<"grid" | "compact">("grid");
   const [sortBy, setSortBy] = useState<"recommended" | "properties" | "score" | "name" | "wedding">("recommended");
-  const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null);
 
   // Identify the region of the selected city
   const selectedCityRegion = useMemo(() => {
@@ -80,20 +74,15 @@ export default function DestinationsPage() {
     }, 0);
   }, []);
 
-  // Filtered list of destinations based on tag, search query, navbar selected city region, and wedding filter
+  // Filtered list of destinations based on tag, navbar selected city region, and wedding filter
   const filteredDestinations = useMemo(() => {
     return DESTINATIONS.filter(d => {
       const matchesRegion = !limitToSelectedCityRegion || selectedCityRegion === "All" || d.tag === selectedCityRegion;
       const matchesTag = activeFilter === "All" || d.tag === activeFilter;
       const matchesWedding = !onlyWeddingDestinations || (d.weddingVenues?.length > 0 || d.uniqueWeddingProperties?.length > 0);
-      const matchesSearch = searchQuery.trim() === "" ||
-        d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        d.vibe.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        d.tag.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        d.title.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesRegion && matchesTag && matchesWedding && matchesSearch;
+      return matchesRegion && matchesTag && matchesWedding;
     });
-  }, [activeFilter, searchQuery, selectedCityRegion, limitToSelectedCityRegion, onlyWeddingDestinations]);
+  }, [activeFilter, selectedCityRegion, limitToSelectedCityRegion, onlyWeddingDestinations]);
 
   // Sorted list of destinations
   const sortedDestinations = useMemo(() => {
@@ -110,33 +99,13 @@ export default function DestinationsPage() {
     return list;
   }, [filteredDestinations, sortBy, cityPropertiesMap]);
 
-  // Get autocomplete suggestions
-  const autocompleteSuggestions = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    return DESTINATIONS.filter(d =>
-      d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      d.vibe.toLowerCase().includes(searchQuery.toLowerCase())
-    ).slice(0, 5);
-  }, [searchQuery]);
-
-  const handleSelectSuggestion = (dest: Destination) => {
-    router.push(`/destinations/${dest.name.toLowerCase()}`);
-  };
-
   return (
     <div className="flex flex-col w-full min-h-screen relative bg-cream/30">
 
       {/* 1. HERO SECTION — Fix 4: pass computed stats */}
       <DestinationHero
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        showSuggestions={showSuggestions}
-        setShowSuggestions={setShowSuggestions}
-        autocompleteSuggestions={autocompleteSuggestions}
-        onSelectSuggestion={handleSelectSuggestion}
         totalDestinations={DESTINATIONS.length}
         totalProperties={properties.length}
-        cityPropertiesMap={cityPropertiesMap}
         avgGrowthScore={avgGrowthScore}
         totalWeddingHotspots={totalWeddingHotspots}
       />
@@ -265,7 +234,6 @@ export default function DestinationsPage() {
                 key={dest.name}
                 dest={dest}
                 propertyCount={cityPropertiesMap[dest.name.toLowerCase()] || 0}
-                onSelect={(selected) => setSelectedDestination(selected)}
                 viewMode={viewMode}
               />
             ))
@@ -291,12 +259,7 @@ export default function DestinationsPage() {
         </div>
       </section>
 
-      {/* Destination Quick Detail Drawer */}
-      <DestinationDrawer
-        selectedDestination={selectedDestination}
-        setSelectedDestination={setSelectedDestination}
-        cityPropertiesMap={cityPropertiesMap}
-      />
+
 
     </div>
   );
