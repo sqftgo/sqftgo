@@ -4,63 +4,11 @@ import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Search, MapPin, X } from "lucide-react";
 import { ALL_INDIA_CITY } from "@/constants/cities";
 
-// Custom drawn SVGs for known popular cities (Brand colors: Navy Indigo stroke + Gold sun accent)
-const UdaipurIcon = () => (
-  <svg viewBox="0 0 32 32" className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="22" cy="11" r="5" fill="#DFAB34" />
-    <path d="M4 24H28" stroke="#1B3864" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M8 24V14C8 14 10 10 16 10C22 10 24 14 24 14V24" stroke="#1B3864" strokeWidth="1.5" strokeLinejoin="round" />
-    <path d="M12 24V17C12 15 20 15 20 17V24" stroke="#1B3864" strokeWidth="1.2" />
-    <path d="M14 24C14 21.5 18 21.5 18 24" stroke="#1B3864" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M4 26C8 26 8 28 12 28C16 28 16 26 20 26C24 26 24 28 28 28" stroke="#1B3864" strokeWidth="1" strokeLinecap="round" />
-  </svg>
-);
-
-const JaipurIcon = () => (
-  <svg viewBox="0 0 32 32" className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="10" cy="12" r="5" fill="#DFAB34" />
-    <path d="M4 24H28" stroke="#1B3864" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M6 24V11H26V24" stroke="#1B3864" strokeWidth="1.5" strokeLinejoin="round" />
-    <path d="M6 11L16 6L26 11" stroke="#1B3864" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M10 24V17H14V24" stroke="#1B3864" strokeWidth="1" />
-    <path d="M18 24V17H22V24" stroke="#1B3864" strokeWidth="1" />
-    <path d="M10 14H14M18 14H22" stroke="#1B3864" strokeWidth="1" />
-  </svg>
-);
-
-const JodhpurIcon = () => (
-  <svg viewBox="0 0 32 32" className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="23" cy="11" r="5" fill="#DFAB34" />
-    <path d="M4 24H28" stroke="#1B3864" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M6 24V12H12V24" stroke="#1B3864" strokeWidth="1.5" strokeLinejoin="round" />
-    <path d="M12 24V8H20V24" stroke="#1B3864" strokeWidth="1.5" strokeLinejoin="round" />
-    <path d="M20 24V14H26V24" stroke="#1B3864" strokeWidth="1.5" strokeLinejoin="round" />
-    <path d="M14 8V5" stroke="#1B3864" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
-
-const KotaIcon = () => (
-  <svg viewBox="0 0 32 32" className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="10" cy="11" r="5" fill="#DFAB34" />
-    <path d="M4 24H28" stroke="#1B3864" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M8 24V14C8 14 9 13 11 13C13 13 14 14 14 14V24" stroke="#1B3864" strokeWidth="1.5" strokeLinejoin="round" />
-    <path d="M18 24V14C18 14 19 13 21 13C23 13 24 14 24 14V24" stroke="#1B3864" strokeWidth="1.5" strokeLinejoin="round" />
-    <path d="M14 18H18V24H14V18Z" stroke="#1B3864" strokeWidth="1.5" />
-  </svg>
-);
-
-const DefaultCityIcon = () => (
-  <div className="w-8 h-8 rounded-full bg-indigo/5 border border-indigo/10 flex items-center justify-center">
+const CityIcon = () => (
+  <div className="w-8 h-8 rounded-full bg-indigo/5 border border-indigo/10 flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110">
     <MapPin className="w-4 h-4 text-indigo" />
   </div>
 );
-
-const CITY_ICONS: Record<string, React.ComponentType> = {
-  Udaipur: UdaipurIcon,
-  Jaipur: JaipurIcon,
-  Jodhpur: JodhpurIcon,
-  Kota: KotaIcon,
-};
 
 interface CitySelectorDropdownProps {
   selectedCity: string;
@@ -172,7 +120,6 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
             ) : (
               <div className="grid grid-cols-3 gap-2.5">
                 {popular.map((city) => {
-                  const Icon = CITY_ICONS[city] ?? DefaultCityIcon;
                   const isSelected = selectedCity.toLowerCase() === city.toLowerCase();
                   return (
                     <button
@@ -187,7 +134,7 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
                       }`}
                     >
                       <div className="flex-shrink-0">
-                        <Icon />
+                        <CityIcon />
                       </div>
                       <span className="text-xs md:text-sm truncate">{city}</span>
                     </button>

@@ -41,7 +41,7 @@ export function HomeHero() {
     setSelectedCity(searchCity);
     const params = new URLSearchParams();
     params.set("city", searchCity);
-    
+
     if (heroTab === "rent") {
       params.set("purpose", "rent");
     } else {
@@ -77,13 +77,13 @@ export function HomeHero() {
             {/* Dark overlay for readability */}
             <div className="absolute inset-0 bg-gradient-to-b from-[#09152b]/65 via-[#09152b]/55 to-[#09152b]/75" />
           </div>
-          
+
           <div className="w-full relative z-20 flex flex-col items-center justify-center text-center gap-5 py-4">
             <div className="flex flex-col items-center gap-2">
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-sans font-black tracking-tight leading-tight text-white max-w-3xl text-center">
                 <span className="text-terracotta">believe</span> in finding it
               </h1>
-              
+
               <p className="text-white/80 text-sm sm:text-base md:text-lg font-medium max-w-2xl leading-relaxed mt-1 text-center">
                 {"with India's largest choice of luxury & heritage homes"}
               </p>
@@ -91,10 +91,10 @@ export function HomeHero() {
 
             {/* Floating Search Card — Matching Reference Layout */}
             <div className="w-full max-w-3xl relative z-20">
-              <form onSubmit={handleHeroSearch} className="bg-white rounded-2xl shadow-2xl border-t-[4px] border-t-[#0c1b33]">
-                
+              <form onSubmit={handleHeroSearch} className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.12)] border border-slate-100/80 transition-all duration-300">
+
                 {/* Tab Row */}
-                <div className="flex items-center gap-6 px-6 sm:px-8 pt-5 pb-4">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 px-6 sm:px-8 pt-5 pb-3">
                   {([
                     { key: "buy", label: "BUY" },
                     { key: "rent", label: "RENT" },
@@ -109,11 +109,10 @@ export function HomeHero() {
                         setSearchType("any");
                         setSearchBudget("any");
                       }}
-                      className={`text-xs sm:text-sm font-extrabold uppercase tracking-wider transition-all duration-200 cursor-pointer relative ${
-                        heroTab === tab.key
-                          ? "text-indigo border border-indigo rounded-full px-4 py-1.5"
-                          : "text-charcoal/50 hover:text-charcoal px-1 py-1.5"
-                      }`}
+                      className={`text-xs sm:text-sm font-bold uppercase tracking-wider px-4 py-2 rounded-full transition-all duration-200 cursor-pointer ${heroTab === tab.key
+                        ? "bg-indigo text-white shadow-md shadow-indigo/15 scale-[1.02]"
+                        : "text-charcoal/50 hover:text-charcoal hover:bg-charcoal/5"
+                        }`}
                     >
                       {tab.label}
                     </button>
@@ -121,93 +120,71 @@ export function HomeHero() {
                 </div>
 
                 {/* Divider */}
-                <div className="border-t border-indigo/10 mx-6 sm:mx-8" />
-
+                <div className="border-t border-slate-100 mx-6 sm:mx-8" />
                 {/* 4-Column Filter Row */}
                 <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 px-6 sm:px-8 py-5">
                   
                   {/* SELECT CITY */}
-                  <div className="flex items-center gap-3 pb-3 mb-3 border-b border-indigo/10 lg:border-b-0 lg:border-r lg:border-indigo/10 lg:pb-0 lg:mb-0 lg:pr-4">
-                    <div className="w-9 h-9 rounded-full border-2 border-terracotta/30 flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-4 h-4 text-terracotta" />
-                    </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none mb-1">Select City</span>
-                      <CustomSelect
-                        options={cityOptionsWithoutAll}
-                        value={searchCity}
-                        onChange={setSearchCity}
-                        placeholder={locationsReady ? "Select City" : "Loading cities…"}
-                        searchable
-                        buttonClassName="text-sm font-bold text-charcoal py-0 cursor-pointer"
-                        inlineChevron
-                      />
-                    </div>
+                  <div className="flex flex-col justify-center pb-3 mb-3 border-b border-indigo/10 lg:border-b-0 lg:border-r lg:border-indigo/10 lg:pb-0 lg:mb-0 lg:pr-6">
+                    <span className="text-[10px] font-bold text-charcoal/40 uppercase tracking-wider mb-1.5">SELECT CITY</span>
+                    <CustomSelect
+                      options={cityOptionsWithoutAll}
+                      value={searchCity}
+                      onChange={setSearchCity}
+                      placeholder={locationsReady ? "Select City" : "Loading cities…"}
+                      searchable
+                      buttonClassName="text-sm font-bold text-charcoal py-0 cursor-pointer w-full text-left"
+                      inlineChevron
+                    />
                   </div>
 
                   {/* LOCALITY */}
-                  <div className="flex items-center gap-3 pb-3 mb-3 border-b border-indigo/10 lg:border-b-0 lg:border-r lg:border-indigo/10 lg:pb-0 lg:mb-0 lg:px-4">
-                    <div className="w-9 h-9 rounded-full border-2 border-indigo/20 flex items-center justify-center flex-shrink-0">
-                      <Compass className="w-4.5 h-4.5 text-indigo" />
-                    </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none mb-1">Locality</span>
-                      <input suppressHydrationWarning
-                        type="text"
-                        placeholder="Search locality..."
-                        value={searchLocality}
-                        onChange={(e) => setSearchLocality(e.target.value)}
-                        className="text-sm font-bold text-charcoal bg-transparent outline-none placeholder:text-charcoal/30 w-full py-0"
-                      />
-                    </div>
+                  <div className="flex flex-col justify-center pb-3 mb-3 border-b border-indigo/10 lg:border-b-0 lg:border-r lg:border-indigo/10 lg:pb-0 lg:mb-0 lg:px-6">
+                    <span className="text-[10px] font-bold text-charcoal/40 uppercase tracking-wider mb-1.5">LOCALITY</span>
+                    <input suppressHydrationWarning
+                      type="text"
+                      placeholder="Search locality..."
+                      value={searchLocality}
+                      onChange={(e) => setSearchLocality(e.target.value)}
+                      className="text-sm font-bold text-charcoal bg-transparent outline-none placeholder:text-charcoal/40 w-full py-0 border-none focus:ring-0 p-0"
+                    />
                   </div>
 
                   {/* TYPE */}
-                  <div className="flex items-center gap-3 pb-3 mb-3 border-b border-indigo/10 lg:border-b-0 lg:border-r lg:border-indigo/10 lg:pb-0 lg:mb-0 lg:px-4">
-                    <div className="w-9 h-9 rounded-full border-2 border-indigo/20 flex items-center justify-center flex-shrink-0">
-                      <HomeIcon className="w-4 h-4 text-indigo" />
-                    </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none mb-1">Type</span>
-                      <CustomSelect
-                        options={PROPERTY_TYPES}
-                        value={searchType}
-                        onChange={setSearchType}
-                        placeholder="All Types"
-                        buttonClassName="text-sm font-bold text-charcoal py-0 cursor-pointer"
-                        inlineChevron
-                      />
-                    </div>
+                  <div className="flex flex-col justify-center pb-3 mb-3 border-b border-indigo/10 lg:border-b-0 lg:border-r lg:border-indigo/10 lg:pb-0 lg:mb-0 lg:px-6">
+                    <span className="text-[10px] font-bold text-charcoal/40 uppercase tracking-wider mb-1.5">TYPE</span>
+                    <CustomSelect
+                      options={PROPERTY_TYPES}
+                      value={searchType}
+                      onChange={setSearchType}
+                      placeholder="All Types"
+                      buttonClassName="text-sm font-bold text-charcoal py-0 cursor-pointer w-full text-left"
+                      inlineChevron
+                    />
                   </div>
 
                   {/* BUDGET LIMIT */}
-                  <div className="flex items-center gap-3 lg:pl-4">
-                    <div className="w-9 h-9 rounded-full border-2 border-indigo/20 flex items-center justify-center flex-shrink-0">
-                      <span className="text-indigo font-bold text-sm">₹</span>
-                    </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none mb-1">Budget Limit</span>
-                      <CustomSelect
-                        options={heroTab === "rent" ? BUDGET_OPTIONS_RENT : BUDGET_OPTIONS_BUY}
-                        value={searchBudget}
-                        onChange={setSearchBudget}
-                        placeholder="Any Price"
-                        buttonClassName="text-sm font-bold text-charcoal py-0 cursor-pointer"
-                        inlineChevron
-                      />
-                    </div>
+                  <div className="flex flex-col justify-center lg:pl-6">
+                    <span className="text-[10px] font-bold text-charcoal/40 uppercase tracking-wider mb-1.5">BUDGET LIMIT</span>
+                    <CustomSelect
+                      options={heroTab === "rent" ? BUDGET_OPTIONS_RENT : BUDGET_OPTIONS_BUY}
+                      value={searchBudget}
+                      onChange={setSearchBudget}
+                      placeholder="Any Price"
+                      buttonClassName="text-sm font-bold text-charcoal py-0 cursor-pointer w-full text-left"
+                      inlineChevron
+                    />
                   </div>
-
                 </div>
 
                 {/* CTA Button */}
-                <div className="px-6 sm:px-8 pb-6 pt-1">
+                <div className="px-6 sm:px-8 pb-6 pt-2">
                   <button suppressHydrationWarning
                     type="submit"
-                    className="w-full bg-terracotta hover:bg-terracotta-hover text-white font-extrabold text-sm uppercase tracking-wider py-4 rounded-xl shadow-lg transition-all duration-200 cursor-pointer active:scale-[0.98] flex items-center justify-center gap-2.5 border-none"
+                    className="w-full bg-terracotta hover:bg-terracotta-hover text-white font-extrabold text-sm uppercase tracking-wider py-4 rounded-xl shadow-md shadow-terracotta/25 hover:shadow-lg hover:shadow-terracotta/35 transition-all duration-250 cursor-pointer active:scale-[0.99] flex items-center justify-center gap-2.5 group/btn border-none"
                   >
-                    <span>Find Properties</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <span>FIND PROPERTIES</span>
+                    <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover/btn:translate-x-1" />
                   </button>
                 </div>
 
