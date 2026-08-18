@@ -1,20 +1,34 @@
 import React from "react";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { AlertCircle } from "lucide-react";
-import { DESTINATIONS } from "@/features/destinations";
+import { DESTINATIONS } from "@/features/destinations/data/destinations";
+import { destinationSlug, findDestinationBySlug } from "@/features/destinations/logic";
 import CityPageLayout from "@/features/destinations/components/CityPageLayout";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+export function generateStaticParams() {
+  return DESTINATIONS.map((d) => ({ slug: destinationSlug(d.name) }));
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const destination = findDestinationBySlug(slug);
+  if (!destination) {
+    return { title: "Destination Not Found | SqftGo" };
+  }
+  return {
+    title: `${destination.name} | ${destination.title} | SqftGo`,
+    description: destination.desc,
+  };
+}
+
 export default async function CityDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const slugLower = decodeURIComponent(slug).toLowerCase();
-
-  const destination = DESTINATIONS.find(
-    (d) => d.name.toLowerCase() === slugLower
-  );
+  const destination = findDestinationBySlug(slug);
 
   if (!destination) {
     return (

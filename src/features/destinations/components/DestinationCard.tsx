@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
 import { Destination } from "../data/destinations";
+import { destinationSlug } from "../logic";
 
 interface DestinationCardProps {
   dest: Destination;
@@ -15,16 +16,20 @@ interface DestinationCardProps {
 
 export default function DestinationCard({
   dest,
+  propertyCount = 0,
   className = "",
   viewMode = "grid",
 }: DestinationCardProps) {
-  const targetUrl = `/destinations/${dest.name.toLowerCase()}`;
+  const targetUrl = `/destinations/${destinationSlug(dest.name)}`;
+  const listingLabel = `${propertyCount} ${propertyCount === 1 ? "listing" : "listings"}`;
 
   // Compact Horizontal List Layout
   if (viewMode === "compact") {
     return (
-      <div
-        className={`group relative flex flex-col md:flex-row items-stretch rounded-3xl overflow-hidden bg-[#0F172A] border border-white/10 shadow-lg hover:shadow-2xl hover:border-amber-400/40 transition-all duration-300 hover:-translate-y-1 cursor-pointer ${className}`}
+      <Link
+        href={targetUrl}
+        className={`group relative flex flex-col md:flex-row items-stretch rounded-3xl overflow-hidden bg-[#0F172A] border border-white/10 shadow-lg hover:shadow-2xl hover:border-amber-400/40 transition-all duration-300 hover:-translate-y-1 ${className}`}
+        aria-label={`Explore ${dest.name}`}
       >
         {/* Fix 3: next/image */}
         <div className="relative md:w-2/5 h-48 md:h-auto overflow-hidden bg-slate-900 flex-shrink-0">
@@ -37,10 +42,14 @@ export default function DestinationCard({
           />
           <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-slate-950 via-slate-950/40 to-transparent pointer-events-none" />
           
-          {/* Top Tag Badge */}
-          <div className="absolute top-3 left-3 z-10 bg-black/60 backdrop-blur-md border border-white/15 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
-            <MapPin className="w-3 h-3 text-amber-400" />
-            <span>{dest.tag}</span>
+          <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between gap-2">
+            <div className="bg-black/60 backdrop-blur-md border border-white/15 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
+              <MapPin className="w-3 h-3 text-amber-400" />
+              <span>{dest.tag}</span>
+            </div>
+            <div className="bg-white/90 text-[#0F172A] text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-md">
+              {listingLabel}
+            </div>
           </div>
         </div>
 
@@ -65,27 +74,24 @@ export default function DestinationCard({
           </div>
 
           <div>
-            {/* CTAs */}
             <div className="flex items-center gap-3">
-              <Link
-                href={targetUrl}
-                className="flex-1 flex items-center justify-between h-11 px-4 rounded-xl bg-white hover:bg-amber-50 text-[#0F172A] font-extrabold text-xs tracking-wider uppercase transition-all shadow-md group-hover:shadow-amber-500/10"
-              >
+              <span className="flex-1 flex items-center justify-between h-11 px-4 rounded-xl bg-white group-hover:bg-amber-50 text-[#0F172A] font-extrabold text-xs tracking-wider uppercase transition-all shadow-md group-hover:shadow-amber-500/10">
                 <span>Explore Destination</span>
                 <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform text-[#0F172A]" />
-              </Link>
+              </span>
             </div>
           </div>
         </div>
-      </div>
+      </Link>
     );
   }
 
   // Standard Grid View Layout
   return (
-    <div
-      className={`group relative flex flex-col rounded-3xl overflow-hidden bg-[#0F172A] border border-white/10 shadow-xl hover:shadow-2xl hover:border-amber-400/40 transition-all duration-500 hover:-translate-y-2 cursor-pointer min-h-[460px] ${className}`}
-      aria-label={`Explore ${dest.name} wedding places and available villas`}
+    <Link
+      href={targetUrl}
+      className={`group relative flex flex-col rounded-3xl overflow-hidden bg-[#0F172A] border border-white/10 shadow-xl hover:shadow-2xl hover:border-amber-400/40 transition-all duration-500 hover:-translate-y-2 min-h-[460px] ${className}`}
+      aria-label={`Explore ${dest.name} — ${listingLabel}`}
     >
       {/* Fix 3: next/image — Cover Photo with Sunset luxury filter grading */}
       <div className="absolute inset-0 z-0 bg-[#0F172A] overflow-hidden">
@@ -110,7 +116,9 @@ export default function DestinationCard({
           <span>{dest.tag}</span>
         </div>
 
-        {/* Right Badges: Wedding & Rating removed */}
+        <div className="bg-white/90 text-[#0F172A] text-[9px] font-black uppercase tracking-widest h-7 flex items-center px-3 rounded-full shadow-md">
+          {listingLabel}
+        </div>
       </div>
 
       {/* Bottom Content Area */}
@@ -134,19 +142,15 @@ export default function DestinationCard({
             {dest.desc}
           </p>          {/* Stats, badges, and top areas removed */}
 
-          {/* CTAs Row */}
           <div className="mt-3 flex items-center gap-2 w-full">
-            <Link
-              href={targetUrl}
-              className="flex-1 flex items-center justify-between h-12 px-4 rounded-xl bg-white hover:bg-amber-50 text-[#0F172A] font-black text-xs tracking-wider uppercase transition-all duration-300 shadow-md group-hover:shadow-xl group-hover:shadow-amber-900/20 cursor-pointer"
-            >
+            <span className="flex-1 flex items-center justify-between h-12 px-4 rounded-xl bg-white group-hover:bg-amber-50 text-[#0F172A] font-black text-xs tracking-wider uppercase transition-all duration-300 shadow-md group-hover:shadow-xl group-hover:shadow-amber-900/20">
               <span>Explore {dest.name}</span>
               <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1.5 transition-transform duration-300 text-[#0F172A]" />
-            </Link>
+            </span>
           </div>
 
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

@@ -4,116 +4,82 @@ import React, { useState, useMemo } from "react";
 import { Compass, LayoutGrid, List, ArrowUpDown, HeartHandshake } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
-import { DESTINATIONS, TAGS, type Destination } from "@/features/destinations";
+import {
+  DESTINATIONS,
+  TAGS,
+  type DestinationSortBy,
+  averageGrowthScore,
+  countActiveListingsByCity,
+  countListingsInDestinations,
+  filterDestinations,
+  regionForSelectedCity,
+  sortDestinations,
+  tagStatsForDestinations,
+  totalWeddingHotspots,
+} from "@/features/destinations";
 import DestinationHero from "@/features/destinations/components/DestinationHero";
 import DestinationsFilter from "@/features/destinations/components/DestinationsFilter";
 import DestinationCard from "@/features/destinations/components/DestinationCard";
 
 export default function DestinationsPage() {
-  const { properties, selectedCity } = useApp();
+  const { properties, selectedCity, locations } = useApp();
   const [activeFilter, setActiveFilter] = useState("All");
   const [limitToSelectedCityRegion, setLimitToSelectedCityRegion] = useState(true);
-  const [onlyWeddingDestinations, setOnlyWeddingDestinations] = useState(false); // Fix 5
+  const [onlyWeddingDestinations, setOnlyWeddingDestinations] = useState(false);
 
-  // Card Layout & Sorting States
   const [viewMode, setViewMode] = useState<"grid" | "compact">("grid");
-  const [sortBy, setSortBy] = useState<"recommended" | "properties" | "score" | "name" | "wedding">("recommended");
+  const [sortBy, setSortBy] = useState<DestinationSortBy>("recommended");
 
-  // Identify the region of the selected city
-  const selectedCityRegion = useMemo(() => {
-    const found = DESTINATIONS.find(d => d.name.toLowerCase() === selectedCity.toLowerCase());
-    if (found) return found.tag;
+  const selectedCityRegion = useMemo(
+    () => regionForSelectedCity(selectedCity, locations),
+    [selectedCity, locations]
+  );
 
-    const rajasthanFallback = ["pali", "alwar"];
-    const gujaratFallback = ["gandhinagar", "kutch", "anand"];
-    const nameLower = selectedCity.toLowerCase();
+  const cityPropertiesMap = useMemo(
+    () => countActiveListingsByCity(properties),
+    [properties]
+  );
 
-    if (rajasthanFallback.includes(nameLower)) return "Rajasthan";
-    if (gujaratFallback.includes(nameLower)) return "Gujarat";
-    return "All";
-  }, [selectedCity]);
+  const tagStats = useMemo(
+    () => tagStatsForDestinations(cityPropertiesMap),
+    [cityPropertiesMap]
+  );
 
-  // Compute property counts dynamically per city
-  const cityPropertiesMap = useMemo(() => {
-    const counts: { [key: string]: number } = {};
-    properties.forEach((p) => {
-      const city = p.city.toLowerCase();
-      counts[city] = (counts[city] || 0) + 1;
-    });
-    return counts;
-  }, [properties]);
+  const avgGrowthScore = useMemo(() => averageGrowthScore(), []);
+  const weddingHotspots = useMemo(() => totalWeddingHotspots(), []);
+  const destinationListingCount = useMemo(
+    () => countListingsInDestinations(properties),
+    [properties]
+  );
 
-  // Compute active listings in each tag
-  const tagStats = useMemo(() => {
-    const stats: { [key: string]: { cities: number; listings: number } } = {};
-    TAGS.forEach(tag => {
-      const cities = tag === "All"
-        ? DESTINATIONS
-        : DESTINATIONS.filter(d => d.tag === tag);
+  const filteredDestinations = useMemo(
+    () =>
+      filterDestinations({
+        activeFilter,
+        selectedCityRegion,
+        limitToSelectedCityRegion,
+        onlyWeddingDestinations,
+      }),
+    [activeFilter, selectedCityRegion, limitToSelectedCityRegion, onlyWeddingDestinations]
+  );
 
-      const listings = cities.reduce((acc, c) => acc + (cityPropertiesMap[c.name.toLowerCase()] || 0), 0);
-      stats[tag] = { cities: cities.length, listings };
-    });
-    return stats;
-  }, [cityPropertiesMap]);
-
-  // Fix 4: Compute real average growth score from DESTINATIONS data
-  const avgGrowthScore = useMemo(() => {
-    const scores = DESTINATIONS
-      .map(d => parseFloat(d.investmentIndex?.split("/")[0] || "0"))
-      .filter(s => s > 0);
-    if (scores.length === 0) return "N/A";
-    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-    return `${avg.toFixed(1)}/10`;
-  }, []);
-
-  // Fix 4: Total wedding hotspots (venues + unique properties)
-  const totalWeddingHotspots = useMemo(() => {
-    return DESTINATIONS.reduce((acc, d) => {
-      return acc + (d.weddingVenues?.length || 0) + (d.uniqueWeddingProperties?.length || 0);
-    }, 0);
-  }, []);
-
-  // Filtered list of destinations based on tag, navbar selected city region, and wedding filter
-  const filteredDestinations = useMemo(() => {
-    return DESTINATIONS.filter(d => {
-      const matchesRegion = !limitToSelectedCityRegion || selectedCityRegion === "All" || d.tag === selectedCityRegion;
-      const matchesTag = activeFilter === "All" || d.tag === activeFilter;
-      const matchesWedding = !onlyWeddingDestinations || (d.weddingVenues?.length > 0 || d.uniqueWeddingProperties?.length > 0);
-      return matchesRegion && matchesTag && matchesWedding;
-    });
-  }, [activeFilter, selectedCityRegion, limitToSelectedCityRegion, onlyWeddingDestinations]);
-
-  // Sorted list of destinations
-  const sortedDestinations = useMemo(() => {
-    const list = [...filteredDestinations];
-    if (sortBy === "properties") {
-      list.sort((a, b) => (cityPropertiesMap[b.name.toLowerCase()] || 0) - (cityPropertiesMap[a.name.toLowerCase()] || 0));
-    } else if (sortBy === "score") {
-      list.sort((a, b) => (parseFloat(b.investmentIndex || "0") - parseFloat(a.investmentIndex || "0")));
-    } else if (sortBy === "name") {
-      list.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortBy === "wedding") {
-      list.sort((a, b) => ((b.weddingVenues?.length || 0) + (b.uniqueWeddingProperties?.length || 0)) - ((a.weddingVenues?.length || 0) + (a.uniqueWeddingProperties?.length || 0)));
-    }
-    return list;
-  }, [filteredDestinations, sortBy, cityPropertiesMap]);
+  const sortedDestinations = useMemo(
+    () => sortDestinations(filteredDestinations, sortBy, cityPropertiesMap),
+    [filteredDestinations, sortBy, cityPropertiesMap]
+  );
 
   return (
     <div className="flex flex-col w-full min-h-screen relative bg-cream/30">
 
-      {/* 1. HERO SECTION — Fix 4: pass computed stats */}
       <DestinationHero
         totalDestinations={DESTINATIONS.length}
-        totalProperties={properties.length}
+        totalProperties={destinationListingCount}
         avgGrowthScore={avgGrowthScore}
-        totalWeddingHotspots={totalWeddingHotspots}
+        totalWeddingHotspots={weddingHotspots}
       />
 
-      {/* 2. DEDICATED CITY REGIONS & FILTER GRID */}
       <section className="relative py-12 px-4 md:px-8 max-w-7xl mx-auto w-full z-20 -mt-12 text-left bg-white rounded-2xl shadow-xl border border-indigo/5 p-6 md:p-10 mb-16">
 
-        {/* Centered Symmetric Region Filters */}
         <DestinationsFilter
           tags={TAGS}
           activeFilter={activeFilter}
@@ -144,7 +110,6 @@ export default function DestinationsPage() {
           </div>
         )}
 
-        {/* Card Controls Toolbar: Counter, Sort Dropdown, Wedding Toggle & Layout Mode Toggle */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-4 px-2 border-b border-sand/60 mb-8">
           <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-indigo">
             <span className="bg-indigo/10 text-indigo px-3 py-1 rounded-md text-xs font-black">
@@ -157,7 +122,6 @@ export default function DestinationsPage() {
 
           <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end flex-wrap">
 
-            {/* Fix 5: Wedding Only Toggle Button */}
             <button
               onClick={() => setOnlyWeddingDestinations((v) => !v)}
               suppressHydrationWarning
@@ -175,13 +139,12 @@ export default function DestinationsPage() {
               )}
             </button>
 
-            {/* Sort Select */}
             <div className="flex items-center gap-2 bg-sand/30 border border-sand px-3 py-1.5 rounded-xl text-xs font-bold text-indigo">
               <ArrowUpDown className="w-3.5 h-3.5 text-indigo/60" />
               <span className="text-charcoal/60 font-semibold hidden md:inline">Sort:</span>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                onChange={(e) => setSortBy(e.target.value as DestinationSortBy)}
                 className="bg-transparent text-xs font-black text-indigo focus:outline-none cursor-pointer"
               >
                 <option value="recommended">Recommended</option>
@@ -192,7 +155,6 @@ export default function DestinationsPage() {
               </select>
             </div>
 
-            {/* View Mode Toggle Buttons */}
             <div className="flex items-center bg-sand/40 border border-sand p-1 rounded-xl gap-1">
               <button
                 onClick={() => setViewMode("grid")}
@@ -220,7 +182,6 @@ export default function DestinationsPage() {
           </div>
         </div>
 
-        {/* Dynamic Cards Layout (Grid or Compact) */}
         <div
           className={
             viewMode === "grid"
