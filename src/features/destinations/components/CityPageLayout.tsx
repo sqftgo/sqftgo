@@ -1,21 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  MapPin, Star, Sparkles,
-  Phone, Compass, BookOpen,
-  Users, CheckCircle2, ShieldCheck, ArrowRight, ArrowLeft
+  MapPin, Compass, ArrowRight
 } from "lucide-react";
+import { useApp } from "@/context/AppContext";
+import { PropertyCard } from "@/features/properties";
 import { Destination, WeddingVenue, WeddingProperty, DESTINATIONS } from "../data/destinations";
+import {
+  destinationListingsHref,
+  destinationSlug,
+  listingsInDestination,
+} from "../logic";
 import WeddingInquiryModal from "./WeddingInquiryModal";
+import WeddingVenueCard from "./WeddingVenueCard";
+import WeddingEstateCard from "./WeddingEstateCard";
 
 interface CityPageLayoutProps {
   destination: Destination;
 }
 
 export default function CityPageLayout({ destination }: CityPageLayoutProps) {
+  const { properties } = useApp();
   const [inquiryTarget, setInquiryTarget] = useState<{
     item: WeddingVenue | WeddingProperty;
     type: "venue" | "property";
@@ -23,6 +31,12 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
 
   const venues = destination.weddingVenues || [];
   const uniqueProperties = destination.uniqueWeddingProperties || [];
+  const liveListings = useMemo(
+    () => listingsInDestination(properties, destination.name),
+    [properties, destination.name]
+  );
+  const listingPreview = liveListings.slice(0, 6);
+  const listingsHref = destinationListingsHref(destination.name);
 
   // Related destinations — same region first, fallback to any
   const sameRegion = DESTINATIONS.filter(
@@ -84,6 +98,24 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
             <p className="text-white/85 text-xs sm:text-sm md:text-base font-semibold max-w-2xl leading-relaxed text-center drop-shadow-md">
               <span className="text-amber-200 font-extrabold">{destination.title}</span> &bull; Showcase of royal wedding venues &amp; heritage estates.
             </p>
+
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
+              <Link
+                href={listingsHref}
+                className="px-5 py-2.5 rounded-xl bg-white text-indigo text-[11px] font-black uppercase tracking-widest hover:bg-amber-50 transition-colors shadow-md"
+              >
+                {liveListings.length > 0
+                  ? `Browse ${liveListings.length} listing${liveListings.length === 1 ? "" : "s"}`
+                  : "Browse listings"}
+              </Link>
+              <button
+                type="button"
+                onClick={() => scrollTo("venues")}
+                className="px-5 py-2.5 rounded-xl bg-black/40 border border-white/20 text-white text-[11px] font-black uppercase tracking-widest hover:bg-black/55 transition-colors cursor-pointer"
+              >
+                Wedding venues
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -107,67 +139,14 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {venues.length > 0 ? (
               venues.map((venue) => (
-                <div
+                <WeddingVenueCard
                   key={venue.id}
-                  className="bg-white border border-sand hover:border-amber-400/40 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col group hover:-translate-y-1.5"
-                >
-                  <div className="relative h-60 w-full bg-sand/20 overflow-hidden">
-                    <Image
-                      src={venue.image}
-                      alt={venue.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-700"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-
-                    <span className="absolute top-4 left-4 text-[9px] font-black uppercase tracking-widest bg-black/60 backdrop-blur-md text-amber-200 px-3 py-1 rounded-full border border-white/15">
-                      {venue.type}
-                    </span>
-                    <span className="absolute top-4 right-4 text-[9px] font-black uppercase tracking-wider bg-terracotta text-white px-3.5 py-1 rounded-full shadow-lg">
-                      {venue.pricePerEvent}
-                    </span>
-
-                    <div className="absolute bottom-4 left-5 right-5 text-white">
-                      <h3 className="text-2xl font-serif font-black drop-shadow-md tracking-tight leading-tight">{venue.name}</h3>
-                      <p className="text-[10px] text-amber-200 font-bold uppercase tracking-wider mt-1">{venue.vibe}</p>
-                    </div>
-                  </div>
-
-                  <div className="p-6 flex flex-col gap-4 flex-1 justify-between">
-                    <p className="text-xs text-charcoal/75 font-semibold leading-relaxed">
-                      {venue.description}
-                    </p>
-
-                    <div className="flex items-center gap-2.5 text-xs font-extrabold text-indigo bg-sand/30 p-3 rounded-2xl border border-sand/40">
-                      <Users className="w-4.5 h-4.5 text-terracotta shrink-0" />
-                      <span>Guest Capacity: <strong className="text-charcoal">{venue.capacity}</strong></span>
-                    </div>
-
-                    {/* Highlights */}
-                    <div className="flex flex-wrap gap-1.5">
-                      {venue.highlights.map((h, i) => (
-                        <span
-                          key={i}
-                          className="bg-sand/20 text-charcoal/80 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-sand/40 flex items-center gap-1"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>{h}</span>
-                        </span>
-                      ))}
-                    </div>
-
-                    <button
-                      onClick={() => setInquiryTarget({ item: venue, type: "venue" })}
-                      className="mt-2 w-full py-4 bg-indigo hover:bg-indigo-hover text-white text-xs font-black uppercase tracking-widest rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0"
-                    >
-                      <span>Inquire &amp; Book Venue</span>
-                    </button>
-                  </div>
-                </div>
+                  venue={venue}
+                  onInquire={(item) => setInquiryTarget({ item, type: "venue" })}
+                />
               ))
             ) : (
               <div className="col-span-full py-16 text-center bg-white border border-sand rounded-3xl p-8">
@@ -193,70 +172,14 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {uniqueProperties.length > 0 ? (
               uniqueProperties.map((prop) => (
-                <div
+                <WeddingEstateCard
                   key={prop.id}
-                  className="bg-white border border-sand hover:border-indigo/35 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col md:flex-row group hover:-translate-y-1.5"
-                >
-                  <div className="relative h-64 md:h-auto md:w-5/12 bg-sand/20 overflow-hidden shrink-0">
-                    <Image
-                      src={prop.image}
-                      alt={prop.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-700"
-                      sizes="(max-width: 768px) 100vw, 40vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-                    <span className="absolute top-4 left-4 text-[9px] font-black uppercase tracking-widest bg-black/60 backdrop-blur-md text-amber-200 px-3 py-1 rounded-full border border-white/15">
-                      {prop.propertyType}
-                    </span>
-                    <span className="absolute top-4 right-4 text-[9px] font-black uppercase tracking-wider bg-emerald-600 text-white px-3.5 py-1 rounded-full shadow-lg">
-                      {prop.price}
-                    </span>
-
-                    <div className="absolute bottom-4 left-4 right-4 text-white">
-                      <p className="text-[10px] text-amber-200 font-bold uppercase tracking-wider">{prop.location}</p>
-                    </div>
-                  </div>
-
-                  <div className="p-6 flex flex-col justify-between flex-1 gap-5">
-                    <div className="flex flex-col gap-2">
-                      <h3 className="text-2xl font-serif font-black text-indigo leading-tight tracking-tight">{prop.title}</h3>
-                      <p className="text-xs text-charcoal/70 font-semibold leading-relaxed">
-                        {prop.description}
-                      </p>
-
-                      <div className="bg-sand/30 border border-sand/40 rounded-xl p-3 text-xs font-bold text-indigo mt-1.5">
-                        <span>📐 Specifications: {prop.specs}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-3">
-                      <div className="flex flex-wrap gap-1.5">
-                        {prop.features.map((f, i) => (
-                          <span
-                            key={i}
-                            className="bg-sand/20 text-charcoal/80 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-sand flex items-center gap-1"
-                          >
-                            <ShieldCheck className="w-3.5 h-3.5 text-indigo" />
-                            <span>{f}</span>
-                          </span>
-                        ))}
-                      </div>
-
-                      <button
-                        onClick={() => setInquiryTarget({ item: prop, type: "property" })}
-                        className="w-full py-4 bg-terracotta hover:bg-terracotta-hover text-white text-xs font-black uppercase tracking-widest rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:translate-y-0"
-                      >
-                        <ShieldCheck className="w-4 h-4 text-amber-200" />
-                        <span>Schedule Private Tour</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  property={prop}
+                  onInquire={(item) => setInquiryTarget({ item, type: "property" })}
+                />
               ))
             ) : (
               <div className="col-span-full py-16 text-center bg-white border border-sand rounded-3xl p-8">
@@ -264,6 +187,48 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
               </div>
             )}
           </div>
+        </section>
+
+        {/* LIVE MARKETPLACE LISTINGS */}
+        <section id="listings" className="flex flex-col gap-8 scroll-mt-24 pt-6 border-t border-sand/60">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-sand/80 pb-5">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[9px] font-black text-emerald-800 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-md border border-emerald-200 w-fit">
+                Live Marketplace
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-serif font-black text-indigo mt-1">
+                Properties in {destination.name}
+              </h2>
+            </div>
+            <Link
+              href={listingsHref}
+              className="text-xs font-black uppercase text-terracotta hover:underline flex items-center gap-1 shrink-0"
+            >
+              <span>View all listings</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {listingPreview.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {listingPreview.map((property) => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 text-center bg-white border border-sand rounded-3xl p-8">
+              <p className="text-xs text-charcoal/50 font-bold">
+                No active listings in {destination.name} yet.
+              </p>
+              <Link
+                href="/listings"
+                className="inline-flex items-center gap-1 mt-4 text-xs font-black uppercase text-terracotta hover:underline"
+              >
+                Browse all cities
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          )}
         </section>
 
         {/* SECTION 3: ZONES & INTERACTIVE MAP */}
@@ -342,7 +307,7 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
             {relatedDestinations.map(d => (
               <Link
                 key={d.name}
-                href={`/destinations/${d.name.toLowerCase()}`}
+                href={`/destinations/${destinationSlug(d.name)}`}
                 className="group bg-white border border-sand rounded-3xl overflow-hidden shadow-md hover:shadow-xl hover:border-amber-400/35 transition-all p-4.5 flex items-center gap-4 hover:-translate-y-1"
               >
                 <div className="relative w-18 h-18 rounded-2xl overflow-hidden shrink-0">

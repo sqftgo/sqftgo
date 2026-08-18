@@ -3,6 +3,8 @@ import { SECURITY_HEADERS } from "./src/lib/security/headers";
 
 const nextConfig: NextConfig = {
   images: {
+    // Windows/NAT64 can resolve public CDN hosts to 64:ff9b::… which Next 16 treats as private.
+    dangerouslyAllowLocalIP: true,
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "maps.google.com" },
