@@ -2,21 +2,27 @@ import React from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { AlertCircle } from "lucide-react";
-import { DESTINATIONS } from "@/features/destinations/data/destinations";
-import { destinationSlug, findDestinationBySlug } from "@/features/destinations/logic";
+import {
+  destinationSlug,
+  destinationsForProvidedCities,
+  findDestinationBySlug,
+} from "@/features/destinations/logic";
 import CityPageLayout from "@/features/destinations/components/CityPageLayout";
+import { createClient } from "@/lib/supabase/server";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { listActiveLocations } from "@/lib/server/active-city";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
 export function generateStaticParams() {
-  return DESTINATIONS.map((d) => ({ slug: destinationSlug(d.name) }));
+  return destinationsForProvidedCities([]).map((d) => ({ slug: destinationSlug(d.name) }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const destination = findDestinationBySlug(slug);
+  const destination = await resolveProvidedDestination(slug);
   if (!destination) {
     return { title: "Destination Not Found | SqftGo" };
   }
@@ -26,9 +32,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+async function resolveProvidedDestination(slug: string) {
+  const raw = findDestinationBySlug(slug);
+  if (!raw) return null;
+
+  let locations: { city: string; state: string }[] = [];
+  if (hasSupabaseEnv()) {
+    try {
+      const supabase = await createClient();
+      locations = await listActiveLocations(supabase);
+    } catch {
+      locations = [];
+    }
+  }
+
+  const catalog = destinationsForProvidedCities(locations);
+  return (
+    catalog.find((d) => destinationSlug(d.name) === destinationSlug(raw.name)) ?? null
+  );
+}
+
 export default async function CityDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const destination = findDestinationBySlug(slug);
+  const destination = await resolveProvidedDestination(slug);
 
   if (!destination) {
     return (
@@ -50,5 +76,20 @@ export default async function CityDetailPage({ params }: PageProps) {
     );
   }
 
-  return <CityPageLayout destination={destination} />;
+  let providedDestinations = destinationsForProvidedCities([]);
+  if (hasSupabaseEnv()) {
+    try {
+      const supabase = await createClient();
+      providedDestinations = destinationsForProvidedCities(await listActiveLocations(supabase));
+    } catch {
+      // keep fallback catalog
+    }
+  }
+
+  return (
+    <CityPageLayout
+      destination={destination}
+      providedDestinations={providedDestinations}
+    />
+  );
 }

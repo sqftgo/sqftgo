@@ -1,8 +1,13 @@
+/** Same cities as admin `locations` / `CITIES_WITHOUT_ALL` — do not invent extra names. */
 export const CITIES = [
-  "Udaipur", "Jaipur", "Jodhpur", "Kota", "Bikaner",
-  "Jaisalmer", "Rajsamand", "Pali", "Pushkar", "Alwar",
-  "Ahmedabad", "Surat", "Gandhinagar", "Kutch", "Anand",
-  "Rajkot", "Shimla", "Chandigarh", "Dharamshala", "Agra"
+  "Udaipur",
+  "Jaipur",
+  "Jodhpur",
+  "Kota",
+  "Jaisalmer",
+  "Ahmedabad",
+  "Surat",
+  "Bikaner",
 ];
 
 export const PROPERTY_TYPES = [

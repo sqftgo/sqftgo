@@ -15,6 +15,7 @@ export const CITIES = [
   "Jaisalmer",
   "Ahmedabad",
   "Surat",
+  "Bikaner",
 ] as const;
 
 export const CITIES_WITHOUT_ALL = CITIES.filter((c) => c !== ALL_INDIA_CITY);
