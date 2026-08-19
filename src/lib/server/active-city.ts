@@ -37,6 +37,24 @@ export async function resolveActiveCity(
   };
 }
 
+export async function listActiveLocations(
+  supabase: SupabaseClient
+): Promise<{ city: string; state: string; country: string }[]> {
+  const { data, error } = await supabase
+    .from("locations")
+    .select("city, state, country")
+    .eq("active", true)
+    .order("sort_order", { ascending: true })
+    .order("city", { ascending: true });
+
+  if (error || !data) return [];
+  return data.map((row) => ({
+    city: row.city,
+    state: row.state,
+    country: row.country,
+  }));
+}
+
 export async function requireActiveCity(
   supabase: SupabaseClient,
   rawCity: string

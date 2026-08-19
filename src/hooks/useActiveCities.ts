@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
-import { ALL_INDIA_CITY, CITIES_WITHOUT_ALL } from "@/constants/cities";
+import { ALL_INDIA_CITY } from "@/constants/cities";
 
 /**
  * Active admin-managed cities for public/dealer pickers.
@@ -14,13 +14,7 @@ export function useActiveCities() {
   const activeLocations = useMemo(
     () =>
       locations
-        .filter(
-          (l) =>
-            l.active &&
-            CITIES_WITHOUT_ALL.some(
-              (allowedCity) => allowedCity.toLowerCase() === l.city.toLowerCase()
-            )
-        )
+        .filter((l) => l.active)
         .sort((a, b) => a.city.localeCompare(b.city)),
     [locations]
   );

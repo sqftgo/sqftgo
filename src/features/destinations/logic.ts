@@ -1,6 +1,47 @@
 import type { Property } from "@/types";
-import { ALL_INDIA_CITY } from "@/constants/cities";
+import { ALL_INDIA_CITY, CITIES_WITHOUT_ALL } from "@/constants/cities";
 import { DESTINATIONS, TAGS, type Destination } from "./data/destinations";
+
+export type ProvidedLocation = {
+  city: string;
+  state?: string;
+  active?: boolean;
+};
+
+/**
+ * Destinations whose city exists in the admin locations catalog.
+ * `name` / `tag` are rewritten to the catalog spelling (city / state).
+ */
+export function destinationsForProvidedCities(
+  locations: ProvidedLocation[],
+  destinations: Destination[] = DESTINATIONS
+): Destination[] {
+  const provided = locations.filter((l) => l.active !== false && l.city.trim());
+  const catalog: ProvidedLocation[] =
+    provided.length > 0
+      ? provided
+      : CITIES_WITHOUT_ALL.map((city) => ({ city, active: true }));
+
+  const byKey = new Map(catalog.map((l) => [l.city.trim().toLowerCase(), l] as const));
+
+  const out: Destination[] = [];
+  for (const dest of destinations) {
+    const loc = byKey.get(dest.name.trim().toLowerCase());
+    if (!loc) continue;
+    out.push({
+      ...dest,
+      name: loc.city,
+      tag: loc.state?.trim() || dest.tag,
+    });
+  }
+  return out;
+}
+
+export function tagsForDestinations(destinations: Destination[]): string[] {
+  const tags = [...new Set(destinations.map((d) => d.tag).filter(Boolean))];
+  tags.sort((a, b) => a.localeCompare(b));
+  return ["All", ...tags];
+}
 
 export type DestinationSortBy =
   | "recommended"

@@ -8,10 +8,11 @@ import {
 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { PropertyCard } from "@/features/properties";
-import { Destination, WeddingVenue, WeddingProperty, DESTINATIONS } from "../data/destinations";
+import { Destination, WeddingVenue, WeddingProperty } from "../data/destinations";
 import {
   destinationListingsHref,
   destinationSlug,
+  destinationsForProvidedCities,
   listingsInDestination,
 } from "../logic";
 import WeddingInquiryModal from "./WeddingInquiryModal";
@@ -20,10 +21,11 @@ import WeddingEstateCard from "./WeddingEstateCard";
 
 interface CityPageLayoutProps {
   destination: Destination;
+  providedDestinations?: Destination[];
 }
 
-export default function CityPageLayout({ destination }: CityPageLayoutProps) {
-  const { properties } = useApp();
+export default function CityPageLayout({ destination, providedDestinations }: CityPageLayoutProps) {
+  const { properties, locations } = useApp();
   const [inquiryTarget, setInquiryTarget] = useState<{
     item: WeddingVenue | WeddingProperty;
     type: "venue" | "property";
@@ -38,13 +40,17 @@ export default function CityPageLayout({ destination }: CityPageLayoutProps) {
   const listingPreview = liveListings.slice(0, 6);
   const listingsHref = destinationListingsHref(destination.name);
 
-  // Related destinations — same region first, fallback to any
-  const sameRegion = DESTINATIONS.filter(
+  const catalog = useMemo(
+    () => providedDestinations ?? destinationsForProvidedCities(locations),
+    [providedDestinations, locations]
+  );
+
+  const sameRegion = catalog.filter(
     (d) =>
       d.name.toLowerCase() !== destination.name.toLowerCase() &&
       d.tag === destination.tag
   );
-  const fallback = DESTINATIONS.filter(
+  const fallback = catalog.filter(
     (d) =>
       d.name.toLowerCase() !== destination.name.toLowerCase() &&
       d.tag !== destination.tag

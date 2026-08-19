@@ -5,16 +5,16 @@ import { Compass, LayoutGrid, List, ArrowUpDown, HeartHandshake } from "lucide-r
 import { useApp } from "@/context/AppContext";
 
 import {
-  DESTINATIONS,
-  TAGS,
   type DestinationSortBy,
   averageGrowthScore,
   countActiveListingsByCity,
   countListingsInDestinations,
+  destinationsForProvidedCities,
   filterDestinations,
   regionForSelectedCity,
   sortDestinations,
   tagStatsForDestinations,
+  tagsForDestinations,
   totalWeddingHotspots,
 } from "@/features/destinations";
 import DestinationHero from "@/features/destinations/components/DestinationHero";
@@ -30,6 +30,12 @@ export default function DestinationsPage() {
   const [viewMode, setViewMode] = useState<"grid" | "compact">("grid");
   const [sortBy, setSortBy] = useState<DestinationSortBy>("recommended");
 
+  const catalog = useMemo(
+    () => destinationsForProvidedCities(locations),
+    [locations]
+  );
+  const tags = useMemo(() => tagsForDestinations(catalog), [catalog]);
+
   const selectedCityRegion = useMemo(
     () => regionForSelectedCity(selectedCity, locations),
     [selectedCity, locations]
@@ -41,26 +47,27 @@ export default function DestinationsPage() {
   );
 
   const tagStats = useMemo(
-    () => tagStatsForDestinations(cityPropertiesMap),
-    [cityPropertiesMap]
+    () => tagStatsForDestinations(cityPropertiesMap, catalog),
+    [cityPropertiesMap, catalog]
   );
 
-  const avgGrowthScore = useMemo(() => averageGrowthScore(), []);
-  const weddingHotspots = useMemo(() => totalWeddingHotspots(), []);
+  const avgGrowthScore = useMemo(() => averageGrowthScore(catalog), [catalog]);
+  const weddingHotspots = useMemo(() => totalWeddingHotspots(catalog), [catalog]);
   const destinationListingCount = useMemo(
-    () => countListingsInDestinations(properties),
-    [properties]
+    () => countListingsInDestinations(properties, catalog),
+    [properties, catalog]
   );
 
   const filteredDestinations = useMemo(
     () =>
       filterDestinations({
+        destinations: catalog,
         activeFilter,
         selectedCityRegion,
         limitToSelectedCityRegion,
         onlyWeddingDestinations,
       }),
-    [activeFilter, selectedCityRegion, limitToSelectedCityRegion, onlyWeddingDestinations]
+    [catalog, activeFilter, selectedCityRegion, limitToSelectedCityRegion, onlyWeddingDestinations]
   );
 
   const sortedDestinations = useMemo(
@@ -72,7 +79,7 @@ export default function DestinationsPage() {
     <div className="flex flex-col w-full min-h-screen relative bg-cream/30">
 
       <DestinationHero
-        totalDestinations={DESTINATIONS.length}
+        totalDestinations={catalog.length}
         totalProperties={destinationListingCount}
         avgGrowthScore={avgGrowthScore}
         totalWeddingHotspots={weddingHotspots}
@@ -81,7 +88,7 @@ export default function DestinationsPage() {
       <section className="relative py-12 px-4 md:px-8 max-w-7xl mx-auto w-full z-20 -mt-12 text-left bg-white rounded-2xl shadow-xl border border-indigo/5 p-6 md:p-10 mb-16">
 
         <DestinationsFilter
-          tags={TAGS}
+          tags={tags}
           activeFilter={activeFilter}
           setActiveFilter={(val) => {
             setActiveFilter(val);

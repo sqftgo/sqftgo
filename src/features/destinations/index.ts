@@ -20,8 +20,11 @@ export {
   tagStatsForDestinations,
   filterDestinations,
   sortDestinations,
+  destinationsForProvidedCities,
+  tagsForDestinations,
   type DestinationSortBy,
   type CityCountMap,
+  type ProvidedLocation,
 } from "./logic";
 export { default as DestinationHero } from "./components/DestinationHero";
 export { default as DestinationCard } from "./components/DestinationCard";
