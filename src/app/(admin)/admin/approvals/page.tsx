@@ -5,7 +5,6 @@ import { useApp } from "@/context/AppContext";
 import { propertyService } from "@/services";
 import type { Property } from "@/types";
 import { CheckCircle2, XCircle, MapPin, Bed, Square, Clock } from "lucide-react";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   DashboardPageHeader,
@@ -17,11 +16,13 @@ import {
   FormField,
   TextArea,
 } from "@/components/ui";
+import { ListingPreviewModal } from "@/features/admin";
 
 export default function AdminApprovalsPage() {
   const { updateProperty, addLog, userEmail, refreshProperties } = useApp();
   const [pending, setPending] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [previewProperty, setPreviewProperty] = useState<Property | null>(null);
   const [pendingReject, setPendingReject] = useState<{ id: string; title: string } | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
@@ -61,6 +62,7 @@ export default function AdminApprovalsPage() {
         target: title,
       });
       setPending((prev) => prev.filter((p) => p.id !== id));
+      setPreviewProperty((prev) => (prev?.id === id ? null : prev));
       void refreshProperties();
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Unable to approve listing");
@@ -69,27 +71,27 @@ export default function AdminApprovalsPage() {
     }
   };
 
-  const confirmReject = async () => {
-    if (!pendingReject) return;
-    const reason = rejectReason.trim();
-    if (!reason) {
+  const rejectWithReason = async (id: string, title: string, reason: string) => {
+    const trimmed = reason.trim();
+    if (!trimmed) {
       setActionError("A rejection reason is required.");
       return;
     }
     setActionError(null);
     setBusy(true);
     try {
-      await updateProperty(pendingReject.id, {
+      await updateProperty(id, {
         status: "Rejected",
-        rejectionReason: reason,
+        rejectionReason: trimmed,
       });
       addLog({
-        action: `Property Rejected: ${reason.slice(0, 120)}`,
+        action: `Property Rejected: ${trimmed.slice(0, 120)}`,
         performedBy: userEmail,
         role: "Admin",
-        target: pendingReject.title,
+        target: title,
       });
-      setPending((prev) => prev.filter((p) => p.id !== pendingReject.id));
+      setPending((prev) => prev.filter((p) => p.id !== id));
+      setPreviewProperty(null);
       setPendingReject(null);
       setRejectReason("");
       void refreshProperties();
@@ -98,6 +100,17 @@ export default function AdminApprovalsPage() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const openReject = (id: string, title: string) => {
+    setRejectReason("");
+    setPendingReject({ id, title });
+    setPreviewProperty(null);
+  };
+
+  const confirmReject = async () => {
+    if (!pendingReject) return;
+    await rejectWithReason(pendingReject.id, pendingReject.title, rejectReason);
   };
 
   const formatPrice = useMemo(
@@ -227,22 +240,21 @@ export default function AdminApprovalsPage() {
                 )}
 
                 <div className="mt-5 pt-4 border-t border-indigo/5 flex items-center justify-between flex-wrap gap-3">
-                  <Link
-                    href={`/property/${prop.id}`}
-                    target="_blank"
-                    className="text-xs text-indigo font-bold hover:underline"
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => setPreviewProperty(prop)}
+                    className="text-indigo font-bold px-0 hover:bg-transparent hover:underline"
                   >
                     Preview Listing →
-                  </Link>
+                  </Button>
                   <div className="flex gap-3">
                     <Button
                       variant="outline"
                       size="sm"
                       disabled={busy}
-                      onClick={() => {
-                        setRejectReason("");
-                        setPendingReject({ id: prop.id, title: prop.title });
-                      }}
+                      onClick={() => openReject(prop.id, prop.title)}
                       className="border-rose-500/20 text-rose-600 hover:bg-rose-500/10"
                     >
                       <XCircle className="w-4 h-4" /> Reject
@@ -263,6 +275,18 @@ export default function AdminApprovalsPage() {
           ))}
         </div>
       )}
+
+      <ListingPreviewModal
+        property={previewProperty}
+        open={Boolean(previewProperty)}
+        onClose={() => {
+          if (!busy) setPreviewProperty(null);
+        }}
+        busy={busy}
+        onApprove={(prop) => approve(prop.id, prop.title)}
+        onReject={(prop) => openReject(prop.id, prop.title)}
+        onRejectWithReason={(prop, reason) => rejectWithReason(prop.id, prop.title, reason)}
+      />
 
       <ConfirmDialog
         open={Boolean(pendingReject)}

@@ -52,7 +52,11 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  return applyCookies(jsonOk(authSessionPayload(profile)));
+  const bearer = request.headers.get("authorization")?.toLowerCase().startsWith("bearer ")
+    ? request.headers.get("authorization")!.slice(7).trim()
+    : undefined;
+
+  return applyCookies(jsonOk(authSessionPayload(profile, bearer || undefined)));
 }
 
 export async function PATCH(request: NextRequest) {

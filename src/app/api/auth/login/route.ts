@@ -113,5 +113,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  return applyCookies(NextResponse.json(authSessionPayload(profile)));
+  const accessToken = data.session?.access_token;
+  return applyCookies(NextResponse.json(authSessionPayload(profile, accessToken)));
 }
