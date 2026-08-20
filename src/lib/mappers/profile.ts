@@ -15,11 +15,25 @@ export function mapProfileRow(profile: ProfileRow): UserProfile {
   };
 }
 
-export function authSessionPayload(profile: ProfileRow) {
+/**
+ * Session JSON for web (cookies) and mobile (Bearer).
+ * Flat fields + accessToken support Expo clients that cannot use Next cookies.
+ */
+export function authSessionPayload(profile: ProfileRow, accessToken?: string) {
+  const mapped = mapProfileRow(profile);
   return {
     email: profile.email,
     role: profile.role,
     name: profile.name,
-    profile: mapProfileRow(profile),
+    profile: mapped,
+    id: profile.id,
+    phone: profile.phone ?? undefined,
+    status: profile.status,
+    bio: profile.bio ?? undefined,
+    city: profile.city ?? undefined,
+    avatarUrl: profile.avatar_url ?? undefined,
+    dealerAccess: profile.role === "broker" ? ("approved" as const) : ("none" as const),
+    joinedDate: profile.created_at,
+    ...(accessToken ? { accessToken } : {}),
   };
 }

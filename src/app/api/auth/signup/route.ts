@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       return jsonError(publicAuthError(createError?.message ?? "Unable to create account"), 400);
     }
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -113,7 +113,11 @@ export async function POST(request: NextRequest) {
       profile = { ...profile, name };
     }
 
-    return applyCookies(NextResponse.json(authSessionPayload(profile), { status: 201 }));
+    return applyCookies(
+      NextResponse.json(authSessionPayload(profile, signInData.session?.access_token), {
+        status: 201,
+      })
+    );
   }
 
   const { data, error } = await supabase.auth.signUp({
@@ -155,6 +159,9 @@ export async function POST(request: NextRequest) {
   }
 
   return applyCookies(
-    NextResponse.json({ status: "authenticated", ...authSessionPayload(profile) }, { status: 201 })
+    NextResponse.json(
+      authSessionPayload(profile, data.session?.access_token),
+      { status: 201 }
+    )
   );
 }
