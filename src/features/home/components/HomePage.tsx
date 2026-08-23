@@ -2,6 +2,7 @@
 
 import { HomeHero } from "./HomeHero";
 import { HomeTopPicks } from "./HomeTopPicks";
+import { HomeDealerProjects } from "./HomeDealerProjects";
 import { HomeProminentProjects } from "./HomeProminentProjects";
 import { HomeHighlightedProjects } from "./HomeHighlightedProjects";
 import { HomeTrustedDevelopers } from "./HomeTrustedDevelopers";
@@ -15,6 +16,7 @@ export function HomePage() {
     <div className="flex-1 flex flex-col w-full relative">
       <HomeHero />
       <HomeTopPicks />
+      <HomeDealerProjects />
       <HomeProminentProjects />
       <HomeHighlightedProjects />
       <HomeTrustedDevelopers />
