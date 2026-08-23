@@ -26,6 +26,7 @@ import {
   School,
   Store,
   Bus,
+  Hospital,
   Eye,
 } from "lucide-react";
 
@@ -79,11 +80,30 @@ export function PropertyDetailInfo({
   };
 
   const neighborhoodHighlights = [
+    property.nearbyHospital
+      ? { label: "Hospital", desc: property.nearbyHospital, icon: Hospital, color: "text-terracotta bg-terracotta/5 border-terracotta/10" }
+      : null,
+    property.nearbySchool
+      ? { label: "School", desc: property.nearbySchool, icon: School, color: "text-indigo bg-indigo/5 border-indigo/10" }
+      : null,
+    property.nearbyTransportation
+      ? { label: "Transportation", desc: property.nearbyTransportation, icon: Bus, color: "text-indigo bg-indigo/5 border-indigo/10" }
+      : null,
+  ].filter(Boolean) as Array<{
+    label: string;
+    desc: string;
+    icon: React.ComponentType<{ className?: string }>;
+    color: string;
+  }>;
+
+  const fallbackNeighborhood = [
     { label: "Connectivity", desc: "Local transit & main highway within 1.5 km", icon: Bus, color: "text-indigo bg-indigo/5 border-indigo/10" },
     { label: "Education", desc: "Leading schools and academies in a 3 km radius", icon: School, color: "text-terracotta bg-terracotta/5 border-terracotta/10" },
     { label: "Retail & Dine", desc: "Local markets, grocery, and dining within 500m", icon: Store, color: "text-indigo bg-indigo/5 border-indigo/10" },
     { label: "Nature & Parks", desc: "Green belts and heritage walkways nearby", icon: Trees, color: "text-terracotta bg-terracotta/5 border-terracotta/10" },
   ];
+
+  const proximityItems = neighborhoodHighlights.length > 0 ? neighborhoodHighlights : fallbackNeighborhood;
 
   const needsTruncation = property.description.length > 280;
   const displayDesc = descExpanded || !needsTruncation
@@ -319,7 +339,7 @@ export function PropertyDetailInfo({
               <div className="md:col-span-5 flex flex-col justify-between gap-3 bg-white border border-sand p-5 rounded-3xl shadow-sm text-left">
                 <span className="text-[10px] font-bold text-charcoal/40 uppercase tracking-widest block pb-2 border-b border-sand/40">Neighborhood Proximity</span>
                 <div className="flex flex-col gap-3 flex-1 justify-center">
-                  {neighborhoodHighlights.map((hl, i) => {
+                  {proximityItems.map((hl, i) => {
                     const HlIcon = hl.icon;
                     return (
                       <div key={i} className="flex items-start gap-3 text-xs">

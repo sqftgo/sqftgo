@@ -61,6 +61,9 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
   const [type, setType] = useState<Property["type"]>("Apartment");
   const [city, setCity] = useState("");
   const [locality, setLocality] = useState("");
+  const [nearbyHospital, setNearbyHospital] = useState("");
+  const [nearbySchool, setNearbySchool] = useState("");
+  const [nearbyTransportation, setNearbyTransportation] = useState("");
   const [bhk, setBhk] = useState<string>("3");
   const [size, setSize] = useState<string>("");
   const [furnished, setFurnished] = useState<Property["furnished"]>("Semi-Furnished");
@@ -121,7 +124,14 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
   };
 
   const validateStep = (): boolean => {
-    if (currentStep === 1 && !locality) return false;
+    if (
+      currentStep === 1 &&
+      (!locality.trim() ||
+        !nearbyHospital.trim() ||
+        !nearbySchool.trim() ||
+        !nearbyTransportation.trim())
+    )
+      return false;
     if (currentStep === 2 && !size) return false;
     if (currentStep === 4 && !price) return false;
     return true;
@@ -158,6 +168,9 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
       bhk: type !== "Industrial Plot" && type !== "Agricultural Land" ? parseInt(bhk) : undefined,
       city,
       locality,
+      nearbyHospital: nearbyHospital.trim(),
+      nearbySchool: nearbySchool.trim(),
+      nearbyTransportation: nearbyTransportation.trim(),
       size: parseInt(size),
       furnished,
       description:
@@ -289,6 +302,60 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
               <span className="text-[10px] text-charcoal/50 font-medium">
                 The sub-locality area or neighborhood
               </span>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="nearbyHospitalInput" className="font-extrabold text-indigo text-sm">
+                Nearby hospital *
+              </label>
+              <input
+                id="nearbyHospitalInput"
+                type="text"
+                required
+                value={nearbyHospital}
+                onChange={(e) => {
+                  setNearbyHospital(e.target.value);
+                  setError(null);
+                }}
+                placeholder="e.g. GBH American Hospital, 2 km"
+                className="w-full bg-white border border-sand rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-terracotta text-charcoal"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="nearbySchoolInput" className="font-extrabold text-indigo text-sm">
+                Nearby school *
+              </label>
+              <input
+                id="nearbySchoolInput"
+                type="text"
+                required
+                value={nearbySchool}
+                onChange={(e) => {
+                  setNearbySchool(e.target.value);
+                  setError(null);
+                }}
+                placeholder="e.g. Seedling Public School, 1 km"
+                className="w-full bg-white border border-sand rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-terracotta text-charcoal"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="nearbyTransportationInput" className="font-extrabold text-indigo text-sm">
+                Nearby transportation *
+              </label>
+              <input
+                id="nearbyTransportationInput"
+                type="text"
+                required
+                value={nearbyTransportation}
+                onChange={(e) => {
+                  setNearbyTransportation(e.target.value);
+                  setError(null);
+                }}
+                placeholder="e.g. Udaipur City Bus Stand, 3 km"
+                className="w-full bg-white border border-sand rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-terracotta text-charcoal"
+              />
             </div>
           </motion.div>
         );
@@ -529,6 +596,20 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
                 <span className="text-charcoal font-bold truncate">
                   {locality}, {city}
                 </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-extrabold text-charcoal/50 uppercase">Hospital</span>
+                <span className="text-charcoal font-bold truncate">{nearbyHospital}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-extrabold text-charcoal/50 uppercase">School</span>
+                <span className="text-charcoal font-bold truncate">{nearbySchool}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-extrabold text-charcoal/50 uppercase">
+                  Transportation
+                </span>
+                <span className="text-charcoal font-bold truncate">{nearbyTransportation}</span>
               </div>
               {type !== "Industrial Plot" && type !== "Agricultural Land" && (
                 <div className="flex flex-col">

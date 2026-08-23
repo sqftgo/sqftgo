@@ -22,6 +22,9 @@ export interface Property {
   state?: string;
   country?: string;
   locality: string;
+  nearbyHospital?: string;
+  nearbySchool?: string;
+  nearbyTransportation?: string;
   size: number;
   furnished: "Furnished" | "Semi-Furnished" | "Unfurnished";
   description: string;

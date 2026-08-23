@@ -85,6 +85,35 @@ export function LocationDetailsStep({ form, set }: LocationDetailsStepProps) {
 
         <div>
           <label className="text-[10px] font-black text-indigo/60 uppercase tracking-widest block mb-3">
+            Nearby landmarks
+          </label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField label="Hospital" required hint="Closest hospital or medical facility.">
+              <TextInput
+                value={form.nearbyHospital}
+                onChange={(e) => set("nearbyHospital", e.target.value)}
+                placeholder="e.g. GBH American Hospital, 2 km"
+              />
+            </FormField>
+            <FormField label="School" required hint="Closest school or academy.">
+              <TextInput
+                value={form.nearbySchool}
+                onChange={(e) => set("nearbySchool", e.target.value)}
+                placeholder="e.g. Seedling Public School, 1 km"
+              />
+            </FormField>
+            <FormField label="Transportation" required hint="Closest bus, railway, or highway access.">
+              <TextInput
+                value={form.nearbyTransportation}
+                onChange={(e) => set("nearbyTransportation", e.target.value)}
+                placeholder="e.g. Udaipur City Bus Stand, 3 km"
+              />
+            </FormField>
+          </div>
+        </div>
+
+        <div>
+          <label className="text-[10px] font-black text-indigo/60 uppercase tracking-widest block mb-3">
             Specification Details
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-sand/10 border border-indigo/5 p-4 rounded-2xl">

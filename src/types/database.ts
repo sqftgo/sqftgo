@@ -186,6 +186,9 @@ export type PropertyRow = {
   state: string | null;
   country: string | null;
   locality: string;
+  nearby_hospital: string | null;
+  nearby_school: string | null;
+  nearby_transportation: string | null;
   size: number | string;
   furnished: FurnishedStatusDb;
   description: string;
@@ -226,6 +229,9 @@ export type PropertyInsert = {
   state?: string | null;
   country?: string | null;
   locality: string;
+  nearby_hospital?: string | null;
+  nearby_school?: string | null;
+  nearby_transportation?: string | null;
   size: number;
   furnished?: FurnishedStatusDb;
   description?: string;

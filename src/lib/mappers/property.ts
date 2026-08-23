@@ -46,6 +46,9 @@ export function mapPropertyRow(row: PropertyRow): Property {
     state: row.state ?? undefined,
     country: row.country ?? undefined,
     locality: row.locality,
+    nearbyHospital: row.nearby_hospital ?? undefined,
+    nearbySchool: row.nearby_school ?? undefined,
+    nearbyTransportation: row.nearby_transportation ?? undefined,
     size: num(row.size),
     furnished: row.furnished,
     description: row.description,
@@ -84,6 +87,9 @@ export function mapCreateToInsert(input: {
   state?: string;
   country?: string;
   locality: string;
+  nearbyHospital?: string | null;
+  nearbySchool?: string | null;
+  nearbyTransportation?: string | null;
   size: number;
   furnished: Property["furnished"];
   description: string;
@@ -117,6 +123,9 @@ export function mapCreateToInsert(input: {
     state: input.state ?? null,
     country: input.country ?? "India",
     locality: input.locality,
+    nearby_hospital: input.nearbyHospital?.trim() || null,
+    nearby_school: input.nearbySchool?.trim() || null,
+    nearby_transportation: input.nearbyTransportation?.trim() || null,
     size: input.size,
     furnished: input.furnished,
     description: input.description,
@@ -152,6 +161,15 @@ export function mapUpdateToPatch(updates: Partial<Property>): PropertyUpdate {
   if (updates.state !== undefined) patch.state = updates.state;
   if (updates.country !== undefined) patch.country = updates.country;
   if (updates.locality !== undefined) patch.locality = updates.locality;
+  if (updates.nearbyHospital !== undefined) {
+    patch.nearby_hospital = updates.nearbyHospital?.trim() || null;
+  }
+  if (updates.nearbySchool !== undefined) {
+    patch.nearby_school = updates.nearbySchool?.trim() || null;
+  }
+  if (updates.nearbyTransportation !== undefined) {
+    patch.nearby_transportation = updates.nearbyTransportation?.trim() || null;
+  }
   if (updates.size !== undefined) patch.size = updates.size;
   if (updates.furnished !== undefined) patch.furnished = updates.furnished;
   if (updates.description !== undefined) patch.description = updates.description;

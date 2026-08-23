@@ -7,6 +7,7 @@ import { Avatar, Button, Dialog } from "@/components/ui";
 import {
   Bath,
   BedDouble,
+  Bus,
   CalendarDays,
   Car,
   Check,
@@ -20,12 +21,14 @@ import {
   FileSpreadsheet,
   Globe,
   Home,
+  Hospital,
   Layers,
   Mail,
   MapPin,
   Maximize2,
   Phone,
   Play,
+  School,
   ShieldAlert,
   ShieldCheck,
   Sparkles,
@@ -516,6 +519,41 @@ export function ListingPreviewModal({
                   </p>
                 </div>
               </div>
+
+              {(property.nearbyHospital || property.nearbySchool || property.nearbyTransportation) && (
+                <div className="pt-3 border-t border-sand space-y-2.5">
+                  <p className="text-[10px] uppercase font-black tracking-widest text-charcoal/40">
+                    Nearby landmarks
+                  </p>
+                  {property.nearbyHospital ? (
+                    <div className="flex items-start gap-2">
+                      <Hospital className="w-3.5 h-3.5 text-terracotta shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-charcoal/40">Hospital</p>
+                        <p className="text-xs font-bold text-charcoal leading-snug">{property.nearbyHospital}</p>
+                      </div>
+                    </div>
+                  ) : null}
+                  {property.nearbySchool ? (
+                    <div className="flex items-start gap-2">
+                      <School className="w-3.5 h-3.5 text-indigo shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-charcoal/40">School</p>
+                        <p className="text-xs font-bold text-charcoal leading-snug">{property.nearbySchool}</p>
+                      </div>
+                    </div>
+                  ) : null}
+                  {property.nearbyTransportation ? (
+                    <div className="flex items-start gap-2">
+                      <Bus className="w-3.5 h-3.5 text-indigo shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-charcoal/40">Transportation</p>
+                        <p className="text-xs font-bold text-charcoal leading-snug">{property.nearbyTransportation}</p>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              )}
 
               <div className="pt-3 border-t border-sand flex items-end justify-between">
                 <div>
