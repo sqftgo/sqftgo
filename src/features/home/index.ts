@@ -1,6 +1,7 @@
 export { HomePage } from "./components/HomePage";
 export { HomeHero } from "./components/HomeHero";
 export { HomeTopPicks } from "./components/HomeTopPicks";
+export { HomeDealerProjects } from "./components/HomeDealerProjects";
 export { HomeProminentProjects } from "./components/HomeProminentProjects";
 export { HomeHighlightedProjects } from "./components/HomeHighlightedProjects";
 export { HomeTrustedDevelopers } from "./components/HomeTrustedDevelopers";
