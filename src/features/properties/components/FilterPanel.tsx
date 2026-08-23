@@ -13,6 +13,8 @@ import {
 } from "@/constants";
 import { useBudgetPriceOptions } from "@/features/admin";
 import { useActiveCities } from "@/hooks/useActiveCities";
+import type { ListingFilter, ListingFilterExtra } from "@/types/listing-filter";
+import { isListingFilterOn } from "@/lib/listing-filters/defaults";
 
 export interface FilterState {
   city: string;
@@ -28,6 +30,7 @@ export interface FilterState {
   minSize?: string;
   maxSize?: string;
   selectedAmenities?: string[];
+  extra?: ListingFilterExtra;
 }
 
 interface FilterPanelProps {
@@ -37,6 +40,7 @@ interface FilterPanelProps {
   isOpen?: boolean;
   onClose?: () => void;
   showBasicFilters?: boolean;
+  listingFilters?: ListingFilter[];
 }
 
 export const FilterPanel: React.FC<FilterPanelProps> = ({
@@ -46,6 +50,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   isOpen = true,
   onClose,
   showBasicFilters = true,
+  listingFilters = [],
 }) => {
   const { categories, amenities } = useApp();
   const { cityOptions } = useActiveCities();
@@ -61,6 +66,36 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     const live = amenities.filter((a) => a.active).map((a) => a.name);
     return live.length > 0 ? live : [...AMENITY_FALLBACK];
   }, [amenities]);
+
+  const filterOn = (key: string) =>
+    listingFilters.length === 0 ? true : isListingFilterOn(listingFilters, key);
+
+  const bhkChoices = useMemo(() => {
+    const def = listingFilters.find((f) => f.key === "bhk");
+    if (def?.options?.length) return def.options;
+    return BHK_OPTIONS.map((v) => ({ label: `${v} BHK`, value: v }));
+  }, [listingFilters]);
+
+  const furnishingChoices = useMemo(() => {
+    const def = listingFilters.find((f) => f.key === "furnishing");
+    if (def?.options?.length) return def.options.map((o) => o.value);
+    return ["Furnished", "Semi-Furnished", "Unfurnished"];
+  }, [listingFilters]);
+
+  const customFilters = useMemo(
+    () =>
+      listingFilters.filter(
+        (f) => f.active && (f.kind === "text" || f.kind === "toggle" || f.kind === "multi")
+      ),
+    [listingFilters]
+  );
+
+  const setExtra = (key: string, value: string | string[] | boolean) => {
+    onFilterChange({
+      ...filters,
+      extra: { ...(filters.extra ?? {}), [key]: value },
+    });
+  };
 
   const handlePurposeChange = (purpose: "all" | "buy" | "sell" | "rent" | "lease") => {
     onFilterChange({ ...filters, purpose, minPrice: "", maxPrice: "" });
@@ -153,6 +188,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         {showBasicFilters && (
           <>
             {/* Purpose: Buy vs Sell vs Rent vs Lease */}
+            {filterOn("purpose") ? (
             <div className="flex flex-col gap-2">
               <span className="text-xs font-bold text-indigo uppercase tracking-wide">Purpose</span>
               <div className="grid grid-cols-5 gap-1 bg-sand/35 border border-sand/60 p-1 rounded-xl">
@@ -172,8 +208,10 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 ))}
               </div>
             </div>
+            ) : null}
 
             {/* City Select */}
+            {filterOn("city") ? (
             <div className="flex flex-col gap-2">
               <span className="text-xs font-bold text-indigo uppercase tracking-wide">City</span>
               <CustomSelect
@@ -185,8 +223,10 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 buttonClassName="bg-white border border-sand text-charcoal rounded-xl px-3 py-2.5 text-sm font-semibold hover:border-terracotta transition-colors"
               />
             </div>
+            ) : null}
 
             {/* Locality Input */}
+            {filterOn("locality") ? (
             <div className="flex flex-col gap-2">
               <span className="text-xs font-bold text-indigo uppercase tracking-wide">Locality</span>
               <input
@@ -197,8 +237,10 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 className="w-full bg-white border border-sand text-charcoal rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-colors"
               />
             </div>
+            ) : null}
 
             {/* Property Type */}
+            {filterOn("type") ? (
             <div className="flex flex-col gap-2">
               <span className="text-xs font-bold text-indigo uppercase tracking-wide">Property Type</span>
               <CustomSelect
@@ -209,28 +251,31 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 buttonClassName="bg-white border border-sand text-charcoal rounded-xl px-3 py-2.5 text-sm font-semibold hover:border-terracotta transition-colors"
               />
             </div>
+            ) : null}
           </>
         )}
 
         {/* BHK Selector */}
-        {showSpecs && (
+        {showSpecs && filterOn("bhk") && (
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-bold text-indigo uppercase tracking-wide">BHK Size</span>
+            <span className="text-xs font-bold text-indigo uppercase tracking-wide">
+              {listingFilters.find((f) => f.key === "bhk")?.label || "BHK Size"}
+            </span>
             <div className="flex flex-wrap gap-2">
-              {BHK_OPTIONS.map((bhkVal) => {
-                const selected = filters.bhk.includes(bhkVal);
+              {bhkChoices.map((opt) => {
+                const selected = filters.bhk.includes(opt.value);
                 return (
                   <button
-                    key={bhkVal}
+                    key={opt.value}
                     type="button"
-                    onClick={() => handleBhkToggle(bhkVal)}
+                    onClick={() => handleBhkToggle(opt.value)}
                     className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all duration-150 ${
                       selected
                         ? "bg-terracotta border-terracotta text-white shadow-sm"
                         : "bg-white border-sand text-charcoal hover:border-terracotta/40"
                     }`}
                   >
-                    {bhkVal} BHK
+                    {opt.label}
                   </button>
                 );
               })}
@@ -238,7 +283,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           </div>
         )}
 
-        {showBasicFilters && (
+        {showBasicFilters && filterOn("price") && (
           /* Price Range Filter */
           <div className="flex flex-col gap-2">
             <span className="text-xs font-bold text-indigo uppercase tracking-wide">
@@ -264,8 +309,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         )}
 
         {/* Size Range Filter */}
+        {filterOn("size") ? (
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-bold text-indigo uppercase tracking-wide">Property Size (sq.ft.)</span>
+          <span className="text-xs font-bold text-indigo uppercase tracking-wide">
+            {listingFilters.find((f) => f.key === "size")?.label || "Property Size (sq.ft.)"}
+          </span>
           <div className="flex flex-col gap-2">
             <CustomSelect
               options={SIZE_MIN_OPTIONS}
@@ -283,11 +331,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             />
           </div>
         </div>
+        ) : null}
 
         {/* Verification & Curations Status */}
+        {(filterOn("rera") || filterOn("featured")) && (
         <div className="flex flex-col gap-2.5 pt-4 border-t border-sand">
           <span className="text-xs font-bold text-indigo uppercase tracking-wide">Verification & Curation</span>
           <div className="flex flex-col gap-2.5">
+            {filterOn("rera") ? (
             <label className="flex items-center gap-2.5 text-xs font-bold text-charcoal/80 cursor-pointer">
               <input
                 type="checkbox"
@@ -297,9 +348,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               />
               <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>RERA Registered Only</span>
+                <span>{listingFilters.find((f) => f.key === "rera")?.label || "RERA Registered Only"}</span>
               </span>
             </label>
+            ) : null}
+            {filterOn("featured") ? (
             <label className="flex items-center gap-2.5 text-xs font-bold text-charcoal/80 cursor-pointer">
               <input
                 type="checkbox"
@@ -309,18 +362,20 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               />
               <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold" />
-                <span>Featured Collection Only</span>
+                <span>{listingFilters.find((f) => f.key === "featured")?.label || "Featured Collection Only"}</span>
               </span>
             </label>
+            ) : null}
           </div>
         </div>
+        )}
 
         {/* Furnishing Status */}
-        {showSpecs && (
+        {showSpecs && filterOn("furnishing") && (
           <div className="flex flex-col gap-2">
             <span className="text-xs font-bold text-indigo uppercase tracking-wide">Furnishing</span>
             <div className="flex flex-col gap-2">
-              {["Furnished", "Semi-Furnished", "Unfurnished"].map((fVal) => {
+              {furnishingChoices.map((fVal) => {
                 const selected = filters.furnishing.includes(fVal);
                 return (
                   <label
@@ -342,8 +397,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         )}
 
         {/* Amenities checklist */}
+        {filterOn("amenities") ? (
         <div className="flex flex-col gap-2 pt-4 border-t border-sand">
-          <span className="text-xs font-bold text-indigo uppercase tracking-wide">Amenities</span>
+          <span className="text-xs font-bold text-indigo uppercase tracking-wide">
+            {listingFilters.find((f) => f.key === "amenities")?.label || "Amenities"}
+          </span>
           <div className="grid grid-cols-2 gap-x-2 gap-y-2">
             {amenityOptions.map((amenity) => {
               const selected = (filters.selectedAmenities || []).includes(amenity);
@@ -364,6 +422,71 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             })}
           </div>
         </div>
+        ) : null}
+
+        {customFilters.map((def) => {
+          const extraVal = filters.extra?.[def.key];
+          if (def.kind === "toggle") {
+            return (
+              <label
+                key={def.id}
+                className="flex items-center gap-2.5 text-xs font-bold text-charcoal/80 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={Boolean(extraVal)}
+                  onChange={() => setExtra(def.key, !extraVal)}
+                  className="rounded accent-terracotta text-terracotta focus:ring-terracotta w-4.5 h-4.5 cursor-pointer"
+                />
+                <span>{def.label}</span>
+              </label>
+            );
+          }
+          if (def.kind === "multi") {
+            const selected = Array.isArray(extraVal) ? extraVal : [];
+            return (
+              <div key={def.id} className="flex flex-col gap-2">
+                <span className="text-xs font-bold text-indigo uppercase tracking-wide">{def.label}</span>
+                <div className="flex flex-wrap gap-2">
+                  {def.options.map((opt) => {
+                    const isSel = selected.includes(opt.value);
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => {
+                          const next = isSel
+                            ? selected.filter((v) => v !== opt.value)
+                            : [...selected, opt.value];
+                          setExtra(def.key, next);
+                        }}
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all duration-150 ${
+                          isSel
+                            ? "bg-terracotta border-terracotta text-white shadow-sm"
+                            : "bg-white border-sand text-charcoal hover:border-terracotta/40"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          }
+          return (
+            <div key={def.id} className="flex flex-col gap-2">
+              <span className="text-xs font-bold text-indigo uppercase tracking-wide">{def.label}</span>
+              <input
+                type="text"
+                value={typeof extraVal === "string" ? extraVal : ""}
+                onChange={(e) => setExtra(def.key, e.target.value)}
+                placeholder={`Search ${def.label.toLowerCase()}`}
+                className="w-full bg-white border border-sand text-charcoal rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-colors"
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

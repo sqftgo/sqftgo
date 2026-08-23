@@ -35,4 +35,5 @@ export { assistanceService, assistanceApi, supabaseAssistanceRepository } from "
 export type { AssistanceRepository } from "./assistance";
 
 export { enquiryService, enquiryApi, supabaseEnquiryRepository } from "./enquiries";
+export { listingFilterApi } from "./listing-filters";
 export type { EnquiryRepository } from "./enquiries";

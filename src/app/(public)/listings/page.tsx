@@ -11,6 +11,9 @@ import { SlidersHorizontal, Info, MapPin, Grid, Map, Search } from "lucide-react
 import { motion, AnimatePresence } from "framer-motion";
 import { useBudgetPriceOptions } from "@/features/admin";
 import { useActiveCities } from "@/hooks/useActiveCities";
+import { useListingFilters } from "@/hooks/useListingFilters";
+import { matchesCustomListingFilter } from "@/lib/listing-filters/match";
+import type { ListingFilter } from "@/types/listing-filter";
 
 const PROPERTY_TYPES = [
   "Home", "Villa", "Hotel", "Agricultural Land", "Apartment", 
@@ -18,63 +21,75 @@ const PROPERTY_TYPES = [
 ];
 
 // Helper to filter listings based on criteria
-const filterProperties = (list: Property[], filters: FilterState): Property[] => {
+const filterProperties = (
+  list: Property[],
+  filters: FilterState,
+  catalog: ListingFilter[]
+): Property[] => {
+  const custom = catalog.filter(
+    (f) => f.active && (f.kind === "text" || f.kind === "toggle" || f.kind === "multi")
+  );
+  const enabled = (key: string) => catalog.length === 0 || catalog.some((f) => f.key === key && f.active);
   return list.filter((p) => {
     // 1. City check
-    if (filters.city && filters.city.toLowerCase() !== "all india" && p.city.toLowerCase() !== filters.city.toLowerCase()) return false;
+    if (enabled("city") && filters.city && filters.city.toLowerCase() !== "all india" && p.city.toLowerCase() !== filters.city.toLowerCase()) return false;
 
     // 2. Locality check
-    if (filters.locality && !p.locality.toLowerCase().includes(filters.locality.toLowerCase())) return false;
+    if (enabled("locality") && filters.locality && !p.locality.toLowerCase().includes(filters.locality.toLowerCase())) return false;
 
     // 3. Purpose (rent vs buy)
-    if (filters.purpose !== "all" && p.purpose !== filters.purpose) return false;
+    if (enabled("purpose") && filters.purpose !== "all" && p.purpose !== filters.purpose) return false;
 
     // 4. Property Type
-    if (filters.type !== "any" && p.type !== filters.type) return false;
+    if (enabled("type") && filters.type !== "any" && p.type !== filters.type) return false;
 
     // 5. BHK
-    if (filters.bhk.length > 0 && p.bhk && !filters.bhk.includes(p.bhk.toString())) return false;
+    if (enabled("bhk") && filters.bhk.length > 0 && p.bhk && !filters.bhk.includes(p.bhk.toString())) return false;
 
     // 6. Furnishing
-    if (filters.furnishing.length > 0 && !filters.furnishing.includes(p.furnished)) return false;
+    if (enabled("furnishing") && filters.furnishing.length > 0 && !filters.furnishing.includes(p.furnished)) return false;
 
     // 7. Min Price
-    if (filters.minPrice) {
+    if (enabled("price") && filters.minPrice) {
       const minVal = parseInt(filters.minPrice);
       if (!isNaN(minVal) && p.price < minVal) return false;
     }
 
     // 8. Max Price
-    if (filters.maxPrice) {
+    if (enabled("price") && filters.maxPrice) {
       const maxVal = parseInt(filters.maxPrice);
       if (!isNaN(maxVal) && p.price > maxVal) return false;
     }
 
     // 9. RERA registered check
-    if (filters.reraApprovedOnly && !p.reraApproved) return false;
+    if (enabled("rera") && filters.reraApprovedOnly && !p.reraApproved) return false;
 
     // 10. Featured curation check
-    if (filters.featuredOnly && !p.featured) return false;
+    if (enabled("featured") && filters.featuredOnly && !p.featured) return false;
 
     // 11. Active status
     if (p.status !== "Active") return false;
 
     // 12. Size check
-    if (filters.minSize) {
+    if (enabled("size") && filters.minSize) {
       const minS = parseInt(filters.minSize);
       if (!isNaN(minS) && p.size < minS) return false;
     }
-    if (filters.maxSize) {
+    if (enabled("size") && filters.maxSize) {
       const maxS = parseInt(filters.maxSize);
       if (!isNaN(maxS) && p.size > maxS) return false;
     }
 
     // 13. Amenities check
-    if (filters.selectedAmenities && filters.selectedAmenities.length > 0) {
+    if (enabled("amenities") && filters.selectedAmenities && filters.selectedAmenities.length > 0) {
       const hasAll = filters.selectedAmenities.every((amenity) =>
         p.amenities.some((a) => a.toLowerCase().includes(amenity.toLowerCase()))
       );
       if (!hasAll) return false;
+    }
+
+    for (const def of custom) {
+      if (!matchesCustomListingFilter(p, def, filters.extra)) return false;
     }
 
     return true;
@@ -83,9 +98,10 @@ const filterProperties = (list: Property[], filters: FilterState): Property[] =>
 
 function ListingsContent() {
   const searchParams = useSearchParams();
-  const { properties, selectedCity, setSelectedCity, propertiesError, propertiesReady } = useApp();
+  const { properties, selectedCity, setSelectedCity, propertiesError, propertiesReady, categories } = useApp();
   const budgetOptions = useBudgetPriceOptions();
   const { cityOptions } = useActiveCities();
+  const { filters: listingFilters, isOn } = useListingFilters();
 
   // Initializing state with query parameters
   const [filters, setFilters] = useState<FilterState>({
@@ -102,6 +118,7 @@ function ListingsContent() {
     minSize: "",
     maxSize: "",
     selectedAmenities: [],
+    extra: {},
   });
 
   const [sortOrder, setSortOrder] = useState<string>("latest");
@@ -143,6 +160,7 @@ function ListingsContent() {
       minSize: "",
       maxSize: "",
       selectedAmenities: [],
+      extra: {},
     });
     
     if (urlCity !== selectedCity) {
@@ -180,11 +198,12 @@ function ListingsContent() {
       minSize: "",
       maxSize: "",
       selectedAmenities: [],
+      extra: {},
     });
   };
 
   // 1. Filtered listings
-  const filteredList = filterProperties(properties, filters);
+  const filteredList = filterProperties(properties, filters, listingFilters);
 
   // 2. Sorted listings
   const sortedList = [...filteredList].sort((a, b) => {
@@ -227,6 +246,7 @@ function ListingsContent() {
       {/* Horizontal Filter Header Bar (99acres / Housing.com inspired) */}
       <div className="w-full bg-white border border-sand rounded-3xl p-4 md:p-5 shadow-md grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-nowrap gap-4 items-end mb-4 z-20 relative text-left">
         {/* City Filter */}
+        {isOn("city") ? (
         <div className="flex flex-col gap-1.5 min-w-[130px] flex-grow md:flex-grow-0">
           <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none">City</span>
           <CustomSelect
@@ -237,8 +257,9 @@ function ListingsContent() {
             buttonClassName="bg-cream/40 border border-sand text-charcoal text-xs font-bold rounded-xl px-3 py-2.5 hover:border-terracotta transition-colors text-left w-full cursor-pointer"
           />
         </div>
+        ) : null}
 
-        {/* Locality Input */}
+        {isOn("locality") ? (
         <div className="flex flex-col gap-1.5 min-w-[180px] flex-grow">
           <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none">Search Locality</span>
           <div className="relative">
@@ -252,19 +273,26 @@ function ListingsContent() {
             <Search className="w-3.5 h-3.5 text-charcoal/40 absolute left-3 top-1/2 -translate-y-1/2" />
           </div>
         </div>
+        ) : null}
 
-        {/* Property Type */}
+        {isOn("type") ? (
         <div className="flex flex-col gap-1.5 min-w-[140px] flex-grow md:flex-grow-0">
           <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none">Property Type</span>
           <CustomSelect
-            options={[{ label: "All Types", value: "any" }, ...PROPERTY_TYPES.map(t => ({ label: t, value: t }))]}
+            options={[{ label: "All Types", value: "any" }, ...(
+              (categories.filter((c) => c.active).map((c) => c.name).length
+                ? categories.filter((c) => c.active).map((c) => c.name)
+                : PROPERTY_TYPES
+              ).map((t) => ({ label: t, value: t }))
+            )]}
             value={filters.type}
             onChange={(val) => handleFilterChange({ ...filters, type: val })}
             buttonClassName="bg-cream/40 border border-sand text-charcoal text-xs font-bold rounded-xl px-3 py-2.5 hover:border-terracotta transition-colors text-left w-full cursor-pointer"
           />
         </div>
+        ) : null}
 
-        {/* Purpose */}
+        {isOn("purpose") ? (
         <div className="flex flex-col gap-1.5 min-w-[100px] flex-grow md:flex-grow-0">
           <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none">Purpose</span>
           <CustomSelect
@@ -280,8 +308,9 @@ function ListingsContent() {
             buttonClassName="bg-cream/40 border border-sand text-charcoal text-xs font-bold rounded-xl px-3 py-2.5 hover:border-terracotta transition-colors text-left w-full cursor-pointer"
           />
         </div>
+        ) : null}
 
-        {/* Budget Min/Max range */}
+        {isOn("price") ? (
         <div className="flex flex-col gap-1.5 min-w-[260px] flex-grow">
           <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest leading-none">Budget Price Range</span>
           <div className="flex items-center gap-2">
@@ -302,6 +331,7 @@ function ListingsContent() {
             />
           </div>
         </div>
+        ) : null}
 
         {/* Filter Toggle Mobile Button / Desktop Action */}
         <div className="flex lg:hidden gap-2 items-stretch pt-2 lg:pt-0 self-end w-full sm:col-span-2 lg:col-span-1">
@@ -325,6 +355,7 @@ function ListingsContent() {
             onFilterChange={handleFilterChange}
             onReset={resetFilters}
             showBasicFilters={false}
+            listingFilters={listingFilters}
           />
         </div>
 
@@ -436,6 +467,7 @@ function ListingsContent() {
                 onFilterChange={handleFilterChange}
                 onReset={resetFilters}
                 onClose={() => setMobileFiltersOpen(false)}
+                listingFilters={listingFilters}
               />
             </motion.div>
           </>
