@@ -10,6 +10,9 @@ export type PropertyFormSubmitData = {
   state: string;
   country: string;
   locality: string;
+  nearbyHospital?: string;
+  nearbySchool?: string;
+  nearbyTransportation?: string;
   size: number;
   bhk?: number;
   bathrooms?: number;
@@ -35,6 +38,9 @@ export type FormState = {
   state: string;
   country: string;
   locality: string;
+  nearbyHospital: string;
+  nearbySchool: string;
+  nearbyTransportation: string;
   size: string;
   bhk: string;
   bathrooms: string;
@@ -68,6 +74,9 @@ export function propertyToForm(prop: Property): FormState {
     state: prop.state || "Rajasthan",
     country: prop.country || "India",
     locality: prop.locality,
+    nearbyHospital: prop.nearbyHospital || "",
+    nearbySchool: prop.nearbySchool || "",
+    nearbyTransportation: prop.nearbyTransportation || "",
     size: String(prop.size),
     bhk: String(prop.bhk || ""),
     bathrooms: String(prop.bathrooms || ""),
@@ -94,6 +103,9 @@ export function emptyForm(): FormState {
     state: "Rajasthan",
     country: "India",
     locality: "",
+    nearbyHospital: "",
+    nearbySchool: "",
+    nearbyTransportation: "",
     size: "",
     bhk: "",
     bathrooms: "",
@@ -120,6 +132,9 @@ export function toSubmitData(form: FormState, status: Property["status"]): Prope
     state: form.state,
     country: form.country,
     locality: form.locality,
+    nearbyHospital: form.nearbyHospital.trim(),
+    nearbySchool: form.nearbySchool.trim(),
+    nearbyTransportation: form.nearbyTransportation.trim(),
     size: parseInt(form.size) || 0,
     bhk: parseInt(form.bhk) || undefined,
     bathrooms: parseInt(form.bathrooms) || undefined,

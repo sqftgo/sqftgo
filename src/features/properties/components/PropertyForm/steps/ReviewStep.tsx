@@ -33,11 +33,14 @@ export function ReviewStep({ form }: ReviewStepProps) {
               ],
               ["City", `${form.city}, ${form.state}`],
               ["Locality", form.locality],
+              ["Hospital", form.nearbyHospital],
+              ["School", form.nearbySchool],
+              ["Transportation", form.nearbyTransportation],
               ["Size", `${form.size} sq.ft.`],
-              ["BHK", form.bhk ? `${form.bhk} BHK` : "ΓÇö"],
+              ["BHK", form.bhk ? `${form.bhk} BHK` : "—"],
               [
                 "Price",
-                form.price ? `Γé╣${parseInt(form.price).toLocaleString("en-IN")}` : "ΓÇö",
+                form.price ? `₹${parseInt(form.price).toLocaleString("en-IN")}` : "—",
               ],
               ["Amenities", `${form.amenities.length} selected`],
               ["Images", `${form.images.length} photos`],
@@ -47,7 +50,7 @@ export function ReviewStep({ form }: ReviewStepProps) {
               <p className="text-[9px] font-black text-charcoal/45 uppercase tracking-widest">
                 {label}
               </p>
-              <p className="text-xs font-bold text-charcoal mt-1 line-clamp-1">{value || "ΓÇö"}</p>
+              <p className="text-xs font-bold text-charcoal mt-1 line-clamp-1">{value || "—"}</p>
             </div>
           ))}
         </div>

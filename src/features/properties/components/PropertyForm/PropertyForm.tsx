@@ -119,7 +119,12 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
     setTimeout(() => router.push("/dealer/dashboard/properties"), 2000);
   };
 
+  const nearbyComplete = Boolean(
+    form.nearbyHospital.trim() && form.nearbySchool.trim() && form.nearbyTransportation.trim()
+  );
+
   const handleEditSave = () => {
+    if (!nearbyComplete) return;
     onSubmit(toSubmitData(form, form.status));
     setSaved(true);
     setTimeout(() => {
@@ -130,7 +135,7 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
 
   const canNext = [
     form.title && form.type && form.description,
-    form.city && form.locality && form.size,
+    form.city && form.locality && form.size && nearbyComplete,
     form.price,
     true,
     true,
@@ -151,6 +156,9 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
     state: form.state,
     country: "India",
     locality: form.locality || "Locality",
+    nearbyHospital: form.nearbyHospital.trim() || undefined,
+    nearbySchool: form.nearbySchool.trim() || undefined,
+    nearbyTransportation: form.nearbyTransportation.trim() || undefined,
     size: parseInt(form.size) || 0,
     furnished: form.furnished as Property["furnished"],
     description: form.description || "No description provided.",
@@ -488,7 +496,8 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                       type="button"
                       variant="primary"
                       size="sm"
-                      onClick={() => handleCreateSubmit("Pending Review")}
+                      onClick={() => nearbyComplete && handleCreateSubmit("Pending Review")}
+                      disabled={!nearbyComplete}
                       className="bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/15"
                     >
                       <Send className="w-4 h-4" /> Publish Listing
@@ -646,6 +655,35 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                       onChange={(e) => set("state", e.target.value)}
                     />
                   </FormField>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-black text-indigo/60 uppercase tracking-widest mb-3">
+                    Nearby landmarks
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField label="Hospital" required hint="Closest hospital or medical facility.">
+                      <TextInput
+                        value={form.nearbyHospital}
+                        onChange={(e) => set("nearbyHospital", e.target.value)}
+                        placeholder="e.g. GBH American Hospital, 2 km"
+                      />
+                    </FormField>
+                    <FormField label="School" required hint="Closest school or academy.">
+                      <TextInput
+                        value={form.nearbySchool}
+                        onChange={(e) => set("nearbySchool", e.target.value)}
+                        placeholder="e.g. Seedling Public School, 1 km"
+                      />
+                    </FormField>
+                    <FormField label="Transportation" required hint="Closest bus, railway, or highway access.">
+                      <TextInput
+                        value={form.nearbyTransportation}
+                        onChange={(e) => set("nearbyTransportation", e.target.value)}
+                        placeholder="e.g. Udaipur City Bus Stand, 3 km"
+                      />
+                    </FormField>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -817,9 +855,16 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                 Cancel
               </Button>
 
-              <Button variant="secondary" size="sm" onClick={handleEditSave}>
-                <Save className="w-4 h-4" /> Save Changes
-              </Button>
+              <div className="flex flex-col items-end gap-1.5">
+                {!nearbyComplete ? (
+                  <p className="text-[10px] font-semibold text-terracotta">
+                    Hospital, school, and transportation are required.
+                  </p>
+                ) : null}
+                <Button variant="secondary" size="sm" onClick={handleEditSave} disabled={!nearbyComplete}>
+                  <Save className="w-4 h-4" /> Save Changes
+                </Button>
+              </div>
             </div>
           </div>
         </div>
