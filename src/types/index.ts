@@ -1,4 +1,10 @@
 export type { Property, PropertyInquiry } from "./property";
+export type {
+  Project,
+  ProjectStatusUi,
+  ProjectLifecycleUi,
+  ProjectOwnershipRoleUi,
+} from "./project";
 export type { UserProfile, AdminUser, MockUser, AuthRole } from "./user";
 export type {
   AssistanceRequest,

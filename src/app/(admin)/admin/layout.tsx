@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
-import { platformService } from "@/services";
+import { platformService, projectService } from "@/services";
 import { DashboardShell, type DashboardNavSection } from "@/components/layout/DashboardShell";
 import {
   LayoutDashboard,
@@ -20,6 +20,7 @@ import {
   Shield,
   Users,
   Settings,
+  FolderKanban,
 } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -35,16 +36,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   } = useApp();
 
   const [pendingFromAnalytics, setPendingFromAnalytics] = useState<number | null>(null);
+  const [pendingProjects, setPendingProjects] = useState(0);
 
   useEffect(() => {
     if (!sessionReady || userRole !== "admin") return;
     let cancelled = false;
     (async () => {
       try {
-        const analytics = await platformService.getAnalytics();
-        if (!cancelled) setPendingFromAnalytics(analytics.pendingReview);
+        const [analytics, projectPage] = await Promise.all([
+          platformService.getAnalytics(),
+          projectService.listPage({ status: "Pending Review", limit: 1, offset: 0 }),
+        ]);
+        if (!cancelled) {
+          setPendingFromAnalytics(analytics.pendingReview);
+          setPendingProjects(projectPage.total);
+        }
       } catch {
-        if (!cancelled) setPendingFromAnalytics(null);
+        if (!cancelled) {
+          setPendingFromAnalytics(null);
+          setPendingProjects(0);
+        }
       }
     })();
     return () => {
@@ -55,7 +66,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pendingFromProperties = properties.filter(
     (p) => p.status === "Pending Review"
   ).length;
-  const pendingCount = pendingFromAnalytics ?? pendingFromProperties;
+  const pendingCount = (pendingFromAnalytics ?? pendingFromProperties) + pendingProjects;
 
   const isAdmin = isLoggedIn && userRole === "admin";
 
@@ -82,6 +93,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         title: "Properties",
         items: [
           { href: "/admin/properties", label: "Properties", icon: Building2 },
+          { href: "/admin/projects", label: "Projects", icon: FolderKanban },
           { href: "/admin/approvals", label: "Approvals", icon: CheckSquare, badge: "approvals" },
         ],
       },

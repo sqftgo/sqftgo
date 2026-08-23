@@ -9,7 +9,7 @@ import { DashboardShell, type DashboardNavSection } from "@/components/layout/Da
 import { findMyDirectoryProfile } from "@/lib/ownership";
 import {
   LayoutDashboard, Building2, Plus, MessageSquare, BarChart3,
-  CreditCard, User, Settings, ShieldAlert,
+  CreditCard, User, Settings, ShieldAlert, FolderKanban,
 } from "lucide-react";
 
 export default function DealerDashboardLayout({ children }: { children: React.ReactNode }) {
@@ -65,6 +65,19 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
             href: "/dealer/dashboard/properties",
             label: "Drafts",
             icon: Building2,
+            query: { status: "Draft" },
+          },
+        ],
+      },
+      {
+        title: "Projects",
+        items: [
+          { href: "/dealer/dashboard/projects", label: "My Projects", icon: FolderKanban },
+          { href: "/dealer/dashboard/add-project", label: "Add Project", icon: Plus },
+          {
+            href: "/dealer/dashboard/projects",
+            label: "Drafts",
+            icon: FolderKanban,
             query: { status: "Draft" },
           },
         ],

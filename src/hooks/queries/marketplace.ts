@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { propertyService, type PropertyFilters } from "@/services/properties";
+import { projectService, type ProjectFilters } from "@/services/projects";
 import { dealerService, type DealerFilters } from "@/services/dealers";
 import { authService } from "@/services/auth";
 import { queryKeys } from "@/lib/queryKeys";
@@ -17,6 +18,17 @@ export function usePropertiesQuery(filters: PropertyFilters = DEFAULT_LIST_PAGE)
   return useQuery({
     queryKey: queryKeys.properties.list(merged),
     queryFn: () => propertyService.listPage(merged),
+    enabled: sessionReady && hasSupabaseEnv(),
+  });
+}
+
+export function useProjectsQuery(filters: ProjectFilters = DEFAULT_LIST_PAGE) {
+  const { sessionReady } = useAuthContext();
+  const merged = { ...DEFAULT_LIST_PAGE, ...filters };
+
+  return useQuery({
+    queryKey: queryKeys.projects.list(merged),
+    queryFn: () => projectService.listPage(merged),
     enabled: sessionReady && hasSupabaseEnv(),
   });
 }
@@ -52,6 +64,8 @@ export function useInvalidateMarketplace() {
   return {
     invalidateProperties: () =>
       queryClient.invalidateQueries({ queryKey: queryKeys.properties.all }),
+    invalidateProjects: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.all }),
     invalidateDealers: () =>
       queryClient.invalidateQueries({ queryKey: queryKeys.dealers.all }),
     invalidateAdminUsers: () =>

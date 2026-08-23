@@ -3,6 +3,7 @@ export { useCityPreference, readUiPrefs, writeUiPrefs } from "./useCityPreferenc
 export { useActiveCities } from "./useActiveCities";
 export {
   usePropertiesQuery,
+  useProjectsQuery,
   useDealersQuery,
   useAdminUsersQuery,
   useInvalidateMarketplace,

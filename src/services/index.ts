@@ -1,6 +1,9 @@
 export { propertyService, propertyApi, supabasePropertyRepository } from "./properties";
 export type { PropertyRepository, PropertyFilters, PropertyCreateInput } from "./properties";
 
+export { projectService } from "./projects";
+export type { ProjectFilters } from "./projects";
+
 export { authService, authApi, supabaseAuthRepository } from "./auth";
 export type { AuthRepository, AuthSession, AuthRole } from "./auth";
 
