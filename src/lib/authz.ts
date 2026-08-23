@@ -26,6 +26,16 @@ export function canAccessDealerDashboard(
   return isBrokerOrAdmin(p) && isActiveStatus(p?.status);
 }
 
+export function canCreatePropertyListing(
+  p: AuthzProfile | null | undefined,
+  listingStatus?: string | null
+): boolean {
+  if (!p?.role || !isActiveStatus(p.status)) return false;
+  if (p.role === "admin" || p.role === "broker") return true;
+  if (p.role !== "user") return false;
+  return listingStatus !== "rejected";
+}
+
 export function assertAdmin(p: AuthzProfile | null | undefined): void {
   if (!isAdminProfile(p)) {
     throw new Error("Forbidden");

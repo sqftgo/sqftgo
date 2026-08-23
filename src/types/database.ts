@@ -8,6 +8,7 @@ export type Json =
 
 export type AppRole = "user" | "broker" | "admin";
 export type ProfileStatus = "active" | "suspended";
+export type ListerStatusDb = "none" | "pending" | "approved" | "rejected";
 
 export type PropertyTypeDb =
   | "Home"
@@ -139,6 +140,8 @@ export type ProfileRow = {
   city: string | null;
   role: AppRole;
   status: ProfileStatus;
+  listing_status: ListerStatusDb;
+  listing_verified_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -153,6 +156,8 @@ export type ProfileInsert = {
   city?: string | null;
   role?: AppRole;
   status?: ProfileStatus;
+  listing_status?: ListerStatusDb;
+  listing_verified_at?: string | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -167,6 +172,8 @@ export type ProfileUpdate = {
   city?: string | null;
   role?: AppRole;
   status?: ProfileStatus;
+  listing_status?: ListerStatusDb;
+  listing_verified_at?: string | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -686,7 +693,9 @@ export type PlatformSettingsRow = {
   support_phone: string | null;
   maintenance_mode: boolean;
   require_listing_approval: boolean;
+  allow_user_listings: boolean;
   max_listings_per_dealer: number | null;
+  max_listings_per_user: number;
   currency_code: string;
   analytics_measurement_id: string | null;
   updated_at: string;
@@ -700,7 +709,9 @@ export type PlatformSettingsUpdate = {
   support_phone?: string | null;
   maintenance_mode?: boolean;
   require_listing_approval?: boolean;
+  allow_user_listings?: boolean;
   max_listings_per_dealer?: number | null;
+  max_listings_per_user?: number;
   currency_code?: string;
   analytics_measurement_id?: string | null;
   updated_at?: string;
@@ -1019,6 +1030,7 @@ export type Database = {
     Enums: {
       app_role: AppRole;
       profile_status: ProfileStatus;
+      lister_status: ListerStatusDb;
       property_type: PropertyTypeDb;
       property_purpose: PropertyPurposeDb;
       furnished_status: FurnishedStatusDb;

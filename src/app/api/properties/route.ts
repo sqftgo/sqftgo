@@ -16,6 +16,7 @@ import {
   zodErrorMessage,
 } from "@/lib/validation/property";
 import type { PropertyRow } from "@/types/database";
+import { hasNearbyLandmarks, NEARBY_REQUIRED_MESSAGE } from "@/lib/user-listings";
 
 export async function GET(request: NextRequest) {
   if (!hasSupabaseEnv()) return jsonError("Supabase is not configured", 503);
@@ -137,8 +138,11 @@ export async function POST(request: NextRequest) {
   const { user, profile, error } = await authenticateApiRequest(request);
   if (error || !user || !profile) return jsonError("Unauthorized", 401);
   if (profile.status === "suspended") return jsonError("Forbidden", 403);
-  if (profile.role !== "broker" && profile.role !== "admin") {
-    return jsonError("Only brokers and admins can create listings", 403);
+  if (profile.role !== "broker" && profile.role !== "admin" && profile.role !== "user") {
+    return jsonError("Only signed-in clients, brokers, and admins can create listings", 403);
+  }
+  if (profile.role === "user" && profile.listing_status === "rejected") {
+    return jsonError("Listing access was declined. Contact support if this is a mistake.", 403);
   }
 
   let body: unknown;
@@ -159,9 +163,9 @@ export async function POST(request: NextRequest) {
 
   if (!isAdmin) {
     if (status !== "Draft" && status !== "Pending Review") {
-      return jsonError("Brokers may only create draft or pending review listings", 403);
+      return jsonError("You may only create draft or pending review listings", 403);
     }
-    if (featured) return jsonError("Brokers cannot feature listings", 403);
+    if (featured) return jsonError("Only admins can feature listings", 403);
     featured = false;
   }
 
@@ -173,22 +177,30 @@ export async function POST(request: NextRequest) {
   const state = input.state?.trim() || cityCheck.location.state;
   const country = input.country?.trim() || cityCheck.location.country;
 
-  // Enforce platform listing policy for brokers (admins bypass).
+  // Enforce platform listing policy (admins bypass).
   if (!isAdmin) {
+    if (status !== "Draft" && !hasNearbyLandmarks(input)) {
+      return jsonError(NEARBY_REQUIRED_MESSAGE, 400);
+    }
+
     const { data: settings } = await admin
       .from("platform_settings")
-      .select("require_listing_approval, max_listings_per_dealer")
+      .select(
+        "require_listing_approval, max_listings_per_dealer, allow_user_listings, max_listings_per_user"
+      )
       .eq("id", 1)
       .maybeSingle();
 
     const requireApproval = settings?.require_listing_approval !== false;
-    const maxListings = settings?.max_listings_per_dealer ?? null;
-
     if (requireApproval && status !== "Draft") {
       status = "Pending Review";
     }
 
-    if (maxListings != null && maxListings >= 1) {
+    if (profile.role === "user") {
+      if (settings?.allow_user_listings === false) {
+        return jsonError("Client listings are turned off by admin.", 403);
+      }
+      const maxListings = settings?.max_listings_per_user ?? 2;
       const { count, error: countError } = await admin
         .from("properties")
         .select("id", { count: "exact", head: true })
@@ -197,9 +209,32 @@ export async function POST(request: NextRequest) {
       if (countError) return jsonError(countError.message, 500);
       if ((count ?? 0) >= maxListings) {
         return jsonError(
-          `Listing limit reached (${maxListings}). Remove or archive a listing before adding another.`,
+          `You can list up to ${maxListings} properties. Remove or wait for a rejected listing to free a slot.`,
           403
         );
+      }
+      if (profile.listing_status === "none" && status === "Pending Review") {
+        await admin
+          .from("profiles")
+          .update({ listing_status: "pending" })
+          .eq("id", user.id)
+          .eq("listing_status", "none");
+      }
+    } else {
+      const maxListings = settings?.max_listings_per_dealer ?? null;
+      if (maxListings != null && maxListings >= 1) {
+        const { count, error: countError } = await admin
+          .from("properties")
+          .select("id", { count: "exact", head: true })
+          .eq("owner_id", user.id)
+          .neq("status", "rejected");
+        if (countError) return jsonError(countError.message, 500);
+        if ((count ?? 0) >= maxListings) {
+          return jsonError(
+            `Listing limit reached (${maxListings}). Remove or archive a listing before adding another.`,
+            403
+          );
+        }
       }
     }
   }

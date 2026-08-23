@@ -187,6 +187,7 @@ export const authApi: AuthRepository = {
         email: updates.email,
         role: updates.role,
         status: updates.status,
+        listingStatus: updates.listingStatus,
       }),
     });
   },

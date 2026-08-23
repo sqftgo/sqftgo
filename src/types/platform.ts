@@ -5,7 +5,9 @@ export type PlatformSettings = {
   supportPhone: string | null;
   maintenanceMode: boolean;
   requireListingApproval: boolean;
+  allowUserListings: boolean;
   maxListingsPerDealer: number | null;
+  maxListingsPerUser: number;
   currencyCode: string;
   analyticsMeasurementId: string | null;
   updatedAt: string;

@@ -1,29 +1,19 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
+import { mapAdminUser } from "@/lib/mappers/admin-user";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
-import type { AuthRole } from "@/types";
-import type { ProfileRow } from "@/types/database";
+import type { AuthRole, ListerStatus } from "@/types";
+import type { ProfileUpdate } from "@/types/database";
 
 type PatchBody = {
   name?: string;
   email?: string;
   role?: AuthRole;
   status?: "active" | "suspended";
+  listingStatus?: ListerStatus;
 };
-
-function toAdminUser(row: ProfileRow) {
-  return {
-    id: row.id,
-    name: row.name,
-    email: row.email,
-    role: row.role,
-    status: row.status,
-    joinedDate: row.created_at.split("T")[0] ?? row.created_at,
-    inquiriesCount: 0,
-  };
-}
 
 export async function PATCH(
   request: NextRequest,
@@ -51,17 +41,17 @@ export async function PATCH(
     return jsonError("Invalid JSON body");
   }
 
-  const patch: {
-    name?: string;
-    email?: string;
-    role?: AuthRole;
-    status?: "active" | "suspended";
-  } = {};
+  const patch: ProfileUpdate = {};
 
   if (body.name !== undefined) patch.name = body.name;
   if (body.email !== undefined) patch.email = body.email;
   if (body.role !== undefined) patch.role = body.role;
   if (body.status !== undefined) patch.status = body.status;
+  if (body.listingStatus !== undefined) {
+    patch.listing_status = body.listingStatus;
+    patch.listing_verified_at =
+      body.listingStatus === "approved" ? new Date().toISOString() : null;
+  }
 
   if (Object.keys(patch).length === 0) {
     return jsonError("No updates provided");
@@ -80,20 +70,22 @@ export async function PATCH(
     return jsonError("Admin role cannot be granted via the API.", 403);
   }
 
-  // Role/status changes need service role (or admin RLS update policy).
-  if ((patch.role !== undefined || patch.status !== undefined) && !hasServiceRoleKey()) {
+  const needsService =
+    patch.role !== undefined ||
+    patch.status !== undefined ||
+    patch.listing_status !== undefined;
+  if (needsService && !hasServiceRoleKey()) {
     return jsonError(
-      "SUPABASE_SERVICE_ROLE_KEY is required to change role or status.",
+      "SUPABASE_SERVICE_ROLE_KEY is required to change role, status, or listing verification.",
       503
     );
   }
 
-  const supabase =
-    patch.role !== undefined || patch.status !== undefined
+  const supabase = needsService
+    ? createServiceClient()
+    : hasServiceRoleKey()
       ? createServiceClient()
-      : hasServiceRoleKey()
-        ? createServiceClient()
-        : await createClient();
+      : await createClient();
 
   const { data, error: updateError } = await supabase
     .from("profiles")
@@ -106,5 +98,5 @@ export async function PATCH(
     return jsonError(updateError?.message ?? "User not found", 404);
   }
 
-  return jsonOk(toAdminUser(data));
+  return jsonOk(mapAdminUser(data));
 }

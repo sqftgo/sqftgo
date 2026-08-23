@@ -44,7 +44,7 @@ export default function AdminUsersPage() {
 
   const patchUser = async (
     user: AdminUser,
-    updates: { role?: AuthRole; status?: AdminUser["status"] },
+    updates: { role?: AuthRole; status?: AdminUser["status"]; listingStatus?: AdminUser["listingStatus"] },
     logAction: string
   ) => {
     setError(null);
@@ -128,6 +128,28 @@ export default function AdminUsersPage() {
                     <Badge tone="neutral" size="sm">
                       {user.role}
                     </Badge>
+                    {user.role === "user" ? (
+                      <Badge
+                        tone={
+                          user.listingStatus === "approved"
+                            ? "success"
+                            : user.listingStatus === "pending"
+                              ? "warning"
+                              : user.listingStatus === "rejected"
+                                ? "danger"
+                                : "info"
+                        }
+                        size="sm"
+                      >
+                        {user.listingStatus === "approved"
+                          ? "Lister verified"
+                          : user.listingStatus === "pending"
+                            ? "Lister pending"
+                            : user.listingStatus === "rejected"
+                              ? "Lister declined"
+                              : "Not listing"}
+                      </Badge>
+                    ) : null}
                   </div>
                   <p className="text-xs text-charcoal/50 font-semibold mt-1 truncate">
                     {user.email}
@@ -164,6 +186,43 @@ export default function AdminUsersPage() {
                       <Briefcase className="w-3 h-3" /> Admin (locked)
                     </span>
                   )}
+
+                  {!isAdminRole && user.role === "user" && user.listingStatus !== "approved" ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={busy || isSelf}
+                      onClick={() =>
+                        void patchUser(
+                          user,
+                          { listingStatus: "approved" },
+                          `Verified listing access for ${user.email}`
+                        )
+                      }
+                      className="border-emerald-500/20 text-emerald-700 hover:bg-emerald-500/10"
+                    >
+                      <UserCheck className="w-4 h-4" /> Verify lister
+                    </Button>
+                  ) : null}
+                  {!isAdminRole && user.role === "user" && user.listingStatus === "approved" ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={busy || isSelf}
+                      onClick={() =>
+                        void patchUser(
+                          user,
+                          { listingStatus: "rejected" },
+                          `Revoked listing access for ${user.email}`
+                        )
+                      }
+                      className="border-rose-500/20 text-rose-600 hover:bg-rose-500/10"
+                    >
+                      <ShieldOff className="w-4 h-4" /> Revoke listings
+                    </Button>
+                  ) : null}
 
                   <Button
                     type="button"

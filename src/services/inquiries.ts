@@ -5,7 +5,7 @@ import { toInquiryRecord } from "@/lib/mappers/inquiry";
 export interface InquiryRepository {
   listByProperty(propertyId: string): Promise<PropertyInquiry[]>;
   listAll(): Promise<Record<string, PropertyInquiry[]>>;
-  listFlat(opts?: { mine?: boolean }): Promise<PropertyInquiryView[]>;
+  listFlat(opts?: { mine?: boolean; received?: boolean }): Promise<PropertyInquiryView[]>;
   submit(propertyId: string, inquiry: Omit<PropertyInquiry, "date" | "id" | "status">): Promise<PropertyInquiry>;
   remove(propertyId: string, index: number): Promise<void>;
   removeById(inquiryId: string): Promise<void>;
@@ -33,7 +33,10 @@ export const inquiryApi: InquiryRepository = {
   },
 
   async listFlat(opts) {
-    const qs = opts?.mine ? "?mine=1" : "";
+    const params = new URLSearchParams();
+    if (opts?.mine) params.set("mine", "1");
+    if (opts?.received) params.set("received", "1");
+    const qs = params.toString() ? `?${params.toString()}` : "";
     return apiClient<PropertyInquiryView[]>(`/api/inquiries${qs}`);
   },
 

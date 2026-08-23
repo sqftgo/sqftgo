@@ -5,7 +5,7 @@ export type {
   ProjectLifecycleUi,
   ProjectOwnershipRoleUi,
 } from "./project";
-export type { UserProfile, AdminUser, MockUser, AuthRole } from "./user";
+export type { UserProfile, AdminUser, MockUser, AuthRole, ListerStatus } from "./user";
 export type {
   AssistanceRequest,
   GeneralEnquiry,

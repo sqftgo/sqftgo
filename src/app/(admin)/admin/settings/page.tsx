@@ -23,7 +23,9 @@ const emptyForm: FormState = {
   supportPhone: null,
   maintenanceMode: false,
   requireListingApproval: true,
+  allowUserListings: true,
   maxListingsPerDealer: null,
+  maxListingsPerUser: 2,
   currencyCode: "INR",
   analyticsMeasurementId: null,
 };
@@ -54,7 +56,9 @@ export default function AdminSettingsPage() {
           supportPhone: settings.supportPhone,
           maintenanceMode: settings.maintenanceMode,
           requireListingApproval: settings.requireListingApproval,
+          allowUserListings: settings.allowUserListings,
           maxListingsPerDealer: settings.maxListingsPerDealer,
+          maxListingsPerUser: settings.maxListingsPerUser,
           currencyCode: settings.currencyCode,
           analyticsMeasurementId: settings.analyticsMeasurementId,
         });
@@ -90,6 +94,7 @@ export default function AdminSettingsPage() {
           form.maxListingsPerDealer && form.maxListingsPerDealer > 0
             ? form.maxListingsPerDealer
             : null,
+        maxListingsPerUser: form.maxListingsPerUser > 0 ? form.maxListingsPerUser : 2,
       });
       setForm({
         siteName: updated.siteName,
@@ -98,7 +103,9 @@ export default function AdminSettingsPage() {
         supportPhone: updated.supportPhone,
         maintenanceMode: updated.maintenanceMode,
         requireListingApproval: updated.requireListingApproval,
+        allowUserListings: updated.allowUserListings,
         maxListingsPerDealer: updated.maxListingsPerDealer,
+        maxListingsPerUser: updated.maxListingsPerUser,
         currencyCode: updated.currencyCode,
         analyticsMeasurementId: updated.analyticsMeasurementId,
       });
@@ -207,6 +214,19 @@ export default function AdminSettingsPage() {
             />
           </FormField>
 
+          <FormField label="Max listings per client">
+            <TextInput
+              type="number"
+              min={1}
+              max={20}
+              value={form.maxListingsPerUser}
+              onChange={(e) => {
+                const raw = e.target.value.trim();
+                setField("maxListingsPerUser", raw ? Number(raw) : 2);
+              }}
+            />
+          </FormField>
+
           <div className="space-y-3 pt-2 border-t border-indigo/5">
             <label className="flex items-start gap-3 cursor-pointer">
               <input
@@ -220,7 +240,24 @@ export default function AdminSettingsPage() {
                   Require listing approval
                 </span>
                 <span className="block text-xs text-charcoal/50 font-semibold mt-0.5">
-                  Brokers submit for review before listings go live.
+                  Brokers and clients submit for review before listings go live.
+                </span>
+              </span>
+            </label>
+
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={form.allowUserListings}
+                onChange={(e) => setField("allowUserListings", e.target.checked)}
+              />
+              <span>
+                <span className="block text-sm font-bold text-charcoal">
+                  Allow client listings
+                </span>
+                <span className="block text-xs text-charcoal/50 font-semibold mt-0.5">
+                  Signed-in users can submit up to the client listing limit. Admin still approves each listing.
                 </span>
               </span>
             </label>

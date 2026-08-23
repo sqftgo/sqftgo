@@ -1,22 +1,11 @@
 import { type NextRequest } from "next/server";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
 import { clampPageParams } from "@/lib/api/client";
+import { mapAdminUser } from "@/lib/mappers/admin-user";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
-import type { ProfileRow } from "@/types/database";
 
-function toAdminUser(row: ProfileRow) {
-  return {
-    id: row.id,
-    name: row.name,
-    email: row.email,
-    role: row.role,
-    status: row.status,
-    joinedDate: row.created_at.split("T")[0] ?? row.created_at,
-    inquiriesCount: 0,
-  };
-}
 
 export async function GET(request: NextRequest) {
   if (!hasSupabaseEnv()) {
@@ -49,7 +38,7 @@ export async function GET(request: NextRequest) {
 
   if (listError) return jsonError(listError.message, 500);
   return jsonOk({
-    items: (data ?? []).map(toAdminUser),
+    items: (data ?? []).map(mapAdminUser),
     total: count ?? 0,
     limit,
     offset,
