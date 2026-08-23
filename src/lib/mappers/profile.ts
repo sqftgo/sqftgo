@@ -12,6 +12,8 @@ export function mapProfileRow(profile: ProfileRow): UserProfile {
     city: profile.city ?? undefined,
     role: profile.role,
     joinedDate: profile.created_at.split("T")[0] ?? profile.created_at,
+    listingStatus: profile.listing_status,
+    listingVerifiedAt: profile.listing_verified_at,
   };
 }
 

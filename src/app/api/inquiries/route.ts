@@ -18,14 +18,16 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = request.nextUrl;
   const mine = searchParams.get("mine") === "1" || searchParams.get("mine") === "true";
+  const received =
+    searchParams.get("received") === "1" || searchParams.get("received") === "true";
   const statusParam = searchParams.get("status");
   const search = searchParams.get("search")?.trim().slice(0, 80);
 
   const isAdmin = profile.role === "admin";
   const isBroker = profile.role === "broker";
-  const isBuyerSelf = mine || (!isAdmin && !isBroker);
+  const isBuyerSelf = mine || (!isAdmin && !isBroker && !received);
 
-  if (!isAdmin && !isBroker && !isBuyerSelf) {
+  if (!isAdmin && !isBroker && !isBuyerSelf && !received) {
     return jsonError("Forbidden", 403);
   }
 
@@ -35,9 +37,7 @@ export async function GET(request: NextRequest) {
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (isBuyerSelf && !isAdmin && !isBroker) {
-    query = query.ilike("email", profile.email);
-  } else if (isBroker && !isAdmin) {
+  if (received || (isBroker && !isAdmin && !mine)) {
     const { data: owned, error: ownedError } = await admin
       .from("properties")
       .select("id")
@@ -46,6 +46,8 @@ export async function GET(request: NextRequest) {
     const ids = (owned ?? []).map((p) => p.id);
     if (ids.length === 0) return jsonOk([]);
     query = query.in("property_id", ids);
+  } else if (isBuyerSelf && !isAdmin) {
+    query = query.ilike("email", profile.email);
   }
 
   if (statusParam) {

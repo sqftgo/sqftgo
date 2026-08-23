@@ -12,6 +12,7 @@ export const ROUTES = {
   services: "/services",
   servicesRegister: "/services/register",
   postProperty: "/post-property",
+  myListings: "/my-listings",
   help: "/help",
   privacy: "/privacy",
   terms: "/terms",

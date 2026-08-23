@@ -35,7 +35,7 @@ type PostPropertyWizardProps = {
 
 export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
   const router = useRouter();
-  const { addProperty, isLoggedIn, userEmail, userRole, amenities } = useApp();
+  const { addProperty, isLoggedIn, userEmail, userRole, amenities, sessionReady } = useApp();
   const { cities, cityOptionsWithoutAll, locationsReady } = useActiveCities();
   const amenityOptions = useMemo(() => {
     const live = amenities.filter((a) => a.active).map((a) => a.name);
@@ -43,15 +43,19 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
   }, [amenities]);
   const canPost =
     isLoggedIn &&
-    (userRole === "admin" || userRole === "broker" || userEmail === "admin@sqftgo.com");
+    (userRole === "admin" ||
+      userRole === "broker" ||
+      userRole === "user" ||
+      userEmail === "admin@sqftgo.com");
   const [mounted, setMounted] = useState(false);
 
   React.useEffect(() => {
     setMounted(true);
+    if (!sessionReady) return;
     if (!canPost) {
-      router.push("/");
+      router.push("/login");
     }
-  }, [canPost, router]);
+  }, [canPost, router, sessionReady]);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -82,13 +86,13 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
     }
   }, [locationsReady, cities, city]);
 
-  if (!mounted || !canPost) {
+  if (!mounted || !sessionReady || !canPost) {
     return (
       <div className="container mx-auto px-6 py-20 max-w-xl">
         {mounted && (
           <ErrorState
             title="Access Denied"
-            message="Only verified brokers and administrators can list new properties. Redirecting..."
+            message="Sign in to list a property. Client listings are limited to 2 and need admin approval."
           />
         )}
       </div>

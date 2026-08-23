@@ -63,8 +63,11 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
         }`} 
       />
 
-      {/* Account Info Profile Header */}
-      <div className="p-4 bg-sand/30 border-b border-sand/40 flex items-center gap-3">
+            <Link
+              href={isAdmin ? "/admin" : isBroker ? "/dealer/dashboard" : "/my-listings"}
+              onClick={handleItemClick}
+              className="p-4 bg-sand/30 border-b border-sand/40 flex items-center gap-3 hover:bg-sand/50 transition-colors"
+            >
         <div className="w-10 h-10 rounded-2xl bg-indigo text-white flex items-center justify-center font-extrabold text-sm shadow-md shadow-indigo/25 overflow-hidden shrink-0">
           {userAvatar ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -101,7 +104,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             )}
           </span>
         </div>
-      </div>
+      </Link>
 
       {/* Dropdown Menu Items */}
       <div className="p-2 flex flex-col gap-0.5 max-h-[350px] overflow-y-auto no-scrollbar">
@@ -198,6 +201,15 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             >
               <User className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
               <span>My Profile</span>
+            </Link>
+
+            <Link
+              href="/my-listings"
+              onClick={handleItemClick}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-charcoal/80 hover:text-indigo hover:bg-sand/30 transition-all group"
+            >
+              <Building className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
+              <span>My listings</span>
             </Link>
 
             <Link

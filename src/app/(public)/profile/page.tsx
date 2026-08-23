@@ -132,6 +132,13 @@ export default function ProfilePage() {
               <Edit2 className="w-3.5 h-3.5" /> Edit Profile
             </Button>
           </Link>
+          {userRole !== "broker" && userRole !== "admin" && (
+            <Link href="/my-listings">
+              <Button variant="outline" size="sm">
+                <Building2 className="w-3.5 h-3.5" /> My listings
+              </Button>
+            </Link>
+          )}
           {userRole === "broker" && (
             <Link href="/dealer/dashboard">
               <Button variant="outline" size="sm" className="text-purple-600 border-purple-500/20">

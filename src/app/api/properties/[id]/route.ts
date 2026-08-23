@@ -83,17 +83,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
   if (!isAdmin) {
     if (updates.featured === true) {
-      return jsonError("Brokers cannot feature listings", 403);
+      return jsonError("Owners cannot feature listings", 403);
     }
     if (updates.rejectionReason !== undefined) {
-      return jsonError("Brokers cannot set rejection feedback", 403);
+      return jsonError("Owners cannot set rejection feedback", 403);
     }
     if (
       updates.status &&
       updates.status !== "Draft" &&
       updates.status !== "Pending Review"
     ) {
-      return jsonError("Brokers cannot set this status", 403);
+      return jsonError("Owners cannot set this status", 403);
     }
   }
 
@@ -137,6 +137,13 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
   const updated = data as PropertyRow;
   if (updated.status !== previousStatus) {
+    const { data: owner } = await admin
+      .from("profiles")
+      .select("role, listing_status")
+      .eq("id", updated.owner_id)
+      .maybeSingle();
+    const ownerNotifyRole = owner?.role === "user" ? "user" : "broker";
+
     if (updated.status === "pending_review") {
       void notifyRole("admin", {
         title: "Listing awaiting review",
@@ -147,9 +154,18 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         entityId: updated.id,
       });
     } else if (updated.status === "active" && previousStatus === "pending_review") {
+      if (owner?.role === "user" && owner.listing_status !== "approved") {
+        await admin
+          .from("profiles")
+          .update({
+            listing_status: "approved",
+            listing_verified_at: new Date().toISOString(),
+          })
+          .eq("id", updated.owner_id);
+      }
       void notifyUser({
         userId: updated.owner_id,
-        forRole: "broker",
+        forRole: ownerNotifyRole,
         title: "Listing approved",
         message: `“${updated.title}” is now live on SqftGo.`,
         type: "success",
@@ -160,7 +176,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     } else if (updated.status === "draft" && previousStatus === "pending_review") {
       void notifyUser({
         userId: updated.owner_id,
-        forRole: "broker",
+        forRole: ownerNotifyRole,
         title: "Listing returned to draft",
         message: `“${updated.title}” was moved back to draft and needs changes.`,
         type: "warning",
@@ -172,7 +188,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       const reason = updated.rejection_reason?.trim();
       void notifyUser({
         userId: updated.owner_id,
-        forRole: "broker",
+        forRole: ownerNotifyRole,
         title: "Listing rejected",
         message: reason
           ? `“${updated.title}” was not approved: ${reason}`

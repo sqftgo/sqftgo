@@ -19,7 +19,7 @@ import {
 import { ListingPreviewModal } from "@/features/admin";
 
 export default function AdminApprovalsPage() {
-  const { updateProperty, addLog, userEmail, refreshProperties } = useApp();
+  const { updateProperty, addLog, userEmail, refreshProperties, adminUsers } = useApp();
   const [pending, setPending] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [previewProperty, setPreviewProperty] = useState<Property | null>(null);
@@ -217,6 +217,17 @@ export default function AdminApprovalsPage() {
                         </p>
                         <p className="text-sm font-bold text-charcoal">{prop.ownerName}</p>
                         <p className="text-[10px] text-charcoal/40">{prop.ownerEmail}</p>
+                        {adminUsers.find(
+                          (u) => u.email.toLowerCase() === (prop.ownerEmail || "").toLowerCase()
+                        )?.role === "user" ? (
+                          <Badge tone="info" size="sm" className="mt-1">
+                            Client listing
+                          </Badge>
+                        ) : (
+                          <Badge tone="neutral" size="sm" className="mt-1">
+                            Dealer listing
+                          </Badge>
+                        )}
                       </div>
                       <div className="text-right">
                         <p className="text-[10px] text-charcoal/30 font-black uppercase tracking-wider">

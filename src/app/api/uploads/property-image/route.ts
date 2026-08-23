@@ -22,8 +22,11 @@ export async function POST(request: NextRequest) {
   const { user, profile, error } = await authenticateApiRequest(request);
   if (error || !user || !profile) return jsonError("Unauthorized", 401);
   if (profile.status === "suspended") return jsonError("Forbidden", 403);
-  if (profile.role !== "broker" && profile.role !== "admin") {
-    return jsonError("Only brokers and admins can upload property images", 403);
+  if (profile.role !== "broker" && profile.role !== "admin" && profile.role !== "user") {
+    return jsonError("Only signed-in clients, brokers, and admins can upload property images", 403);
+  }
+  if (profile.role === "user" && profile.listing_status === "rejected") {
+    return jsonError("Listing access was declined.", 403);
   }
 
   let form: FormData;

@@ -67,7 +67,12 @@ export default function MyInquiriesPage() {
     <div className="max-w-3xl mx-auto px-4 py-10">
       <h1 className="text-3xl font-serif font-black text-charcoal mb-2">My Inquiries</h1>
       <p className="text-charcoal/50 text-sm font-semibold mb-8">
-        {myInquiries.length} messages sent to dealers
+        {myInquiries.length} messages you sent as a buyer. Inquiries on your own
+        listings are on{" "}
+        <Link href="/my-listings" className="text-indigo hover:underline">
+          My listings
+        </Link>
+        .
       </p>
       {myInquiries.length === 0 ? (
         <EmptyState

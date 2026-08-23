@@ -14,7 +14,9 @@ export const platformSettingsUpdateSchema = z.object({
     .transform(emptyToNull),
   maintenanceMode: z.boolean(),
   requireListingApproval: z.boolean(),
+  allowUserListings: z.boolean(),
   maxListingsPerDealer: z.number().int().min(1).max(10_000).nullable().optional(),
+  maxListingsPerUser: z.number().int().min(1).max(20).optional(),
   currencyCode: z
     .string()
     .trim()

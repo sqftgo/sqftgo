@@ -71,8 +71,12 @@ export type RateLimitResult =
   | { ok: false; unavailable: true };
 
 export function hasUpstashRateLimitConfig(): boolean {
-  const url = process.env.UPSTASH_REDIS_REST_URL?.trim();
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
+  // Local/dev: keep login working even if Upstash env is present.
+  // Restricted REST tokens often lack EVALSHA, which @upstash/ratelimit needs.
+  if (process.env.NODE_ENV !== "production") return false;
+
+  const url = process.env.UPSTASH_REDIS_REST_URL?.trim().replace(/^"|"$/g, "");
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim().replace(/^"|"$/g, "");
   return Boolean(
     url &&
       token &&
@@ -163,6 +167,16 @@ export async function checkRateLimit(
       );
       return { ok: false, retryAfterSec };
     } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      // Restricted Upstash tokens cannot EVALSHA (used by @upstash/ratelimit).
+      // Fall back to memory so login is not 503 when Redis ACL is wrong.
+      if (/NOPERM|evalsha/i.test(msg) || process.env.NODE_ENV !== "production") {
+        console.warn(
+          "[rate-limit] Upstash limit() failed — using in-memory limiter",
+          msg
+        );
+        return checkMemoryRateLimit(key, limit, windowMs);
+      }
       console.error("[rate-limit] Upstash limit() failed — failing closed", err);
       return { ok: false, unavailable: true };
     }
