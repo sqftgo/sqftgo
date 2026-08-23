@@ -127,8 +127,8 @@ export default function AdminApprovalsPage() {
           loading
             ? "Loading listings…"
             : pending.length > 0
-              ? `${pending.length} listings waiting for review`
-              : "All listings are up to date"
+              ? `${pending.length} listings waiting for review · Project approvals: Admin → Projects`
+              : "All listings are up to date · Project approvals: Admin → Projects"
         }
       />
 

@@ -30,6 +30,87 @@ export type PropertyStatusDb =
   | "rented"
   | "rejected";
 
+export type ProjectStatusDb =
+  | "draft"
+  | "pending_review"
+  | "active"
+  | "sold"
+  | "rejected";
+
+export type ProjectLifecycleDb = "upcoming" | "under_construction" | "ready";
+
+export type ProjectOwnershipRoleDb = "owner" | "builder" | "marketing_partner";
+
+export type ProjectRow = {
+  id: string;
+  owner_id: string;
+  title: string;
+  description: string;
+  city: string;
+  state: string | null;
+  country: string | null;
+  locality: string;
+  ownership_role: ProjectOwnershipRoleDb;
+  lifecycle: ProjectLifecycleDb;
+  property_types: string[];
+  configurations: string[];
+  price_from: number | string | null;
+  price_to: number | string | null;
+  size_from: number | string | null;
+  size_to: number | string | null;
+  amenities: string[];
+  images: string[];
+  contact_name: string;
+  contact_phone: string;
+  rera_id: string | null;
+  rera_approved: boolean;
+  possession_date: string | null;
+  launch_date: string | null;
+  status: ProjectStatusDb;
+  rejection_reason: string | null;
+  featured: boolean;
+  seo_title: string | null;
+  seo_description: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProjectInsert = {
+  id?: string;
+  owner_id: string;
+  title: string;
+  description?: string;
+  city: string;
+  state?: string | null;
+  country?: string | null;
+  locality?: string;
+  ownership_role?: ProjectOwnershipRoleDb;
+  lifecycle?: ProjectLifecycleDb;
+  property_types?: string[];
+  configurations?: string[];
+  price_from?: number | null;
+  price_to?: number | null;
+  size_from?: number | null;
+  size_to?: number | null;
+  amenities?: string[];
+  images?: string[];
+  contact_name?: string;
+  contact_phone?: string;
+  rera_id?: string | null;
+  rera_approved?: boolean;
+  possession_date?: string | null;
+  launch_date?: string | null;
+  status?: ProjectStatusDb;
+  rejection_reason?: string | null;
+  featured?: boolean;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ProjectUpdate = Partial<ProjectInsert>;
+
 export type InquiryStatusDb = "new" | "read" | "archived";
 
 export type DirectoryCategoryDb =
@@ -125,6 +206,7 @@ export type PropertyRow = {
   seo_description: string | null;
   verification_checks: Json | null;
   price_breakdown: Json | null;
+  project_id?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -649,6 +731,20 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "properties_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      projects: {
+        Row: ProjectRow;
+        Insert: ProjectInsert;
+        Update: ProjectUpdate;
+        Relationships: [
+          {
+            foreignKeyName: "projects_owner_id_fkey";
             columns: ["owner_id"];
             isOneToOne: false;
             referencedRelation: "profiles";

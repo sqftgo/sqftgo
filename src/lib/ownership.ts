@@ -1,4 +1,4 @@
-import type { DirectoryProfile, Property } from "@/types";
+import type { DirectoryProfile, Project, Property } from "@/types";
 
 /**
  * Prefer stable auth/profile ids over email. Email is a display fallback only
@@ -26,6 +26,13 @@ export function isOwnProperty(
     return property.ownerEmail.toLowerCase() === userEmail.toLowerCase();
   }
   return false;
+}
+
+export function isOwnProject(
+  project: Pick<Project, "ownerId">,
+  userId: string | null | undefined,
+): boolean {
+  return Boolean(userId && project.ownerId && project.ownerId === userId);
 }
 
 export function findMyDirectoryProfile(
