@@ -21,6 +21,7 @@ import {
   Users,
   Settings,
   FolderKanban,
+  SlidersHorizontal,
 } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -98,8 +99,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         ],
       },
       {
-        title: "Taxonomy",
+        title: "Customize filters",
         items: [
+          { href: "/admin/filters", label: "Search filters", icon: SlidersHorizontal },
           { href: "/admin/categories", label: "Categories", icon: Tag },
           { href: "/admin/locations", label: "Locations", icon: MapPin },
           { href: "/admin/amenities", label: "Amenities", icon: Star },

@@ -537,6 +537,54 @@ export type AmenityInsert = {
 
 export type AmenityUpdate = Partial<AmenityInsert>;
 
+export type ListingFilterKindDb =
+  | "purpose"
+  | "city"
+  | "locality"
+  | "type"
+  | "bhk"
+  | "furnishing"
+  | "price"
+  | "size"
+  | "amenities"
+  | "rera"
+  | "featured"
+  | "text"
+  | "toggle"
+  | "multi";
+
+export type ListingFilterRow = {
+  id: string;
+  key: string;
+  label: string;
+  kind: ListingFilterKindDb;
+  property_field: string | null;
+  catalog: "cities" | "categories" | "amenities" | null;
+  options: Json;
+  active: boolean;
+  system: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ListingFilterInsert = {
+  id?: string;
+  key: string;
+  label: string;
+  kind: ListingFilterKindDb;
+  property_field?: string | null;
+  catalog?: "cities" | "categories" | "amenities" | null;
+  options?: Json;
+  active?: boolean;
+  system?: boolean;
+  sort_order?: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ListingFilterUpdate = Partial<ListingFilterInsert>;
+
 export type ActivityLogRow = {
   id: string;
   action: string;
@@ -904,6 +952,12 @@ export type Database = {
         Row: AmenityRow;
         Insert: AmenityInsert;
         Update: AmenityUpdate;
+        Relationships: [];
+      };
+      listing_filters: {
+        Row: ListingFilterRow;
+        Insert: ListingFilterInsert;
+        Update: ListingFilterUpdate;
         Relationships: [];
       };
       activity_logs: {
