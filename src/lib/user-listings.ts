@@ -1,6 +1,6 @@
 import type { ListerStatus } from "@/types";
 
-export const DEFAULT_MAX_LISTINGS_PER_USER = 2;
+export const DEFAULT_MAX_LISTINGS_PER_USER = 3;
 
 export const NEARBY_REQUIRED_MESSAGE =
   "Add nearest hospital, school, and transportation (name and distance, e.g. GBH American Hospital, 2 km).";

@@ -114,16 +114,80 @@ export type ProjectUpdate = Partial<ProjectInsert>;
 
 export type InquiryStatusDb = "new" | "read" | "archived";
 
-export type DirectoryCategoryDb =
-  | "Agent & Broker"
-  | "Builder & Developer"
-  | "Interior Decorator"
-  | "Architect"
-  | "Building Contractor"
-  | "Property Consultant"
-  | "Vastu Consultant"
-  | "Home Valuation/Inspection"
-  | "Home Shifting/Deep Cleaning";
+/** Kept as string after services platform migration (was enum). */
+export type DirectoryCategoryDb = string;
+
+export type DirectoryVerificationStatusDb =
+  | "unverified"
+  | "pending"
+  | "verified"
+  | "rejected";
+
+export type ServiceVerificationStatusDb = "draft" | "pending" | "approved" | "rejected";
+
+export type ServiceBookingStatusDb = "pending" | "confirmed" | "cancelled" | "completed";
+
+export type ServiceTypeRow = {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ServiceTypeInsert = {
+  id?: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  active?: boolean;
+  sort_order?: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ServiceTypeUpdate = Partial<ServiceTypeInsert>;
+
+export type ServiceVerificationRow = {
+  id: string;
+  directory_profile_id: string;
+  user_id: string;
+  status: ServiceVerificationStatusDb;
+  business_registration_id: string | null;
+  owner_notes: string;
+  admin_notes: string;
+  rejection_reason: string | null;
+  submitted_at: string | null;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ServiceVerificationDocumentRow = {
+  id: string;
+  verification_id: string;
+  doc_type: "business_license" | "gst_certificate" | "owner_id" | "other";
+  storage_path: string;
+  file_name: string;
+  created_at: string;
+};
+
+export type ServiceBookingRow = {
+  id: string;
+  directory_profile_id: string;
+  user_id: string;
+  preferred_at: string;
+  message: string;
+  contact_phone: string;
+  status: ServiceBookingStatusDb;
+  owner_notes: string;
+  created_at: string;
+  updated_at: string;
+};
 
 export type AssistanceStatusDb =
   | "Received"
@@ -308,6 +372,15 @@ export type DirectoryProfileRow = {
   specialties: string[];
   team_size: number | null;
   listings_count: number;
+  service_type_id: string | null;
+  verification_status: DirectoryVerificationStatusDb;
+  listing_active: boolean;
+  lat: number | null;
+  lng: number | null;
+  cover_image_url: string | null;
+  logo_url: string | null;
+  business_hours: Record<string, string> | null;
+  services_offered: string[];
   created_at: string;
   updated_at: string;
 };
@@ -329,6 +402,15 @@ export type DirectoryProfileInsert = {
   specialties?: string[];
   team_size?: number | null;
   listings_count?: number;
+  service_type_id?: string | null;
+  verification_status?: DirectoryVerificationStatusDb;
+  listing_active?: boolean;
+  lat?: number | null;
+  lng?: number | null;
+  cover_image_url?: string | null;
+  logo_url?: string | null;
+  business_hours?: Record<string, string> | null;
+  services_offered?: string[];
   created_at?: string;
   updated_at?: string;
 };
@@ -844,6 +926,43 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      service_types: {
+        Row: ServiceTypeRow;
+        Insert: ServiceTypeInsert;
+        Update: ServiceTypeUpdate;
+        Relationships: [];
+      };
+      service_verifications: {
+        Row: ServiceVerificationRow;
+        Insert: Partial<ServiceVerificationRow> & {
+          directory_profile_id: string;
+          user_id: string;
+        };
+        Update: Partial<ServiceVerificationRow>;
+        Relationships: [];
+      };
+      service_verification_documents: {
+        Row: ServiceVerificationDocumentRow;
+        Insert: Omit<ServiceVerificationDocumentRow, "id" | "created_at"> & {
+          id?: string;
+          created_at?: string;
+        };
+        Update: Partial<ServiceVerificationDocumentRow>;
+        Relationships: [];
+      };
+      service_bookings: {
+        Row: ServiceBookingRow;
+        Insert: Omit<ServiceBookingRow, "id" | "created_at" | "updated_at" | "status" | "owner_notes" | "message"> & {
+          id?: string;
+          message?: string;
+          status?: ServiceBookingStatusDb;
+          owner_notes?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<ServiceBookingRow>;
+        Relationships: [];
       };
       assistance_requests: {
         Row: AssistanceRequestRow;

@@ -55,7 +55,7 @@ export default function MyListingsPage() {
 
   const displayName = (userName || userProfile?.name || "").trim() || userEmail.split("@")[0];
   const listingStatus = userProfile?.listingStatus ?? "none";
-  const remaining = Math.max(0, 2 - listings.filter((p) => p.status !== "Rejected").length);
+  const remaining = Math.max(0, 3 - listings.filter((p) => p.status !== "Rejected").length);
   const canAdd = remaining > 0 && listingStatus !== "rejected" && userRole !== "broker";
 
   const titleById = useMemo(() => {

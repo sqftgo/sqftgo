@@ -13,6 +13,7 @@ export function mapDealerRow(row: DirectoryProfileRow): DirectoryProfileView {
     firmName: row.firm_name,
     ownerName: row.owner_name,
     category: row.category,
+    serviceTypeId: row.service_type_id,
     city: row.city,
     address: row.address,
     email: row.email,
@@ -24,6 +25,14 @@ export function mapDealerRow(row: DirectoryProfileRow): DirectoryProfileView {
     specialties: row.specialties ?? [],
     teamSize: row.team_size ?? undefined,
     listingsCount: row.listings_count,
+    verificationStatus: row.verification_status ?? "unverified",
+    listingActive: row.listing_active ?? true,
+    lat: row.lat,
+    lng: row.lng,
+    coverImageUrl: row.cover_image_url,
+    logoUrl: row.logo_url,
+    businessHours: row.business_hours,
+    servicesOffered: row.services_offered ?? [],
   };
 }
 
@@ -43,6 +52,14 @@ export function mapDealerCreateToInsert(
     specialties?: string[];
     teamSize?: number;
     listingsCount?: number;
+    serviceTypeId?: string | null;
+    servicesOffered?: string[];
+    businessHours?: Record<string, string> | null;
+    coverImageUrl?: string | null;
+    logoUrl?: string | null;
+    lat?: number | null;
+    lng?: number | null;
+    verificationStatus?: DirectoryProfile["verificationStatus"];
   },
   userId: string | null
 ): DirectoryProfileInsert {
@@ -62,6 +79,15 @@ export function mapDealerCreateToInsert(
     specialties: input.specialties ?? [],
     team_size: input.teamSize ?? null,
     listings_count: input.listingsCount ?? 0,
+    service_type_id: input.serviceTypeId ?? null,
+    services_offered: input.servicesOffered ?? [],
+    business_hours: input.businessHours ?? null,
+    cover_image_url: input.coverImageUrl ?? null,
+    logo_url: input.logoUrl ?? null,
+    lat: input.lat ?? null,
+    lng: input.lng ?? null,
+    verification_status: input.verificationStatus ?? "unverified",
+    listing_active: true,
   };
 }
 
@@ -81,5 +107,16 @@ export function mapDealerUpdateToPatch(updates: DealerUpdateInput): DirectoryPro
   if (updates.specialties !== undefined) patch.specialties = updates.specialties;
   if (updates.teamSize !== undefined) patch.team_size = updates.teamSize;
   if (updates.listingsCount !== undefined) patch.listings_count = updates.listingsCount;
+  if (updates.serviceTypeId !== undefined) patch.service_type_id = updates.serviceTypeId;
+  if (updates.servicesOffered !== undefined) patch.services_offered = updates.servicesOffered;
+  if (updates.businessHours !== undefined) patch.business_hours = updates.businessHours;
+  if (updates.coverImageUrl !== undefined) patch.cover_image_url = updates.coverImageUrl;
+  if (updates.logoUrl !== undefined) patch.logo_url = updates.logoUrl;
+  if (updates.lat !== undefined) patch.lat = updates.lat;
+  if (updates.lng !== undefined) patch.lng = updates.lng;
+  if (updates.listingActive !== undefined) patch.listing_active = updates.listingActive;
+  if (updates.verificationStatus !== undefined) {
+    patch.verification_status = updates.verificationStatus;
+  }
   return patch;
 }

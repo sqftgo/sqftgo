@@ -12,7 +12,21 @@ export type {
   CustomerReview,
   PropertyInquiryView,
 } from "./inquiry";
-export type { Notification, Category, Location, Amenity, ActivityLog, DirectoryProfile } from "./catalog";
+export type {
+  Notification,
+  Category,
+  Location,
+  Amenity,
+  ActivityLog,
+  DirectoryProfile,
+  DirectoryVerificationStatus,
+  ServiceType,
+  ServiceBooking,
+  ServiceBookingStatus,
+  ServiceVerification,
+  ServiceVerificationStatus,
+  ServiceVerificationDocument,
+} from "./catalog";
 export type { VisitBooking, VisitStatusUi } from "./visit";
 export type {
   MessageThread,

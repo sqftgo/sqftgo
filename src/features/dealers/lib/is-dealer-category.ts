@@ -6,7 +6,7 @@ export const AGENT_DEALER_CATEGORIES = [
   "Property Consultant",
 ] as const;
 
-/** Admin dealer directory + ownership surfaces (includes builders). */
+/** Public + admin dealer directory (agents, consultants, builders). */
 export const DEALER_CATEGORIES = [
   ...AGENT_DEALER_CATEGORIES,
   "Builder & Developer",
@@ -26,9 +26,9 @@ export function isDealerCategory(
   return (DEALER_CATEGORIES as readonly string[]).includes(category);
 }
 
-/** Service directory: everyone except agent/consultant dealers. */
+/** Service directory: non-dealer trades (excludes agents, consultants, builders). */
 export function isServiceDirectoryCategory(
   category: DirectoryProfile["category"] | string
 ): boolean {
-  return !isAgentOrConsultantCategory(category);
+  return !isDealerCategory(category);
 }

@@ -11,7 +11,7 @@ export function mapPlatformSettings(row: PlatformSettingsRow): PlatformSettings 
     requireListingApproval: row.require_listing_approval,
     allowUserListings: row.allow_user_listings !== false,
     maxListingsPerDealer: row.max_listings_per_dealer,
-    maxListingsPerUser: row.max_listings_per_user ?? 2,
+    maxListingsPerUser: row.max_listings_per_user ?? 3,
     currencyCode: row.currency_code,
     analyticsMeasurementId: row.analytics_measurement_id,
     updatedAt: row.updated_at,

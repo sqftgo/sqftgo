@@ -12,7 +12,10 @@ import {
   Briefcase,
   Sliders,
   Calendar,
+  PlusCircle,
+  Wrench,
 } from "lucide-react";
+import { ROUTES } from "@/constants/routes";
 
 interface UserDropdownProps {
   userEmail: string;
@@ -213,6 +216,15 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             </Link>
 
             <Link
+              href={ROUTES.postProperty}
+              onClick={handleItemClick}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-charcoal/80 hover:text-indigo hover:bg-sand/30 transition-all group"
+            >
+              <PlusCircle className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
+              <span>Post Property</span>
+            </Link>
+
+            <Link
               href="/my-inquiries"
               onClick={handleItemClick}
               className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-charcoal/80 hover:text-indigo hover:bg-sand/30 transition-all group"
@@ -228,6 +240,24 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             >
               <Calendar className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
               <span>My Visits</span>
+            </Link>
+
+            <Link
+              href="/my-service-bookings"
+              onClick={handleItemClick}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-charcoal/80 hover:text-indigo hover:bg-sand/30 transition-all group"
+            >
+              <Wrench className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
+              <span>Service Bookings</span>
+            </Link>
+
+            <Link
+              href="/services/manage"
+              onClick={handleItemClick}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-charcoal/80 hover:text-indigo hover:bg-sand/30 transition-all group"
+            >
+              <Briefcase className="w-4 h-4 text-charcoal/40 group-hover:text-indigo transition-colors" />
+              <span>My Service Profile</span>
             </Link>
 
             <Link
