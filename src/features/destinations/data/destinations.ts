@@ -3,11 +3,14 @@ export interface WeddingVenue {
   name: string;
   type: string;
   capacity: string;
+  /** Display tariff. Prefer "Tariff on request" or an indicative 2026 range — never a live quote. */
   pricePerEvent: string;
   image: string;
   vibe: string;
   highlights: string[];
   description: string;
+  /** When the venue is near the city but not inside municipal limits. */
+  areaNote?: string;
 }
 
 export interface WeddingProperty {
@@ -53,40 +56,40 @@ export const DESTINATIONS: Destination[] = [
     averagePrice: "₹45 Lakhs - ₹8.5 Crores",
     agentName: "Chandra Shekhar Mewar",
     agentPhone: "+91 94140 88221",
-    history: "Udaipur was founded in 1553 by Maharana Udai Singh II as the new capital of the Mewar Kingdom. The city is famous for its stunning lakes, heritage palaces, and traditional Mewari arches.",
+    history: "Udaipur was founded in 1559 by Maharana Udai Singh II as the new capital of the Mewar Kingdom after Chittorgarh. It is nicknamed the City of Lakes and the White City for its palaces, marble, and the Pichola–Fateh Sagar lake system.",
     weddingVenues: [
       {
         id: "udr-v1",
-        name: "Jagmandir Island Palace",
-        type: "Lakeside Island Palace",
-        capacity: "500 - 1,200 Guests",
-        pricePerEvent: "₹45 Lakhs / Event",
+        name: "Taj Lake Palace",
+        type: "Island Palace Hotel",
+        capacity: "About 150 – 200 guests",
+        pricePerEvent: "Indicative ₹3–8 Cr+",
         image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800&auto=format&fit=crop",
-        vibe: "Floating Palace Magic",
-        highlights: ["Floating Mandap Setup", "Grand Boat Procession Arrival", "Illuminated Marble Courtyards"],
-        description: "A 17th-century marble palace built on an island in Lake Pichola, renowned worldwide for hosting ultra-luxurious royal destination weddings."
+        vibe: "Floating marble island",
+        highlights: ["Boat arrival on Lake Pichola", "White-marble island hotel", "Intimate buyout weddings"],
+        description: "18th-century marble palace hotel on an island in Lake Pichola — India's most photographed wedding address. Capacity is intimate; guests stay on the island or in sister Taj hotels."
       },
       {
         id: "udr-v2",
-        name: "Chundavada Fort & Palace",
-        type: "Aravali Fort Palace",
-        capacity: "300 - 800 Guests",
-        pricePerEvent: "₹32 Lakhs / Event",
+        name: "Jagmandir Island Palace",
+        type: "Mewar island venue",
+        capacity: "Function venue (stay in the city)",
+        pricePerEvent: "Indicative ₹1.5–5 Cr",
         image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=800&auto=format&fit=crop",
-        vibe: "Hilltop Heritage",
-        highlights: ["Panoramic Lake & Fort Views", "Heritage Royal Suites", "Traditional Mewari Sheesh Mahal"],
-        description: "Situated atop the Aravali hills, this fortified palace features terraced mandap lawns and traditional Mewari regal hospitality."
+        vibe: "17th-century pleasure palace",
+        highlights: ["Gol Mahal and lake-edge lawns", "Boat crossing for pheras", "Owned by the Mewar royal family"],
+        description: "A 17th-century pleasure palace on a second Lake Pichola island. It is a ceremony venue rather than a hotel — guests typically stay elsewhere in Udaipur and boat across for functions."
       },
       {
         id: "udr-v3",
-        name: "Fateh Garh Heritage Resort",
-        type: "Sanctuary Hill Resort",
-        capacity: "400 - 900 Guests",
-        pricePerEvent: "₹38 Lakhs / Event",
+        name: "Fateh Garh",
+        type: "Hilltop heritage hotel",
+        capacity: "About 150 – 350 guests",
+        pricePerEvent: "Indicative ₹1–3 Cr",
         image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800&auto=format&fit=crop",
-        vibe: "Regal Hillside Sunset",
-        highlights: ["360° Lake & City Views", "Solar-Powered Heritage Architecture", "Vintage Car Fleet for Groom Entry"],
-        description: "Perched on a hilltop overlooking Udaipur's lakes, Fateh Garh offers authentic heritage aesthetics with sustainable modern luxury."
+        vibe: "Aravalli city views",
+        highlights: ["Hilltop palace-hotel setting", "Panoramic Aravalli and city views", "More approachable than the Pichola cluster"],
+        description: "Reconstructed heritage palace-hotel on a hillside above Udaipur, used for palace-feel weddings that do not need a full Lake Pichola buyout."
       }
     ],
     uniqueWeddingProperties: [
@@ -130,25 +133,26 @@ export const DESTINATIONS: Destination[] = [
     weddingVenues: [
       {
         id: "jpr-v1",
-        name: "Rambagh Palace Lawns",
-        type: "Royal Palace Estate",
-        capacity: "600 - 2,000 Guests",
-        pricePerEvent: "₹65 Lakhs / Event",
+        name: "Rambagh Palace",
+        type: "Taj palace hotel",
+        capacity: "Large garden palace (prestige lists)",
+        pricePerEvent: "Indicative ₹2.5–7 Cr",
         image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=800&auto=format&fit=crop",
-        vibe: "Imperial Royalty",
-        highlights: ["Historic Peacock Lawns", "Elephant & Horse Baraat Welcomes", "Royal Rajput Cuisine"],
-        description: "The former residence of the Maharaja of Jaipur, offering sprawling manicured gardens and opulent palace ballrooms for high-profile weddings."
+        vibe: "Former Maharaja residence",
+        highlights: ["47 acres of Mughal gardens", "Suvarna Mahal and palace corridors", "Central Jaipur flight access"],
+        description: "Former residence of the Maharaja of Jaipur, now a Taj flagship. Manicured gardens and palace halls make it Jaipur's most prestigious wedding address — not a ₹65-lakh lawn hire."
       },
       {
         id: "jpr-v2",
-        name: "Samode Palace & Havelis",
-        type: "Heritage Fort Palace",
-        capacity: "400 - 1,000 Guests",
-        pricePerEvent: "₹42 Lakhs / Event",
+        name: "Samode Palace",
+        type: "Heritage palace buyout",
+        capacity: "Immersive out-of-town buyout",
+        pricePerEvent: "Indicative ₹1.5–4 Cr",
         image: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=800&auto=format&fit=crop",
-        vibe: "Classic Rajput Romance",
-        highlights: ["Famous Sheesh Mahal (Hall of Mirrors)", "Terraced Poolside Lawns", "Traditional Folk Performances"],
-        description: "A 475-year-old palace nestled in the Aravali hills, celebrated for intricate frescoed walls, mirror-work halls, and romantic courtyard weddings."
+        vibe: "Sheesh Mahal & Durbar Hall",
+        highlights: ["Hall of Mirrors fresco work", "Full-palace heritage buyout", "About an hour from Jaipur city"],
+        areaNote: "Samode village, ~1 hour from Jaipur — not inside the Pink City",
+        description: "A 475-year-old palace famed for its Sheesh Mahal and Durbar Hall. It is a countryside heritage buyout near Jaipur, not a venue in C-Scheme or the walled city."
       }
     ],
     uniqueWeddingProperties: [
@@ -192,14 +196,15 @@ export const DESTINATIONS: Destination[] = [
     weddingVenues: [
       {
         id: "jsl-v1",
-        name: "Suryagarh Golden Palace",
-        type: "Fortress Oasis Resort",
-        capacity: "500 - 1,500 Guests",
-        pricePerEvent: "₹52 Lakhs / Event",
+        name: "Suryagarh",
+        type: "Desert fort-style hotel",
+        capacity: "Cinematic courtyards & ramparts",
+        pricePerEvent: "Indicative ₹1.5–4 Cr",
         image: "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?q=80&w=800&auto=format&fit=crop",
-        vibe: "Golden Sandstone Glamour",
-        highlights: ["Desert Sunset Mandap", "Camel Procession Welcomes", "Open-Air Courtyard Celebrations"],
-        description: "An architectural masterpiece in yellow sandstone that seamlessly blends fort heritage with desert luxury for unforgettable destination weddings."
+        vibe: "Golden citadel on the Thar edge",
+        highlights: ["Fort-style luxury on the city outskirts", "Courtyards, ramparts, desert setting", "Among Jaisalmer's most booked wedding hotels"],
+        areaNote: "On the outskirts of Jaisalmer, not inside the living fort",
+        description: "A fort-style luxury hotel outside Jaisalmer, built to feel like an ancient citadel. It is the city's most sought-after wedding address for dune-and-sandstone celebrations."
       }
     ],
     uniqueWeddingProperties: [
@@ -232,14 +237,14 @@ export const DESTINATIONS: Destination[] = [
     weddingVenues: [
       {
         id: "jdh-v1",
-        name: "Umaid Bhawan Palace Gardens",
-        type: "Royal Heritage Palace",
-        capacity: "500 - 1,800 Guests",
-        pricePerEvent: "₹70 Lakhs / Event",
+        name: "Umaid Bhawan Palace",
+        type: "Art Deco royal palace hotel",
+        capacity: "Typically 400+ with palace inventory",
+        pricePerEvent: "Indicative ₹4–12 Cr+",
         image: "https://images.unsplash.com/photo-1564507592208-02754ba318dc?q=80&w=800&auto=format&fit=crop",
-        vibe: "Art-Deco Royal Luxury",
-        highlights: ["Baronial Palace Lawns", "Vintage Car Escorts", "Champagne Receptions at Sunset"],
-        description: "One of the world's largest private residences, offering regal golden-sandstone palace gardens overlooking Mehrangarh Fort."
+        vibe: "Sandstone fortress palace",
+        highlights: ["Still partly a Jodhpur royal residence", "26-acre Art Deco palace", "Same ultra-luxury tier as Taj Lake Palace"],
+        description: "One of the world's largest private residences, still partly home to the Jodhpur royal family. A 26-acre golden-sandstone Art Deco palace — trophy-tier tariffs, not a sub-crore lawn booking."
       }
     ],
     uniqueWeddingProperties: [
@@ -275,7 +280,7 @@ export const DESTINATIONS: Destination[] = [
         name: "Lawa Sardar Samand Palace",
         type: "Heritage Lake Lodge",
         capacity: "250 - 600 Guests",
-        pricePerEvent: "₹22 Lakhs / Event",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=800&auto=format&fit=crop",
         vibe: "Lakeside Marwar Heritage",
         highlights: ["Wildlife Sanctuary Backdrop", "Private Lakefront Mandap", "Marwari Culinary Feasts"],
@@ -315,11 +320,12 @@ export const DESTINATIONS: Destination[] = [
         name: "Neemrana Fort-Palace",
         type: "15th-Century Hill Fort",
         capacity: "300 - 800 Guests",
-        pricePerEvent: "₹38 Lakhs / Event",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800&auto=format&fit=crop",
         vibe: "Tiered Citadel Royalty",
-        highlights: ["14-Tiered Fort Structure", "Hanging Gardens & Amphitheater", "Delhi NCR Expressway Convenience"],
-        description: "A 15th-century heritage citadel featuring stepped garden terraces, open-air amphitheaters, and royal wedding backdrop."
+        highlights: ["14-tiered fort structure", "Hanging gardens and amphitheater", "Delhi–Jaipur highway access"],
+        areaNote: "Neemrana, Alwar district — on the Delhi–Jaipur highway, not Alwar city",
+        description: "A 15th-century fort-palace on the Delhi–Jaipur highway, the closest grand heritage fort wedding to Delhi NCR. Indicative full-wedding bands elsewhere run about ₹80 lakh to ₹2.5 crore — confirm with the property."
       }
     ],
     uniqueWeddingProperties: [
@@ -355,7 +361,7 @@ export const DESTINATIONS: Destination[] = [
         name: "The Westin Pushkar Resort & Spa",
         type: "Luxury Desert Spa Resort",
         capacity: "400 - 1,200 Guests",
-        pricePerEvent: "₹35 Lakhs / Event",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=800&auto=format&fit=crop",
         vibe: "Sacred Oasis Luxury",
         highlights: ["Spiritual Vedic Mandap Ceremonies", "Private Villa Pools", "Massive Banquet Lawns"],
@@ -392,14 +398,14 @@ export const DESTINATIONS: Destination[] = [
     weddingVenues: [
       {
         id: "kta-v1",
-        name: "Umed Bhawan Palace Kota",
-        type: "Victorian-Rajput Palace",
-        capacity: "350 - 900 Guests",
-        pricePerEvent: "₹25 Lakhs / Event",
+        name: "Umed Bhawan Palace, Kotah",
+        type: "Heritage palace hotel",
+        capacity: "Multiple palace event spaces",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800&auto=format&fit=crop",
         vibe: "Riverside Victorian Heritage",
         highlights: ["Lush Royal Lawns", "High-Ceilinged Ballrooms", "Chambal River Breeze"],
-        description: "Built in 1904, combining Victorian architecture with Indian courtly grandeur for dignified wedding receptions."
+        description: "Kota's principal heritage hotel, owned and operated by the royal family of Kotah. Victorian-Rajput palace grounds used for weddings and gatherings — confirm current tariff directly with the property."
       }
     ],
     uniqueWeddingProperties: [
@@ -435,7 +441,7 @@ export const DESTINATIONS: Destination[] = [
         name: "Lallgarh Palace Lawns",
         type: "Red Sandstone Palace",
         capacity: "400 - 1,000 Guests",
-        pricePerEvent: "₹28 Lakhs / Event",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=800&auto=format&fit=crop",
         vibe: "Red Sandstone Grandeur",
         highlights: ["Intricate Carved Carvings", "Peacock Courtyards", "Authentic Bikaneri Sweets Banquet"],
@@ -475,7 +481,7 @@ export const DESTINATIONS: Destination[] = [
         name: "Nathdwara Royal Lakefront Grounds",
         type: "Lakefront Pilgrimage Resort",
         capacity: "300 - 800 Guests",
-        pricePerEvent: "₹20 Lakhs / Event",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800&auto=format&fit=crop",
         vibe: "Marble Lakeside Serenity",
         highlights: ["Proximity to Shrinathji Temple", "White Marble Promenade Mandap", "Pure Vegetarian Feast Facilities"],
@@ -514,25 +520,25 @@ export const DESTINATIONS: Destination[] = [
     weddingVenues: [
       {
         id: "amd-v1",
-        name: "Sabarmati Riverfront Luxury Lawns",
-        type: "Riverfront Celebration Complex",
-        capacity: "800 - 3,000 Guests",
-        pricePerEvent: "₹35 Lakhs / Event",
+        name: "Hyatt Ahmedabad",
+        type: "City hotel & ballroom",
+        capacity: "Up to about 1,000 guests",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=800&auto=format&fit=crop",
-        vibe: "Modern Urban Grandeur",
-        highlights: ["Vast Riverfront Lawn Space", "State-of-the-Art Sound & Lighting", "Valet Parking for 500+ Vehicles"],
-        description: "Massive urban riverfront celebration grounds capable of accommodating grand Gujarati wedding celebrations and sangeet night galas."
+        vibe: "Grand ballroom & show kitchen",
+        highlights: ["Grand Ballroom and Merge venues", "Show Kitchen dining format", "Hotel room inventory for outstation guests"],
+        description: "Hyatt Ahmedabad's wedding programme covers the Grand Ballroom, The Merge, and a show-kitchen format for large city weddings with on-site guest rooms."
       },
       {
         id: "amd-v2",
-        name: "House of MG Heritage Courtyards",
-        type: "1920s Heritage Mansion",
-        capacity: "200 - 500 Guests",
-        pricePerEvent: "₹22 Lakhs / Event",
+        name: "The House of MG",
+        type: "Heritage boutique hotel",
+        capacity: "Lawns and halls up to about 700 guests",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=800&auto=format&fit=crop",
-        vibe: "Old World Textile Elegance",
-        highlights: ["Intricate Pol Wooden Carvings", "Traditional Gujarati Thali Feasts", "Rooftop Lotus Pool Mandap"],
-        description: "A stately 1924 heritage mansion in the heart of UNESCO heritage city, famous for intimate traditional weddings."
+        vibe: "Old-city pol mansion",
+        highlights: ["Ahmedabad's boutique heritage hotel", "Courtyards, lawns, and banquet halls", "In the historic walled city"],
+        description: "A 1924 heritage mansion and Ahmedabad's boutique heritage hotel, used for lawn and courtyard weddings in the UNESCO historic city. Confirm plate rates and buyout rules with the property."
       }
     ],
     uniqueWeddingProperties: [
@@ -565,14 +571,15 @@ export const DESTINATIONS: Destination[] = [
     weddingVenues: [
       {
         id: "srt-v1",
-        name: "Dumas Beachfront Royal Resort",
-        type: "Beachfront Resort",
-        capacity: "600 - 2,000 Guests",
-        pricePerEvent: "₹32 Lakhs / Event",
+        name: "Summer Palace, Dumas",
+        type: "Dumas wedding venue",
+        capacity: "Large lawn and banquet campus",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800&auto=format&fit=crop",
-        vibe: "Arabian Sea Sunset",
-        highlights: ["Beachside Mandap Lawn", "Grand Crystal Ballroom", "Diamond Merchant Gala Setup"],
-        description: "A premier coastal resort featuring expansive ocean-view lawns tailored for lavish diamond capital wedding celebrations."
+        vibe: "Coastal Surat celebrations",
+        highlights: ["Established Dumas wedding campus", "Lawns and indoor banquet spaces", "Near the Dumas–Hazira coastal belt"],
+        areaNote: "Dumas, on Surat's coastal belt",
+        description: "An established wedding campus in Dumas used for lawn and banquet celebrations. Confirm current capacity and tariff with the venue."
       }
     ],
     uniqueWeddingProperties: [
@@ -608,7 +615,7 @@ export const DESTINATIONS: Destination[] = [
         name: "Saurashtra Heritage Club Grounds",
         type: "Heritage Club Estate",
         capacity: "500 - 1,500 Guests",
-        pricePerEvent: "₹24 Lakhs / Event",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800&auto=format&fit=crop",
         vibe: "Saurashtra Regal Charm",
         highlights: ["Colonial Club Architecture", "Royal Kathiawadi Banquet", "Cricket Pitch Ground Space"],
@@ -648,7 +655,7 @@ export const DESTINATIONS: Destination[] = [
         name: "GIFT City Riverside Resort & Convention",
         type: "Modern Financial District Resort",
         capacity: "500 - 2,000 Guests",
-        pricePerEvent: "₹38 Lakhs / Event",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=800&auto=format&fit=crop",
         vibe: "Futuristic Green Luxury",
         highlights: ["Eco-Friendly Helipad", "River View Lawns", "International Guest Suites"],
@@ -688,7 +695,7 @@ export const DESTINATIONS: Destination[] = [
         name: "White Rann Desert Tent Resort",
         type: "White Salt Desert Arena",
         capacity: "300 - 1,000 Guests",
-        pricePerEvent: "₹30 Lakhs / Event",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?q=80&w=800&auto=format&fit=crop",
         vibe: "Full Moon White Desert Magic",
         highlights: ["Full Moon Night Mandap", "Kutchi Folk Music & Dance", "Luxury Swiss Tents"],
@@ -728,7 +735,7 @@ export const DESTINATIONS: Destination[] = [
         name: "Vidyanagar Country Club Lawns",
         type: "Suburban Golf & Country Club",
         capacity: "400 - 1,200 Guests",
-        pricePerEvent: "₹22 Lakhs / Event",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800&auto=format&fit=crop",
         vibe: "Green Suburb Elegance",
         highlights: ["Golf Course Views", "Organic Catering Facilities", "Spacious Guest Rooms"],
@@ -770,7 +777,7 @@ export const DESTINATIONS: Destination[] = [
         name: "Wildflower Hall Mountain Lawns",
         type: "Luxury Himalayan Mountain Resort",
         capacity: "200 - 600 Guests",
-        pricePerEvent: "₹38 Lakhs / Event",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800&auto=format&fit=crop",
         vibe: "Cedar Forest Romance",
         highlights: ["8,250 ft Snow Peak Panorama", "Open-Air Heated Jacuzzi Deck", "Colonial Ballroom"],
@@ -781,7 +788,7 @@ export const DESTINATIONS: Destination[] = [
         name: "Woodville Palace Estate",
         type: "Colonial Heritage Manor",
         capacity: "250 - 500 Guests",
-        pricePerEvent: "₹24 Lakhs / Event",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=800&auto=format&fit=crop",
         vibe: "Tudor Era Elegance",
         highlights: ["Vintage Rose Gardens", "Hollywood & Bollywood Heritage", "Fireplace Lounge Suites"],
@@ -821,7 +828,7 @@ export const DESTINATIONS: Destination[] = [
         name: "Hyatt Regency Dharamshala Resort",
         type: "Dhauladhar Mountain Resort",
         capacity: "250 - 700 Guests",
-        pricePerEvent: "₹32 Lakhs / Event",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=800&auto=format&fit=crop",
         vibe: "Dhauladhar Serenity",
         highlights: ["Pine Forest Sunset Lawn", "Tibetan Singing Bowl Welcome", "Heated Pool Deck"],
@@ -863,7 +870,7 @@ export const DESTINATIONS: Destination[] = [
         name: "Sukhna Lakefront Club Lawns",
         type: "Lakefront Country Club",
         capacity: "500 - 1,800 Guests",
-        pricePerEvent: "₹40 Lakhs / Event",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800&auto=format&fit=crop",
         vibe: "Modern Punjabi Glamour",
         highlights: ["Lakefront Sunset Backdrop", "Grand Sangeet Stage Infrastructure", "Bhangra & Dhol Welcome"],
@@ -900,14 +907,14 @@ export const DESTINATIONS: Destination[] = [
     weddingVenues: [
       {
         id: "agr-v1",
-        name: "ITC Mughal Taj View Lawns",
-        type: "Mughal Garden Resort",
-        capacity: "500 - 1,500 Guests",
-        pricePerEvent: "₹45 Lakhs / Event",
+        name: "The Oberoi Amarvilas",
+        type: "Taj-view luxury hotel",
+        capacity: "Garden functions (confirm with hotel)",
+        pricePerEvent: "Tariff on request",
         image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=800&auto=format&fit=crop",
-        vibe: "Mughal Imperial Elegance",
-        highlights: ["Direct View of Taj Mahal Monument", "Charbagh Style Water Channels", "Royal Mughlai Cuisine"],
-        description: "Award-winning resort set within 35 acres of Mughal gardens, offering romantic weddings with direct views of the Taj Mahal."
+        vibe: "Mughal gardens, 600 m from the Taj",
+        highlights: ["Taj Mahal views from every room and suite", "600 metres from the East Gate", "Terraced lawns, pools, and pavilions"],
+        description: "The Oberoi Amarvilas is the Agra luxury hotel with unrestricted Taj Mahal views from all rooms. ITC Mughal is a separate Mughal-garden resort and does not offer that sightline from every space."
       }
     ],
     uniqueWeddingProperties: [

@@ -7,6 +7,11 @@ import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapDealerCreateToInsert, mapDealerRow } from "@/lib/mappers/dealer";
 import { requireActiveCity } from "@/lib/server/active-city";
 import { dealerCreateSchema, dealerZodError, directoryCategorySchema } from "@/lib/validation/dealer";
+import {
+  DEALER_CATEGORIES,
+  isDealerCategory,
+  isServiceDirectoryCategory,
+} from "@/features/dealers/lib/is-dealer-category";
 import type { DirectoryProfileRow } from "@/types/database";
 
 export async function GET(request: NextRequest) {
@@ -16,6 +21,7 @@ export async function GET(request: NextRequest) {
   const city = searchParams.get("city")?.trim();
   const categoryParam = searchParams.get("category")?.trim();
   const search = searchParams.get("search")?.trim().slice(0, 80);
+  const surface = searchParams.get("surface")?.trim().toLowerCase();
   const mine = searchParams.get("mine") === "1" || searchParams.get("mine") === "true";
   const { limit, offset } = clampPageParams(
     searchParams.get("limit"),
@@ -42,10 +48,12 @@ export async function GET(request: NextRequest) {
     const parsed = directoryCategorySchema.safeParse(categoryParam);
     if (!parsed.success) return jsonError("Invalid category filter");
     query = query.eq("category", parsed.data);
+  } else if (surface === "dealers") {
+    query = query.in("category", [...DEALER_CATEGORIES]);
   }
 
   if (search) {
-    const q = search.replace(/[%_,.()]/g, " ").trim();
+    const q = search.replace(/[%_,.()"']/g, " ").trim();
     if (q) {
       query = query.or(
         `firm_name.ilike.%${q}%,owner_name.ilike.%${q}%,city.ilike.%${q}%,email.ilike.%${q}%`
@@ -56,9 +64,16 @@ export async function GET(request: NextRequest) {
   const { data, error: listError, count } = await query;
   if (listError) return jsonError(listError.message, 500);
 
+  let items = (data as DirectoryProfileRow[] | null)?.map(mapDealerRow) ?? [];
+  if (surface === "services") {
+    items = items.filter((p) => isServiceDirectoryCategory(p.category));
+  } else if (surface === "dealers") {
+    items = items.filter((p) => isDealerCategory(p.category));
+  }
+
   return jsonOk({
-    items: (data as DirectoryProfileRow[] | null)?.map(mapDealerRow) ?? [],
-    total: count ?? 0,
+    items,
+    total: surface === "services" ? items.length : (count ?? 0),
     limit,
     offset,
   });
@@ -109,11 +124,43 @@ export async function POST(request: NextRequest) {
   const cityCheck = await requireActiveCity(admin, parsed.data.city);
   if (!cityCheck.ok) return jsonError(cityCheck.error, 400);
 
+  // Resolve service type name into category when registering a service trade
+  let category = parsed.data.category;
+  let serviceTypeId = parsed.data.serviceTypeId ?? null;
+  if (serviceTypeId) {
+    const { data: st } = await admin
+      .from("service_types")
+      .select("id, name, active")
+      .eq("id", serviceTypeId)
+      .maybeSingle();
+    if (!st || !st.active) {
+      return jsonError("Invalid or inactive service type", 400);
+    }
+    category = st.name;
+    if (isDealerCategory(category)) {
+      return jsonError("Builders and dealers must register via the dealer flow", 400);
+    }
+  } else if (isServiceDirectoryCategory(category)) {
+    const { data: st } = await admin
+      .from("service_types")
+      .select("id")
+      .eq("name", category)
+      .eq("active", true)
+      .maybeSingle();
+    serviceTypeId = st?.id ?? null;
+  }
+
   const insert = mapDealerCreateToInsert(
-    { ...parsed.data, city: cityCheck.location.city },
+    {
+      ...parsed.data,
+      category,
+      serviceTypeId,
+      city: cityCheck.location.city,
+      coverImageUrl: parsed.data.coverImageUrl || null,
+      logoUrl: parsed.data.logoUrl || null,
+    },
     user.id
   );
-  // Admins may create unlinked samples by omitting link — still link to self for normal path.
   if (isAdmin && body && typeof body === "object" && "linkUser" in body && (body as { linkUser?: boolean }).linkUser === false) {
     insert.user_id = null;
   }

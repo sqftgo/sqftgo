@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
       if (settings?.allow_user_listings === false) {
         return jsonError("Client listings are turned off by admin.", 403);
       }
-      const maxListings = settings?.max_listings_per_user ?? 2;
+      const maxListings = settings?.max_listings_per_user ?? 3;
       const { count, error: countError } = await admin
         .from("properties")
         .select("id", { count: "exact", head: true })

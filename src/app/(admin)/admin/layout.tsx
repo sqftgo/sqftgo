@@ -22,6 +22,8 @@ import {
   Settings,
   FolderKanban,
   SlidersHorizontal,
+  Wrench,
+  ShieldCheck,
 } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -87,6 +89,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         items: [
           { href: "/admin/users", label: "Users", icon: Users },
           { href: "/admin/dealers", label: "Dealers", icon: Briefcase },
+          { href: "/admin/services", label: "Services", icon: Wrench },
+          { href: "/admin/service-verifications", label: "Service Verify", icon: ShieldCheck },
           { href: "/admin/kyc", label: "KYC Reviews", icon: Shield },
         ],
       },

@@ -63,7 +63,7 @@ export async function PATCH(request: NextRequest) {
       require_listing_approval: input.requireListingApproval,
       allow_user_listings: input.allowUserListings,
       max_listings_per_dealer: input.maxListingsPerDealer ?? null,
-      max_listings_per_user: input.maxListingsPerUser ?? 2,
+      max_listings_per_user: input.maxListingsPerUser ?? 3,
       currency_code: input.currencyCode,
       analytics_measurement_id: input.analyticsMeasurementId,
       updated_at: new Date().toISOString(),

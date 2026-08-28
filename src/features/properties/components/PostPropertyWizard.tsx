@@ -92,7 +92,7 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
         {mounted && (
           <ErrorState
             title="Access Denied"
-            message="Sign in to list a property. Client listings are limited to 2 and need admin approval."
+            message="Sign in to list a property. Client listings are limited to 3 and need admin approval."
           />
         )}
       </div>

@@ -25,7 +25,7 @@ const emptyForm: FormState = {
   requireListingApproval: true,
   allowUserListings: true,
   maxListingsPerDealer: null,
-  maxListingsPerUser: 2,
+  maxListingsPerUser: 3,
   currencyCode: "INR",
   analyticsMeasurementId: null,
 };
@@ -94,7 +94,7 @@ export default function AdminSettingsPage() {
           form.maxListingsPerDealer && form.maxListingsPerDealer > 0
             ? form.maxListingsPerDealer
             : null,
-        maxListingsPerUser: form.maxListingsPerUser > 0 ? form.maxListingsPerUser : 2,
+        maxListingsPerUser: form.maxListingsPerUser > 0 ? form.maxListingsPerUser : 3,
       });
       setForm({
         siteName: updated.siteName,
@@ -222,7 +222,7 @@ export default function AdminSettingsPage() {
               value={form.maxListingsPerUser}
               onChange={(e) => {
                 const raw = e.target.value.trim();
-                setField("maxListingsPerUser", raw ? Number(raw) : 2);
+                setField("maxListingsPerUser", raw ? Number(raw) : 3);
               }}
             />
           </FormField>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { AlertCircle } from "lucide-react";
 import {
+  DESTINATIONS,
   destinationSlug,
   destinationsForProvidedCities,
   findDestinationBySlug,
@@ -17,7 +18,7 @@ interface PageProps {
 }
 
 export function generateStaticParams() {
-  return destinationsForProvidedCities([]).map((d) => ({ slug: destinationSlug(d.name) }));
+  return DESTINATIONS.map((d) => ({ slug: destinationSlug(d.name) }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
