@@ -780,6 +780,7 @@ export type PlatformSettingsRow = {
   max_listings_per_user: number;
   currency_code: string;
   analytics_measurement_id: string | null;
+  price_ranges: Record<string, unknown> | null;
   updated_at: string;
   updated_by: string | null;
 };
@@ -796,6 +797,7 @@ export type PlatformSettingsUpdate = {
   max_listings_per_user?: number;
   currency_code?: string;
   analytics_measurement_id?: string | null;
+  price_ranges?: Record<string, unknown> | null;
   updated_at?: string;
   updated_by?: string | null;
 };

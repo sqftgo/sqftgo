@@ -81,7 +81,7 @@ export default function DealerProfilePage() {
     experience: profile?.experience || "",
   });
 
-  const set = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: string, v: unknown) => setForm((f) => ({ ...f, [k]: v }));
   const toggleSpec = (s: string) => {
     const isSelected = form.specialties.includes(s);
     set(

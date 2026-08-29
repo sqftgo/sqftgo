@@ -91,8 +91,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return jsonOk(mapDealerRow(row));
   }
 
-  // Non-admins cannot reassign ownership via patch.
+  // Non-admins cannot reassign ownership or self-verify via patch.
   delete patch.user_id;
+  if (!isAdmin) {
+    delete patch.verification_status;
+  }
 
   const { data, error: updateError } = await admin
     .from("directory_profiles")

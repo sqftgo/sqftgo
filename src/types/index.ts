@@ -43,7 +43,7 @@ export type {
   DealerKycDocument,
   DealerKycRecord,
 } from "./kyc";
-export type { PlatformSettings, PlatformAnalytics, DealerAnalytics } from "./platform";
+export type { PlatformSettings, PublicPlatformSettings, PlatformAnalytics, DealerAnalytics } from "./platform";
 export type {
   ListingFilter,
   ListingFilterKind,

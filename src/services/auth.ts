@@ -22,6 +22,7 @@ export interface AuthRepository {
     name: string;
     email: string;
     password: string;
+    intent?: "user" | "dealer";
   }): Promise<SignupResult>;
   /** Starts Google OAuth (browser redirect). Resolves only on error; success leaves the page. */
   loginWithGoogle(nextPath?: string | null): Promise<void>;
@@ -66,7 +67,7 @@ export const authApi: AuthRepository = {
     });
   },
 
-  async signup({ name, email, password }) {
+  async signup({ name, email, password, intent }) {
     const trimmedEmail = email.trim().toLowerCase();
     const trimmedName = name.trim();
 
@@ -85,6 +86,7 @@ export const authApi: AuthRepository = {
           name: trimmedName,
           email: trimmedEmail,
           password,
+          intent: intent === "dealer" ? "dealer" : "user",
         }),
       }
     );

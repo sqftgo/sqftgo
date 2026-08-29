@@ -158,6 +158,8 @@ export async function POST(request: NextRequest) {
       city: cityCheck.location.city,
       coverImageUrl: parsed.data.coverImageUrl || null,
       logoUrl: parsed.data.logoUrl || null,
+      // Dealer applications start pending until admin KYC / verification.
+      verificationStatus: isDealerCategory(category) ? "pending" : "unverified",
     },
     user.id
   );

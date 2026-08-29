@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * Extracts foundation files from AppContext.tsx without modifying it.
  * Creates: types, constants, lib, data, mocks
