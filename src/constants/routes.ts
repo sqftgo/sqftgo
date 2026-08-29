@@ -33,7 +33,7 @@ export const ROUTES = {
   dealerProfile: "/dealer/dashboard/profile",
   dealerSubscription: "/dealer/dashboard/subscription",
   admin: "/admin",
-  adminLogin: "/admin/login",
+  adminLogin: "/login",
   adminProperties: "/admin/properties",
   adminDealers: "/admin/dealers",
   adminServices: "/admin/services",

@@ -11,10 +11,15 @@ import {
   faYoutube,
   faWhatsapp,
 } from "@fortawesome/free-brands-svg-icons";
+import { usePublicPlatformSettings } from "@/hooks/usePublicPlatformSettings";
 
 
 export const Footer: React.FC = () => {
   const pathname = usePathname();
+  const settings = usePublicPlatformSettings();
+  const supportEmail = settings.supportEmail || "contact@sqftgo.com";
+  const supportPhone = settings.supportPhone || "+91 98765 43210";
+  const phoneHref = `tel:${supportPhone.replace(/\s+/g, "")}`;
 
   // Hide Footer on dashboard and auth pages
   if (
@@ -128,10 +133,10 @@ export const Footer: React.FC = () => {
             <Link href="/" className="flex items-center gap-2 group w-fit">
               <div className="flex flex-col">
                 <span className="font-logo text-2xl leading-none text-indigo group-hover:text-indigo-hover transition-colors">
-                  SqftGo
+                  {settings.siteName}
                 </span>
                 <span className="text-[10px] text-terracotta font-extrabold tracking-widest uppercase mt-1">
-                  Real Estate
+                  {settings.tagline || "Real Estate"}
                 </span>
               </div>
             </Link>
@@ -188,14 +193,14 @@ export const Footer: React.FC = () => {
             </h4>
             
             <div className="flex flex-col gap-4 text-xs font-bold text-charcoal/70">
-              <a href="tel:+919876543210" className="flex items-center gap-3 hover:text-terracotta transition-colors duration-200">
+              <a href={phoneHref} className="flex items-center gap-3 hover:text-terracotta transition-colors duration-200">
                 <Phone className="w-4 h-4 text-terracotta flex-shrink-0" />
-                <span>+91 98765 43210</span>
+                <span>{supportPhone}</span>
               </a>
               
-              <a href="mailto:contact@sqftgo.com" className="flex items-center gap-3 hover:text-terracotta transition-colors duration-200">
+              <a href={`mailto:${supportEmail}`} className="flex items-center gap-3 hover:text-terracotta transition-colors duration-200">
                 <Mail className="w-4 h-4 text-terracotta flex-shrink-0" />
-                <span>contact@sqftgo.com</span>
+                <span>{supportEmail}</span>
               </a>
 
               <div className="flex items-start gap-3">
@@ -253,7 +258,7 @@ export const Footer: React.FC = () => {
 
         {/* Footer Bottom Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-bold text-charcoal/50 relative z-10">
-          <p>© {new Date().getFullYear()} SqftGo Real Estate Private Limited (SQFTGO.COM). All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {settings.siteName} Real Estate Private Limited (SQFTGO.COM). All rights reserved.</p>
           
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs">
             <Link href="/dealer/dashboard" className="hover:text-terracotta text-indigo transition-colors font-bold">Dealers Portal</Link>

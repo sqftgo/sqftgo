@@ -25,6 +25,15 @@ export const platformSettingsUpdateSchema = z.object({
   analyticsMeasurementId: z
     .union([z.string().max(64), z.literal(""), z.null()])
     .transform(emptyToNull),
+  priceRanges: z
+    .object({
+      buyMin: z.array(z.object({ label: z.string(), value: z.string() })),
+      buyMax: z.array(z.object({ label: z.string(), value: z.string() })),
+      rentMin: z.array(z.object({ label: z.string(), value: z.string() })),
+      rentMax: z.array(z.object({ label: z.string(), value: z.string() })),
+    })
+    .nullable()
+    .optional(),
 });
 
 export type PlatformSettingsUpdateInput = z.infer<typeof platformSettingsUpdateSchema>;

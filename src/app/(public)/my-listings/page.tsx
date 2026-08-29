@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import { usePropertiesQuery } from "@/hooks/queries/marketplace";
+import { usePublicPlatformSettings } from "@/hooks/usePublicPlatformSettings";
 import { inquiryService } from "@/services";
 import { ROUTES } from "@/constants/routes";
 import { listingStatusLabel } from "@/lib/user-listings";
@@ -30,6 +31,7 @@ import {
 
 export default function MyListingsPage() {
   const { isLoggedIn, sessionReady, userEmail, userName, userProfile, userRole } = useApp();
+  const settings = usePublicPlatformSettings();
   const mineQuery = usePropertiesQuery({ mine: true, limit: 20 });
   const listings = mineQuery.data?.items ?? [];
   const [leads, setLeads] = useState<PropertyInquiryView[]>([]);
@@ -55,8 +57,16 @@ export default function MyListingsPage() {
 
   const displayName = (userName || userProfile?.name || "").trim() || userEmail.split("@")[0];
   const listingStatus = userProfile?.listingStatus ?? "none";
-  const remaining = Math.max(0, 3 - listings.filter((p) => p.status !== "Rejected").length);
-  const canAdd = remaining > 0 && listingStatus !== "rejected" && userRole !== "broker";
+  const maxSlots = settings.maxListingsPerUser;
+  const remaining = Math.max(
+    0,
+    maxSlots - listings.filter((p) => p.status !== "Rejected").length
+  );
+  const canAdd =
+    remaining > 0 &&
+    listingStatus !== "rejected" &&
+    userRole !== "broker" &&
+    settings.allowUserListings;
 
   const titleById = useMemo(() => {
     const map = new Map<string, string>();

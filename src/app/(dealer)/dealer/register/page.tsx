@@ -44,12 +44,13 @@ export default function DealerRegisterPage() {
 
     setSubmitting(true);
     try {
-      // Real signup always creates role=user. Broker access is admin-granted only.
-      // AuthProvider.signup applies the session when authenticated.
+      // Dealer signup grants broker role so the dashboard unlocks immediately.
+      // Public "verified" badge still requires admin KYC approval.
       const result = await signup({
         name: form.name.trim(),
         email: form.email.trim().toLowerCase(),
         password: form.password,
+        intent: "dealer",
       });
 
       // Directory profile requires an authenticated session; skip until email confirm when needed.
@@ -71,6 +72,7 @@ export default function DealerRegisterPage() {
             description: "",
             reraId: form.reraId || undefined,
             website: "",
+            verificationStatus: "pending",
           });
         } catch {
           // Account created; directory entry can be completed later from dealer profile.
@@ -84,7 +86,7 @@ export default function DealerRegisterPage() {
       }
 
       setDone(true);
-      setTimeout(() => router.push("/"), 2000);
+      setTimeout(() => router.push("/dealer/dashboard"), 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to create account.");
     } finally {
@@ -97,12 +99,12 @@ export default function DealerRegisterPage() {
       <div className="bg-[#1e2028] border border-emerald-500/20 rounded-3xl p-12 max-w-sm w-full text-center">
         <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 flex items-center justify-center mx-auto mb-6"><CheckCircle2 className="w-8 h-8 text-emerald-400" /></div>
         <h2 className="text-2xl font-serif font-black text-white mb-2">
-          {pendingConfirm ? "Confirm your email" : "Application received"}
+          {pendingConfirm ? "Confirm your email" : "Welcome, dealer"}
         </h2>
         <p className="text-white/50 text-sm font-semibold">
           {pendingConfirm
-            ? "Check your inbox to confirm your account. An admin must approve broker access before the dealer dashboard unlocks."
-            : "Your account is ready. Dealer dashboard access requires admin approval — redirecting home…"}
+            ? "Check your inbox to confirm your account, then open the dealer dashboard. Submit KYC from your profile so admins can verify your public badge."
+            : "Your dealer dashboard is ready. Complete KYC from Profile for a verified badge — redirecting…"}
         </p>
       </div>
     </div>
@@ -124,10 +126,14 @@ export default function DealerRegisterPage() {
           {step === 0 && (
             <>
               <h2 className="text-sm font-serif font-black text-white">Personal & Account Info</h2>
-              {[{ l: "Full Name", k: "name", t: "text", ph: "Rajesh Mehta" }, { l: "Email", k: "email", t: "email", ph: "rajesh@broker.com" }, { l: "Phone", k: "phone", t: "tel", ph: "+91 98765 43210" }].map(({ l, k, t, ph }) => (
+              {([
+                { l: "Full Name", k: "name" as const, t: "text", ph: "Rajesh Mehta" },
+                { l: "Email", k: "email" as const, t: "email", ph: "rajesh@broker.com" },
+                { l: "Phone", k: "phone" as const, t: "tel", ph: "+91 98765 43210" },
+              ] as const).map(({ l, k, t, ph }) => (
                 <div key={k} className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-black text-white/50 uppercase tracking-wider">{l}</label>
-                  <input type={t} value={(form as any)[k]} onChange={e => set(k, e.target.value)} placeholder={ph} className="bg-white/5 border border-white/10 focus:border-indigo/50 text-white placeholder-white/20 text-sm font-semibold px-4 py-3 rounded-xl focus:outline-none" />
+                  <input type={t} value={form[k]} onChange={e => set(k, e.target.value)} placeholder={ph} className="bg-white/5 border border-white/10 focus:border-indigo/50 text-white placeholder-white/20 text-sm font-semibold px-4 py-3 rounded-xl focus:outline-none" />
                 </div>
               ))}
               <div className="flex flex-col gap-1.5">
@@ -148,10 +154,13 @@ export default function DealerRegisterPage() {
           {step === 1 && (
             <>
               <h2 className="text-sm font-serif font-black text-white">Business Info</h2>
-              {[{ l: "Firm / Business Name", k: "firmName", ph: "Lake City Brokerage" }, { l: "RERA ID (Optional)", k: "reraId", ph: "RAJ/A/UDZ/2021/0492" }].map(({ l, k, ph }) => (
+              {([
+                { l: "Firm / Business Name", k: "firmName" as const, ph: "Lake City Brokerage" },
+                { l: "RERA ID (Optional)", k: "reraId" as const, ph: "RAJ/A/UDZ/2021/0492" },
+              ] as const).map(({ l, k, ph }) => (
                 <div key={k} className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-black text-white/50 uppercase tracking-wider">{l}</label>
-                  <input value={(form as any)[k]} onChange={e => set(k, e.target.value)} placeholder={ph} className="bg-white/5 border border-white/10 focus:border-indigo/50 text-white placeholder-white/20 text-sm font-semibold px-4 py-3 rounded-xl focus:outline-none" />
+                  <input value={form[k]} onChange={e => set(k, e.target.value)} placeholder={ph} className="bg-white/5 border border-white/10 focus:border-indigo/50 text-white placeholder-white/20 text-sm font-semibold px-4 py-3 rounded-xl focus:outline-none" />
                 </div>
               ))}
               <div className="flex flex-col gap-1.5">

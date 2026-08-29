@@ -72,7 +72,12 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/settings") ||
     pathname.startsWith("/profile") ||
     pathname.startsWith("/my-inquiries") ||
-    pathname.startsWith("/my-visits");
+    pathname.startsWith("/my-visits") ||
+    pathname.startsWith("/my-listings") ||
+    pathname.startsWith("/post-property") ||
+    pathname.startsWith("/my-service-bookings") ||
+    pathname.startsWith("/services/manage") ||
+    pathname.startsWith("/favorites");
   const isProtected = isAdminRoute || isDealerDashboard || isAccountRoute;
 
   // Production must fail closed: never expose protected UI without auth config.

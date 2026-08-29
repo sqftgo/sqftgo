@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapPlatformSettings } from "@/lib/mappers/platform-settings";
 import { platformSettingsUpdateSchema } from "@/lib/validation/platform-settings";
-import type { PlatformSettingsRow } from "@/types/database";
+import type { PlatformSettingsRow, PlatformSettingsUpdate } from "@/types/database";
 
 async function db() {
   return hasServiceRoleKey() ? createServiceClient() : await createClient();
@@ -52,23 +52,28 @@ export async function PATCH(request: NextRequest) {
 
   const input = parsed.data;
   const supabase = await db();
+  const patch: PlatformSettingsUpdate = {
+    site_name: input.siteName,
+    tagline: input.tagline,
+    support_email: input.supportEmail,
+    support_phone: input.supportPhone,
+    maintenance_mode: input.maintenanceMode,
+    require_listing_approval: input.requireListingApproval,
+    allow_user_listings: input.allowUserListings,
+    max_listings_per_dealer: input.maxListingsPerDealer ?? null,
+    max_listings_per_user: input.maxListingsPerUser ?? 3,
+    currency_code: input.currencyCode,
+    analytics_measurement_id: input.analyticsMeasurementId,
+    updated_at: new Date().toISOString(),
+    updated_by: user.id,
+  };
+  if (input.priceRanges !== undefined) {
+    patch.price_ranges = input.priceRanges ?? {};
+  }
+
   const { data, error: upErr } = await supabase
     .from("platform_settings")
-    .update({
-      site_name: input.siteName,
-      tagline: input.tagline,
-      support_email: input.supportEmail,
-      support_phone: input.supportPhone,
-      maintenance_mode: input.maintenanceMode,
-      require_listing_approval: input.requireListingApproval,
-      allow_user_listings: input.allowUserListings,
-      max_listings_per_dealer: input.maxListingsPerDealer ?? null,
-      max_listings_per_user: input.maxListingsPerUser ?? 3,
-      currency_code: input.currencyCode,
-      analytics_measurement_id: input.analyticsMeasurementId,
-      updated_at: new Date().toISOString(),
-      updated_by: user.id,
-    })
+    .update(patch)
     .eq("id", 1)
     .select("*")
     .maybeSingle();

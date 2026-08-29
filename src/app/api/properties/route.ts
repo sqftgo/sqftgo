@@ -192,8 +192,8 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     const requireApproval = settings?.require_listing_approval !== false;
-    if (requireApproval && status !== "Draft") {
-      status = "Pending Review";
+    if (status !== "Draft") {
+      status = requireApproval ? "Pending Review" : "Active";
     }
 
     if (profile.role === "user") {

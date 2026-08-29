@@ -122,7 +122,7 @@ export function ListingPreviewModal({
       return Math.round(property.price / property.size);
     }
     return null;
-  }, [property?.price, property?.size]);
+  }, [property]);
 
   const specs = useMemo(() => {
     if (!property) return [];
@@ -185,6 +185,17 @@ export function ListingPreviewModal({
     );
   }, [property]);
 
+  const handleConfirmReject = useCallback(() => {
+    if (!property) return;
+    const reason = rejectionReason.trim();
+    if (!reason) return;
+    if (onRejectWithReason) {
+      void onRejectWithReason(property, reason);
+    } else {
+      onReject(property);
+    }
+  }, [property, rejectionReason, onRejectWithReason, onReject]);
+
   // Keyboard navigation
   useEffect(() => {
     if (!open || !property) return;
@@ -213,7 +224,7 @@ export function ListingPreviewModal({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, property, images.length, isRejectOpen]);
+  }, [open, property, images.length, isRejectOpen, handleConfirmReject]);
 
   const copyToClipboard = useCallback((text: string, key: string) => {
     if (!text) return;
@@ -221,17 +232,6 @@ export function ListingPreviewModal({
     setCopiedKey(key);
     setTimeout(() => setCopiedKey((prev) => (prev === key ? null : prev)), 2000);
   }, []);
-
-  const handleConfirmReject = useCallback(() => {
-    if (!property) return;
-    const reason = rejectionReason.trim();
-    if (!reason) return;
-    if (onRejectWithReason) {
-      void onRejectWithReason(property, reason);
-    } else {
-      onReject(property);
-    }
-  }, [property, rejectionReason, onRejectWithReason, onReject]);
 
   if (!property) return null;
 

@@ -28,6 +28,7 @@ const emptyForm: FormState = {
   maxListingsPerUser: 3,
   currencyCode: "INR",
   analyticsMeasurementId: null,
+  priceRanges: null,
 };
 
 export default function AdminSettingsPage() {
@@ -61,6 +62,7 @@ export default function AdminSettingsPage() {
           maxListingsPerUser: settings.maxListingsPerUser,
           currencyCode: settings.currencyCode,
           analyticsMeasurementId: settings.analyticsMeasurementId,
+          priceRanges: settings.priceRanges,
         });
         setMeta({ updatedAt: settings.updatedAt, updatedBy: settings.updatedBy });
       } catch (err) {
@@ -108,6 +110,7 @@ export default function AdminSettingsPage() {
         maxListingsPerUser: updated.maxListingsPerUser,
         currencyCode: updated.currencyCode,
         analyticsMeasurementId: updated.analyticsMeasurementId,
+        priceRanges: updated.priceRanges,
       });
       setMeta({ updatedAt: updated.updatedAt, updatedBy: updated.updatedBy });
       addLog({

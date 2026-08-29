@@ -69,6 +69,41 @@ export async function PATCH(
     entity_id: row.id,
   });
 
+  // Wire KYC decision into dealer entitlements: role + public verified badge.
+  if (action === "approve") {
+    await supabase
+      .from("profiles")
+      .update({ role: "broker" })
+      .eq("id", row.user_id)
+      .neq("role", "admin");
+
+    const directoryId = row.directory_profile_id;
+    if (directoryId) {
+      await supabase
+        .from("directory_profiles")
+        .update({ verification_status: "verified" })
+        .eq("id", directoryId);
+    } else {
+      await supabase
+        .from("directory_profiles")
+        .update({ verification_status: "verified" })
+        .eq("user_id", row.user_id);
+    }
+  } else {
+    const directoryId = row.directory_profile_id;
+    if (directoryId) {
+      await supabase
+        .from("directory_profiles")
+        .update({ verification_status: "rejected" })
+        .eq("id", directoryId);
+    } else {
+      await supabase
+        .from("directory_profiles")
+        .update({ verification_status: "rejected" })
+        .eq("user_id", row.user_id);
+    }
+  }
+
   const { data: docs } = await supabase
     .from("dealer_kyc_documents")
     .select("*")
