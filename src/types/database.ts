@@ -856,6 +856,102 @@ export type DealerKycDocumentInsert = {
   created_at?: string;
 };
 
+export type SubscriptionPlanDb = "starter" | "professional" | "enterprise";
+export type SubscriptionStatusDb =
+  | "inactive"
+  | "pending"
+  | "active"
+  | "past_due"
+  | "cancelled"
+  | "expired";
+export type SubscriptionPaymentStatusDb =
+  | "created"
+  | "attempted"
+  | "paid"
+  | "failed"
+  | "refunded";
+
+export type DealerSubscriptionRow = {
+  id: string;
+  user_id: string;
+  plan: SubscriptionPlanDb;
+  status: SubscriptionStatusDb;
+  billing_cycle: string;
+  amount_paise: number;
+  currency: string;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  razorpay_customer_id: string | null;
+  razorpay_subscription_id: string | null;
+  razorpay_payment_id: string | null;
+  last_payment_id: string | null;
+  metadata: Json;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DealerSubscriptionInsert = {
+  id?: string;
+  user_id: string;
+  plan: SubscriptionPlanDb;
+  status?: SubscriptionStatusDb;
+  billing_cycle?: string;
+  amount_paise?: number;
+  currency?: string;
+  current_period_start?: string | null;
+  current_period_end?: string | null;
+  cancel_at_period_end?: boolean;
+  razorpay_customer_id?: string | null;
+  razorpay_subscription_id?: string | null;
+  razorpay_payment_id?: string | null;
+  last_payment_id?: string | null;
+  metadata?: Json;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type DealerSubscriptionUpdate = Partial<DealerSubscriptionInsert>;
+
+export type DealerSubscriptionPaymentRow = {
+  id: string;
+  user_id: string;
+  subscription_id: string | null;
+  plan: SubscriptionPlanDb;
+  amount_paise: number;
+  currency: string;
+  status: SubscriptionPaymentStatusDb;
+  razorpay_order_id: string;
+  razorpay_payment_id: string | null;
+  razorpay_signature: string | null;
+  receipt: string | null;
+  notes: Json;
+  paid_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DealerSubscriptionPaymentInsert = {
+  id?: string;
+  user_id: string;
+  subscription_id?: string | null;
+  plan: SubscriptionPlanDb;
+  amount_paise: number;
+  currency?: string;
+  status?: SubscriptionPaymentStatusDb;
+  razorpay_order_id: string;
+  razorpay_payment_id?: string | null;
+  razorpay_signature?: string | null;
+  receipt?: string | null;
+  notes?: Json;
+  paid_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type DealerSubscriptionPaymentUpdate =
+  Partial<DealerSubscriptionPaymentInsert>;
+
 export type Database = {
   public: {
     Tables: {
@@ -1140,6 +1236,34 @@ export type Database = {
           },
         ];
       };
+      dealer_subscriptions: {
+        Row: DealerSubscriptionRow;
+        Insert: DealerSubscriptionInsert;
+        Update: DealerSubscriptionUpdate;
+        Relationships: [
+          {
+            foreignKeyName: "dealer_subscriptions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      dealer_subscription_payments: {
+        Row: DealerSubscriptionPaymentRow;
+        Insert: DealerSubscriptionPaymentInsert;
+        Update: DealerSubscriptionPaymentUpdate;
+        Relationships: [
+          {
+            foreignKeyName: "dealer_subscription_payments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1164,6 +1288,9 @@ export type Database = {
       visit_status: VisitStatusDb;
       message_thread_kind: MessageThreadKindDb;
       message_thread_status: MessageThreadStatusDb;
+      subscription_plan: SubscriptionPlanDb;
+      subscription_status: SubscriptionStatusDb;
+      subscription_payment_status: SubscriptionPaymentStatusDb;
     };
     CompositeTypes: {
       [_ in never]: never;

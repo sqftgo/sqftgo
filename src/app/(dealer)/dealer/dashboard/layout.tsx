@@ -97,7 +97,7 @@ export default function DealerDashboardLayout({ children }: { children: React.Re
         title: "Analytics & Plans",
         items: [
           { href: "/dealer/dashboard/analytics", label: "Analytics", icon: BarChart3 },
-          { href: "/dealer/dashboard/subscription", label: "Subscription", icon: CreditCard },
+          { href: "/dealer/dashboard/subscription", label: "Plans & Billing", icon: CreditCard },
         ],
       },
       {

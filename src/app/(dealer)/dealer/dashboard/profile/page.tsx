@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import type { DealerKycRecord, DirectoryProfile } from "@/types";
 import { DealerKycPanel } from "@/features/kyc";
@@ -426,14 +427,14 @@ export default function DealerProfilePage() {
                     Plan Tier & Conversions
                   </h3>
                   <p className="text-[10px] text-charcoal/40 font-semibold mt-0.5">
-                    Billing and lead analytics are not wired yet.
+                    Manage partner billing on the Plans & Billing page.
                   </p>
                 </div>
 
                 <Alert
-                  variant="warning"
-                  title="No subscription or fabricated KPIs"
-                  description="Partner tiers, renewal dates, and conversion percentages are not stored. Listing count below is from your real properties."
+                  variant="info"
+                  title="Partner plans live under Plans & Billing"
+                  description="Checkout, Razorpay verification, and renewal dates are handled on the subscription page. Listing count below is from your real properties."
                 />
 
                 <div className="border border-indigo/10 rounded-2xl p-5 space-y-2 bg-[#faf8f5]">
@@ -444,9 +445,16 @@ export default function DealerProfilePage() {
                     {myProperties.length}
                   </p>
                   <p className="text-[10px] text-charcoal/50 font-semibold leading-relaxed">
-                    Properties currently associated with your account email.
+                    Properties currently associated with your account.
                   </p>
                 </div>
+
+                <Link
+                  href="/dealer/dashboard/subscription"
+                  className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo hover:text-indigo/80"
+                >
+                  Open Plans & Billing
+                </Link>
               </div>
             )}
 
