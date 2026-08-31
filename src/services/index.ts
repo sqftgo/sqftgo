@@ -30,6 +30,7 @@ export type { FavoritesRepository } from "./favorites";
 
 export { platformService } from "./platform";
 export { kycService } from "./kyc";
+export { subscriptionService } from "./subscription";
 export { servicePlatformService, servicePlatformApi } from "./service-platform";
 
 export { assistanceService, assistanceApi, supabaseAssistanceRepository } from "./assistance";

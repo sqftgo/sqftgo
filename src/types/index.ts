@@ -45,6 +45,13 @@ export type {
 } from "./kyc";
 export type { PlatformSettings, PublicPlatformSettings, PlatformAnalytics, DealerAnalytics } from "./platform";
 export type {
+  PartnerPlanId,
+  SubscriptionStatusUi,
+  DealerSubscriptionRecord,
+  DealerSubscriptionPaymentRecord,
+  SubscriptionOverview,
+} from "./billing";
+export type {
   ListingFilter,
   ListingFilterKind,
   ListingFilterOption,
