@@ -17,6 +17,7 @@ import {
 } from "@/lib/validation/property";
 import type { PropertyRow } from "@/types/database";
 import { hasNearbyLandmarks, NEARBY_REQUIRED_MESSAGE } from "@/lib/user-listings";
+import { LISTING_QUOTA_CODE, loadDealerListingQuota } from "@/lib/dealer-listing-quota";
 
 export async function GET(request: NextRequest) {
   if (!hasSupabaseEnv()) return jsonError("Supabase is not configured", 503);
@@ -220,21 +221,23 @@ export async function POST(request: NextRequest) {
           .eq("id", user.id)
           .eq("listing_status", "none");
       }
-    } else {
-      const maxListings = settings?.max_listings_per_dealer ?? null;
-      if (maxListings != null && maxListings >= 1) {
-        const { count, error: countError } = await admin
-          .from("properties")
-          .select("id", { count: "exact", head: true })
-          .eq("owner_id", user.id)
-          .neq("status", "rejected");
-        if (countError) return jsonError(countError.message, 500);
-        if ((count ?? 0) >= maxListings) {
+    } else if (profile.role === "broker") {
+      try {
+        const quota = await loadDealerListingQuota(admin, user.id);
+        if (quota.atCap) {
           return jsonError(
-            `Listing limit reached (${maxListings}). Remove or archive a listing before adding another.`,
-            403
+            `Free listings used (${quota.used}/${quota.quota}). Buy a listing pack to add more.`,
+            403,
+            {
+              code: LISTING_QUOTA_CODE,
+              checkoutPath: quota.checkoutPath,
+              used: quota.used,
+              quota: quota.quota,
+            }
           );
         }
+      } catch (err) {
+        return jsonError(err instanceof Error ? err.message : "Unable to check listing quota", 500);
       }
     }
   }

@@ -30,7 +30,7 @@ export const Footer: React.FC = () => {
     { name: "Instagram", icon: faInstagram, href: "https://instagram.com/sqftgo" },
     { name: "Facebook", icon: faFacebookF, href: "https://facebook.com/sqftgo" },
     { name: "YouTube", icon: faYoutube, href: "https://youtube.com/sqftgo" },
-    { name: "WhatsApp", icon: faWhatsapp, href: "https://wa.me/919876543210" },
+    { name: "WhatsApp", icon: faWhatsapp, href: "https://wa.me/918854065069" },
   ];
 
   return (
@@ -188,9 +188,9 @@ export const Footer: React.FC = () => {
             </h4>
             
             <div className="flex flex-col gap-4 text-xs font-bold text-charcoal/70">
-              <a href="tel:+919876543210" className="flex items-center gap-3 hover:text-terracotta transition-colors duration-200">
+              <a href="tel:+918854065069" className="flex items-center gap-3 hover:text-terracotta transition-colors duration-200">
                 <Phone className="w-4 h-4 text-terracotta flex-shrink-0" />
-                <span>+91 98765 43210</span>
+                <span>+91 88540 65069</span>
               </a>
               
               <a href="mailto:contact@sqftgo.com" className="flex items-center gap-3 hover:text-terracotta transition-colors duration-200">

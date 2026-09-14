@@ -12,5 +12,6 @@ export function mapAdminUser(row: ProfileRow): AdminUser {
     inquiriesCount: 0,
     listingStatus: row.listing_status,
     listingVerifiedAt: row.listing_verified_at,
+    listingSlotsPurchased: row.listing_slots_purchased ?? 0,
   };
 }

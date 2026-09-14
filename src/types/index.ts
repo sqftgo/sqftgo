@@ -36,3 +36,4 @@ export type {
   ListingFilterOption,
   ListingFilterExtra,
 } from "./listing-filter";
+export type { ListingPlan, DealerListingQuotaView } from "./listing-plan";

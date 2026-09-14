@@ -40,7 +40,10 @@ export interface AuthRepository {
     limit?: number;
     offset?: number;
   }): Promise<PaginatedResult<AdminUser>>;
-  updateUser(id: string, updates: Partial<AdminUser>): Promise<AdminUser>;
+  updateUser(
+    id: string,
+    updates: Partial<AdminUser> & { grantListingSlots?: number }
+  ): Promise<AdminUser>;
 }
 
 type ApiSessionPayload = {
@@ -188,6 +191,7 @@ export const authApi: AuthRepository = {
         role: updates.role,
         status: updates.status,
         listingStatus: updates.listingStatus,
+        grantListingSlots: updates.grantListingSlots,
       }),
     });
   },

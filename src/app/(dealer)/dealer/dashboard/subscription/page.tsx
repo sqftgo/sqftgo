@@ -1,134 +1,98 @@
 "use client";
 
-import React from "react";
-import { CheckCircle2, Zap, Crown, Building2 } from "lucide-react";
-import {
-  DashboardPageHeader,
-  Alert,
-  Badge,
-  Button,
-  Panel,
-} from "@/components/ui";
+import { useCallback, useEffect, useState } from "react";
+import { CreditCard } from "lucide-react";
+import { Alert, Badge, DashboardPageHeader, Panel, StatCard, KpiGrid } from "@/components/ui";
+import { BuyListingPlanButton } from "@/features/payments/BuyListingPlanButton";
+import { listingPlanApi } from "@/services/listing-plans";
+import type { DealerListingQuotaView, ListingPlan } from "@/types/listing-plan";
 
-const PLANS = [
-  {
-    id: "starter",
-    name: "Starter Partner",
-    price: "₹999",
-    period: "/month",
-    features: ["5 Active Listings", "Basic Analytics", "Email Support", "Standard Profile Page"],
-    color: "border-indigo/20",
-    badge: "",
-  },
-  {
-    id: "professional",
-    name: "Professional Partner",
-    price: "₹2,499",
-    period: "/month",
-    features: [
-      "25 Active Listings",
-      "Advanced Analytics",
-      "Priority Support",
-      "Featured Listings",
-      "RERA Badge",
-      "Verified Badge",
-    ],
-    color: "border-indigo",
-    badge: "Most Popular",
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise Partner",
-    price: "₹5,999",
-    period: "/month",
-    features: [
-      "Unlimited Listings",
-      "Full Analytics Suite",
-      "Dedicated Account Manager",
-      "API Access",
-      "White-label Options",
-      "All Pro Features",
-    ],
-    color: "border-terracotta",
-    badge: "Best Value",
-  },
-];
+export default function DealerListingPlansPage() {
+  const [plans, setPlans] = useState<ListingPlan[]>([]);
+  const [quota, setQuota] = useState<DealerListingQuotaView | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-/**
- * Billing is not wired (no subscriptions table / Razorpay). Plans are preview-only.
- */
-export default function DealerSubscriptionPage() {
+  const refresh = useCallback(async () => {
+    setError(null);
+    const [nextPlans, nextQuota] = await Promise.all([
+      listingPlanApi.listActive(),
+      listingPlanApi.getQuota(),
+    ]);
+    setPlans(nextPlans);
+    setQuota(nextQuota);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        await refresh();
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Unable to load listing plans");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [refresh]);
+
   return (
     <div className="space-y-8 max-w-5xl mx-auto text-charcoal">
       <DashboardPageHeader
-        title="Subscription Plans"
-        description="Partner plan preview — billing is not enabled yet."
+        title="Listing packs"
+        description="3 free property listings. Buy a pack when you need more. New packs can be added by admin without changing checkout. Razorpay keys are still pending — checkout stays off until local env is set."
         className="rounded-3xl"
       />
 
-      <Alert
-        variant="warning"
-        title="Billing not available"
-        description="Selecting a plan does not charge a card or change entitlements. Razorpay and subscription records will ship in a later phase."
-      />
+      {error ? <Alert variant="danger" title="Could not load plans" description={error} /> : null}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {PLANS.map((plan) => (
-          <div
-            key={plan.id}
-            className={`bg-white/80 border-2 ${plan.color} rounded-3xl p-6 relative shadow-sm opacity-95`}
-          >
-            {plan.badge && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <Badge
-                  tone="primary"
-                  size="sm"
-                  className="bg-indigo text-white border-indigo shadow-sm"
-                >
-                  {plan.badge}
-                </Badge>
-              </span>
-            )}
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <p className="text-xs font-black text-charcoal/40 uppercase tracking-widest">
-                  {plan.name}
-                </p>
-                <p className="text-2xl font-serif font-black text-charcoal mt-1">
-                  {plan.price}
-                  <span className="text-xs font-semibold text-charcoal/40">
-                    {plan.period}
-                  </span>
-                </p>
-              </div>
-              {plan.id === "starter" && <Zap className="w-6 h-6 text-indigo/35" />}
-              {plan.id === "professional" && <Crown className="w-6 h-6 text-indigo" />}
-              {plan.id === "enterprise" && (
-                <Building2 className="w-6 h-6 text-terracotta" />
-              )}
-            </div>
-            <div className="space-y-2.5 mb-6">
-              {plan.features.map((f) => (
-                <div key={f} className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                  <span className="text-xs font-semibold text-charcoal/70">{f}</span>
+      {quota ? (
+        <KpiGrid className="sm:grid-cols-4">
+          <StatCard label="Used" value={quota.used} icon={<CreditCard className="w-4 h-4 text-indigo" />} />
+          <StatCard label="Free included" value={quota.free} />
+          <StatCard label="Bought / granted" value={quota.purchased} />
+          <StatCard label="Slots left" value={quota.remaining} tone="indigo" />
+        </KpiGrid>
+      ) : null}
+
+      {loading ? (
+        <p className="text-sm font-semibold text-charcoal/50">Loading plans…</p>
+      ) : plans.length === 0 ? (
+        <Panel padding="md" rounded="3xl">
+          <p className="text-sm font-semibold text-charcoal/60">
+            No listing packs are on sale yet. Ask admin to add one.
+          </p>
+        </Panel>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {plans.map((plan) => (
+            <Panel key={plan.id} padding="lg" rounded="3xl">
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div>
+                  <p className="text-xs font-black text-charcoal/40 uppercase tracking-widest">
+                    {plan.name}
+                  </p>
+                  <p className="text-2xl font-serif font-black text-charcoal mt-1">
+                    ₹{plan.priceInr}
+                  </p>
                 </div>
-              ))}
-            </div>
-            <Button fullWidth variant="outline" size="sm" disabled>
-              Coming soon
-            </Button>
-          </div>
-        ))}
-      </div>
-
-      <Panel title="Billing Note" padding="md" rounded="3xl">
-        <p className="text-xs text-charcoal/65 font-semibold leading-relaxed">
-          All dealers currently operate under the default platform access with no
-          paid entitlements. When billing launches, upgrades will process through
-          a verified payment provider and update a subscription record.
-        </p>
-      </Panel>
+                <Badge tone="primary" size="sm">
+                  +{plan.slots} listings
+                </Badge>
+              </div>
+              <p className="text-sm text-charcoal/60 font-medium mb-5">
+                {plan.description || `Add ${plan.slots} more property slots.`}
+              </p>
+              <BuyListingPlanButton plan={plan} onPaid={() => void refresh()} />
+            </Panel>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

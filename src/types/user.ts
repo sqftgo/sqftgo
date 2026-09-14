@@ -26,6 +26,7 @@ export interface AdminUser {
   inquiriesCount: number;
   listingStatus?: ListerStatus;
   listingVerifiedAt?: string | null;
+  listingSlotsPurchased?: number;
 }
 
 /** @deprecated Use AdminUser */
