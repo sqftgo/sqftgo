@@ -1,10 +1,18 @@
 export class ApiError extends Error {
   readonly status: number;
+  readonly code?: string;
+  readonly checkoutPath?: string;
 
-  constructor(message: string, status: number) {
+  constructor(
+    message: string,
+    status: number,
+    extra?: { code?: string; checkoutPath?: string }
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.code = extra?.code;
+    this.checkoutPath = extra?.checkoutPath;
   }
 }
 
@@ -47,13 +55,22 @@ export async function apiClient<T>(
       },
     });
 
-    const data = (await res.json().catch(() => ({}))) as T & { error?: string };
+    const data = (await res.json().catch(() => ({}))) as T & {
+      error?: string;
+      code?: string;
+      checkoutPath?: string;
+    };
     if (!res.ok) {
       throw new ApiError(
         typeof data === "object" && data && "error" in data && data.error
           ? String(data.error)
           : "Request failed",
-        res.status
+        res.status,
+        {
+          code: typeof data?.code === "string" ? data.code : undefined,
+          checkoutPath:
+            typeof data?.checkoutPath === "string" ? data.checkoutPath : undefined,
+        }
       );
     }
     return data as T;

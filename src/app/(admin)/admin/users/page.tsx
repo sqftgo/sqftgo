@@ -44,7 +44,12 @@ export default function AdminUsersPage() {
 
   const patchUser = async (
     user: AdminUser,
-    updates: { role?: AuthRole; status?: AdminUser["status"]; listingStatus?: AdminUser["listingStatus"] },
+    updates: {
+      role?: AuthRole;
+      status?: AdminUser["status"];
+      listingStatus?: AdminUser["listingStatus"];
+      grantListingSlots?: number;
+    },
     logAction: string
   ) => {
     setError(null);
@@ -156,6 +161,9 @@ export default function AdminUsersPage() {
                   </p>
                   <p className="text-[10px] text-charcoal/35 font-semibold mt-0.5">
                     Joined {user.joinedDate}
+                    {user.role === "broker"
+                      ? ` · ${user.listingSlotsPurchased ?? 0} extra listing slots`
+                      : ""}
                   </p>
                 </div>
 
@@ -186,6 +194,24 @@ export default function AdminUsersPage() {
                       <Briefcase className="w-3 h-3" /> Admin (locked)
                     </span>
                   )}
+
+                  {!isAdminRole && user.role === "broker" ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={busy || isSelf}
+                      onClick={() =>
+                        void patchUser(
+                          user,
+                          { grantListingSlots: 10 },
+                          `Granted 10 listing slots to ${user.email}`
+                        )
+                      }
+                    >
+                      Grant +10 slots
+                    </Button>
+                  ) : null}
 
                   {!isAdminRole && user.role === "user" && user.listingStatus !== "approved" ? (
                     <Button

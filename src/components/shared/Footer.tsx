@@ -18,7 +18,7 @@ export const Footer: React.FC = () => {
   const pathname = usePathname();
   const settings = usePublicPlatformSettings();
   const supportEmail = settings.supportEmail || "contact@sqftgo.com";
-  const supportPhone = settings.supportPhone || "+91 98765 43210";
+  const supportPhone = settings.supportPhone || "+91 88540 65069";
   const phoneHref = `tel:${supportPhone.replace(/\s+/g, "")}`;
 
   // Hide Footer on dashboard and auth pages
@@ -35,7 +35,7 @@ export const Footer: React.FC = () => {
     { name: "Instagram", icon: faInstagram, href: "https://instagram.com/sqftgo" },
     { name: "Facebook", icon: faFacebookF, href: "https://facebook.com/sqftgo" },
     { name: "YouTube", icon: faYoutube, href: "https://youtube.com/sqftgo" },
-    { name: "WhatsApp", icon: faWhatsapp, href: "https://wa.me/919876543210" },
+    { name: "WhatsApp", icon: faWhatsapp, href: "https://wa.me/918854065069" },
   ];
 
   return (

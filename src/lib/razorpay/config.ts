@@ -7,7 +7,10 @@ export type RazorpayConfig = {
 };
 
 export function getRazorpayConfig(): RazorpayConfig | null {
-  const keyId = process.env.RAZORPAY_KEY_ID?.trim() ?? "";
+  const keyId =
+    process.env.RAZORPAY_KEY_ID?.trim() ||
+    process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID?.trim() ||
+    "";
   const keySecret = process.env.RAZORPAY_KEY_SECRET?.trim() ?? "";
   if (!keyId || !keySecret) return null;
   const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET?.trim() || null;

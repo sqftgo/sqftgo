@@ -18,12 +18,13 @@ import {
   FileText,
   MessageSquare,
   Shield,
+  ShieldCheck,
   Users,
   Settings,
   FolderKanban,
   SlidersHorizontal,
+  CreditCard,
   Wrench,
-  ShieldCheck,
 } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -117,6 +118,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         items: [
           { href: "/admin/reports", label: "Reports", icon: FileText },
           { href: "/admin/messages", label: "Messages", icon: MessageSquare },
+          { href: "/admin/listing-plans", label: "Listing packs", icon: CreditCard },
           { href: "/admin/settings", label: "Settings", icon: Settings },
         ],
       },

@@ -1,6 +1,6 @@
 # SqftGo — remaining work
 
-Last updated: **2026-07-25**  
+Last updated: **2026-09-14**  
 Phases **1–14** shipped on `main`. Phase **15** covers cleanup + Dream Project inspiration uploads + notification pref persistence.
 
 Auth-specific checklist: see also [`AUTH_REMAINING.md`](./AUTH_REMAINING.md).
@@ -103,7 +103,7 @@ From `AUTH_REMAINING.md` (summary):
 - `dealer_kyc` + documents + private `dealer-kyc` bucket; dealer submit + admin `/admin/kyc` review
 - Route-group `error.tsx` boundaries (admin / dealer / public)
 
-**Billing module:** still deferred (subscription page remains honesty-disabled)
+**Billing:** listing packs + monthly partner plans share one Razorpay stack. Listing cap is enforced (free + active plan cap + bought packs). Period end is checked on each create. **Live keys / webhook / first test payment are still ops** — keep secrets in local `.env`. Webhook: `/api/webhooks/razorpay` (`payment.captured`).
 
 ---
 
@@ -114,3 +114,5 @@ From `AUTH_REMAINING.md` (summary):
 > Harden **max_listings_per_dealer** / `require_listing_approval` enforcement in property create APIs.
 
 > Add signed-URL viewing of KYC documents in admin review UI.
+
+> Finish **Razorpay ops**: local test keys, webhook `payment.captured` → `/api/webhooks/razorpay`, one `broker@sqftgo.com` pack buy and one monthly plan buy, then live keys. Do not commit secrets.

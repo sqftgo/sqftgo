@@ -95,8 +95,8 @@ export default function AdminSettingsPage() {
         maxListingsPerDealer:
           form.maxListingsPerDealer && form.maxListingsPerDealer > 0
             ? form.maxListingsPerDealer
-            : null,
-        maxListingsPerUser: form.maxListingsPerUser > 0 ? form.maxListingsPerUser : 3,
+            : 3,
+        maxListingsPerUser: form.maxListingsPerUser > 0 ? form.maxListingsPerUser : 2,
       });
       setForm({
         siteName: updated.siteName,
@@ -204,16 +204,19 @@ export default function AdminSettingsPage() {
             />
           </FormField>
 
-          <FormField label="Max listings per dealer">
+          <FormField
+            label="Free listings per dealer"
+            hint="Paid packs add extra slots. Add or edit packs under Listing packs — checkout reads the catalog automatically."
+          >
             <TextInput
               type="number"
               min={1}
-              value={form.maxListingsPerDealer ?? ""}
+              value={form.maxListingsPerDealer ?? 3}
               onChange={(e) => {
                 const raw = e.target.value.trim();
-                setField("maxListingsPerDealer", raw ? Number(raw) : null);
+                setField("maxListingsPerDealer", raw ? Number(raw) : 3);
               }}
-              placeholder="Leave empty for unlimited"
+              placeholder="3"
             />
           </FormField>
 

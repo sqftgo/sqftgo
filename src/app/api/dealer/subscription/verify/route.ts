@@ -3,6 +3,7 @@ import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
 import { canAccessDealerDashboard } from "@/lib/authz";
 import { activateDealerSubscription } from "@/lib/billing/activate";
 import { mapDealerSubscription } from "@/lib/mappers/billing";
+import { fetchRazorpayPayment } from "@/lib/razorpay/client";
 import { getRazorpayConfig } from "@/lib/razorpay/config";
 import { verifyPaymentSignature } from "@/lib/razorpay/verify";
 import { verifySubscriptionPaymentSchema } from "@/lib/validation/billing";
@@ -52,6 +53,14 @@ export async function POST(request: NextRequest) {
 
   if (!valid) return jsonError("Invalid payment signature", 400);
 
+  const captured = await fetchRazorpayPayment(razorpayPaymentId);
+  if (!captured || captured.order_id !== razorpayOrderId) {
+    return jsonError("Payment could not be confirmed", 400);
+  }
+  if (captured.status !== "captured" && captured.status !== "authorized") {
+    return jsonError("Payment is not captured yet", 400);
+  }
+
   const supabase = createServiceClient();
 
   const { data: paymentRow, error: payErr } = await supabase
@@ -65,6 +74,9 @@ export async function POST(request: NextRequest) {
   if (!paymentRow) return jsonError("Order not found", 404);
 
   const row = paymentRow as DealerSubscriptionPaymentRow;
+  if (captured.amount !== row.amount_paise) {
+    return jsonError("Payment amount does not match the order", 400);
+  }
 
   if (row.status === "paid") {
     const { data: sub } = await supabase

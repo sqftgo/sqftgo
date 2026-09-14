@@ -56,6 +56,8 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
   }, [amenities]);
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState<"draft" | "published" | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [newImageUrl, setNewImageUrl] = useState("");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -113,24 +115,41 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
     );
   };
 
-  const handleCreateSubmit = (status: "Draft" | "Pending Review" = "Pending Review") => {
-    onSubmit(toSubmitData(form, status));
-    setSubmitted(status === "Draft" ? "draft" : "published");
-    setTimeout(() => router.push("/dealer/dashboard/properties"), 2000);
+  const handleCreateSubmit = async (status: "Draft" | "Pending Review" = "Pending Review") => {
+    if (saving) return;
+    setSubmitError(null);
+    setSaving(true);
+    try {
+      await onSubmit(toSubmitData(form, status));
+      setSubmitted(status === "Draft" ? "draft" : "published");
+      setTimeout(() => router.push("/dealer/dashboard/properties"), 2000);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Unable to save listing");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const nearbyComplete = Boolean(
     form.nearbyHospital.trim() && form.nearbySchool.trim() && form.nearbyTransportation.trim()
   );
 
-  const handleEditSave = () => {
-    if (!nearbyComplete) return;
-    onSubmit(toSubmitData(form, form.status));
-    setSaved(true);
-    setTimeout(() => {
-      setSaved(false);
-      router.push("/dealer/dashboard/properties");
-    }, 1500);
+  const handleEditSave = async () => {
+    if (!nearbyComplete || saving) return;
+    setSubmitError(null);
+    setSaving(true);
+    try {
+      await onSubmit(toSubmitData(form, form.status));
+      setSaved(true);
+      setTimeout(() => {
+        setSaved(false);
+        router.push("/dealer/dashboard/properties");
+      }, 1500);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Unable to save listing");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const canNext = [
@@ -321,6 +340,10 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
             </Button>
           </div>
 
+          {submitError ? (
+            <Alert variant="danger" title="Could not save listing" description={submitError} className="mb-6" />
+          ) : null}
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <div className="flex flex-row lg:flex-col gap-3 lg:col-span-3 overflow-x-auto no-scrollbar pb-3 lg:pb-0">
               {CREATE_STEPS.map((s, i) => {
@@ -476,9 +499,10 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => handleCreateSubmit("Draft")}
+                    onClick={() => void handleCreateSubmit("Draft")}
+                    disabled={saving}
                   >
-                    <Save className="w-4 h-4" /> Save Draft
+                    <Save className="w-4 h-4" /> {saving ? "Saving…" : "Save Draft"}
                   </Button>
 
                   {step < CREATE_STEPS.length - 1 ? (
@@ -496,8 +520,8 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                       type="button"
                       variant="primary"
                       size="sm"
-                      onClick={() => nearbyComplete && handleCreateSubmit("Pending Review")}
-                      disabled={!nearbyComplete}
+                      onClick={() => nearbyComplete && void handleCreateSubmit("Pending Review")}
+                      disabled={!nearbyComplete || saving}
                       className="bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/15"
                     >
                       <Send className="w-4 h-4" /> Publish Listing
@@ -546,6 +570,15 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
             <Eye className="w-4 h-4" /> Preview both formats
           </Button>
         </div>
+
+        {submitError ? (
+          <Alert
+            variant="danger"
+            title="Could not save listing"
+            description={submitError}
+            className="mb-6 text-left"
+          />
+        ) : null}
 
         {saved && (
           <Alert
@@ -861,7 +894,12 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                     Hospital, school, and transportation are required.
                   </p>
                 ) : null}
-                <Button variant="secondary" size="sm" onClick={handleEditSave} disabled={!nearbyComplete}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => void handleEditSave()}
+                  disabled={!nearbyComplete || saving}
+                >
                   <Save className="w-4 h-4" /> Save Changes
                 </Button>
               </div>

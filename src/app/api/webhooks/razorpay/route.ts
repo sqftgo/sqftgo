@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { activateDealerSubscription } from "@/lib/billing/activate";
+import { fulfillListingOrder } from "@/lib/payments/listing-orders";
 import { getRazorpayConfig } from "@/lib/razorpay/config";
 import { verifyWebhookSignature } from "@/lib/razorpay/verify";
 import { createServiceClient } from "@/lib/supabase/admin";
@@ -73,6 +74,24 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = createServiceClient();
+
+  const { data: listingOrder } = await supabase
+    .from("listing_orders")
+    .select("id")
+    .eq("razorpay_order_id", orderId)
+    .maybeSingle();
+  if (listingOrder) {
+    try {
+      await fulfillListingOrder(supabase, { orderId: listingOrder.id, paymentId });
+      return NextResponse.json({ ok: true, kind: "listing_pack" });
+    } catch (err) {
+      return NextResponse.json(
+        { error: err instanceof Error ? err.message : "Fulfill failed" },
+        { status: 500 }
+      );
+    }
+  }
+
   const { data: paymentRow } = await supabase
     .from("dealer_subscription_payments")
     .select("*")
@@ -88,18 +107,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, alreadyProcessed: true });
   }
 
-  const userId =
-    payment?.notes?.user_id ||
-    (typeof row.notes === "object" &&
-    row.notes &&
-    !Array.isArray(row.notes) &&
-    "user_id" in row.notes
-      ? String((row.notes as Record<string, unknown>).user_id)
-      : row.user_id);
-
   await activateDealerSubscription({
     supabase,
-    userId: userId || row.user_id,
+    userId: row.user_id,
     planId: row.plan as SubscriptionPlanDb,
     paymentRowId: row.id,
     razorpayPaymentId: paymentId,

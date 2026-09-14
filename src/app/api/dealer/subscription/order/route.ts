@@ -7,9 +7,18 @@ import { getRazorpayKeyIdPublic, isRazorpayConfigured } from "@/lib/razorpay/con
 import { createSubscriptionOrderSchema } from "@/lib/validation/billing";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
+import { enforceRateLimit } from "@/lib/auth/rate-limit";
 
 export async function POST(request: NextRequest) {
   if (!hasSupabaseEnv()) return jsonError("Supabase is not configured", 503);
+  const limited = await enforceRateLimit(
+    request,
+    "payments:subscription-order",
+    8,
+    60_000,
+    "Too many payment attempts. Try again shortly."
+  );
+  if (limited) return limited;
   if (!hasServiceRoleKey()) {
     return jsonError("Billing requires SUPABASE_SERVICE_ROLE_KEY", 503);
   }

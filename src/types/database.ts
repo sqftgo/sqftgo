@@ -206,6 +206,7 @@ export type ProfileRow = {
   status: ProfileStatus;
   listing_status: ListerStatusDb;
   listing_verified_at: string | null;
+  listing_slots_purchased: number;
   created_at: string;
   updated_at: string;
 };
@@ -222,6 +223,7 @@ export type ProfileInsert = {
   status?: ProfileStatus;
   listing_status?: ListerStatusDb;
   listing_verified_at?: string | null;
+  listing_slots_purchased?: number;
   created_at?: string;
   updated_at?: string;
 };
@@ -238,6 +240,7 @@ export type ProfileUpdate = {
   status?: ProfileStatus;
   listing_status?: ListerStatusDb;
   listing_verified_at?: string | null;
+  listing_slots_purchased?: number;
   created_at?: string;
   updated_at?: string;
 };
@@ -856,6 +859,66 @@ export type DealerKycDocumentInsert = {
   created_at?: string;
 };
 
+export type ListingPlanRow = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  price_paise: number;
+  slots: number;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ListingPlanInsert = {
+  id?: string;
+  slug: string;
+  name: string;
+  description?: string;
+  price_paise: number;
+  slots: number;
+  is_active?: boolean;
+  sort_order?: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ListingPlanUpdate = Partial<ListingPlanInsert>;
+
+export type ListingOrderStatusDb = "created" | "paid" | "failed";
+
+export type ListingOrderRow = {
+  id: string;
+  dealer_id: string;
+  plan_id: string | null;
+  provider: string;
+  razorpay_order_id: string | null;
+  razorpay_payment_id: string | null;
+  amount_paise: number;
+  slots: number;
+  status: ListingOrderStatusDb;
+  created_at: string;
+  paid_at: string | null;
+};
+
+export type ListingOrderInsert = {
+  id?: string;
+  dealer_id: string;
+  plan_id?: string | null;
+  provider?: string;
+  razorpay_order_id?: string | null;
+  razorpay_payment_id?: string | null;
+  amount_paise: number;
+  slots: number;
+  status?: ListingOrderStatusDb;
+  created_at?: string;
+  paid_at?: string | null;
+};
+
+export type ListingOrderUpdate = Partial<ListingOrderInsert>;
+
 export type SubscriptionPlanDb = "starter" | "professional" | "enterprise";
 export type SubscriptionStatusDb =
   | "inactive"
@@ -949,8 +1012,7 @@ export type DealerSubscriptionPaymentInsert = {
   updated_at?: string;
 };
 
-export type DealerSubscriptionPaymentUpdate =
-  Partial<DealerSubscriptionPaymentInsert>;
+export type DealerSubscriptionPaymentUpdate = Partial<DealerSubscriptionPaymentInsert>;
 
 export type Database = {
   public: {
@@ -965,6 +1027,33 @@ export type Database = {
             columns: ["id"];
             isOneToOne: true;
             referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      listing_plans: {
+        Row: ListingPlanRow;
+        Insert: ListingPlanInsert;
+        Update: ListingPlanUpdate;
+        Relationships: [];
+      };
+      listing_orders: {
+        Row: ListingOrderRow;
+        Insert: ListingOrderInsert;
+        Update: ListingOrderUpdate;
+        Relationships: [
+          {
+            foreignKeyName: "listing_orders_dealer_id_fkey";
+            columns: ["dealer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "listing_orders_plan_id_fkey";
+            columns: ["plan_id"];
+            isOneToOne: false;
+            referencedRelation: "listing_plans";
             referencedColumns: ["id"];
           },
         ];
@@ -1271,6 +1360,10 @@ export type Database = {
     Functions: {
       is_admin: { Args: Record<string, never>; Returns: boolean };
       is_broker: { Args: Record<string, never>; Returns: boolean };
+      increment_listing_slots: {
+        Args: { p_dealer_id: string; p_slots: number };
+        Returns: number;
+      };
     };
     Enums: {
       app_role: AppRole;

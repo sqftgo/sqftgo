@@ -59,7 +59,7 @@ export type FormState = {
 export type PropertyFormProps = {
   mode: "create" | "edit";
   initialProperty?: Property;
-  onSubmit: (data: PropertyFormSubmitData) => void;
+  onSubmit: (data: PropertyFormSubmitData) => void | Promise<void>;
 };
 
 export type SetFormField = (k: keyof FormState, v: FormState[keyof FormState]) => void;

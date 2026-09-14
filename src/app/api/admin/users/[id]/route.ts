@@ -13,6 +13,7 @@ type PatchBody = {
   role?: AuthRole;
   status?: "active" | "suspended";
   listingStatus?: ListerStatus;
+  grantListingSlots?: number;
 };
 
 export async function PATCH(
@@ -39,6 +40,48 @@ export async function PATCH(
     body = (await request.json()) as PatchBody;
   } catch {
     return jsonError("Invalid JSON body");
+  }
+
+  if (typeof body.grantListingSlots === "number") {
+    const slots = Math.floor(body.grantListingSlots);
+    if (slots < 1 || slots > 1000) return jsonError("grantListingSlots must be 1–1000");
+    if (!hasServiceRoleKey()) {
+      return jsonError("SUPABASE_SERVICE_ROLE_KEY is required to grant listing slots.", 503);
+    }
+    const admin = createServiceClient();
+    const { data: target, error: targetError } = await admin
+      .from("profiles")
+      .select("id, role, listing_slots_purchased")
+      .eq("id", id)
+      .maybeSingle();
+    if (targetError || !target) return jsonError("User not found", 404);
+    if (target.role !== "broker") return jsonError("Listing packs can only be granted to dealers.", 400);
+
+    const { error: creditErr } = await admin.rpc("increment_listing_slots", {
+      p_dealer_id: id,
+      p_slots: slots,
+    });
+    if (creditErr) {
+      const { error: fallbackErr } = await admin
+        .from("profiles")
+        .update({ listing_slots_purchased: (target.listing_slots_purchased ?? 0) + slots })
+        .eq("id", id);
+      if (fallbackErr) return jsonError(fallbackErr.message, 500);
+    }
+
+    await admin.from("listing_orders").insert({
+      dealer_id: id,
+      plan_id: null,
+      provider: "admin",
+      amount_paise: 0,
+      slots,
+      status: "paid",
+      paid_at: new Date().toISOString(),
+    });
+
+    const { data, error: reloadError } = await admin.from("profiles").select("*").eq("id", id).single();
+    if (reloadError || !data) return jsonError(reloadError?.message ?? "User not found", 404);
+    return jsonOk(mapAdminUser(data));
   }
 
   const patch: ProfileUpdate = {};

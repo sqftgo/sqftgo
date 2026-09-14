@@ -30,11 +30,12 @@ export async function activateDealerSubscription(params: {
     })
     .eq("id", params.paymentRowId)
     .eq("user_id", params.userId)
+    .eq("status", "created")
     .select("id, subscription_id")
     .maybeSingle();
 
   if (payErr) return { ok: false, error: payErr.message };
-  if (!payment) return { ok: false, error: "Payment row not found" };
+  if (!payment) return { ok: true };
 
   const { data: existing } = await params.supabase
     .from("dealer_subscriptions")

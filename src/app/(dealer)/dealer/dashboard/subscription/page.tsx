@@ -20,6 +20,9 @@ import {
 import { openRazorpayCheckout } from "@/lib/razorpay/checkout";
 import { subscriptionService } from "@/services/subscription";
 import type { SubscriptionOverview } from "@/types/billing";
+import { BuyListingPlanButton } from "@/features/payments/BuyListingPlanButton";
+import { listingPlanApi } from "@/services/listing-plans";
+import type { DealerListingQuotaView, ListingPlan } from "@/types/listing-plan";
 import { ApiError } from "@/lib/api/client";
 import {
   DashboardPageHeader,
@@ -29,6 +32,8 @@ import {
   Panel,
   GlobalLoading,
   ErrorState,
+  StatCard,
+  KpiGrid,
 } from "@/components/ui";
 
 const PLAN_ICONS = {
@@ -49,6 +54,8 @@ function formatDate(iso: string | null): string {
 export default function DealerSubscriptionPage() {
   const { userName, userEmail } = useApp();
   const [overview, setOverview] = useState<SubscriptionOverview | null>(null);
+  const [packs, setPacks] = useState<ListingPlan[]>([]);
+  const [quota, setQuota] = useState<DealerListingQuotaView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyPlan, setBusyPlan] = useState<PartnerPlanId | null>(null);
@@ -58,8 +65,14 @@ export default function DealerSubscriptionPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await subscriptionService.getOverview();
+      const [data, nextPacks, nextQuota] = await Promise.all([
+        subscriptionService.getOverview(),
+        listingPlanApi.listActive().catch(() => [] as ListingPlan[]),
+        listingPlanApi.getQuota().catch(() => null),
+      ]);
       setOverview(data);
+      setPacks(nextPacks);
+      setQuota(nextQuota);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load subscription"
@@ -161,10 +174,46 @@ export default function DealerSubscriptionPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-8 text-charcoal">
       <DashboardPageHeader
-        title="Partner plans"
-        description="Choose a monthly plan. Payments run through Razorpay Checkout with server-side signature verification."
+        title="Plans & billing"
+        description="Listing slots are enforced on create. Monthly plans raise the included cap for the paid period. Extra packs add slots on top. Razorpay verifies every payment on the server."
         className="rounded-3xl"
       />
+
+      {quota ? (
+        <KpiGrid className="sm:grid-cols-4">
+          <StatCard label="Used" value={quota.used} icon={<CreditCard className="w-4 h-4 text-indigo" />} />
+          <StatCard label="Included cap" value={quota.unlimited ? "Unlimited" : quota.quota} />
+          <StatCard label="Bought packs" value={quota.purchased} />
+          <StatCard
+            label="Slots left"
+            value={quota.unlimited ? "—" : quota.remaining}
+            tone="indigo"
+          />
+        </KpiGrid>
+      ) : null}
+
+      {packs.length > 0 ? (
+        <Panel title="Extra listing packs" padding="lg" rounded="3xl">
+          <p className="mb-4 text-sm font-medium text-charcoal/60">
+            One-time packs. Admin can add more without a code change.
+          </p>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {packs.map((plan) => (
+              <div key={plan.id} className="flex items-center justify-between gap-4 rounded-2xl border border-indigo/10 p-4">
+                <div>
+                  <p className="text-sm font-bold text-charcoal">{plan.name}</p>
+                  <p className="text-xs font-semibold text-charcoal/50">
+                    +{plan.slots} listings · ₹{plan.priceInr}
+                  </p>
+                </div>
+                <div className="w-36">
+                  <BuyListingPlanButton plan={plan} onPaid={() => void load()} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      ) : null}
 
       {overview?.subscription && overview.subscription.status !== "inactive" && (
         <motion.div
