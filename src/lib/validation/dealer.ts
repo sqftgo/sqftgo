@@ -1,16 +1,7 @@
 import { z } from "zod";
 
-export const directoryCategorySchema = z.enum([
-  "Agent & Broker",
-  "Builder & Developer",
-  "Interior Decorator",
-  "Architect",
-  "Building Contractor",
-  "Property Consultant",
-  "Vastu Consultant",
-  "Home Valuation/Inspection",
-  "Home Shifting/Deep Cleaning",
-]);
+/** Dealer categories stay constrained; service trades may be any admin-managed name. */
+export const directoryCategorySchema = z.string().trim().min(2).max(120);
 
 const dealerFields = {
   firmName: z.string().trim().min(2).max(160),
@@ -27,6 +18,15 @@ const dealerFields = {
   specialties: z.array(z.string().trim().min(1).max(80)).max(30),
   teamSize: z.number().int().min(0).max(10000),
   listingsCount: z.number().int().min(0).max(100000),
+  serviceTypeId: z.string().uuid().nullable(),
+  servicesOffered: z.array(z.string().trim().min(1).max(120)).max(40),
+  businessHours: z.record(z.string(), z.string()).nullable(),
+  coverImageUrl: z.string().max(500).nullable(),
+  logoUrl: z.string().max(500).nullable(),
+  lat: z.number().min(-90).max(90).nullable(),
+  lng: z.number().min(-180).max(180).nullable(),
+  listingActive: z.boolean(),
+  verificationStatus: z.enum(["unverified", "pending", "verified", "rejected"]),
 };
 
 export const dealerCreateSchema = z.object({
@@ -44,6 +44,13 @@ export const dealerCreateSchema = z.object({
   specialties: dealerFields.specialties.optional().default([]),
   teamSize: dealerFields.teamSize.optional(),
   listingsCount: dealerFields.listingsCount.optional(),
+  serviceTypeId: dealerFields.serviceTypeId.optional().nullable(),
+  servicesOffered: dealerFields.servicesOffered.optional().default([]),
+  businessHours: dealerFields.businessHours.optional().nullable(),
+  coverImageUrl: dealerFields.coverImageUrl.optional().nullable(),
+  logoUrl: dealerFields.logoUrl.optional().nullable(),
+  lat: dealerFields.lat.optional().nullable(),
+  lng: dealerFields.lng.optional().nullable(),
 });
 
 /** Partial update — no defaults, so omitted keys are left unchanged. */
@@ -63,6 +70,15 @@ export const dealerUpdateSchema = z
     specialties: dealerFields.specialties.optional(),
     teamSize: dealerFields.teamSize.optional().nullable(),
     listingsCount: dealerFields.listingsCount.optional(),
+    serviceTypeId: dealerFields.serviceTypeId.optional().nullable(),
+    servicesOffered: dealerFields.servicesOffered.optional(),
+    businessHours: dealerFields.businessHours.optional().nullable(),
+    coverImageUrl: dealerFields.coverImageUrl.optional().nullable(),
+    logoUrl: dealerFields.logoUrl.optional().nullable(),
+    lat: dealerFields.lat.optional().nullable(),
+    lng: dealerFields.lng.optional().nullable(),
+    listingActive: dealerFields.listingActive.optional(),
+    verificationStatus: dealerFields.verificationStatus.optional(),
   })
   .strict();
 

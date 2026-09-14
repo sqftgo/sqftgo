@@ -12,7 +12,7 @@ import MainWrapper from "@/components/shared/MainWrapper";
 config.autoAddCss = false;
 import Footer from "@/components/shared/Footer";
 import DepthBackground from "@/components/shared/DepthBackground";
-import { DreamProjectButton } from "@/features/leads";
+import { PostPropertyButton } from "@/features/properties";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,8 +58,8 @@ export default function RootLayout({
           
 
 
-          {/* Global Dream Project Button */}
-          <DreamProjectButton />
+          {/* Logged-in user: Post Property FAB */}
+          <PostPropertyButton />
         </AppProviders>
       </body>
     </html>

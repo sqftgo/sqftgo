@@ -13,14 +13,12 @@ import {
   DEFAULT_PRICE_RANGES,
   PRICE_RANGE_GROUPS,
   formatPriceLabel,
-  loadPriceRanges,
   normalizePriceOptions,
-  savePriceRanges,
   type PriceOption,
   type PriceRangeConfig,
   type PriceRangeGroupKey,
 } from "@/features/admin";
-
+import { platformService } from "@/services/platform";
 
 export default function AdminPricingPage() {
   const [config, setConfig] = useState<PriceRangeConfig>(DEFAULT_PRICE_RANGES);
@@ -33,10 +31,28 @@ export default function AdminPricingPage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [baseSettings, setBaseSettings] = useState<Awaited<
+    ReturnType<typeof platformService.getSettings>
+  > | null>(null);
 
   useEffect(() => {
-    setConfig(loadPriceRanges());
-    setHydrated(true);
+    let cancelled = false;
+    void (async () => {
+      try {
+        const settings = await platformService.getSettings();
+        if (cancelled) return;
+        setBaseSettings(settings);
+        if (settings.priceRanges) setConfig(settings.priceRanges);
+      } catch {
+        if (!cancelled) setConfig(DEFAULT_PRICE_RANGES);
+      } finally {
+        if (!cancelled) setHydrated(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const updateGroup = (key: PriceRangeGroupKey, options: PriceOption[]) => {
@@ -87,6 +103,40 @@ export default function AdminPricingPage() {
     );
   };
 
+  const persist = async (next: PriceRangeConfig) => {
+    if (!baseSettings) {
+      setError("Settings not loaded yet. Refresh and try again.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const updated = await platformService.updateSettings({
+        siteName: baseSettings.siteName,
+        tagline: baseSettings.tagline,
+        supportEmail: baseSettings.supportEmail,
+        supportPhone: baseSettings.supportPhone,
+        maintenanceMode: baseSettings.maintenanceMode,
+        requireListingApproval: baseSettings.requireListingApproval,
+        allowUserListings: baseSettings.allowUserListings,
+        maxListingsPerDealer: baseSettings.maxListingsPerDealer,
+        maxListingsPerUser: baseSettings.maxListingsPerUser,
+        currencyCode: baseSettings.currencyCode,
+        analyticsMeasurementId: baseSettings.analyticsMeasurementId,
+        priceRanges: next,
+      });
+      setBaseSettings(updated);
+      if (updated.priceRanges) setConfig(updated.priceRanges);
+      window.dispatchEvent(new Event("sqftgo:price-ranges-updated"));
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to save price ranges");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleSave = () => {
     const normalized = { ...config };
     for (const group of PRICE_RANGE_GROUPS) {
@@ -96,39 +146,33 @@ export default function AdminPricingPage() {
       );
     }
     setConfig(normalized);
-    savePriceRanges(normalized);
-    setSaved(true);
-    setError(null);
-    setTimeout(() => setSaved(false), 2000);
+    void persist(normalized);
   };
 
   const handleReset = () => {
     setConfig(DEFAULT_PRICE_RANGES);
-    savePriceRanges(DEFAULT_PRICE_RANGES);
-    setSaved(true);
-    setError(null);
-    setTimeout(() => setSaved(false), 2000);
+    void persist(DEFAULT_PRICE_RANGES);
   };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <DashboardPageHeader
         title="Pricing Management"
-        description="Manage budget price options shown in listing filter dropdowns"
+        description="Manage budget price options shown in listing filter dropdowns (saved to platform settings)"
         actions={
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleReset}>
+            <Button variant="outline" size="sm" onClick={handleReset} disabled={busy || !hydrated}>
               <RotateCcw className="w-3.5 h-3.5" /> Reset
             </Button>
-            <Button variant="primary" size="sm" onClick={handleSave} disabled={!hydrated}>
-              <Save className="w-3.5 h-3.5" /> Save Ranges
+            <Button variant="primary" size="sm" onClick={handleSave} disabled={!hydrated || busy}>
+              <Save className="w-3.5 h-3.5" /> {busy ? "Saving…" : "Save Ranges"}
             </Button>
           </div>
         }
       />
 
       {saved ? (
-        <Alert variant="success" title="Price ranges saved" onDismiss={() => setSaved(false)} />
+        <Alert variant="success" title="Price ranges saved for all users" onDismiss={() => setSaved(false)} />
       ) : null}
       {error ? (
         <Alert variant="danger" title={error} onDismiss={() => setError(null)} />

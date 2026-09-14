@@ -94,7 +94,7 @@ export default function AddPropertyPage() {
     );
   }
 
-  if (quota?.atCap) {
+  if (quota?.atCap && !quota.unlimited) {
     return (
       <div className="max-w-2xl space-y-6">
         <EmptyState
@@ -133,7 +133,9 @@ export default function AddPropertyPage() {
       {error ? <Alert variant="warning" title="Quota check failed" description={error} /> : null}
       {quota ? (
         <p className="text-xs font-bold text-charcoal/45 uppercase tracking-wider">
-          Slots left: {quota.remaining} of {quota.quota}
+          {quota.unlimited
+            ? `Slots used: ${quota.used} · unlimited included cap`
+            : `Slots left: ${quota.remaining} of ${quota.quota}`}
         </p>
       ) : null}
       <PropertyForm mode="create" onSubmit={handleSubmit} />

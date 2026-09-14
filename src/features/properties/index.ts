@@ -7,6 +7,7 @@ export {
 export { PropertyCard } from "./components/PropertyCard";
 export { FilterPanel, type FilterState } from "./components/FilterPanel";
 export { PostPropertyWizard } from "./components/PostPropertyWizard";
+export { default as PostPropertyButton } from "./components/PostPropertyButton";
 export { formatIndianCurrency } from "@/lib/format";
 export { useFavorites } from "./hooks/useFavorites";
 export { usePropertyMutations } from "./hooks/usePropertyMutations";

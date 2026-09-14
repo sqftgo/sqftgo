@@ -17,5 +17,6 @@ export type DealerListingQuotaView = {
   quota: number;
   remaining: number;
   atCap: boolean;
+  unlimited: boolean;
   checkoutPath: string;
 };

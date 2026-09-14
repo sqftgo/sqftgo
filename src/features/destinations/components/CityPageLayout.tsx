@@ -102,7 +102,9 @@ export default function CityPageLayout({ destination, providedDestinations }: Ci
             </h1>
 
             <p className="text-white/85 text-xs sm:text-sm md:text-base font-semibold max-w-2xl leading-relaxed text-center drop-shadow-md">
-              <span className="text-amber-200 font-extrabold">{destination.title}</span> &bull; Showcase of royal wedding venues &amp; heritage estates.
+              <span className="text-amber-200 font-extrabold">{destination.title}</span>
+              <span className="mx-2 text-white/40">•</span>
+              <span>{destination.desc}</span>
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
@@ -129,6 +131,20 @@ export default function CityPageLayout({ destination, providedDestinations }: Ci
       {/* 3. MAIN PAGE CONTENT BODY */}
       <main className="max-w-7xl mx-auto w-full px-4 md:px-8 py-8 flex flex-col gap-16 text-left">
 
+        <section id="about" className="flex flex-col gap-4 -mt-4">
+          <div className="rounded-3xl border border-sand bg-white p-6 md:p-8 shadow-sm">
+            <span className="text-[9px] font-black text-indigo uppercase tracking-widest bg-indigo/10 px-3 py-1 rounded-md border border-indigo/20 w-fit">
+              City snapshot
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-serif font-black text-indigo mt-3">
+              About {destination.name}
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-charcoal/75 font-medium max-w-3xl">
+              {destination.history}
+            </p>
+          </div>
+        </section>
+
         {/* SECTION 1: BEST WEDDING PLACES */}
         <section id="venues" className="flex flex-col gap-8 scroll-mt-24">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-sand/80 pb-5">
@@ -141,7 +157,7 @@ export default function CityPageLayout({ destination, providedDestinations }: Ci
               </h2>
             </div>
             <p className="text-xs sm:text-sm text-charcoal/60 font-semibold max-w-md leading-relaxed">
-              Discover iconic heritage palaces, lakeside fort mandaps, and luxury wedding venues in {destination.name}.
+              Signature hotels and palaces used for destination weddings in {destination.name}. Tariffs are 2026 market bands, not live quotes.
             </p>
           </div>
 
@@ -167,14 +183,14 @@ export default function CityPageLayout({ destination, providedDestinations }: Ci
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-sand/80 pb-5">
             <div className="flex flex-col gap-1.5">
               <span className="text-[9px] font-black text-indigo uppercase tracking-widest bg-indigo/10 px-3 py-1 rounded-md border border-indigo/20 w-fit">
-                Palatial Real Estate &amp; Fort Villas
+                Illustrative estate types
               </span>
               <h2 className="text-3xl sm:text-4xl font-serif font-black text-indigo mt-1">
-                Available Wedding Villas &amp; Estates in {destination.name}
+                Wedding estate typologies in {destination.name}
               </h2>
             </div>
             <p className="text-xs sm:text-sm text-charcoal/60 font-semibold max-w-md leading-relaxed">
-              Palatial estates and heritage haveli villas available for purchase or lease, specifically outfitted for hosting private destination weddings.
+              Sample heritage-estate profiles for this market — not live SqftGo listings and not currently for sale here. Live inventory is in the marketplace section below.
             </p>
           </div>
 
@@ -269,8 +285,8 @@ export default function CityPageLayout({ destination, providedDestinations }: Ci
               </div>
 
               <div className="mt-4 p-4.5 rounded-2xl bg-indigo/5 border border-indigo/15 text-xs text-charcoal/80 font-semibold leading-relaxed">
-                <strong className="block text-indigo font-black mb-1.5 text-xs uppercase tracking-wider">Infrastructure Note:</strong>
-                High-demand wedding &amp; heritage zones situated near major lakes, fort corridors, and expressway connections in {destination.name}.
+                <strong className="block text-indigo font-black mb-1.5 text-xs uppercase tracking-wider">Local context:</strong>
+                {destination.desc}
               </div>
             </div>
 

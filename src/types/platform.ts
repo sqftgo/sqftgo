@@ -10,8 +10,27 @@ export type PlatformSettings = {
   maxListingsPerUser: number;
   currencyCode: string;
   analyticsMeasurementId: string | null;
+  /** Admin-managed budget filter dropdowns (buy/rent min/max). */
+  priceRanges: {
+    buyMin: { label: string; value: string }[];
+    buyMax: { label: string; value: string }[];
+    rentMin: { label: string; value: string }[];
+    rentMax: { label: string; value: string }[];
+  } | null;
   updatedAt: string;
   updatedBy: string | null;
+};
+
+/** Public subset of platform settings (no maintenance / analytics secrets). */
+export type PublicPlatformSettings = {
+  siteName: string;
+  tagline: string;
+  supportEmail: string | null;
+  supportPhone: string | null;
+  allowUserListings: boolean;
+  maxListingsPerUser: number;
+  currencyCode: string;
+  priceRanges: PlatformSettings["priceRanges"];
 };
 
 export type PlatformAnalytics = {

@@ -70,7 +70,7 @@ export function AdminKycQueue() {
     <div className="p-6 md:p-8 bg-[#faf8f5] min-h-screen text-charcoal w-full space-y-6">
       <DashboardPageHeader
         title="Dealer KYC reviews"
-        description="Private submissions from dealer_kyc. Approve or reject with a reason."
+        description="Private submissions from dealer_kyc. Approve grants broker access + verified badge; reject marks the directory badge rejected."
       />
 
       {error ? <Alert variant="danger" title="Error" description={error} /> : null}
@@ -146,7 +146,7 @@ export function AdminKycQueue() {
           setAction(null);
         }}
         title={action === "approve" ? "Approve KYC?" : "Reject KYC?"}
-        description="This updates dealer_kyc status and writes an activity log."
+        description="This updates KYC status, dealer role/badge, and writes an activity log."
         confirmLabel={action === "approve" ? "Approve" : "Reject"}
         onConfirm={() => void confirm()}
         tone={action === "reject" ? "danger" : "warning"}

@@ -2,52 +2,51 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
-import type { DirectoryProfile } from "@/types";
-import { 
-  Building, 
-  User, 
-  Tag, 
-  MapPin, 
-  Mail, 
-  Phone, 
-  FileText, 
-  CheckCircle2, 
-  ChevronLeft, 
+import type { ServiceType } from "@/types";
+import {
+  Building,
+  User,
+  Tag,
+  MapPin,
+  Mail,
+  Phone,
+  FileText,
+  CheckCircle2,
+  ChevronLeft,
   Plus,
-  AlertCircle 
+  AlertCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import CustomSelect from "@/components/ui/CustomSelect";
 import { useActiveCities } from "@/hooks/useActiveCities";
-
-const CATEGORIES = [
-  "Agent & Broker",
-  "Builder & Developer",
-  "Interior Decorator",
-  "Architect",
-  "Building Contractor",
-  "Property Consultant",
-  "Vastu Consultant",
-  "Home Valuation/Inspection",
-  "Home Shifting/Deep Cleaning"
-];
+import { servicePlatformService } from "@/services";
+import { isServiceDirectoryCategory } from "@/features/dealers";
 
 export default function RegisterServicePage() {
-  const { addDirectoryProfile, isLoggedIn } = useApp();
+  const router = useRouter();
+  const { addDirectoryProfile, isLoggedIn, sessionReady, userEmail, userName } = useApp();
   const { cities, cityOptionsWithoutAll, locationsReady } = useActiveCities();
+  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
 
-  const [formData, setFormData] = useState<Omit<DirectoryProfile, "id">>({
+  const [formData, setFormData] = useState({
     firmName: "",
     ownerName: "",
-    category: CATEGORIES[0] as DirectoryProfile["category"],
+    serviceTypeId: "",
     city: "",
     address: "",
     email: "",
     website: "",
     mobile: "",
-    description: ""
+    description: "",
+    businessRegistrationId: "",
+    servicesOfferedText: "",
   });
+
+  useEffect(() => {
+    void servicePlatformService.listServiceTypes(false).then(setServiceTypes).catch(() => setServiceTypes([]));
+  }, []);
 
   useEffect(() => {
     if (!locationsReady || cities.length === 0) return;
@@ -55,6 +54,23 @@ export default function RegisterServicePage() {
       setFormData((prev) => ({ ...prev, city: cities[0] ?? "" }));
     }
   }, [locationsReady, cities, formData.city]);
+
+  useEffect(() => {
+    if (!sessionReady) return;
+    if (!isLoggedIn) {
+      router.push(`/login?next=${encodeURIComponent("/services/register")}`);
+    }
+  }, [sessionReady, isLoggedIn, router]);
+
+  useEffect(() => {
+    if (userEmail && !formData.email) {
+      setFormData((prev) => ({
+        ...prev,
+        email: userEmail,
+        ownerName: prev.ownerName || userName || "",
+      }));
+    }
+  }, [userEmail, userName, formData.email]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -68,12 +84,45 @@ export default function RegisterServicePage() {
       setError("Please sign in before registering your firm in the directory.");
       return;
     }
+    const selected = serviceTypes.find((s) => s.id === formData.serviceTypeId);
+    if (!selected || !isServiceDirectoryCategory(selected.name)) {
+      setError("Select a valid service type.");
+      return;
+    }
     setIsSubmitting(true);
     setError(null);
     try {
-      await addDirectoryProfile(formData);
+      const offerings = formData.servicesOfferedText
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      await addDirectoryProfile({
+        firmName: formData.firmName,
+        ownerName: formData.ownerName,
+        category: selected.name,
+        serviceTypeId: selected.id,
+        city: formData.city,
+        address: formData.address,
+        email: formData.email,
+        website: formData.website,
+        mobile: formData.mobile,
+        description: formData.description,
+        servicesOffered: offerings,
+        verificationStatus: "unverified",
+      } as Parameters<typeof addDirectoryProfile>[0]);
+
+      try {
+        await servicePlatformService.submitVerification({
+          businessRegistrationId: formData.businessRegistrationId || null,
+          ownerNotes: "Submitted with service registration",
+        });
+      } catch {
+        // Profile created; verification can be completed on manage page
+      }
+
       setIsSuccess(true);
       setAgreeToVettingPledge(false);
+      setTimeout(() => router.push("/services/manage"), 1200);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to register. Please try again.");
     } finally {
@@ -81,12 +130,18 @@ export default function RegisterServicePage() {
     }
   };
 
+  if (!sessionReady || !isLoggedIn) {
+    return (
+      <div className="container mx-auto px-4 py-20 max-w-lg text-center text-sm font-semibold text-charcoal/60">
+        Sign in required to list your service business…
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 md:px-6 max-w-3xl pb-20 pt-6">
-      
-      {/* Back to directory */}
-      <Link 
-        href="/services" 
+      <Link
+        href="/services"
         className="flex items-center gap-1.5 text-xs font-bold text-charcoal/60 hover:text-terracotta mb-6 transition-colors w-fit"
       >
         <ChevronLeft className="w-4 h-4" />
@@ -101,18 +156,16 @@ export default function RegisterServicePage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
           >
-            {/* Header */}
             <div className="text-center mb-8">
               <h1 className="text-3xl font-serif font-black text-indigo">
                 Register Your Service Business
               </h1>
               <p className="text-sm text-charcoal/65 mt-2">
-                Join our regional business network and reach thousands of homeowners looking for architects, builders, decorators, and moving services.
+                Help relocators in your city find architects, contractors, interiors, and more.
               </p>
             </div>
 
-            {/* Form */}
-            <form 
+            <form
               onSubmit={handleSubmit}
               className="bg-white/95 border border-sand rounded-3xl p-6 md:p-8 shadow-md flex flex-col gap-6"
             >
@@ -120,17 +173,16 @@ export default function RegisterServicePage() {
                 Business Information
               </h2>
 
-              {/* Credential Vetting Notice */}
               <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/15 text-xs text-indigo leading-relaxed flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-terracotta shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-terracotta">Verification Notice:</strong> All registered profiles must upload or email supporting credentials (GST registration document, PAN, or RERA license certificate) to <span className="underline">verify@sqftgo.com</span>. Listings will remain hidden on the search feed until vetted by our verification team.
+                  <strong className="text-terracotta">Verification:</strong> After registering,
+                  submit your business registration details. Admins approve before the verified
+                  badge appears. Your profile stays visible while pending.
                 </div>
               </div>
 
               <div className="flex flex-col gap-5 text-sm font-semibold">
-                
-                {/* Firm Name */}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-indigo flex items-center gap-1.5">
                     <Building className="w-4 h-4 text-terracotta" />
@@ -139,16 +191,13 @@ export default function RegisterServicePage() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Jaipur Royal Architects"
                     value={formData.firmName}
                     onChange={(e) => setFormData({ ...formData, firmName: e.target.value })}
                     className="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-terracotta text-charcoal font-medium"
                   />
                 </div>
 
-                {/* Owner Name & Category */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Owner Name */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-indigo flex items-center gap-1.5">
                       <User className="w-4 h-4 text-terracotta" />
@@ -157,24 +206,22 @@ export default function RegisterServicePage() {
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Vikramaditya Vyas"
                       value={formData.ownerName}
                       onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
                       className="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-terracotta text-charcoal font-medium"
                     />
                   </div>
 
-                  {/* Category select */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-indigo flex items-center gap-1.5">
                       <Tag className="w-4 h-4 text-terracotta" />
-                      <span>Business Category *</span>
+                      <span>Service type *</span>
                     </label>
                     <CustomSelect
-                      options={CATEGORIES.map((cat) => ({ label: cat, value: cat }))}
-                      value={formData.category}
-                      onChange={(val) => setFormData({ ...formData, category: val as DirectoryProfile["category"] })}
-                      placeholder="Select Category"
+                      options={serviceTypes.map((st) => ({ label: st.name, value: st.id }))}
+                      value={formData.serviceTypeId}
+                      onChange={(val) => setFormData({ ...formData, serviceTypeId: val })}
+                      placeholder="Select service type"
                       searchable
                       buttonClassName="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm font-semibold text-charcoal shadow-sm"
                       accent="terracotta"
@@ -182,9 +229,7 @@ export default function RegisterServicePage() {
                   </div>
                 </div>
 
-                {/* City & Address */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* City Selection */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-indigo flex items-center gap-1.5">
                       <MapPin className="w-4 h-4 text-terracotta" />
@@ -200,8 +245,6 @@ export default function RegisterServicePage() {
                       accent="terracotta"
                     />
                   </div>
-                  
-                  {/* Address */}
                   <div className="md:col-span-2 flex flex-col gap-1.5">
                     <label className="text-indigo flex items-center gap-1.5">
                       <MapPin className="w-4 h-4 text-terracotta" />
@@ -210,7 +253,6 @@ export default function RegisterServicePage() {
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Sector 11, Hiran Magri, Udaipur, Rajasthan"
                       value={formData.address}
                       onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       className="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-terracotta text-charcoal font-medium"
@@ -218,34 +260,28 @@ export default function RegisterServicePage() {
                   </div>
                 </div>
 
-                {/* Email & Mobile */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Email */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-indigo flex items-center gap-1.5">
                       <Mail className="w-4 h-4 text-terracotta" />
-                      <span>Email Address *</span>
+                      <span>Email *</span>
                     </label>
                     <input
                       type="email"
                       required
-                      placeholder="contact@jaipurarchitects.in"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       className="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-terracotta text-charcoal font-medium"
                     />
                   </div>
-
-                  {/* Mobile */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-indigo flex items-center gap-1.5">
                       <Phone className="w-4 h-4 text-terracotta" />
-                      <span>Contact Mobile *</span>
+                      <span>Mobile *</span>
                     </label>
                     <input
                       type="tel"
                       required
-                      placeholder="e.g. +91 94140 12345"
                       value={formData.mobile}
                       onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
                       className="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-terracotta text-charcoal font-medium"
@@ -253,25 +289,46 @@ export default function RegisterServicePage() {
                   </div>
                 </div>
 
-                {/* Work Description */}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-indigo flex items-center gap-1.5">
                     <FileText className="w-4 h-4 text-terracotta" />
-                    <span>Work Description *</span>
+                    <span>Work description *</span>
                   </label>
                   <textarea
                     rows={4}
                     required
-                    placeholder="Provide a comprehensive description of the services, styles, project capacities, and past works your firm manages..."
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-terracotta text-charcoal font-medium resize-none"
                   />
                 </div>
 
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-indigo text-sm">Services offered (comma-separated)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Full home interiors, Modular kitchen, Vastu audit"
+                    value={formData.servicesOfferedText}
+                    onChange={(e) =>
+                      setFormData({ ...formData, servicesOfferedText: e.target.value })
+                    }
+                    className="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-terracotta text-charcoal font-medium"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-indigo text-sm">Business registration / GST ID</label>
+                  <input
+                    type="text"
+                    value={formData.businessRegistrationId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, businessRegistrationId: e.target.value })
+                    }
+                    className="w-full bg-white border border-sand rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-terracotta text-charcoal font-medium"
+                  />
+                </div>
               </div>
 
-              {/* Vetting Pledge Checkbox */}
               <div className="flex items-start gap-2.5 text-xs font-semibold select-none cursor-pointer mt-1">
                 <input
                   id="agreeToVettingPledge"
@@ -282,7 +339,7 @@ export default function RegisterServicePage() {
                   className="mt-0.5 w-4 h-4 accent-terracotta shrink-0 cursor-pointer"
                 />
                 <label htmlFor="agreeToVettingPledge" className="cursor-pointer leading-tight text-left text-charcoal/70">
-                  I pledge that all provided business credentials are legally accurate and agree to submit matching verification proofs to the SqftGo vetting coordinators. *
+                  I confirm the business details are accurate and agree to SqftGo verification. *
                 </label>
               </div>
 
@@ -292,70 +349,37 @@ export default function RegisterServicePage() {
                 </p>
               ) : null}
 
-              {/* Submit button */}
               <button
                 type="submit"
-                disabled={isSubmitting || !agreeToVettingPledge}
-                className="mt-2 py-3 w-full bg-indigo hover:bg-indigo-hover text-white font-extrabold rounded-xl shadow-md flex items-center justify-center gap-2 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-55 disabled:pointer-events-none transition-all duration-200 cursor-pointer"
+                disabled={isSubmitting || !agreeToVettingPledge || !formData.serviceTypeId}
+                className="mt-2 py-3 w-full bg-indigo hover:bg-indigo-hover text-white font-extrabold rounded-xl shadow-md flex items-center justify-center gap-2 disabled:opacity-55 disabled:pointer-events-none transition-all cursor-pointer"
               >
-                {isSubmitting ? (
-                  <>
-                    <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    <span>Registering Firm...</span>
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-4.5 h-4.5" />
-                    <span>Save Directory Profile</span>
-                  </>
-                )}
+                <Plus className="w-4 h-4" />
+                <span>{isSubmitting ? "Submitting…" : "Create service profile"}</span>
               </button>
-
             </form>
           </motion.div>
         ) : (
           <motion.div
-            key="register-success"
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="max-w-xl mx-auto rounded-3xl glassmorphism border border-sand p-10 text-center shadow-2xl mt-12"
+            key="success"
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white border border-sand rounded-3xl p-10 text-center shadow-md"
           >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-              className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 mb-6 mx-auto shadow-inner"
-            >
-              <CheckCircle2 className="w-10 h-10" />
-            </motion.div>
-            
-            <h2 className="font-serif font-black text-2xl text-indigo mb-3">Firm Registered Successfully!</h2>
-            
-            <p className="text-sm text-charcoal/70 leading-relaxed mb-8">
-              Your profile for <span className="font-extrabold text-terracotta">{formData.firmName}</span> has been saved to the professional services network. Homeowners can now filter and view your profile details.
+            <CheckCircle2 className="w-14 h-14 text-emerald-500 mx-auto mb-4" />
+            <h2 className="font-serif font-black text-2xl text-indigo mb-2">Profile created</h2>
+            <p className="text-sm text-charcoal/60 font-semibold mb-6">
+              Taking you to your service manage page…
             </p>
-
-            <div className="flex flex-col sm:flex-row gap-3.5 w-full justify-center">
-              <Link
-                href="/services"
-                className="px-6 py-3 bg-indigo hover:bg-indigo-hover text-white font-bold text-sm rounded-xl transition-colors shadow-sm"
-              >
-                Go to Services Directory
-              </Link>
-              <Link
-                href="/"
-                className="px-6 py-3 border border-sand bg-white text-charcoal font-bold text-sm rounded-xl hover:bg-sand/20 transition-colors"
-              >
-                Return to Homepage
-              </Link>
-            </div>
+            <Link
+              href="/services/manage"
+              className="inline-flex px-6 py-3 rounded-xl bg-terracotta text-white text-sm font-bold"
+            >
+              Open manage page
+            </Link>
           </motion.div>
         )}
       </AnimatePresence>
-
     </div>
   );
 }

@@ -24,7 +24,7 @@ import DestinationCard from "@/features/destinations/components/DestinationCard"
 export default function DestinationsPage() {
   const { properties, selectedCity, locations } = useApp();
   const [activeFilter, setActiveFilter] = useState("All");
-  const [limitToSelectedCityRegion, setLimitToSelectedCityRegion] = useState(true);
+  const [limitToSelectedCityRegion, setLimitToSelectedCityRegion] = useState(false);
   const [onlyWeddingDestinations, setOnlyWeddingDestinations] = useState(false);
 
   const [viewMode, setViewMode] = useState<"grid" | "compact">("grid");
@@ -113,6 +113,21 @@ export default function DestinationsPage() {
               suppressHydrationWarning
             >
               Show all regions
+            </button>
+          </div>
+        )}
+
+        {!limitToSelectedCityRegion && selectedCityRegion !== "All" && (
+          <div className="mb-8 p-4 rounded-sm bg-sand/30 border border-sand flex flex-col sm:flex-row items-center justify-between gap-3 text-xs md:text-sm font-semibold text-indigo animate-fade-in">
+            <span>
+              Showing every active destination city. Your navbar city is <strong className="text-terracotta">{selectedCity}</strong> ({selectedCityRegion}).
+            </span>
+            <button
+              onClick={() => setLimitToSelectedCityRegion(true)}
+              className="px-4 py-1.5 rounded-xl bg-white border border-sand hover:bg-sand/30 text-xs font-bold text-charcoal transition-all shadow-sm cursor-pointer shrink-0"
+              suppressHydrationWarning
+            >
+              Show {selectedCityRegion} only
             </button>
           </div>
         )}

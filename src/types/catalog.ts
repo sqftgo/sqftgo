@@ -40,13 +40,30 @@ export interface ActivityLog {
   timestamp: string;
 }
 
+export type DirectoryVerificationStatus =
+  | "unverified"
+  | "pending"
+  | "verified"
+  | "rejected";
+
+export interface ServiceType {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  active: boolean;
+  sortOrder: number;
+}
+
 export interface DirectoryProfile {
   id: string;
   /** Linked auth/profiles id when the directory card is claimed. */
   userId?: string | null;
   firmName: string;
   ownerName: string;
-  category: "Agent & Broker" | "Builder & Developer" | "Interior Decorator" | "Architect" | "Building Contractor" | "Property Consultant" | "Vastu Consultant" | "Home Valuation/Inspection" | "Home Shifting/Deep Cleaning";
+  /** Dealer enum-legacy values or service type name. */
+  category: string;
+  serviceTypeId?: string | null;
   city: string;
   address: string;
   email: string;
@@ -58,4 +75,58 @@ export interface DirectoryProfile {
   specialties?: string[];
   teamSize?: number;
   listingsCount?: number;
+  verificationStatus?: DirectoryVerificationStatus;
+  listingActive?: boolean;
+  lat?: number | null;
+  lng?: number | null;
+  coverImageUrl?: string | null;
+  logoUrl?: string | null;
+  businessHours?: Record<string, string> | null;
+  servicesOffered?: string[];
+}
+
+export type ServiceBookingStatus = "pending" | "confirmed" | "cancelled" | "completed";
+
+export interface ServiceBooking {
+  id: string;
+  directoryProfileId: string;
+  userId: string;
+  preferredAt: string;
+  message: string;
+  contactPhone: string;
+  status: ServiceBookingStatus;
+  ownerNotes: string;
+  createdAt: string;
+  /** Optional join fields for UI */
+  firmName?: string;
+  city?: string;
+}
+
+export type ServiceVerificationStatus = "draft" | "pending" | "approved" | "rejected";
+
+export interface ServiceVerificationDocument {
+  id: string;
+  verificationId: string;
+  docType: "business_license" | "gst_certificate" | "owner_id" | "other";
+  storagePath: string;
+  fileName: string;
+  createdAt: string;
+}
+
+export interface ServiceVerification {
+  id: string;
+  directoryProfileId: string;
+  userId: string;
+  status: ServiceVerificationStatus;
+  businessRegistrationId?: string | null;
+  ownerNotes: string;
+  adminNotes: string;
+  rejectionReason?: string | null;
+  submittedAt?: string | null;
+  reviewedAt?: string | null;
+  documents?: ServiceVerificationDocument[];
+  firmName?: string;
+  ownerName?: string;
+  city?: string;
+  category?: string;
 }

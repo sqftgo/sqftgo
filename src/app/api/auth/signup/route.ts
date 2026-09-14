@@ -3,7 +3,7 @@ import type { ProfileRow } from "@/types/database";
 import { createRouteClient } from "@/lib/supabase/route";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { jsonError } from "@/lib/api/auth";
-import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { skipEmailConfirmEnabled } from "@/lib/auth/email-confirm";
 import { enforceAuthRateLimit } from "@/lib/auth/rate-limit";
 import { getSiteUrl } from "@/lib/auth/urls";
@@ -13,7 +13,25 @@ type SignupBody = {
   email?: string;
   password?: string;
   name?: string;
+  /** Dealer registration grants broker role after profile creation. */
+  intent?: "user" | "dealer";
 };
+
+async function promoteDealerIfNeeded(
+  userId: string,
+  intent: "user" | "dealer" | undefined
+): Promise<"user" | "broker" | "admin" | null> {
+  if (intent !== "dealer" || !hasServiceRoleKey()) return null;
+  const admin = createServiceClient();
+  const { data } = await admin
+    .from("profiles")
+    .update({ role: "broker" })
+    .eq("id", userId)
+    .eq("role", "user")
+    .select("role")
+    .maybeSingle();
+  return (data?.role as "user" | "broker" | "admin" | undefined) ?? "broker";
+}
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -61,6 +79,7 @@ export async function POST(request: NextRequest) {
   const email = body.email?.trim().toLowerCase() ?? "";
   const password = body.password ?? "";
   const name = body.name?.trim() ?? "";
+  const intent = body.intent === "dealer" ? "dealer" : "user";
 
   if (!email || !password || !name) {
     return jsonError("All fields are required");
@@ -86,7 +105,7 @@ export async function POST(request: NextRequest) {
       email,
       password,
       email_confirm: true,
-      user_metadata: { name },
+      user_metadata: { name, intent },
     });
 
     if (createError || !created.user) {
@@ -113,6 +132,9 @@ export async function POST(request: NextRequest) {
       profile = { ...profile, name };
     }
 
+    const promoted = await promoteDealerIfNeeded(created.user.id, intent);
+    if (promoted) profile = { ...profile, role: promoted };
+
     return applyCookies(
       NextResponse.json(authSessionPayload(profile, signInData.session?.access_token), {
         status: 201,
@@ -120,12 +142,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const dealerNext =
+    intent === "dealer" ? "/dealer/dashboard" : "/";
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { name },
-      emailRedirectTo: `${siteUrl}/auth/callback?next=/`,
+      data: { name, intent },
+      emailRedirectTo: `${siteUrl}/auth/callback?next=${encodeURIComponent(dealerNext)}`,
     },
   });
 
@@ -157,6 +181,9 @@ export async function POST(request: NextRequest) {
     await supabase.from("profiles").update({ name }).eq("id", data.user.id);
     profile = { ...profile, name };
   }
+
+  const promoted = await promoteDealerIfNeeded(data.user.id, intent);
+  if (promoted) profile = { ...profile, role: promoted };
 
   return applyCookies(
     NextResponse.json(

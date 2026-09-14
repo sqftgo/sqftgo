@@ -166,8 +166,9 @@ export async function POST(request: NextRequest) {
       .limit(1)
       .maybeSingle();
 
-    if (settings?.require_listing_approval && status !== "Draft") {
-      status = "Pending Review";
+    const requireApproval = settings?.require_listing_approval !== false;
+    if (status !== "Draft") {
+      status = requireApproval ? "Pending Review" : "Active";
     }
 
     const max = settings?.max_listings_per_dealer;

@@ -43,8 +43,8 @@ export default function WeddingEstateCard({ property, onInquire }: WeddingEstate
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
         <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_0_1px_oklch(0_0_0/0.10)]" />
 
-        <span className="absolute top-3 left-3 z-10 max-w-[calc(100%-1.5rem)] truncate rounded-full border border-white/15 bg-black/60 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-amber-200 backdrop-blur-md">
-          {property.propertyType}
+        <span className="absolute top-3 left-3 z-10 max-w-[calc(100%-1.5rem)] truncate rounded-full border border-amber-400/40 bg-black/70 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-amber-200 backdrop-blur-md">
+          Illustrative · {property.propertyType}
         </span>
 
         <p className="absolute bottom-3 left-3 right-3 z-10 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-200">
@@ -59,10 +59,13 @@ export default function WeddingEstateCard({ property, onInquire }: WeddingEstate
             <h3 className="min-w-0 font-serif text-xl font-black leading-tight tracking-tight text-indigo md:text-[1.35rem]">
               {property.title}
             </h3>
-            <span className="shrink-0 rounded-full bg-emerald-700 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white">
-              {property.price}
+            <span className="shrink-0 rounded-full bg-charcoal/80 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white">
+              Example {property.price}
             </span>
           </div>
+          <p className="text-[10px] font-black uppercase tracking-wider text-amber-800">
+            Not a live SqftGo listing
+          </p>
           <p className="line-clamp-2 text-[13px] leading-relaxed text-charcoal/65">
             {property.description}
           </p>
@@ -104,7 +107,7 @@ export default function WeddingEstateCard({ property, onInquire }: WeddingEstate
           className="mt-auto flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-terracotta text-[11px] font-black uppercase tracking-widest text-white shadow-[0_8px_20px_oklch(0.55_0.14_40/0.28)] transition-[transform,background-color] duration-200 hover:bg-terracotta-hover active:scale-[0.96]"
         >
           <ShieldCheck className="h-3.5 w-3.5 text-amber-200" />
-          Schedule Private Tour
+          Ask about similar estates
         </button>
       </div>
     </article>

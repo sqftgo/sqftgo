@@ -3,30 +3,38 @@
 import { useEffect, useState } from "react";
 import {
   DEFAULT_PRICE_RANGES,
-  PRICE_RANGES_STORAGE_KEY,
-  loadPriceRanges,
   type PriceRangeConfig,
 } from "@/features/admin/data/priceRanges";
+import { platformService } from "@/services/platform";
 
 /**
- * Client-side budget dropdown options for listing filters.
- * Falls back to defaults until localStorage config hydrates.
+ * Budget dropdown options for listing filters — loaded from platform settings.
  */
 export function useBudgetPriceOptions(): PriceRangeConfig {
   const [options, setOptions] = useState<PriceRangeConfig>(DEFAULT_PRICE_RANGES);
 
   useEffect(() => {
-    const refresh = () => setOptions(loadPriceRanges());
-    refresh();
+    let cancelled = false;
 
-    const onStorage = (event: StorageEvent) => {
-      if (event.key === PRICE_RANGES_STORAGE_KEY) refresh();
+    const refresh = async () => {
+      try {
+        const settings = await platformService.getPublicSettings();
+        if (!cancelled && settings.priceRanges) {
+          setOptions(settings.priceRanges);
+        }
+      } catch {
+        if (!cancelled) setOptions(DEFAULT_PRICE_RANGES);
+      }
     };
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("sqftgo:price-ranges-updated", refresh);
+
+    void refresh();
+    const onUpdate = () => {
+      void refresh();
+    };
+    window.addEventListener("sqftgo:price-ranges-updated", onUpdate);
     return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("sqftgo:price-ranges-updated", refresh);
+      cancelled = true;
+      window.removeEventListener("sqftgo:price-ranges-updated", onUpdate);
     };
   }, []);
 

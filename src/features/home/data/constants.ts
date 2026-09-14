@@ -8,6 +8,7 @@ export const CITIES = [
   "Ahmedabad",
   "Surat",
   "Bikaner",
+  "Shimla",
 ];
 
 export const PROPERTY_TYPES = [

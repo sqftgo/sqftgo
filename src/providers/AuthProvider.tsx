@@ -28,6 +28,7 @@ type AuthContextValue = {
     name: string;
     email: string;
     password: string;
+    intent?: "user" | "dealer";
   }) => Promise<
     | { status: "authenticated"; session: AuthSession }
     | { status: "confirm_email"; email: string; message: string }
@@ -168,7 +169,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const signup = useCallback(
-    async (input: { name: string; email: string; password: string }) => {
+    async (input: {
+      name: string;
+      email: string;
+      password: string;
+      intent?: "user" | "dealer";
+    }) => {
       const result = await authService.signup(input);
       if (result.status === "authenticated") {
         applySession(result.session);

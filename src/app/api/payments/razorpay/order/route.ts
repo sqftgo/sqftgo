@@ -1,11 +1,8 @@
 import { type NextRequest } from "next/server";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
 import { enforceRateLimit } from "@/lib/auth/rate-limit";
-import {
-  createRazorpayOrder,
-  getRazorpayKeyId,
-  hasRazorpayConfig,
-} from "@/lib/payments/razorpay";
+import { createRazorpayOrder } from "@/lib/razorpay/client";
+import { getRazorpayKeyIdPublic, isRazorpayConfigured } from "@/lib/razorpay/config";
 import type { ListingPlanRow } from "@/lib/payments/listing-orders";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
@@ -15,7 +12,7 @@ export async function POST(request: NextRequest) {
   if (!hasServiceRoleKey()) {
     return jsonError("SUPABASE_SERVICE_ROLE_KEY is required.", 503);
   }
-  if (!hasRazorpayConfig()) {
+  if (!isRazorpayConfigured()) {
     return jsonError("Razorpay is not configured. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.", 503);
   }
 
@@ -80,6 +77,7 @@ export async function POST(request: NextRequest) {
         dealer_id: user.id,
         plan_id: row.id,
         plan_slug: row.slug,
+        purpose: "listing_pack",
       },
     });
 
@@ -94,7 +92,7 @@ export async function POST(request: NextRequest) {
       razorpayOrderId: rzp.id,
       amountPaise: row.price_paise,
       currency: "INR",
-      keyId: getRazorpayKeyId(),
+      keyId: getRazorpayKeyIdPublic(),
       planName: row.name,
       slots: row.slots,
       prefill: {

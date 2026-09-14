@@ -114,16 +114,80 @@ export type ProjectUpdate = Partial<ProjectInsert>;
 
 export type InquiryStatusDb = "new" | "read" | "archived";
 
-export type DirectoryCategoryDb =
-  | "Agent & Broker"
-  | "Builder & Developer"
-  | "Interior Decorator"
-  | "Architect"
-  | "Building Contractor"
-  | "Property Consultant"
-  | "Vastu Consultant"
-  | "Home Valuation/Inspection"
-  | "Home Shifting/Deep Cleaning";
+/** Kept as string after services platform migration (was enum). */
+export type DirectoryCategoryDb = string;
+
+export type DirectoryVerificationStatusDb =
+  | "unverified"
+  | "pending"
+  | "verified"
+  | "rejected";
+
+export type ServiceVerificationStatusDb = "draft" | "pending" | "approved" | "rejected";
+
+export type ServiceBookingStatusDb = "pending" | "confirmed" | "cancelled" | "completed";
+
+export type ServiceTypeRow = {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ServiceTypeInsert = {
+  id?: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  active?: boolean;
+  sort_order?: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ServiceTypeUpdate = Partial<ServiceTypeInsert>;
+
+export type ServiceVerificationRow = {
+  id: string;
+  directory_profile_id: string;
+  user_id: string;
+  status: ServiceVerificationStatusDb;
+  business_registration_id: string | null;
+  owner_notes: string;
+  admin_notes: string;
+  rejection_reason: string | null;
+  submitted_at: string | null;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ServiceVerificationDocumentRow = {
+  id: string;
+  verification_id: string;
+  doc_type: "business_license" | "gst_certificate" | "owner_id" | "other";
+  storage_path: string;
+  file_name: string;
+  created_at: string;
+};
+
+export type ServiceBookingRow = {
+  id: string;
+  directory_profile_id: string;
+  user_id: string;
+  preferred_at: string;
+  message: string;
+  contact_phone: string;
+  status: ServiceBookingStatusDb;
+  owner_notes: string;
+  created_at: string;
+  updated_at: string;
+};
 
 export type AssistanceStatusDb =
   | "Received"
@@ -311,6 +375,15 @@ export type DirectoryProfileRow = {
   specialties: string[];
   team_size: number | null;
   listings_count: number;
+  service_type_id: string | null;
+  verification_status: DirectoryVerificationStatusDb;
+  listing_active: boolean;
+  lat: number | null;
+  lng: number | null;
+  cover_image_url: string | null;
+  logo_url: string | null;
+  business_hours: Record<string, string> | null;
+  services_offered: string[];
   created_at: string;
   updated_at: string;
 };
@@ -332,6 +405,15 @@ export type DirectoryProfileInsert = {
   specialties?: string[];
   team_size?: number | null;
   listings_count?: number;
+  service_type_id?: string | null;
+  verification_status?: DirectoryVerificationStatusDb;
+  listing_active?: boolean;
+  lat?: number | null;
+  lng?: number | null;
+  cover_image_url?: string | null;
+  logo_url?: string | null;
+  business_hours?: Record<string, string> | null;
+  services_offered?: string[];
   created_at?: string;
   updated_at?: string;
 };
@@ -701,6 +783,7 @@ export type PlatformSettingsRow = {
   max_listings_per_user: number;
   currency_code: string;
   analytics_measurement_id: string | null;
+  price_ranges: Record<string, unknown> | null;
   updated_at: string;
   updated_by: string | null;
 };
@@ -717,6 +800,7 @@ export type PlatformSettingsUpdate = {
   max_listings_per_user?: number;
   currency_code?: string;
   analytics_measurement_id?: string | null;
+  price_ranges?: Record<string, unknown> | null;
   updated_at?: string;
   updated_by?: string | null;
 };
@@ -835,6 +919,101 @@ export type ListingOrderInsert = {
 
 export type ListingOrderUpdate = Partial<ListingOrderInsert>;
 
+export type SubscriptionPlanDb = "starter" | "professional" | "enterprise";
+export type SubscriptionStatusDb =
+  | "inactive"
+  | "pending"
+  | "active"
+  | "past_due"
+  | "cancelled"
+  | "expired";
+export type SubscriptionPaymentStatusDb =
+  | "created"
+  | "attempted"
+  | "paid"
+  | "failed"
+  | "refunded";
+
+export type DealerSubscriptionRow = {
+  id: string;
+  user_id: string;
+  plan: SubscriptionPlanDb;
+  status: SubscriptionStatusDb;
+  billing_cycle: string;
+  amount_paise: number;
+  currency: string;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  razorpay_customer_id: string | null;
+  razorpay_subscription_id: string | null;
+  razorpay_payment_id: string | null;
+  last_payment_id: string | null;
+  metadata: Json;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DealerSubscriptionInsert = {
+  id?: string;
+  user_id: string;
+  plan: SubscriptionPlanDb;
+  status?: SubscriptionStatusDb;
+  billing_cycle?: string;
+  amount_paise?: number;
+  currency?: string;
+  current_period_start?: string | null;
+  current_period_end?: string | null;
+  cancel_at_period_end?: boolean;
+  razorpay_customer_id?: string | null;
+  razorpay_subscription_id?: string | null;
+  razorpay_payment_id?: string | null;
+  last_payment_id?: string | null;
+  metadata?: Json;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type DealerSubscriptionUpdate = Partial<DealerSubscriptionInsert>;
+
+export type DealerSubscriptionPaymentRow = {
+  id: string;
+  user_id: string;
+  subscription_id: string | null;
+  plan: SubscriptionPlanDb;
+  amount_paise: number;
+  currency: string;
+  status: SubscriptionPaymentStatusDb;
+  razorpay_order_id: string;
+  razorpay_payment_id: string | null;
+  razorpay_signature: string | null;
+  receipt: string | null;
+  notes: Json;
+  paid_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DealerSubscriptionPaymentInsert = {
+  id?: string;
+  user_id: string;
+  subscription_id?: string | null;
+  plan: SubscriptionPlanDb;
+  amount_paise: number;
+  currency?: string;
+  status?: SubscriptionPaymentStatusDb;
+  razorpay_order_id: string;
+  razorpay_payment_id?: string | null;
+  razorpay_signature?: string | null;
+  receipt?: string | null;
+  notes?: Json;
+  paid_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type DealerSubscriptionPaymentUpdate = Partial<DealerSubscriptionPaymentInsert>;
+
 export type Database = {
   public: {
     Tables: {
@@ -934,6 +1113,43 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      service_types: {
+        Row: ServiceTypeRow;
+        Insert: ServiceTypeInsert;
+        Update: ServiceTypeUpdate;
+        Relationships: [];
+      };
+      service_verifications: {
+        Row: ServiceVerificationRow;
+        Insert: Partial<ServiceVerificationRow> & {
+          directory_profile_id: string;
+          user_id: string;
+        };
+        Update: Partial<ServiceVerificationRow>;
+        Relationships: [];
+      };
+      service_verification_documents: {
+        Row: ServiceVerificationDocumentRow;
+        Insert: Omit<ServiceVerificationDocumentRow, "id" | "created_at"> & {
+          id?: string;
+          created_at?: string;
+        };
+        Update: Partial<ServiceVerificationDocumentRow>;
+        Relationships: [];
+      };
+      service_bookings: {
+        Row: ServiceBookingRow;
+        Insert: Omit<ServiceBookingRow, "id" | "created_at" | "updated_at" | "status" | "owner_notes" | "message"> & {
+          id?: string;
+          message?: string;
+          status?: ServiceBookingStatusDb;
+          owner_notes?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<ServiceBookingRow>;
+        Relationships: [];
       };
       assistance_requests: {
         Row: AssistanceRequestRow;
@@ -1109,6 +1325,34 @@ export type Database = {
           },
         ];
       };
+      dealer_subscriptions: {
+        Row: DealerSubscriptionRow;
+        Insert: DealerSubscriptionInsert;
+        Update: DealerSubscriptionUpdate;
+        Relationships: [
+          {
+            foreignKeyName: "dealer_subscriptions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      dealer_subscription_payments: {
+        Row: DealerSubscriptionPaymentRow;
+        Insert: DealerSubscriptionPaymentInsert;
+        Update: DealerSubscriptionPaymentUpdate;
+        Relationships: [
+          {
+            foreignKeyName: "dealer_subscription_payments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1137,6 +1381,9 @@ export type Database = {
       visit_status: VisitStatusDb;
       message_thread_kind: MessageThreadKindDb;
       message_thread_status: MessageThreadStatusDb;
+      subscription_plan: SubscriptionPlanDb;
+      subscription_status: SubscriptionStatusDb;
+      subscription_payment_status: SubscriptionPaymentStatusDb;
     };
     CompositeTypes: {
       [_ in never]: never;

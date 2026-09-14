@@ -3,33 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui";
 import { listingPlanApi } from "@/services/listing-plans";
+import { openRazorpayCheckout } from "@/lib/razorpay/checkout";
 import type { ListingPlan } from "@/types/listing-plan";
-
-declare global {
-  interface Window {
-    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
-  }
-}
-
-function loadCheckoutScript(): Promise<void> {
-  if (typeof window === "undefined") return Promise.reject(new Error("Browser only"));
-  if (window.Razorpay) return Promise.resolve();
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector("script[data-razorpay-checkout]");
-    if (existing) {
-      existing.addEventListener("load", () => resolve());
-      existing.addEventListener("error", () => reject(new Error("Razorpay failed to load")));
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    script.dataset.razorpayCheckout = "1";
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Razorpay failed to load"));
-    document.body.appendChild(script);
-  });
-}
 
 type Props = {
   plan: ListingPlan;
@@ -45,26 +20,22 @@ export function BuyListingPlanButton({ plan, onPaid }: Props) {
     setBusy(true);
     try {
       const order = await listingPlanApi.createOrder(plan.id);
-      if (!order.keyId) {
-        throw new Error("Razorpay public key is missing. Add NEXT_PUBLIC_RAZORPAY_KEY_ID.");
+      const keyId = order.keyId;
+      if (!keyId) {
+        throw new Error("Razorpay is not configured. Add RAZORPAY_KEY_ID on the server.");
       }
-      await loadCheckoutScript();
-      if (!window.Razorpay) throw new Error("Razorpay checkout is unavailable");
 
       await new Promise<void>((resolve, reject) => {
-        const checkout = new window.Razorpay!({
-          key: order.keyId,
+        void openRazorpayCheckout({
+          key: keyId,
           amount: order.amountPaise,
           currency: order.currency,
           name: "SqftGo",
           description: `${plan.name} · +${plan.slots} listings`,
           order_id: order.razorpayOrderId,
           prefill: order.prefill,
-          handler: async (response: {
-            razorpay_order_id: string;
-            razorpay_payment_id: string;
-            razorpay_signature: string;
-          }) => {
+          theme: { color: "#2F3A5F" },
+          handler: async (response) => {
             try {
               await listingPlanApi.verifyPayment({
                 razorpayOrderId: response.razorpay_order_id,
@@ -79,8 +50,7 @@ export function BuyListingPlanButton({ plan, onPaid }: Props) {
           modal: {
             ondismiss: () => reject(new Error("Payment cancelled")),
           },
-        });
-        checkout.open();
+        }).catch(reject);
       });
       onPaid();
     } catch (err) {

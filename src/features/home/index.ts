@@ -5,7 +5,6 @@ export { HomeDealerProjects } from "./components/HomeDealerProjects";
 export { HomeProminentProjects } from "./components/HomeProminentProjects";
 export { HomeHighlightedProjects } from "./components/HomeHighlightedProjects";
 export { HomeTrustedDevelopers } from "./components/HomeTrustedDevelopers";
-export { HomeRecommendedSellers } from "./components/HomeRecommendedSellers";
 export { HomeNewlyAdded } from "./components/HomeNewlyAdded";
 export { HomeSellCta } from "./components/HomeSellCta";
 export { HomeShortlistToast } from "./components/HomeShortlistToast";

@@ -47,7 +47,7 @@ export default function DealerSettingsPage() {
     timezone: "Asia/Kolkata",
   });
 
-  const set = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: string, v: unknown) => setForm((f) => ({ ...f, [k]: v }));
 
   const handleSave = (e?: React.FormEvent) => {
     e?.preventDefault();

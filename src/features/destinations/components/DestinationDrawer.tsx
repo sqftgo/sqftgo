@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { X, Star, TrendingUp, MapPin, BookOpen, Phone, ExternalLink, Compass, Sparkles, HeartHandshake, ShieldCheck, ArrowRight } from "lucide-react";
+import { X, Star, TrendingUp, MapPin, BookOpen, ExternalLink, Compass, Sparkles, HeartHandshake, ShieldCheck, ArrowRight } from "lucide-react";
 import { Destination, WeddingVenue, WeddingProperty } from "../data/destinations";
 import { destinationListingsHref, destinationSlug } from "../logic";
 import WeddingInquiryModal from "./WeddingInquiryModal";
@@ -187,7 +187,7 @@ export default function DestinationDrawer({
                   <strong className="block text-indigo font-black text-xs uppercase tracking-wider">
                     Unique Wedding Properties in {selectedDestination.name}
                   </strong>
-                  Palatial estates, heritage havelis, and fort villas available for sale or long-term lease, specifically outfitted for hosting destination weddings.
+                  Palatial estates, heritage havelis, and fort villas shown as market typologies — not live SqftGo listings.
                 </div>
               </div>
 
@@ -247,28 +247,13 @@ export default function DestinationDrawer({
                 </p>
               </div>
 
-              {/* Designated City Concierge Agent Lead */}
               <div className="bg-charcoal border border-white/5 rounded-3xl p-5 flex items-center gap-4 text-white mt-auto relative overflow-hidden shadow-lg">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo/10 rounded-full blur-2xl pointer-events-none" />
-                
-                {/* Initials Avatar */}
-                <div className="w-12 h-12 rounded-2xl bg-indigo text-white flex items-center justify-center font-extrabold text-base shadow-lg shadow-indigo/20 border border-white/10 flex-shrink-0">
-                  {selectedDestination.agentName.charAt(0)}
-                </div>
-                
                 <div className="flex-1 flex flex-col min-w-0">
-                  <span className="text-[8px] font-black text-gold uppercase tracking-widest">Designated Concierge Lead</span>
-                  <span className="text-sm font-serif font-black text-white truncate">{selectedDestination.agentName}</span>
-                  <span className="text-[10px] text-white/50 font-semibold">{selectedDestination.agentPhone}</span>
+                  <span className="text-[8px] font-black text-gold uppercase tracking-widest">Wedding enquiry</span>
+                  <span className="text-sm font-serif font-black text-white truncate">Ask SqftGo about {selectedDestination.name}</span>
+                  <span className="text-[10px] text-white/50 font-semibold">Use the venue cards to send a verified enquiry — we do not publish personal agent numbers here.</span>
                 </div>
-
-                <a 
-                  href={`tel:${selectedDestination.agentPhone}`}
-                  className="p-2.5 rounded-xl bg-white/10 hover:bg-white text-white hover:text-charcoal transition-all border border-white/10 hover:scale-105"
-                  title="Call Lead Agent"
-                >
-                  <Phone className="w-4 h-4" />
-                </a>
               </div>
             </>
           )}

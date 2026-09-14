@@ -12,7 +12,21 @@ export type {
   CustomerReview,
   PropertyInquiryView,
 } from "./inquiry";
-export type { Notification, Category, Location, Amenity, ActivityLog, DirectoryProfile } from "./catalog";
+export type {
+  Notification,
+  Category,
+  Location,
+  Amenity,
+  ActivityLog,
+  DirectoryProfile,
+  DirectoryVerificationStatus,
+  ServiceType,
+  ServiceBooking,
+  ServiceBookingStatus,
+  ServiceVerification,
+  ServiceVerificationStatus,
+  ServiceVerificationDocument,
+} from "./catalog";
 export type { VisitBooking, VisitStatusUi } from "./visit";
 export type {
   MessageThread,
@@ -29,7 +43,14 @@ export type {
   DealerKycDocument,
   DealerKycRecord,
 } from "./kyc";
-export type { PlatformSettings, PlatformAnalytics, DealerAnalytics } from "./platform";
+export type { PlatformSettings, PublicPlatformSettings, PlatformAnalytics, DealerAnalytics } from "./platform";
+export type {
+  PartnerPlanId,
+  SubscriptionStatusUi,
+  DealerSubscriptionRecord,
+  DealerSubscriptionPaymentRecord,
+  SubscriptionOverview,
+} from "./billing";
 export type {
   ListingFilter,
   ListingFilterKind,

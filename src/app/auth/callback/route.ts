@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/admin";
+import { hasServiceRoleKey } from "@/lib/supabase/env";
 import { getSiteUrl, safeRedirectPath } from "@/lib/auth/urls";
 
 /**
@@ -31,11 +33,22 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${site}/update-password`);
   }
 
-  // Default home → send dealers/admins to their portals after Google/email confirm
-  if (next === "/") {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Dealer signup stores intent in user_metadata; promote after email confirm.
+  if (user && user.user_metadata?.intent === "dealer" && hasServiceRoleKey()) {
+    const admin = createServiceClient();
+    await admin
+      .from("profiles")
+      .update({ role: "broker" })
+      .eq("id", user.id)
+      .eq("role", "user");
+  }
+
+  // Send dealers/admins to their portals after Google/email confirm
+  if (next === "/" || next === "/dealer/dashboard") {
     if (user) {
       const { data: profile } = await supabase
         .from("profiles")
@@ -43,7 +56,9 @@ export async function GET(request: Request) {
         .eq("id", user.id)
         .maybeSingle();
       if (profile?.role === "admin") next = "/admin";
-      else if (profile?.role === "broker") next = "/dealer/dashboard";
+      else if (profile?.role === "broker" || user.user_metadata?.intent === "dealer") {
+        next = "/dealer/dashboard";
+      }
     }
   }
 

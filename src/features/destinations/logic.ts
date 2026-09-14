@@ -2,6 +2,8 @@ import type { Property } from "@/types";
 import { ALL_INDIA_CITY, CITIES_WITHOUT_ALL } from "@/constants/cities";
 import { DESTINATIONS, TAGS, type Destination } from "./data/destinations";
 
+export { DESTINATIONS, TAGS };
+
 export type ProvidedLocation = {
   city: string;
   state?: string;
@@ -106,7 +108,7 @@ export function averageGrowthScore(destinations: Destination[] = DESTINATIONS): 
 }
 
 export function totalWeddingHotspots(destinations: Destination[] = DESTINATIONS): number {
-  return destinations.reduce((acc, d) => acc + weddingInventoryCount(d), 0);
+  return destinations.reduce((acc, d) => acc + (d.weddingVenues?.length || 0), 0);
 }
 
 export function countListingsInDestinations(

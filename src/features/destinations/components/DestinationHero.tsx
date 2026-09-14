@@ -52,8 +52,8 @@ export default function DestinationHero({
           {[
             { value: `${totalDestinations}`, label: "Heritage Cities" },
             { value: `${totalProperties}`, label: "Verified Listings" },
-            { value: avgGrowthScore, label: "Avg Growth Score" },
-            { value: `${totalWeddingHotspots}`, label: "Wedding Hotspots" },
+            { value: avgGrowthScore, label: "Editorial score" },
+            { value: `${totalWeddingHotspots}`, label: "Signature venues" },
           ].map((stat, i) => (
             <div key={i} className="flex flex-col items-center gap-0.5 min-w-[120px] text-center">
               <span className="text-xl sm:text-2xl font-serif font-black text-white leading-none">

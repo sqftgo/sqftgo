@@ -103,7 +103,7 @@ From `AUTH_REMAINING.md` (summary):
 - `dealer_kyc` + documents + private `dealer-kyc` bucket; dealer submit + admin `/admin/kyc` review
 - Route-group `error.tsx` boundaries (admin / dealer / public)
 
-**Billing module (listing packs):** catalog + quota + checkout code shipped. **Razorpay keys / webhook / first test payment are still pending** — see `src/lib/payments/razorpay.ts` (`RAZORPAY_OPS_PENDING`). Keep keys local; do not commit `.env` or payment test dumps.
+**Billing:** listing packs + monthly partner plans share one Razorpay stack. Listing cap is enforced (free + active plan cap + bought packs). Period end is checked on each create. **Live keys / webhook / first test payment are still ops** — keep secrets in local `.env`. Webhook: `/api/webhooks/razorpay` (`payment.captured`).
 
 ---
 
@@ -115,4 +115,4 @@ From `AUTH_REMAINING.md` (summary):
 
 > Add signed-URL viewing of KYC documents in admin review UI.
 
-> Finish **Razorpay listing-pack checkout**: local test keys, webhook `payment.captured` → `/api/payments/razorpay/webhook`, one `broker@sqftgo.com` test buy, then live keys. Do not commit secrets.
+> Finish **Razorpay ops**: local test keys, webhook `payment.captured` → `/api/webhooks/razorpay`, one `broker@sqftgo.com` pack buy and one monthly plan buy, then live keys. Do not commit secrets.
