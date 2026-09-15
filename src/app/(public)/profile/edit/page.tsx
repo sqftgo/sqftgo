@@ -23,8 +23,20 @@ const CITY_OPTIONS = [
   "Kota",
   "Ahmedabad",
   "Surat",
+  "Bikaner",
+  "Shimla",
   "Mumbai",
+  "Bangalore",
+  "Pune",
+  "Navi Mumbai",
+  "Hyderabad",
+  "Chennai",
+  "Gurgaon",
+  "Noida",
   "Delhi",
+  "New Delhi",
+  "Vadodara",
+  "Indore",
 ].map((c) => ({ label: c, value: c }));
 
 export default function EditProfilePage() {
