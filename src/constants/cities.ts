@@ -17,6 +17,17 @@ export const CITIES = [
   "Surat",
   "Bikaner",
   "Shimla",
+  "Bangalore",
+  "Pune",
+  "Navi Mumbai",
+  "Hyderabad",
+  "Chennai",
+  "Gurgaon",
+  "Noida",
+  "Delhi",
+  "New Delhi",
+  "Vadodara",
+  "Indore",
 ] as const;
 
 export const CITIES_WITHOUT_ALL = CITIES.filter((c) => c !== ALL_INDIA_CITY);

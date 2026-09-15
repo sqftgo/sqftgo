@@ -9,6 +9,17 @@ export const CITIES = [
   "Surat",
   "Bikaner",
   "Shimla",
+  "Bangalore",
+  "Pune",
+  "Navi Mumbai",
+  "Hyderabad",
+  "Chennai",
+  "Gurgaon",
+  "Noida",
+  "Delhi",
+  "New Delhi",
+  "Vadodara",
+  "Indore",
 ];
 
 export const PROPERTY_TYPES = [
