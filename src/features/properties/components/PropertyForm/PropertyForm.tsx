@@ -251,25 +251,7 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
                 </div>
               </div>
 
-              <div className="border-t border-sand/50 pt-5">
-                <p className="text-[10px] font-black text-charcoal/40 uppercase tracking-widest mb-1.5">
-                  Google Search Snippet Preview
-                </p>
-                <div className="bg-white border border-sand/60 rounded-3xl p-5 shadow-sm space-y-1.5">
-                  <p className="text-blue-700 hover:underline text-sm font-serif font-black truncate max-w-full">
-                    {form.seoTitle || form.title || "Untitled Property - SqftGo"}
-                  </p>
-                  <p className="text-emerald-700 text-xs font-semibold truncate leading-none">
-                    https://sqftgo.com/property/
-                    {form.title ? form.title.toLowerCase().replace(/\s+/g, "-") : "id"}
-                  </p>
-                  <p className="text-charcoal/70 text-xs line-clamp-2 leading-relaxed">
-                    {form.seoDescription ||
-                      form.description ||
-                      "Browse this premium property listing on SqftGo."}
-                  </p>
-                </div>
-              </div>
+
             </div>
 
             <div className="flex justify-end pt-4 border-t border-sand/50">
