@@ -18,6 +18,9 @@ import {
   ShieldCheck, 
   BadgeCheck, 
   AlertCircle,
+  Clock,
+  Briefcase,
+  CheckCircle2,
 } from "lucide-react";
 import { PropertyCard } from "@/features/properties";
 import { filterDealerListings } from "@/lib/ownership";
@@ -135,22 +138,43 @@ export default function DealerProfilePage() {
 
 
         {/* Cover Banner */}
-        <div className="relative h-44 md:h-56 w-full bg-gradient-to-r from-indigo via-indigo-hover to-charcoal rounded-[2rem] overflow-hidden border border-sand/40 shadow-inner">
-          <div className="absolute inset-0 opacity-[0.05] bg-[radial-gradient(#faf8f5_1.5px,transparent_1.5px)] [background-size:16px_16px] pointer-events-none" />
-          <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full blur-[80px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full blur-[80px] pointer-events-none" />
+        <div className="relative h-48 md:h-64 w-full rounded-[2rem] overflow-hidden border border-sand/40 shadow-inner bg-slate-900">
+          {profile.coverImageUrl ? (
+            <img
+              src={profile.coverImageUrl}
+              alt={profile.firmName}
+              className="w-full h-full object-cover object-center"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-r from-indigo via-indigo-hover to-charcoal">
+              <div className="absolute inset-0 opacity-[0.05] bg-[radial-gradient(#faf8f5_1.5px,transparent_1.5px)] [background-size:16px_16px] pointer-events-none" />
+              <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full blur-[80px] pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full blur-[80px] pointer-events-none" />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
         </div>
 
         {/* Profile Info Card Header (Overlapping Banner) */}
         <div className="relative px-6 md:px-10 pb-8 flex flex-col md:flex-row gap-5 md:gap-8 items-start justify-between z-10 border-b border-sand/55 mb-8">
           <div className="flex flex-col md:flex-row gap-5 md:gap-6 items-start w-full">
-            {/* Overlapping Initials Logo Card */}
+            {/* Overlapping Initials / Logo Card */}
             <div className="-mt-12 md:-mt-16 shrink-0 z-20">
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-indigo text-white border-4 border-white shadow-xl flex items-center justify-center font-serif text-3xl md:text-4xl font-black shrink-0 relative overflow-hidden group">
-                <div className="absolute inset-0 bg-charcoal/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[1.5px]">
-                  <Building2 className="w-8 h-8 md:w-9 md:h-9 text-white" />
-                </div>
-                <span>{initials}</span>
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-white border-4 border-white shadow-xl flex items-center justify-center font-serif text-3xl md:text-4xl font-black shrink-0 relative overflow-hidden group">
+                {profile.logoUrl ? (
+                  <img
+                    src={profile.logoUrl}
+                    alt={profile.firmName}
+                    className="w-full h-full object-contain p-2"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-indigo text-white flex items-center justify-center">
+                    <div className="absolute inset-0 bg-charcoal/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[1.5px]">
+                      <Building2 className="w-8 h-8 md:w-9 md:h-9 text-white" />
+                    </div>
+                    <span>{initials}</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -189,7 +213,7 @@ export default function DealerProfilePage() {
         {/* Main Content Grid: Information & Sticky Sidebar */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-          {/* Left Column: Description, Specs stats, Specialties */}
+          {/* Left Column: Description, Specs stats, Specialties, Services */}
           <div className="lg:col-span-7 flex flex-col gap-8">
             
             {/* Description card */}
@@ -252,7 +276,7 @@ export default function DealerProfilePage() {
             </div>
 
             {/* Specialties & Core Focus */}
-            {profile.specialties && (
+            {profile.specialties && profile.specialties.length > 0 && (
               <div className="bg-white rounded-3xl border border-sand p-6 md:p-8 shadow-sm text-left">
                 <h3 className="font-serif font-black text-base text-indigo uppercase tracking-wide pb-2.5 border-b border-sand/40">Specialties & Core Focus</h3>
                 <div className="flex flex-wrap gap-2.5 mt-4">
@@ -260,6 +284,24 @@ export default function DealerProfilePage() {
                     <span key={spec} className="px-4 py-2.5 rounded-xl bg-cream border border-sand text-charcoal/90 text-xs font-bold hover:border-terracotta/25 hover:-translate-y-0.5 transition-all">
                       {spec}
                     </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Services Offered */}
+            {profile.servicesOffered && profile.servicesOffered.length > 0 && (
+              <div className="bg-white rounded-3xl border border-sand p-6 md:p-8 shadow-sm text-left">
+                <h3 className="font-serif font-black text-base text-indigo uppercase tracking-wide pb-2.5 border-b border-sand/40">Services Offered</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                  {profile.servicesOffered.map((service) => (
+                    <div
+                      key={service}
+                      className="flex items-center gap-3 p-3.5 rounded-2xl bg-cream border border-sand/80 text-charcoal/90 text-xs font-bold hover:border-indigo/25 transition-all"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-terracotta shrink-0" />
+                      <span>{service}</span>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -323,6 +365,30 @@ export default function DealerProfilePage() {
                         <span className="text-charcoal group-hover:text-emerald-600 transition-colors truncate mt-0.5">{profile.website}</span>
                       </div>
                     </a>
+                  )}
+
+                  {/* Business Hours */}
+                  {profile.businessHours && (
+                    <div className="flex items-start gap-3.5 pt-2 border-t border-sand/60">
+                      <div className="w-8.5 h-8.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-700 shrink-0">
+                        <Clock className="w-4 h-4 shrink-0" />
+                      </div>
+                      <div className="flex flex-col text-left w-full">
+                        <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest">Working Hours</span>
+                        <div className="text-charcoal leading-snug mt-1 text-[11px] font-semibold space-y-1">
+                          {typeof profile.businessHours === "object" ? (
+                            Object.entries(profile.businessHours).map(([key, val]) => (
+                              <div key={key} className="flex justify-between items-center text-[11px]">
+                                <span className="capitalize text-charcoal/60">{key}:</span>
+                                <span className="text-charcoal font-bold">{val}</span>
+                              </div>
+                            ))
+                          ) : (
+                            <span>{String(profile.businessHours)}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>

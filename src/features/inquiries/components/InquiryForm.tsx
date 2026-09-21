@@ -4,20 +4,16 @@ import React, { useState, useEffect } from "react";
 import type { Property } from "@/types";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/hooks/useAuth";
-import { formatIndianCurrency } from "@/lib/format";
-import { 
-  Send, 
-  CheckCircle2, 
-  User, 
-  Mail, 
-  Phone, 
-  ShieldAlert, 
-  Sparkles,
-  BadgeCheck,
-  CheckCircle
+import {
+  Send,
+  CheckCircle2,
+  User,
+  Mail,
+  Phone,
+  ShieldAlert,
+  Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Avatar } from "@/components/ui/Avatar";
 
 interface InquiryFormProps {
   property: Property;
@@ -29,10 +25,10 @@ const DEFAULT_MESSAGE =
   "Hi, I am interested in this property and would like to receive more details. Please contact me.";
 
 const QUICK_PRESETS = [
-  { id: "visit", label: "📅 Site Visit", text: "Hi, I would like to schedule a physical site visit for this property. What time works best?" },
-  { id: "price", label: "💰 Is Price Negotiable?", text: "Hi, I am interested in this property. Is the asking price negotiable?" },
-  { id: "video", label: "📹 Send Video Tour", text: "Hi, could you please share a video walkthrough or recent photos of the property?" },
-  { id: "docs", label: "📜 Share Deed Docs", text: "Hi, could you share the title deed status and RERA verification documents for this property?" },
+  { id: "visit", label: "Site Visit", text: "Hi, I would like to schedule a physical site visit for this property. What time works best?" },
+  { id: "price", label: "Is Price Negotiable?", text: "Hi, I am interested in this property. Is the asking price negotiable?" },
+  { id: "video", label: "Send Video Tour", text: "Hi, could you please share a video walkthrough or recent photos of the property?" },
+  { id: "docs", label: "Share Deed Docs", text: "Hi, could you share the title deed status and RERA verification documents for this property?" },
 ];
 
 export const InquiryForm: React.FC<InquiryFormProps> = ({
@@ -48,7 +44,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({
     phone: "",
     message: DEFAULT_MESSAGE,
   });
-  
+
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -65,13 +61,6 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({
     }));
   }, [userName, userEmail, userProfile]);
 
-  const rawPhone = property.ownerPhone || "9876543210";
-  const digitsOnly = rawPhone.replace(/\D/g, "");
-  const whatsappPhone = digitsOnly.length === 10 ? `91${digitsOnly}` : digitsOnly;
-  const whatsappMessage = encodeURIComponent(
-    `Hi ${property.ownerName}, I found your listing "${property.title}" (${formatIndianCurrency(property.price, property.purpose)}) on SqftGo. Is it still available for discussion?`
-  );
-  const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${whatsappMessage}`;
 
   const handleSelectPreset = (preset: typeof QUICK_PRESETS[0]) => {
     setActivePreset(preset.id);
@@ -107,62 +96,6 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({
       {/* Decorative Gradient Background */}
       <div className="absolute top-0 right-0 w-48 h-48 bg-terracotta/5 rounded-full blur-[50px] pointer-events-none" />
 
-      {/* Owner Profile Header */}
-      <div className="p-5 sm:p-6 pb-4 flex flex-col gap-4 relative z-10 border-b border-sand/60 bg-cream/30">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Avatar
-                name={property.ownerName}
-                size="md"
-                tone="indigo"
-                className="w-12 h-12 text-lg shadow-md ring-2 ring-indigo/20 bg-indigo text-white"
-              />
-              <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center shadow-xs">
-                <CheckCircle className="w-2.5 h-2.5 text-white" />
-              </div>
-            </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1">
-                <span className="font-black text-base text-indigo tracking-tight">
-                  {property.ownerName}
-                </span>
-                <BadgeCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              </div>
-              <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest mt-0.5">
-                Verified Owner
-              </span>
-            </div>
-          </div>
-
-          <span className="text-xs font-serif font-black text-terracotta bg-terracotta/10 px-2.5 py-1 rounded-lg border border-terracotta/20">
-            {formatIndianCurrency(property.price, property.purpose)}
-          </span>
-        </div>
-        
-        {/* Quick Action Channels */}
-        <div className="grid grid-cols-2 gap-2 text-xs font-bold">
-          <a 
-            href={whatsappUrl} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs"
-          >
-            <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
-              <path d="M17.472 14.382c-.301-.15-1.78-.878-2.056-.978-.276-.1-.477-.15-.678.15-.2.3-.778.978-.954 1.178-.175.2-.351.225-.652.075-.301-.15-1.27-.468-2.42-1.493-.895-.798-1.5-1.784-1.676-2.084-.175-.3-.019-.462.132-.612.136-.135.301-.35.452-.525.15-.175.2-.3.301-.5.1-.2.05-.375-.025-.525-.075-.15-.678-1.636-.93-2.242-.244-.589-.493-.509-.678-.518-.175-.009-.376-.01-.577-.01-.2 0-.526.075-.802.375-.276.3-1.054 1.03-1.054 2.512 0 1.482 1.079 2.912 1.23 3.113.15.2 2.122 3.24 5.14 4.542.718.31 1.278.495 1.716.634.721.23 1.378.198 1.9.12.58-.088 1.78-.727 2.03-1.43.251-.703.251-1.306.176-1.43-.075-.125-.276-.2-.577-.35zM12.04 21.785c-1.85 0-3.664-.498-5.263-1.442l-.377-.224-3.916 1.027 1.045-3.817-.247-.393A9.878 9.878 0 012.16 12.04C2.16 6.594 6.594 2.16 12.04 2.16s9.88 4.434 9.88 9.88-4.434 9.745-9.88 9.745zm0-18.04c-4.555 0-8.26 3.705-8.26 8.26 0 1.597.46 3.136 1.332 4.464l.206.314-.62 2.268 2.325-.61.304.181a8.232 8.232 0 004.713 1.443c4.555 0 8.26-3.705 8.26-8.26s-3.705-8.06-8.26-8.06z" />
-            </svg>
-            <span>WhatsApp</span>
-          </a>
-
-          <a 
-            href={`tel:${rawPhone}`} 
-            className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-indigo hover:bg-indigo-hover text-white transition-all shadow-xs"
-          >
-            <Phone className="w-3.5 h-3.5 shrink-0" />
-            <span>Call Owner</span>
-          </a>
-        </div>
-      </div>
 
       {/* Inquiry Form Section */}
       <div className="p-5 sm:p-6 relative z-10">
@@ -186,11 +119,10 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({
                 key={preset.id}
                 type="button"
                 onClick={() => handleSelectPreset(preset)}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all cursor-pointer ${
-                  activePreset === preset.id
-                    ? "bg-terracotta text-white border-terracotta shadow-xs"
-                    : "bg-sand/20 hover:bg-sand/40 border-sand text-charcoal/80"
-                }`}
+                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all cursor-pointer ${activePreset === preset.id
+                  ? "bg-terracotta text-white border-terracotta shadow-xs"
+                  : "bg-sand/20 hover:bg-sand/40 border-sand text-charcoal/80"
+                  }`}
               >
                 {preset.label}
               </button>
