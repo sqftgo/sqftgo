@@ -49,6 +49,7 @@ import { listingPlanApi } from "@/services/listing-plans";
 import type { SubscriptionOverview } from "@/types/billing";
 import type { DealerListingQuotaView } from "@/types/listing-plan";
 import { formatPlanPrice } from "@/features/billing/plans";
+import { useActiveCities } from "@/hooks/useActiveCities";
 
 const CATEGORIES = [
   "Agent & Broker",
@@ -98,6 +99,7 @@ function formatDate(iso: string | null): string {
 
 export default function DealerProfilePage() {
   const { userEmail, userProfile, directoryProfiles, updateDirectoryProfile, properties } = useApp();
+  const { cityOptionsWithoutAll, locationsReady } = useActiveCities();
   const profile = findMyDirectoryProfile(directoryProfiles, userProfile?.id, userEmail);
   const myProperties = filterMyProperties(properties, userProfile?.id, userEmail);
   const activeListings = myProperties.filter((p) => p.status === "Active");
@@ -847,12 +849,13 @@ export default function DealerProfilePage() {
                     />
                   </FormField>
                   <FormField label="Operating City">
-                    <TextInput
-                      type="text"
+                    <CustomSelect
+                      options={cityOptionsWithoutAll}
                       value={form.city}
-                      onChange={(e) => set("city", e.target.value)}
-                      placeholder="e.g. Udaipur"
-                      className={inputClass}
+                      onChange={(v) => set("city", v)}
+                      accent="indigo"
+                      buttonClassName="bg-sand/30 border border-indigo/10 text-xs font-semibold px-4 py-3 rounded-xl text-charcoal"
+                      placeholder={locationsReady ? "Select city" : "Loading cities…"}
                     />
                   </FormField>
                   <FormField label="Team Size" hint="Number of active agents / advisors">

@@ -5,8 +5,8 @@ import { useApp } from "@/context/AppContext";
 import { ALL_INDIA_CITY } from "@/constants/cities";
 
 /**
- * Active admin-managed cities for public/dealer pickers.
- * Admin catalog may include inactive rows — those are filtered out here.
+ * Active admin-managed cities for public/dealer/admin pickers.
+ * Single source of truth: `locations` catalog (inactive rows excluded).
  */
 export function useActiveCities() {
   const { locations, locationsReady, selectedCity, setSelectedCity } = useApp();
@@ -15,7 +15,12 @@ export function useActiveCities() {
     () =>
       locations
         .filter((l) => l.active)
-        .sort((a, b) => a.city.localeCompare(b.city)),
+        .slice()
+        .sort((a, b) => {
+          const order = (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+          if (order !== 0) return order;
+          return a.city.localeCompare(b.city);
+        }),
     [locations]
   );
 
@@ -31,6 +36,11 @@ export function useActiveCities() {
 
   const cityOptionsWithoutAll = useMemo(
     () => cities.map((c) => ({ label: c, value: c })),
+    [cities]
+  );
+
+  const cityOptionsWithAllCities = useMemo(
+    () => [{ label: "All Cities", value: "All" }, ...cities.map((c) => ({ label: c, value: c }))],
     [cities]
   );
 
@@ -53,6 +63,7 @@ export function useActiveCities() {
     cities,
     cityOptions,
     cityOptionsWithoutAll,
+    cityOptionsWithAllCities,
     findLocation,
   };
 }

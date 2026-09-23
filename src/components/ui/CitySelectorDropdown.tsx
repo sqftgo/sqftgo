@@ -40,7 +40,7 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
     return includeAllIndia ? [ALL_INDIA_CITY, ...unique] : unique;
   }, [cities, includeAllIndia]);
 
-  const popular = useMemo(() => catalog.filter((c) => c !== ALL_INDIA_CITY).slice(0, 12), [catalog]);
+  const popular = useMemo(() => catalog.filter((c) => c !== ALL_INDIA_CITY), [catalog]);
 
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];

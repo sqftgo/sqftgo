@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import { useApp } from "@/context/AppContext";
+import { useActiveCities } from "@/hooks/useActiveCities";
 import { ArrowLeft, Camera, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -15,30 +16,20 @@ import {
 } from "@/components/ui";
 import { uploadAvatar } from "@/lib/uploads/avatar";
 
-const CITY_OPTIONS = [
-  "Udaipur",
-  "Jaipur",
-  "Jodhpur",
-  "Jaisalmer",
-  "Kota",
-  "Ahmedabad",
-  "Surat",
-  "Mumbai",
-  "Delhi",
-].map((c) => ({ label: c, value: c }));
-
 export default function EditProfilePage() {
   const { isLoggedIn, userEmail, userName, userProfile, updateProfile, sessionReady } = useApp();
+  const { cities, cityOptionsWithoutAll, locationsReady } = useActiveCities();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const defaultCity = cities[0] ?? "Udaipur";
   const [form, setForm] = useState({
     name: userName || "",
     phone: userProfile?.phone || "",
-    city: userProfile?.city || "Udaipur",
+    city: userProfile?.city || defaultCity,
     bio: userProfile?.bio || "",
     avatarUrl: userProfile?.avatar || "",
   });
@@ -52,11 +43,19 @@ export default function EditProfilePage() {
     setForm({
       name: userName || userProfile?.name || "",
       phone: userProfile?.phone || "",
-      city: userProfile?.city || "Udaipur",
+      city: userProfile?.city || defaultCity,
       bio: userProfile?.bio || "",
       avatarUrl: userProfile?.avatar || "",
     });
-  }, [sessionReady, isLoggedIn, userName, userProfile, router]);
+  }, [sessionReady, isLoggedIn, userName, userProfile, router, defaultCity]);
+
+  useEffect(() => {
+    if (!locationsReady || cities.length === 0) return;
+    const ok = cities.some((c) => c.toLowerCase() === form.city.toLowerCase());
+    if (!ok) {
+      setForm((f) => ({ ...f, city: cities[0] ?? f.city }));
+    }
+  }, [locationsReady, cities, form.city]);
 
   const handleAvatarPick = async (files: FileList | null) => {
     const file = files?.[0];
@@ -186,11 +185,12 @@ export default function EditProfilePage() {
 
           <FormField label="City">
             <CustomSelect
-              options={CITY_OPTIONS}
+              options={cityOptionsWithoutAll}
               value={form.city}
               onChange={(v) => setForm((f) => ({ ...f, city: v }))}
               accent="indigo"
               buttonClassName="bg-sand/30 border border-indigo/10 text-sm font-semibold px-4 py-3 rounded-xl text-charcoal"
+              placeholder={locationsReady ? "Select city" : "Loading cities…"}
             />
           </FormField>
 

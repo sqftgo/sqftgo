@@ -19,6 +19,7 @@ export function mapLocationRow(row: LocationRow, propertyCount = 0): Location {
     country: row.country,
     active: row.active,
     propertyCount,
+    sortOrder: row.sort_order ?? 0,
   };
 }
 
