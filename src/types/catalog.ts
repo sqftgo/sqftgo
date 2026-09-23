@@ -23,6 +23,7 @@ export interface Location {
   country: string;
   active: boolean;
   propertyCount: number;
+  sortOrder: number;
 }
 
 export interface Amenity {

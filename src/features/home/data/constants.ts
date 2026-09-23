@@ -1,15 +1,5 @@
-/** Same cities as admin `locations` / `CITIES_WITHOUT_ALL` — do not invent extra names. */
-export const CITIES = [
-  "Udaipur",
-  "Jaipur",
-  "Jodhpur",
-  "Kota",
-  "Jaisalmer",
-  "Ahmedabad",
-  "Surat",
-  "Bikaner",
-  "Shimla",
-];
+/** Prefer admin `locations` via `useActiveCities()` for UI pickers. */
+export { CITIES_WITHOUT_ALL as CITIES } from "@/constants/cities";
 
 export const PROPERTY_TYPES = [
   { label: "All Types", value: "any" },

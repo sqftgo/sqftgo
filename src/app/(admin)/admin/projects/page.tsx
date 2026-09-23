@@ -18,11 +18,12 @@ import {
   TextArea,
   type DataTableColumn,
 } from "@/components/ui";
-import { useInvalidateMarketplace } from "@/hooks";
+import { useInvalidateMarketplace, useActiveCities } from "@/hooks";
 
 export default function AdminProjectsPage() {
   const { addLog, userEmail } = useApp();
   const { invalidateProjects } = useInvalidateMarketplace();
+  const { cityOptionsWithAllCities: cityOptions } = useActiveCities();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,8 +53,6 @@ export default function AdminProjectsPage() {
     void load();
   }, [load]);
 
-  const cities = useMemo(() => [...new Set(projects.map((p) => p.city))], [projects]);
-
   const statusOptions = useMemo(
     () =>
       ["All", "Active", "Pending Review", "Rejected", "Sold"].map((s) => ({
@@ -61,11 +60,6 @@ export default function AdminProjectsPage() {
         value: s,
       })),
     [],
-  );
-
-  const cityOptions = useMemo(
-    () => [{ label: "All Cities", value: "All" }, ...cities.map((c) => ({ label: c, value: c }))],
-    [cities],
   );
 
   const filtered = projects.filter((p) => {

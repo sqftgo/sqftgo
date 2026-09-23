@@ -35,10 +35,10 @@ export default function DealersPage() {
         {/* Header */}
         <div className="text-center mb-12 relative z-10">
           <span className="text-terracotta font-extrabold text-xs uppercase tracking-widest block mb-2">
-            Professional Network in {selectedCity}
+            Professional network in your city
           </span>
           <h1 className="text-4xl md:text-5xl font-serif font-black text-charcoal tracking-tight mb-4">
-            Top Real Estate Dealers in {selectedCity}
+            Top Real Estate Dealers in Your City
           </h1>
           <p className="text-charcoal/70 max-w-2xl mx-auto font-medium text-lg">
             Connect with the most trusted agents, brokers, architects, and developers in {selectedCity}.
