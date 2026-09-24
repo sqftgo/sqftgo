@@ -55,10 +55,11 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
 
   return (
     <div
-      className={`fixed sm:absolute z-[100] left-4 right-4 top-[72px] sm:top-auto sm:mt-3 mx-auto sm:mx-0 w-[calc(100vw-32px)] sm:w-[540px] max-w-[540px] rounded-3xl bg-white text-charcoal shadow-2xl border border-indigo/10 overflow-hidden flex flex-col ${
+      className={`fixed sm:absolute z-[100] left-4 right-4 top-[72px] sm:top-auto sm:mt-3 mx-auto sm:mx-0 w-[calc(100vw-32px)] sm:w-[540px] max-w-[540px] max-h-[min(70vh,520px)] rounded-3xl bg-white text-charcoal shadow-2xl border border-indigo/10 overflow-hidden flex flex-col ${
         align === "right" ? "sm:left-auto sm:right-0" : "sm:right-auto sm:left-0"
       }`}
       onClick={(e) => e.stopPropagation()}
+      onWheel={(e) => e.stopPropagation()}
     >
       <div
         className={`absolute -top-2 w-4 h-4 rotate-45 bg-white border-t border-l border-indigo/10 z-[101] hidden sm:block ${
@@ -91,7 +92,7 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
         </div>
       </div>
 
-      <div className="max-h-[350px] overflow-y-auto px-4 pb-4 no-scrollbar">
+      <div className="min-h-0 max-h-[min(52vh,420px)] overflow-y-auto overscroll-contain px-4 pb-4">
         {searchQuery.trim() === "" ? (
           <div>
             {includeAllIndia ? (
