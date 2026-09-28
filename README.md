@@ -126,7 +126,7 @@ Then set in `.env.local`:
 **Auth notes**
 
 - Public signup creates `profiles.role = user` only. Signup cannot create an admin.
-- A **single admin** is seeded locally as `admin@sqftgo.com` / `admin2026`. These credentials are **not shown** on the login page; use them only when you need `/admin`.
+- A **single admin** is seeded locally as `admin@sqftgo.com` / `sqftgo26`. These credentials are **not shown** on the login page; use them only when you need `/admin`.
 - On a hosted Supabase project, create that one admin in the Auth dashboard, then set `profiles.role = 'admin'` for that user (only one admin row is allowed).
 - Demo autocomplete on login is limited to client (`user@sqftgo.com`) and broker (`broker@sqftgo.com`).
 - `/admin/*` and `/dealer/dashboard/*` are protected by Next.js middleware using the Supabase session + profile role.

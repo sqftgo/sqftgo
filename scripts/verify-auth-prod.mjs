@@ -142,7 +142,7 @@ if (!service || service.startsWith("your-")) {
     method: "POST",
     body: JSON.stringify({
       email: "user@sqftgo.com",
-      password: "user2026",
+      password: "sqftgo26",
     }),
   });
   results.loginDemo = login.ok

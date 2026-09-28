@@ -95,9 +95,9 @@ Local demo (dev only):
 
 | Email | Password | Role |
 |-------|----------|------|
-| `user@sqftgo.com` | `user2026` | user |
-| `broker@sqftgo.com` | `broker2026` | broker |
-| `admin@sqftgo.com` | `admin2026` | admin (not on login UI) |
+| `user@sqftgo.com` | `sqftgo26` | user |
+| `broker@sqftgo.com` | `sqftgo26` | broker |
+| `admin@sqftgo.com` | `sqftgo26` | admin (not on login UI) |
 
 ### 6. Optional hardening
 

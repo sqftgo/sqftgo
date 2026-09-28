@@ -289,7 +289,7 @@ async function main() {
   await ensureNotifications(broker);
 
   console.log("\nDealer demo fixtures ready.");
-  console.log("Verify as broker@sqftgo.com / broker2026:");
+  console.log("Verify as broker@sqftgo.com / sqftgo26:");
   console.log("  /dealer/dashboard");
   console.log("  /dealer/dashboard/inquiries  (reply should open a message thread)");
   console.log("  /dealer/dashboard/notifications");

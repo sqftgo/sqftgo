@@ -90,21 +90,21 @@ $$;
 select public.seed_auth_user(
   'a0000000-0000-4000-8000-000000000001'::uuid,
   'admin@sqftgo.com',
-  'admin2026',
+  'sqftgo26',
   'Super Admin'
 );
 
 select public.seed_auth_user(
   'a0000000-0000-4000-8000-000000000002'::uuid,
   'broker@sqftgo.com',
-  'broker2026',
+  'sqftgo26',
   'Rajesh Mehta'
 );
 
 select public.seed_auth_user(
   'a0000000-0000-4000-8000-000000000003'::uuid,
   'user@sqftgo.com',
-  'user2026',
+  'sqftgo26',
   'Arjun Sharma'
 );
 
