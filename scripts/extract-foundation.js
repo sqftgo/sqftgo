@@ -414,7 +414,7 @@ write(
   "src/constants/demoAccounts.ts",
   [
     "export const DEMO_ACCOUNTS = [",
-    '  { email: "admin@sqftgo.com", password: "admin2026", role: "admin" as const, name: "Admin" },',
+    '  { email: "admin@sqftgo.com", password: "sqftgo26", role: "admin" as const, name: "Admin" },',
     '  { email: "broker@sqftgo.com", password: "admin123", role: "broker" as const, name: "Rajesh Mehta" },',
     '  { email: "user@sqftgo.com", password: "user123", role: "user" as const, name: "Priya Sharma" },',
     "] as const;",

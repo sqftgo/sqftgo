@@ -15,9 +15,9 @@ pnpm dev
 
 | Role | Email | Password | Lands on |
 |------|-------|----------|----------|
-| Buyer / user | `user@sqftgo.com` | `user2026` | Home / public pages |
-| Broker / dealer | `broker@sqftgo.com` | `broker2026` | `/dealer/dashboard` |
-| Admin | `admin@sqftgo.com` | `admin2026` | `/admin` |
+| Buyer / user | `user@sqftgo.com` | `sqftgo26` | Home / public pages |
+| Broker / dealer | `broker@sqftgo.com` | `sqftgo26` | `/dealer/dashboard` |
+| Admin | `admin@sqftgo.com` | `sqftgo26` | `/admin` |
 
 **Tips**
 

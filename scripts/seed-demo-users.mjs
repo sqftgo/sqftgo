@@ -25,19 +25,19 @@ function loadEnvLocal() {
 const DEMO_USERS = [
   {
     email: "admin@sqftgo.com",
-    password: "admin2026",
+    password: "sqftgo26",
     name: "Super Admin",
     role: "admin",
   },
   {
     email: "broker@sqftgo.com",
-    password: "broker2026",
+    password: "sqftgo26",
     name: "Rajesh Mehta",
     role: "broker",
   },
   {
     email: "user@sqftgo.com",
-    password: "user2026",
+    password: "sqftgo26",
     name: "Arjun Sharma",
     role: "user",
   },
@@ -129,9 +129,9 @@ async function main() {
   }
 
   console.log("Done. Demo logins:");
-  console.log("  user@sqftgo.com / user2026");
-  console.log("  broker@sqftgo.com / broker2026");
-  console.log("  admin@sqftgo.com / admin2026 (not shown on login UI)");
+  console.log("  user@sqftgo.com / sqftgo26");
+  console.log("  broker@sqftgo.com / sqftgo26");
+  console.log("  admin@sqftgo.com / sqftgo26 (not shown on login UI)");
 }
 
 main().catch((err) => {

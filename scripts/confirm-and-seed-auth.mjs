@@ -33,19 +33,19 @@ function loadEnvLocal() {
 const DEMO = [
   {
     email: "admin@sqftgo.com",
-    password: "admin2026",
+    password: "sqftgo26",
     name: "Super Admin",
     role: "admin",
   },
   {
     email: "broker@sqftgo.com",
-    password: "broker2026",
+    password: "sqftgo26",
     name: "Rajesh Mehta",
     role: "broker",
   },
   {
     email: "user@sqftgo.com",
-    password: "user2026",
+    password: "sqftgo26",
     name: "Arjun Sharma",
     role: "user",
   },
@@ -161,7 +161,7 @@ async function main() {
   });
   const { data, error } = await client.auth.signInWithPassword({
     email: "user@sqftgo.com",
-    password: "user2026",
+    password: "sqftgo26",
   });
   if (error || !data.session) {
     throw new Error(`verify login failed: ${error?.message ?? "no session"}`);
