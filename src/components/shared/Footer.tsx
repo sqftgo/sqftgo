@@ -136,13 +136,13 @@ export const Footer: React.FC = () => {
                   {settings.siteName}
                 </span>
                 <span className="text-[10px] text-terracotta font-extrabold tracking-widest uppercase mt-1">
-                  {settings.tagline || "Real Estate"}
+                  {settings.tagline ? settings.tagline.replace(/Rajasthan/i, "Bharat") : "Bharat Real Estate Marketplace"}
                 </span>
               </div>
             </Link>
 
             <p className="text-charcoal/70 text-xs font-semibold leading-relaxed max-w-sm">
-              Serving the luxury heritage real estate needs in India since 2008. Curating boutique residential, commercial, and agricultural properties across Rajasthan&apos;s historic locations.
+              Serving the luxury heritage real estate needs in Bharat. Curating boutique residential, commercial, and agricultural properties across Bharat&apos;s historic locations.
             </p>
 
             {/* Social Icons Inline */}

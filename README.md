@@ -5,11 +5,11 @@
 <h1 align="center">SqftGo</h1>
 
 <p align="center">
-  <strong>Rajasthan's Premier Real Estate Marketplace</strong>
+  <strong>Bharat's Premier Real Estate Marketplace</strong>
 </p>
 
 <p align="center">
-  Buy · Sell · Rent — Heritage havelis, luxury lakeview villas, modern apartments & more across Rajasthan.
+  Buy · Sell · Rent — Heritage havelis, luxury lakeview villas, modern apartments & more across Bharat.
 </p>
 
 <p align="center">

@@ -6,7 +6,7 @@ import type { PublicPlatformSettings } from "@/types";
 
 const FALLBACK: PublicPlatformSettings = {
   siteName: "SqftGo",
-  tagline: "Real Estate",
+  tagline: "Bharat Real Estate Marketplace",
   supportEmail: "contact@sqftgo.com",
   supportPhone: null,
   allowUserListings: true,

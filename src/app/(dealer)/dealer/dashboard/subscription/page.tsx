@@ -349,7 +349,7 @@ export default function DealerSubscriptionPage() {
               </ul>
 
               <div className="mt-4 p-4 rounded-2xl bg-terracotta/5 border border-terracotta/15 text-xs text-charcoal/65 font-semibold leading-relaxed">
-                <strong className="text-terracotta font-black">No risk.</strong> Cancel before your next billing date and you won't be charged again. Your listings stay live until the period ends.
+                <strong className="text-terracotta font-black">No risk.</strong> Cancel before your next billing date and you won&apos;t be charged again. Your listings stay live until the period ends.
               </div>
             </div>
           </div>

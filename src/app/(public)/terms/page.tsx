@@ -219,7 +219,7 @@ export default function TermsPage() {
               <div className="bg-amber-50 border border-amber-200/80 rounded-2xl p-4 text-xs text-amber-900 font-semibold leading-relaxed flex items-start gap-3">
                 <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                 <span>
-                  <strong>Disclaimer:</strong> SqftGo provides the platform "as-is" with no warranty of fitness for a particular purpose or non-infringement. Users act at their own risk when transacting.
+                  <strong>Disclaimer:</strong> SqftGo provides the platform &ldquo;as-is&rdquo; with no warranty of fitness for a particular purpose or non-infringement. Users act at their own risk when transacting.
                 </span>
               </div>
             </Section>
