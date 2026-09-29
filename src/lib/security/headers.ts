@@ -10,7 +10,7 @@ export function buildContentSecurityPolicy(): string {
     "default-src 'self'",
     // Next.js App Router still requires unsafe-inline/eval for runtime chunks
     // until a nonce-based middleware CSP is introduced.
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com",
     // Google Fonts CSS is loaded from fonts.googleapis.com (see globals.css).
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     [
@@ -22,6 +22,7 @@ export function buildContentSecurityPolicy(): string {
       "https://*.gstatic.com",
       "https://content.jdmagicbox.com",
       "https://ui-avatars.com",
+      "https://cdn.razorpay.com",
     ].join(" "),
     // Font files are served from fonts.gstatic.com after the CSS loads.
     "font-src 'self' data: https://fonts.gstatic.com",
@@ -29,8 +30,11 @@ export function buildContentSecurityPolicy(): string {
       "connect-src 'self'",
       "https://*.supabase.co",
       "wss://*.supabase.co",
+      "https://api.razorpay.com",
+      "https://lumberjack.razorpay.com",
+      "https://checkout.razorpay.com",
     ].join(" "),
-    "frame-src 'self' https://maps.google.com https://www.google.com",
+    "frame-src 'self' https://maps.google.com https://www.google.com https://api.razorpay.com https://*.razorpay.com",
     "worker-src 'self' blob:",
     "media-src 'self' https://*.supabase.co blob: data:",
     "object-src 'none'",
