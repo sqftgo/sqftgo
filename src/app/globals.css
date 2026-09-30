@@ -164,6 +164,26 @@ body {
   background: var(--brand-terracotta);
 }
 
+.dropdown-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--brand-indigo) 65%, transparent) color-mix(in srgb, var(--brand-indigo) 8%, transparent);
+}
+.dropdown-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.dropdown-scrollbar::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--brand-indigo) 8%, transparent);
+  border-radius: 9999px;
+  margin: 8px 0;
+}
+.dropdown-scrollbar::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--brand-indigo) 65%, transparent);
+  border-radius: 9999px;
+}
+.dropdown-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-indigo);
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
