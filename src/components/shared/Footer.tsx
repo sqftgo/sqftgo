@@ -142,7 +142,7 @@ export const Footer: React.FC = () => {
             </Link>
 
             <p className="text-charcoal/70 text-xs font-semibold leading-relaxed max-w-sm">
-              Serving the luxury heritage real estate needs in India since 2008. Curating boutique residential, commercial, and agricultural properties across Rajasthan&apos;s historic locations.
+              Serving the luxury heritage real estate needs in Bharat. Curating boutique residential, commercial, and agricultural properties across Bharat&apos;s historic locations.
             </p>
 
             {/* Social Icons Inline */}
@@ -205,7 +205,7 @@ export const Footer: React.FC = () => {
 
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-terracotta flex-shrink-0 mt-0.5" />
-                <span className="leading-relaxed">Lake Palace Road, Udaipur, Rajasthan, 313001</span>
+                <span className="leading-relaxed">Lake Palace Road, Udaipur, Bharat, 313001</span>
               </div>
 
               <div className="flex items-center gap-3 border-t border-sand/30 pt-3 mt-1">

@@ -92,7 +92,7 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
         </div>
       </div>
 
-      <div className="min-h-0 max-h-[min(52vh,420px)] overflow-y-auto overscroll-contain px-4 pb-4">
+      <div className="min-h-0 max-h-[min(52vh,420px)] overflow-y-auto overscroll-contain dropdown-scrollbar px-4 pb-4">
         {searchQuery.trim() === "" ? (
           <div>
             {includeAllIndia ? (
