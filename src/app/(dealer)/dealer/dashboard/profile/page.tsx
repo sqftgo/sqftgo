@@ -379,7 +379,7 @@ export default function DealerProfilePage() {
                 <span className="text-sand hidden sm:inline">|</span>
                 <span className="flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5 text-terracotta shrink-0" />
-                  <span>{form.city || "Rajasthan"}, Rajasthan</span>
+                  <span>{form.city ? `${form.city}, Bharat` : "Bharat"}</span>
                 </span>
               </div>
             </div>
@@ -676,7 +676,7 @@ export default function DealerProfilePage() {
                   Exclusive Listings by {form.firmName || "this Broker"}
                 </h2>
                 <p className="text-xs text-charcoal/50 font-black uppercase tracking-wider mt-1.5">
-                  Verified active listings in {form.city || "Rajasthan"} under exclusive mandate
+                  Verified active listings in {form.city || "Bharat"} under exclusive mandate
                 </p>
               </div>
 
@@ -1035,7 +1035,7 @@ export default function DealerProfilePage() {
                   <div>
                     <p className="text-xs font-black text-charcoal">Public Directory Listing</p>
                     <p className="text-[10px] text-charcoal/50 font-semibold mt-0.5">
-                      Toggle whether your profile appears in the public real estate directory for {form.city || "Rajasthan"}.
+                      Toggle whether your profile appears in the public real estate directory for {form.city || "Bharat"}.
                     </p>
                   </div>
                   <button

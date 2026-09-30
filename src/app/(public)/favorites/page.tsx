@@ -37,7 +37,7 @@ export default function FavoritesPage() {
         <div className="flex-1 flex items-center justify-center py-10">
           <EmptyState
             title="No Shortlisted Properties"
-            description="Start exploring Rajasthan and Gujarat properties and click the heart icon on any listing card to save it here."
+            description="Start exploring properties across Bharat and click the heart icon on any listing card to save it here."
             actionLabel="Browse Listings"
             onAction={() => router.push("/listings")}
             icon={<Heart className="w-8 h-8 text-terracotta/40" />}

@@ -203,7 +203,7 @@ export default function DealerProfilePage() {
                 <span className="text-sand hidden sm:inline">|</span>
                 <span className="flex items-center gap-1">
                   <MapPin className="w-4 h-4 text-terracotta shrink-0" />
-                  <span>{profile.city}, Rajasthan</span>
+                  <span>{profile.city}, Bharat</span>
                 </span>
               </div>
             </div>

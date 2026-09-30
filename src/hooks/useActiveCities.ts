@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
-import { ALL_INDIA_CITY } from "@/constants/cities";
+import { ALL_BHARAT_CITY } from "@/constants/cities";
 
 /**
  * Active admin-managed cities for public/dealer/admin pickers.
@@ -28,7 +28,7 @@ export function useActiveCities() {
 
   const cityOptions = useMemo(
     () => [
-      { label: ALL_INDIA_CITY, value: ALL_INDIA_CITY },
+      { label: ALL_BHARAT_CITY, value: ALL_BHARAT_CITY },
       ...cities.map((c) => ({ label: c, value: c })),
     ],
     [cities]
@@ -47,10 +47,10 @@ export function useActiveCities() {
   // Snap invalid saved preference onto an allowed city once catalog is ready.
   useEffect(() => {
     if (!locationsReady || cities.length === 0) return;
-    if (selectedCity === ALL_INDIA_CITY) return;
+    if (selectedCity === ALL_BHARAT_CITY) return;
     const ok = cities.some((c) => c.toLowerCase() === selectedCity.toLowerCase());
     if (!ok) {
-      setSelectedCity(cities[0] ?? ALL_INDIA_CITY);
+      setSelectedCity(cities[0] ?? ALL_BHARAT_CITY);
     }
   }, [locationsReady, cities, selectedCity, setSelectedCity]);
 

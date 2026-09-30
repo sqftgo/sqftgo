@@ -25,8 +25,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SqftGo | Rajasthan Real Estate Marketplace",
-  description: "Buy, rent, sell properties in Udaipur, Jaipur, Jodhpur, and across Rajasthan. Find heritage havelis, luxury lakeview villas, modern apartments, and get relocating assistance.",
+  title: "SqftGo | Bharat Real Estate Marketplace",
+  description: "Buy, rent, sell properties in Udaipur, Jaipur, Jodhpur, and across Bharat. Find heritage havelis, luxury lakeview villas, modern apartments, and get relocating assistance.",
 };
 
 export default function RootLayout({

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useApp } from "@/context/AppContext";
+import { ALL_BHARAT_CITY, isAllBharatCity } from "@/constants/cities";
 import type { Property } from "@/types";
 import { CustomSelect, EmptyState } from "@/components/ui";
 import { PropertyCard, FilterPanel, type FilterState } from "@/features/properties";
@@ -32,7 +33,7 @@ const filterProperties = (
   const enabled = (key: string) => catalog.length === 0 || catalog.some((f) => f.key === key && f.active);
   return list.filter((p) => {
     // 1. City check
-    if (enabled("city") && filters.city && filters.city.toLowerCase() !== "all india" && p.city.toLowerCase() !== filters.city.toLowerCase()) return false;
+    if (enabled("city") && filters.city && !isAllBharatCity(filters.city) && p.city.toLowerCase() !== filters.city.toLowerCase()) return false;
 
     // 2. Locality check
     if (enabled("locality") && filters.locality && !p.locality.toLowerCase().includes(filters.locality.toLowerCase())) return false;
@@ -127,7 +128,8 @@ function ListingsContent() {
   const [activeMapCity, setActiveMapCity] = useState<string>(selectedCity);
   // Sync parameters from URL
   useEffect(() => {
-    const urlCity = searchParams.get("city") || selectedCity;
+    const rawUrlCity = searchParams.get("city") || selectedCity;
+    const urlCity = isAllBharatCity(rawUrlCity) ? ALL_BHARAT_CITY : rawUrlCity;
     const urlPurpose = (searchParams.get("purpose") as "all" | "buy" | "sell" | "rent" | "lease") || "all";
     const urlLocality = searchParams.get("locality") || "";
     const urlType = searchParams.get("type") || "any";

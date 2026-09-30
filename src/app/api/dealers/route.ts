@@ -1,4 +1,5 @@
 import { type NextRequest } from "next/server";
+import { isAllBharatCity } from "@/constants/cities";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
 import { clampPageParams } from "@/lib/api/client";
 import { createServiceClient } from "@/lib/supabase/admin";
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
     query = query.eq("user_id", user.id);
   }
 
-  if (city && city !== "All India") query = query.eq("city", city);
+  if (city && !isAllBharatCity(city)) query = query.eq("city", city);
 
   if (categoryParam) {
     const parsed = directoryCategorySchema.safeParse(categoryParam);
