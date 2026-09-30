@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { ALL_BHARAT_CITY, isAllBharatCity } from "@/constants/cities";
 import { SESSION_STORAGE_KEY } from "@/constants/demoAccounts";
 
 const defaultSession = {
@@ -33,7 +34,9 @@ export function readUiPrefs(): UiPrefs {
       favorites: Array.isArray(parsed.favorites) ? parsed.favorites : [],
       selectedCity:
         typeof parsed.selectedCity === "string" && parsed.selectedCity
-          ? parsed.selectedCity
+          ? isAllBharatCity(parsed.selectedCity)
+            ? ALL_BHARAT_CITY
+            : parsed.selectedCity
           : defaultSession.selectedCity,
     };
   } catch {

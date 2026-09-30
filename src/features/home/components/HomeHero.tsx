@@ -71,7 +71,7 @@ export function HomeHero() {
           <div className="absolute inset-0 overflow-hidden rounded-[36px] select-none pointer-events-none">
             <img
               src="/indian_heritage_hero_bg.png"
-              alt="Luxury Rajasthan Heritage Lake Palace Background"
+              alt="Luxury Bharat Heritage Lake Palace Background"
               className="w-full h-full object-cover object-center"
             />
             {/* Dark overlay for readability */}
@@ -85,7 +85,7 @@ export function HomeHero() {
               </h1>
 
               <p className="text-white/80 text-sm sm:text-base md:text-lg font-medium max-w-2xl leading-relaxed mt-1 text-center">
-                {"with India's largest choice of luxury & heritage homes"}
+                {"with Bharat's largest choice of luxury & heritage homes"}
               </p>
             </div>
 

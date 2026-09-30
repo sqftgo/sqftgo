@@ -34,7 +34,7 @@ export default function HelpCenterPage() {
     {
       category: "verification",
       q: "What does the 'RERA Approved' badge represent?",
-      a: "Every listing displaying the 'RERA Approved' badge has been verified against the Rajasthan Real Estate Regulatory Authority database. This ensures clean titles, structural vetting, and clearance from municipal property taxes.",
+      a: "Every listing displaying the 'RERA Approved' badge has been verified against the state Real Estate Regulatory Authority (RERA) database. This ensures clean titles, structural vetting, and clearance from municipal property taxes.",
     },
     {
       category: "listings",

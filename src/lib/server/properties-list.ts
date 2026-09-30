@@ -1,5 +1,6 @@
 import "server-only";
 
+import { isAllBharatCity } from "@/constants/cities";
 import { clampPageParams } from "@/lib/api/client";
 import { toDbStatus } from "@/lib/mappers/property";
 import { propertyStatusUiSchema } from "@/lib/validation/property";
@@ -108,7 +109,7 @@ export function applyPropertyListFilters<T>(
     if (!parsed.success) return { error: "Invalid status filter" };
     next = next.eq("status", toDbStatus(parsed.data));
   }
-  if (city && city !== "All India") next = next.eq("city", city);
+  if (city && !isAllBharatCity(city)) next = next.eq("city", city);
   if (type && type !== "any") next = next.eq("type", type as PropertyTypeDb);
   if (purpose) next = next.eq("purpose", purpose as PropertyPurposeDb);
   if (featuredParam === "true") next = next.eq("featured", true);

@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useApp } from "@/context/AppContext";
+import { isAllBharatCity } from "@/constants/cities";
 import { isServiceDirectoryCategory } from "@/features/dealers";
 import { servicePlatformService } from "@/services";
 import type { ServiceType } from "@/types";
@@ -52,7 +53,7 @@ function ServicesContent() {
   }, [directoryProfiles]);
 
   const cityProfiles = useMemo(() => {
-    if (!selectedCity || selectedCity === "All India") return serviceProfiles;
+    if (!selectedCity || isAllBharatCity(selectedCity)) return serviceProfiles;
     return serviceProfiles.filter(
       (p) => p.city.toLowerCase() === selectedCity.toLowerCase()
     );

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isAllBharatCity } from "@/constants/cities";
 
 export type ResolvedActiveCity = {
   city: string;
@@ -15,7 +16,7 @@ export async function resolveActiveCity(
   rawCity: string
 ): Promise<ResolvedActiveCity | null> {
   const city = rawCity.trim();
-  if (city.length < 2 || city.toLowerCase() === "all india") return null;
+  if (city.length < 2 || isAllBharatCity(city)) return null;
 
   const { data, error } = await supabase
     .from("locations")

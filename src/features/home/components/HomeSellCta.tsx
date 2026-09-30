@@ -29,7 +29,7 @@ export function HomeSellCta() {
                 List it with SQFTGO completely free.
               </h2>
               <p className="text-slate-100 text-xs sm:text-sm leading-relaxed font-semibold max-w-xl">
-                Connect with genuine RERA-compliant buyers, agents, and brokers in Rajasthan. Reach out to our verified active database of thousands of clients looking for heritage villas and luxury houses.
+                Connect with genuine RERA-compliant buyers, agents, and brokers across Bharat. Reach out to our verified active database of thousands of clients looking for heritage villas and luxury houses.
               </p>
             </div>
             
