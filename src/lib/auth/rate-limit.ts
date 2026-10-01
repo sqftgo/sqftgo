@@ -192,9 +192,13 @@ export async function checkRateLimit(
   return checkMemoryRateLimit(key, limit, windowMs);
 }
 
-/** Auth abuse defaults per IP. */
+/**
+ * Auth abuse defaults per IP.
+ * Login is 40/minute so an office or café on one Wi-Fi can sign in together.
+ * Password guessing is still slowed; one shared address is not locked after 10 people.
+ */
 export const AUTH_RATE_LIMITS = {
-  login: { limit: 10, windowMs: 60_000 },
+  login: { limit: 40, windowMs: 60_000 },
   signup: { limit: 5, windowMs: 60_000 },
   forgotPassword: { limit: 5, windowMs: 60_000 },
 } as const;
