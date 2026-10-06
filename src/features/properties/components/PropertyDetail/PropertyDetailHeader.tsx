@@ -68,7 +68,7 @@ export function PropertyDetailHeader({
           </h1>
           <div className="flex items-center gap-1.5 text-charcoal/70 text-sm font-bold text-left">
             <MapPin className="w-4.5 h-4.5 text-terracotta shrink-0" />
-            <span>{property.locality}, {property.city}, Rajasthan</span>
+            <span>{property.locality}, {property.city}, Bharat</span>
           </div>
         </div>
 

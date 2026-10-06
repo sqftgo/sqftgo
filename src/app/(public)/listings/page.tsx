@@ -3,11 +3,12 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useApp } from "@/context/AppContext";
+import { ALL_BHARAT_CITY, isAllBharatCity } from "@/constants/cities";
 import type { Property } from "@/types";
 import { CustomSelect, EmptyState } from "@/components/ui";
 import { PropertyCard, FilterPanel, type FilterState } from "@/features/properties";
 import { CityMap } from "@/features/locations";
-import { SlidersHorizontal, Info, MapPin, Grid, Map, Search } from "lucide-react";
+import { SlidersHorizontal, Grid3X3, List, Map, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useBudgetPriceOptions } from "@/features/admin";
 import { useActiveCities } from "@/hooks/useActiveCities";
@@ -32,7 +33,7 @@ const filterProperties = (
   const enabled = (key: string) => catalog.length === 0 || catalog.some((f) => f.key === key && f.active);
   return list.filter((p) => {
     // 1. City check
-    if (enabled("city") && filters.city && filters.city.toLowerCase() !== "all india" && p.city.toLowerCase() !== filters.city.toLowerCase()) return false;
+    if (enabled("city") && filters.city && !isAllBharatCity(filters.city) && p.city.toLowerCase() !== filters.city.toLowerCase()) return false;
 
     // 2. Locality check
     if (enabled("locality") && filters.locality && !p.locality.toLowerCase().includes(filters.locality.toLowerCase())) return false;
@@ -123,11 +124,12 @@ function ListingsContent() {
 
   const [sortOrder, setSortOrder] = useState<string>("latest");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState<boolean>(false);
-  const [viewMode, setViewMode] = useState<"grid" | "split">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "split">("list");
   const [activeMapCity, setActiveMapCity] = useState<string>(selectedCity);
   // Sync parameters from URL
   useEffect(() => {
-    const urlCity = searchParams.get("city") || selectedCity;
+    const rawUrlCity = searchParams.get("city") || selectedCity;
+    const urlCity = isAllBharatCity(rawUrlCity) ? ALL_BHARAT_CITY : rawUrlCity;
     const urlPurpose = (searchParams.get("purpose") as "all" | "buy" | "sell" | "rent" | "lease") || "all";
     const urlLocality = searchParams.get("locality") || "";
     const urlType = searchParams.get("type") || "any";
@@ -371,8 +373,31 @@ function ListingsContent() {
                 </span>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
 
+                {/* Grid / List / Map toggle */}
+                <div className="flex items-center bg-white border border-sand rounded-xl overflow-hidden shadow-sm">
+                  {([
+                    { mode: "grid" as const, icon: Grid3X3, label: "Grid" },
+                    { mode: "list" as const, icon: List, label: "List" },
+                    { mode: "split" as const, icon: Map, label: "Map" },
+                  ]).map(({ mode, icon: Icon, label }) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      title={label}
+                      onClick={() => setViewMode(mode)}
+                      className={`flex items-center gap-1.5 px-3 py-2.5 text-[11px] font-bold transition-all cursor-pointer ${
+                        viewMode === mode
+                          ? "bg-indigo text-white"
+                          : "text-charcoal/60 hover:bg-sand/40 hover:text-indigo"
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5 shrink-0" />
+                      <span className="hidden sm:inline">{label}</span>
+                    </button>
+                  ))}
+                </div>
 
                 {/* Sorting */}
                 <CustomSelect
@@ -404,8 +429,10 @@ function ListingsContent() {
                       variants={listContainerVariants}
                       initial="hidden"
                       animate="show"
-                      className={`grid gap-6 ${
-                        viewMode === "split"
+                      className={`grid gap-5 ${
+                        viewMode === "grid"
+                          ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
+                          : viewMode === "split"
                           ? "grid-cols-1 sm:grid-cols-2"
                           : "grid-cols-1"
                       }`}
@@ -415,7 +442,7 @@ function ListingsContent() {
                           <PropertyCard 
                             property={property} 
                             onSelect={(p) => setActiveMapCity(p.city)}
-                            layout={viewMode === "split" ? "grid" : "list"}
+                            layout={viewMode === "list" ? "list" : "grid"}
                           />
                         </motion.div>
                       ))}
@@ -431,7 +458,7 @@ function ListingsContent() {
                 )}
               </div>
 
-              {/* Sticky Relocation Map */}
+              {/* Sticky Relocation Map (Map/Split mode) */}
               {viewMode === "split" && (
                 <div className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-24 z-10 transition-all duration-300">
                   <CityMap city={activeMapCity} />

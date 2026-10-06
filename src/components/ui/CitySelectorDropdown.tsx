@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Search, MapPin, X } from "lucide-react";
-import { ALL_INDIA_CITY } from "@/constants/cities";
+import { ALL_BHARAT_CITY } from "@/constants/cities";
 
 const CityIcon = () => (
   <div className="w-8 h-8 rounded-full bg-indigo/5 border border-indigo/10 flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110">
@@ -17,7 +17,7 @@ interface CitySelectorDropdownProps {
   /** Active admin-managed cities (required for production control). */
   cities: string[];
   align?: "left" | "right";
-  includeAllIndia?: boolean;
+  includeAllBharat?: boolean;
 }
 
 export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
@@ -26,7 +26,7 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
   onClose,
   cities,
   align = "right",
-  includeAllIndia = true,
+  includeAllBharat = true,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -37,10 +37,10 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
 
   const catalog = useMemo(() => {
     const unique = Array.from(new Set(cities.map((c) => c.trim()).filter(Boolean)));
-    return includeAllIndia ? [ALL_INDIA_CITY, ...unique] : unique;
-  }, [cities, includeAllIndia]);
+    return includeAllBharat ? [ALL_BHARAT_CITY, ...unique] : unique;
+  }, [cities, includeAllBharat]);
 
-  const popular = useMemo(() => catalog.filter((c) => c !== ALL_INDIA_CITY).slice(0, 12), [catalog]);
+  const popular = useMemo(() => catalog.filter((c) => c !== ALL_BHARAT_CITY), [catalog]);
 
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -55,10 +55,11 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
 
   return (
     <div
-      className={`fixed sm:absolute z-[100] left-4 right-4 top-[72px] sm:top-auto sm:mt-3 mx-auto sm:mx-0 w-[calc(100vw-32px)] sm:w-[540px] max-w-[540px] rounded-3xl bg-white text-charcoal shadow-2xl border border-indigo/10 overflow-hidden flex flex-col ${
+      className={`fixed sm:absolute z-[100] left-4 right-4 top-[72px] sm:top-auto sm:mt-3 mx-auto sm:mx-0 w-[calc(100vw-32px)] sm:w-[540px] max-w-[540px] max-h-[min(70vh,520px)] rounded-3xl bg-white text-charcoal shadow-2xl border border-indigo/10 overflow-hidden flex flex-col ${
         align === "right" ? "sm:left-auto sm:right-0" : "sm:right-auto sm:left-0"
       }`}
       onClick={(e) => e.stopPropagation()}
+      onWheel={(e) => e.stopPropagation()}
     >
       <div
         className={`absolute -top-2 w-4 h-4 rotate-45 bg-white border-t border-l border-indigo/10 z-[101] hidden sm:block ${
@@ -91,22 +92,22 @@ export const CitySelectorDropdown: React.FC<CitySelectorDropdownProps> = ({
         </div>
       </div>
 
-      <div className="max-h-[350px] overflow-y-auto px-4 pb-4 no-scrollbar">
+      <div className="min-h-0 max-h-[min(52vh,420px)] overflow-y-auto overscroll-contain dropdown-scrollbar px-4 pb-4">
         {searchQuery.trim() === "" ? (
           <div>
-            {includeAllIndia ? (
+            {includeAllBharat ? (
               <button
                 suppressHydrationWarning
                 type="button"
-                onClick={() => handleSelect(ALL_INDIA_CITY)}
+                onClick={() => handleSelect(ALL_BHARAT_CITY)}
                 className={`w-full mb-3 text-left px-4 py-3 rounded-xl text-sm transition-all duration-150 flex items-center gap-2.5 cursor-pointer ${
-                  selectedCity === ALL_INDIA_CITY
+                  selectedCity === ALL_BHARAT_CITY
                     ? "bg-indigo/10 text-indigo font-bold"
                     : "hover:bg-indigo/[0.02] text-charcoal/70 font-medium border border-indigo/10"
                 }`}
               >
                 <MapPin className="w-4 h-4" />
-                {ALL_INDIA_CITY}
+                {ALL_BHARAT_CITY}
               </button>
             ) : null}
 

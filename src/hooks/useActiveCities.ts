@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
-import { ALL_INDIA_CITY } from "@/constants/cities";
+import { ALL_BHARAT_CITY } from "@/constants/cities";
 
 /**
- * Active admin-managed cities for public/dealer pickers.
- * Admin catalog may include inactive rows — those are filtered out here.
+ * Active admin-managed cities for public/dealer/admin pickers.
+ * Single source of truth: `locations` catalog (inactive rows excluded).
  */
 export function useActiveCities() {
   const { locations, locationsReady, selectedCity, setSelectedCity } = useApp();
@@ -15,7 +15,12 @@ export function useActiveCities() {
     () =>
       locations
         .filter((l) => l.active)
-        .sort((a, b) => a.city.localeCompare(b.city)),
+        .slice()
+        .sort((a, b) => {
+          const order = (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+          if (order !== 0) return order;
+          return a.city.localeCompare(b.city);
+        }),
     [locations]
   );
 
@@ -23,7 +28,7 @@ export function useActiveCities() {
 
   const cityOptions = useMemo(
     () => [
-      { label: ALL_INDIA_CITY, value: ALL_INDIA_CITY },
+      { label: ALL_BHARAT_CITY, value: ALL_BHARAT_CITY },
       ...cities.map((c) => ({ label: c, value: c })),
     ],
     [cities]
@@ -34,13 +39,18 @@ export function useActiveCities() {
     [cities]
   );
 
+  const cityOptionsWithAllCities = useMemo(
+    () => [{ label: "All Cities", value: "All" }, ...cities.map((c) => ({ label: c, value: c }))],
+    [cities]
+  );
+
   // Snap invalid saved preference onto an allowed city once catalog is ready.
   useEffect(() => {
     if (!locationsReady || cities.length === 0) return;
-    if (selectedCity === ALL_INDIA_CITY) return;
+    if (selectedCity === ALL_BHARAT_CITY) return;
     const ok = cities.some((c) => c.toLowerCase() === selectedCity.toLowerCase());
     if (!ok) {
-      setSelectedCity(cities[0] ?? ALL_INDIA_CITY);
+      setSelectedCity(cities[0] ?? ALL_BHARAT_CITY);
     }
   }, [locationsReady, cities, selectedCity, setSelectedCity]);
 
@@ -53,6 +63,7 @@ export function useActiveCities() {
     cities,
     cityOptions,
     cityOptionsWithoutAll,
+    cityOptionsWithAllCities,
     findLocation,
   };
 }

@@ -4,7 +4,7 @@ Harsh buyer/user validation against live Next BFF + Supabase.
 
 - **When:** 2026-08-04 (IST evening run)
 - **Base URL:** `http://localhost:3000`
-- **Credentials:** `user@sqftgo.com` / `user2026` (+ broker for visit confirm)
+- **Credentials:** `user@sqftgo.com` / `sqftgo26` (+ broker for visit confirm)
 - **Preflight:** `pnpm auth:verify` → service PASS, demo login OK
 - **Commands:** `pnpm user-flow:verify` · `pnpm user-flow:verify:ui`
 

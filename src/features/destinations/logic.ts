@@ -1,5 +1,5 @@
 import type { Property } from "@/types";
-import { ALL_INDIA_CITY, CITIES_WITHOUT_ALL } from "@/constants/cities";
+import { CITIES_WITHOUT_ALL, isAllBharatCity } from "@/constants/cities";
 import { DESTINATIONS, TAGS, type Destination } from "./data/destinations";
 
 export { DESTINATIONS, TAGS };
@@ -130,7 +130,7 @@ export function regionForSelectedCity(
   locations: { city: string; state: string }[] = []
 ): string {
   const city = selectedCity.trim();
-  if (!city || city.toLowerCase() === ALL_INDIA_CITY.toLowerCase()) return "All";
+  if (!city || isAllBharatCity(city)) return "All";
 
   const dest = DESTINATIONS.find((d) => d.name.toLowerCase() === city.toLowerCase());
   if (dest) return dest.tag;

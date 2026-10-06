@@ -20,7 +20,7 @@ export function PricingStep({ form, set }: PricingStepProps) {
 
       <div className="space-y-5 text-left">
         <div className="max-w-sm space-y-1.5">
-          <FormField label="Listed Price (Γé╣)" required>
+          <FormField label="Listed Price (in ₹)" required>
             <TextInput
               type="number"
               value={form.price}
@@ -39,52 +39,7 @@ export function PricingStep({ form, set }: PricingStepProps) {
           ) : null}
         </div>
 
-        <div className="bg-sand/15 rounded-3xl p-6 border border-indigo/5 space-y-4">
-          <p className="text-[10px] font-black text-charcoal/45 uppercase tracking-widest">
-            Pricing Estimation Breakdown
-          </p>
-          <div className="space-y-3 text-xs">
-            <div className="flex justify-between border-b border-sand/40 pb-2">
-              <span className="text-charcoal/60 font-semibold">Base Price</span>
-              <span className="text-charcoal font-black">
-                Γé╣{form.price ? parseInt(form.price).toLocaleString("en-IN") : "ΓÇö"}
-              </span>
-            </div>
-            <div className="flex justify-between border-b border-sand/40 pb-2">
-              <span className="text-charcoal/60 font-semibold flex items-center gap-1">
-                Registration & Stamp Duty{" "}
-                <span className="text-[10px] text-charcoal/40 font-bold">(Est. 6%)</span>
-              </span>
-              <span className="text-charcoal/70 font-semibold">
-                Γé╣
-                {form.price
-                  ? Math.round(parseInt(form.price) * 0.06).toLocaleString("en-IN")
-                  : "ΓÇö"}
-              </span>
-            </div>
-            <div className="flex justify-between border-b border-sand/40 pb-2">
-              <span className="text-charcoal/60 font-semibold flex items-center gap-1">
-                Goods & Service Tax{" "}
-                <span className="text-[10px] text-charcoal/40 font-bold">(Est. 5%)</span>
-              </span>
-              <span className="text-charcoal/70 font-semibold">
-                Γé╣
-                {form.price
-                  ? Math.round(parseInt(form.price) * 0.05).toLocaleString("en-IN")
-                  : "ΓÇö"}
-              </span>
-            </div>
-            <div className="flex justify-between pt-1">
-              <span className="text-indigo font-black text-sm">Estimated Total Cost</span>
-              <span className="text-indigo font-black text-sm">
-                Γé╣
-                {form.price
-                  ? Math.round(parseInt(form.price) * 1.11).toLocaleString("en-IN")
-                  : "ΓÇö"}
-              </span>
-            </div>
-          </div>
-        </div>
+
       </div>
     </div>
   );

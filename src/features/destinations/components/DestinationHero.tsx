@@ -24,7 +24,7 @@ export default function DestinationHero({
         <div className="absolute inset-0 overflow-hidden rounded-[40px] select-none pointer-events-none z-0">
           <Image
             src="/DestinationHero.png"
-            alt="Royal Rajasthan Palace"
+            alt="Royal Bharat Palace"
             fill
             className="object-cover object-center scale-100 group-hover:scale-105 transition-transform duration-[8000ms] ease-out"
             sizes="100vw"
@@ -42,7 +42,7 @@ export default function DestinationHero({
               Explore Royal Destinations
             </h1>
             <p className="text-white/85 text-xs sm:text-sm md:text-base font-semibold max-w-2xl leading-relaxed text-center">
-              Across <span className="text-amber-200 font-extrabold">{totalDestinations} premium cities</span> with <span className="text-gold font-extrabold">{totalProperties} verified active listings</span>
+              Across all major cities with verified listings
             </p>
           </div>
         </div>

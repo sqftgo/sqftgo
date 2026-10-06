@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useApp } from "@/context/AppContext";
+import { isAllBharatCity } from "@/constants/cities";
 import { isServiceDirectoryCategory } from "@/features/dealers";
 import { servicePlatformService } from "@/services";
 import type { ServiceType } from "@/types";
@@ -21,9 +23,13 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function ServicesPage() {
+function ServicesContent() {
   const { directoryProfiles, selectedCity } = useApp();
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const searchParams = useSearchParams();
+  const categoryFromUrl = searchParams.get("category");
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    categoryFromUrl && categoryFromUrl !== "all" ? categoryFromUrl : "all"
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
 
@@ -34,6 +40,12 @@ export default function ServicesPage() {
       .catch(() => setServiceTypes([]));
   }, []);
 
+  useEffect(() => {
+    if (categoryFromUrl && categoryFromUrl !== "all") {
+      setSelectedCategory(categoryFromUrl);
+    }
+  }, [categoryFromUrl]);
+
   const serviceProfiles = useMemo(() => {
     return directoryProfiles.filter(
       (p) => isServiceDirectoryCategory(p.category) && p.listingActive !== false
@@ -41,7 +53,7 @@ export default function ServicesPage() {
   }, [directoryProfiles]);
 
   const cityProfiles = useMemo(() => {
-    if (!selectedCity || selectedCity === "All India") return serviceProfiles;
+    if (!selectedCity || isAllBharatCity(selectedCity)) return serviceProfiles;
     return serviceProfiles.filter(
       (p) => p.city.toLowerCase() === selectedCity.toLowerCase()
     );
@@ -90,15 +102,13 @@ export default function ServicesPage() {
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-sand bg-white shadow-sm">
                 <span className="w-2 h-2 rounded-full bg-terracotta animate-pulse" />
                 <span className="text-terracotta font-black text-[10px] uppercase tracking-[0.2em]">
-                  City services for relocators
+                  Real estate services for every need
                 </span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-black tracking-tight leading-[1.1] text-charcoal">
                 Everything you need{" "}
-                <span className="text-indigo">
-                  in {selectedCity && selectedCity !== "All India" ? selectedCity : "your city"}
-                </span>
+                <span className="text-indigo">in your city</span>
               </h1>
 
               <p className="text-sm md:text-base text-charcoal/80 leading-relaxed font-semibold max-w-xl">
@@ -381,5 +391,19 @@ export default function ServicesPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function ServicesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="w-full min-h-screen flex items-center justify-center bg-cream/30 py-32">
+          <div className="text-indigo font-bold text-sm">Loading services…</div>
+        </div>
+      }
+    >
+      <ServicesContent />
+    </Suspense>
   );
 }

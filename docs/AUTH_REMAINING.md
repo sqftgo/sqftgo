@@ -77,7 +77,7 @@ Before real deploy:
 
 ### 3. App-level rate limiting
 
-- [x] In-memory throttle on `/api/auth/login` (10/min), `/signup` (5/min), `/forgot-password` (5/min) per IP (`src/lib/auth/rate-limit.ts`)
+- [x] Throttle on `/api/auth/login` (40/min), `/signup` (5/min), `/forgot-password` (5/min) per IP (`src/lib/auth/rate-limit.ts`)
 - [ ] Replace with Redis/Upstash when running multiple app instances
 
 ### 4. Google / social Sign-In
@@ -95,9 +95,9 @@ Local demo (dev only):
 
 | Email | Password | Role |
 |-------|----------|------|
-| `user@sqftgo.com` | `user2026` | user |
-| `broker@sqftgo.com` | `broker2026` | broker |
-| `admin@sqftgo.com` | `admin2026` | admin (not on login UI) |
+| `user@sqftgo.com` | `sqftgo26` | user |
+| `broker@sqftgo.com` | `sqftgo26` | broker |
+| `admin@sqftgo.com` | `sqftgo26` | admin (not on login UI) |
 
 ### 6. Optional hardening
 

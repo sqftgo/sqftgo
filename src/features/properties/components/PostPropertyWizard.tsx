@@ -163,9 +163,8 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
     e.preventDefault();
 
     void addProperty({
-      title: `${
-        type !== "Industrial Plot" && type !== "Agricultural Land" && bhk ? bhk + " BHK " : ""
-      }${type} in ${locality}`,
+      title: `${type !== "Industrial Plot" && type !== "Agricultural Land" && bhk ? bhk + " BHK " : ""
+        }${type} in ${locality}`,
       price: parseInt(price),
       type,
       purpose,
@@ -214,11 +213,10 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
                     key={mode}
                     type="button"
                     onClick={() => setPurpose(mode)}
-                    className={`p-4 rounded-2xl border-2 text-center flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
-                      purpose === mode
+                    className={`p-4 rounded-2xl border-2 text-center flex flex-col items-center gap-1.5 transition-all cursor-pointer ${purpose === mode
                         ? "border-terracotta bg-terracotta/5 text-terracotta font-extrabold shadow-sm"
                         : "border-sand bg-white text-charcoal/60 hover:border-terracotta/40"
-                    }`}
+                      }`}
                   >
                     <span className="text-sm capitalize">
                       {mode === "buy"
@@ -248,11 +246,10 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
                     key={t}
                     type="button"
                     onClick={() => setType(t as Property["type"])}
-                    className={`p-3 rounded-xl border text-xs font-bold transition-all ${
-                      type === t
+                    className={`p-3 rounded-xl border text-xs font-bold transition-all ${type === t
                         ? "bg-indigo border-indigo text-white shadow-md"
                         : "bg-white border-sand text-charcoal/70 hover:border-terracotta/40 hover:text-terracotta"
-                    }`}
+                      }`}
                   >
                     {t}
                   </button>
@@ -380,11 +377,10 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
                       key={bhkVal}
                       type="button"
                       onClick={() => setBhk(bhkVal)}
-                      className={`w-10 h-10 rounded-xl border flex items-center justify-center font-bold text-xs transition-all ${
-                        bhk === bhkVal
+                      className={`w-10 h-10 rounded-xl border flex items-center justify-center font-bold text-xs transition-all ${bhk === bhkVal
                           ? "bg-terracotta border-terracotta text-white shadow-sm"
                           : "bg-white border-sand text-charcoal/70 hover:border-terracotta/40 hover:text-terracotta"
-                      }`}
+                        }`}
                     >
                       {bhkVal}
                     </button>

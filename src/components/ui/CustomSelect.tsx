@@ -114,7 +114,7 @@ export default function CustomSelect({
               </div>
             )}
             
-            <div className="max-h-60 overflow-y-auto no-scrollbar py-1">
+            <div className="max-h-60 overflow-y-auto dropdown-scrollbar py-1">
               {filteredOptions.length > 0 ? (
                 filteredOptions.map((opt) => (
                   <button suppressHydrationWarning

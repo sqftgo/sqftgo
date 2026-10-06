@@ -15,9 +15,11 @@ import {
   Alert,
   type DataTableColumn,
 } from "@/components/ui";
+import { useActiveCities } from "@/hooks/useActiveCities";
 
 export default function AdminPropertiesPage() {
   const { updateProperty, deleteProperty, addLog, userEmail, refreshProperties } = useApp();
+  const { cityOptionsWithAllCities: cityOptions } = useActiveCities();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,8 +47,6 @@ export default function AdminPropertiesPage() {
     void load();
   }, [load]);
 
-  const cities = useMemo(() => [...new Set(properties.map((p) => p.city))], [properties]);
-
   const statusOptions = useMemo(
     () =>
       ["All", "Active", "Pending Review", "Rejected", "Sold", "Rented"].map((s) => ({
@@ -54,11 +54,6 @@ export default function AdminPropertiesPage() {
         value: s,
       })),
     []
-  );
-
-  const cityOptions = useMemo(
-    () => [{ label: "All Cities", value: "All" }, ...cities.map((c) => ({ label: c, value: c }))],
-    [cities]
   );
 
   const filtered = properties.filter((p) => {

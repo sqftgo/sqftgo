@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Compass, LayoutGrid, List, ArrowUpDown, HeartHandshake } from "lucide-react";
+import Link from "next/link";
+import { Compass, LayoutGrid, List, ArrowUpDown, HeartHandshake, PartyPopper, CalendarHeart } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 import {
@@ -20,6 +21,21 @@ import {
 import DestinationHero from "@/features/destinations/components/DestinationHero";
 import DestinationsFilter from "@/features/destinations/components/DestinationsFilter";
 import DestinationCard from "@/features/destinations/components/DestinationCard";
+
+const DESTINATION_SERVICE_CATEGORIES = [
+  {
+    name: "Event Managers",
+    desc: "Coordinate destination celebrations, logistics, and guest experiences.",
+    href: "/services?category=Event%20Managers",
+    Icon: PartyPopper,
+  },
+  {
+    name: "Wedding Planners",
+    desc: "Plan destination weddings end-to-end — venues, decor, and vendors.",
+    href: "/services?category=Wedding%20Planners",
+    Icon: CalendarHeart,
+  },
+] as const;
 
 export default function DestinationsPage() {
   const { properties, selectedCity, locations } = useApp();
@@ -85,7 +101,34 @@ export default function DestinationsPage() {
         totalWeddingHotspots={weddingHotspots}
       />
 
-      <section className="relative py-12 px-4 md:px-8 max-w-7xl mx-auto w-full z-20 -mt-12 text-left bg-white rounded-2xl shadow-xl border border-indigo/5 p-6 md:p-10 mb-16">
+      <section className="relative px-4 md:px-8 max-w-7xl mx-auto w-full z-20 -mt-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {DESTINATION_SERVICE_CATEGORIES.map(({ name, desc, href, Icon }) => (
+            <Link
+              key={name}
+              href={href}
+              className="group flex items-start gap-4 rounded-2xl border border-sand bg-white p-5 shadow-sm hover:border-indigo/25 hover:shadow-md transition-all"
+            >
+              <div className="w-11 h-11 rounded-xl bg-indigo/5 border border-indigo/10 flex items-center justify-center text-indigo group-hover:bg-indigo group-hover:text-white transition-colors shrink-0">
+                <Icon className="w-5 h-5" />
+              </div>
+              <div className="flex flex-col gap-1 min-w-0">
+                <span className="text-[10px] font-black uppercase tracking-widest text-terracotta">
+                  Category
+                </span>
+                <h2 className="font-serif font-black text-lg text-indigo group-hover:text-terracotta transition-colors">
+                  {name}
+                </h2>
+                <p className="text-xs text-charcoal/60 font-semibold leading-relaxed">
+                  {desc}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="relative py-12 px-4 md:px-8 max-w-7xl mx-auto w-full z-20 text-left bg-white rounded-2xl shadow-xl border border-indigo/5 p-6 md:p-10 mb-16">
 
         <DestinationsFilter
           tags={tags}

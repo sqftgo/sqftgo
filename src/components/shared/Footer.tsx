@@ -24,13 +24,13 @@ export const Footer: React.FC = () => {
   // Hide Footer on dashboard and auth pages
   if (
     pathname === "/login" || pathname === "/signup" || pathname === "/register" ||
-    pathname === "/forgot-password" || pathname === "/update-password" || pathname === "/dealer/register" || 
+    pathname === "/forgot-password" || pathname === "/update-password" || pathname === "/dealer/register" ||
     pathname === "/admin/login" ||
     pathname.startsWith("/dealer/dashboard") || pathname.startsWith("/admin")
   ) {
     return null;
   }
-  
+
   const socials = [
     { name: "Instagram", icon: faInstagram, href: "https://instagram.com/sqftgo" },
     { name: "Facebook", icon: faFacebookF, href: "https://facebook.com/sqftgo" },
@@ -40,7 +40,7 @@ export const Footer: React.FC = () => {
 
   return (
     <footer className="relative z-10 bg-sand/50 text-charcoal/80 pt-20 pb-10 border-t border-sand/40 overflow-hidden select-none">
-      
+
       {/* Background Watermark 1: Elegant Palace Silhouette at bottom right */}
       <div className="absolute bottom-[-10px] right-[-10px] w-[95%] sm:w-[60%] md:w-[45%] lg:w-[35%] max-w-[500px] aspect-[1.3/1] opacity-[0.05] text-terracotta pointer-events-none z-0">
         <svg viewBox="0 0 600 500" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
@@ -124,10 +124,10 @@ export const Footer: React.FC = () => {
       </div>
 
       <div className="container mx-auto px-6 lg:px-12 max-w-7xl relative z-10">
-        
+
         {/* Main 4-Column Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-14 items-start mb-16">
-          
+
           {/* Column 1: Brand & Bios (span 4) */}
           <div className="lg:col-span-4 flex flex-col gap-5 text-left">
             <Link href="/" className="flex items-center gap-2 group w-fit">
@@ -142,7 +142,7 @@ export const Footer: React.FC = () => {
             </Link>
 
             <p className="text-charcoal/70 text-xs font-semibold leading-relaxed max-w-sm">
-              Serving the luxury heritage real estate needs in India since 2008. Curating boutique residential, commercial, and agricultural properties across Rajasthan&apos;s historic locations.
+              Serving the luxury heritage real estate needs in Bharat. Curating boutique residential, commercial, and agricultural properties across Bharat&apos;s historic locations.
             </p>
 
             {/* Social Icons Inline */}
@@ -191,13 +191,13 @@ export const Footer: React.FC = () => {
             <h4 className="text-indigo font-serif font-black text-sm uppercase tracking-wider">
               Contact Details
             </h4>
-            
+
             <div className="flex flex-col gap-4 text-xs font-bold text-charcoal/70">
               <a href={phoneHref} className="flex items-center gap-3 hover:text-terracotta transition-colors duration-200">
                 <Phone className="w-4 h-4 text-terracotta flex-shrink-0" />
                 <span>{supportPhone}</span>
               </a>
-              
+
               <a href={`mailto:${supportEmail}`} className="flex items-center gap-3 hover:text-terracotta transition-colors duration-200">
                 <Mail className="w-4 h-4 text-terracotta flex-shrink-0" />
                 <span>{supportEmail}</span>
@@ -205,7 +205,7 @@ export const Footer: React.FC = () => {
 
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-terracotta flex-shrink-0 mt-0.5" />
-                <span className="leading-relaxed">Lake Palace Road, Udaipur, Rajasthan, 313001</span>
+                <span className="leading-relaxed">Lake Palace Road, Udaipur, Bharat, 313001</span>
               </div>
 
               <div className="flex items-center gap-3 border-t border-sand/30 pt-3 mt-1">
@@ -220,7 +220,7 @@ export const Footer: React.FC = () => {
             <h4 className="text-indigo font-serif font-black text-sm uppercase tracking-wider">
               Heritage Club
             </h4>
-            
+
             <p className="text-charcoal/70 text-xs font-semibold leading-relaxed">
               Subscribe to receive exclusive heritage property briefs and private investment opportunities directly.
             </p>
@@ -259,12 +259,8 @@ export const Footer: React.FC = () => {
         {/* Footer Bottom Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-bold text-charcoal/50 relative z-10">
           <p>© {new Date().getFullYear()} {settings.siteName} Real Estate Private Limited (SQFTGO.COM). All rights reserved.</p>
-          
+
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs">
-            <Link href="/dealer/dashboard" className="hover:text-terracotta text-indigo transition-colors font-bold">Dealers Portal</Link>
-            <span className="text-sand">|</span>
-            <Link href="/admin" className="hover:text-terracotta transition-colors">Admin Console</Link>
-            <span className="text-sand">|</span>
             <Link href="/services" className="hover:text-terracotta transition-colors">Services Directory</Link>
             <span className="text-sand">|</span>
             <Link href="/privacy" className="hover:text-terracotta transition-colors">Privacy Policy</Link>
