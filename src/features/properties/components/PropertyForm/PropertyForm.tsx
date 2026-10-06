@@ -46,7 +46,12 @@ import { ReviewStep } from "./steps/ReviewStep";
 
 export type { PropertyFormProps, PropertyFormSubmitData } from "./types";
 
-export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormProps) {
+export function PropertyForm({
+  mode,
+  initialProperty,
+  onSubmit,
+  returnPath = "/dealer/dashboard/properties",
+}: PropertyFormProps) {
   const router = useRouter();
   const { amenities } = useApp();
   const { cityOptionsWithoutAll, findLocation, locationsReady } = useActiveCities();
@@ -122,7 +127,7 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
     try {
       await onSubmit(toSubmitData(form, status));
       setSubmitted(status === "Draft" ? "draft" : "published");
-      setTimeout(() => router.push("/dealer/dashboard/properties"), 2000);
+      setTimeout(() => router.push(returnPath), 2000);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Unable to save listing");
     } finally {
@@ -143,7 +148,7 @@ export function PropertyForm({ mode, initialProperty, onSubmit }: PropertyFormPr
       setSaved(true);
       setTimeout(() => {
         setSaved(false);
-        router.push("/dealer/dashboard/properties");
+        router.push(returnPath);
       }, 1500);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Unable to save listing");

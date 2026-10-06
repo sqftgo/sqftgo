@@ -21,7 +21,7 @@ export type PlatformSettings = {
   updatedBy: string | null;
 };
 
-/** Public subset of platform settings (no maintenance / analytics secrets). */
+/** Public subset of platform settings (no analytics IDs or audit fields). */
 export type PublicPlatformSettings = {
   siteName: string;
   tagline: string;
@@ -29,6 +29,9 @@ export type PublicPlatformSettings = {
   supportPhone: string | null;
   allowUserListings: boolean;
   maxListingsPerUser: number;
+  maxListingsPerDealer: number;
+  requireListingApproval: boolean;
+  maintenanceMode: boolean;
   currencyCode: string;
   priceRanges: PlatformSettings["priceRanges"];
 };

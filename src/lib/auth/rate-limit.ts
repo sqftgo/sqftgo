@@ -201,6 +201,7 @@ export const AUTH_RATE_LIMITS = {
   login: { limit: 40, windowMs: 60_000 },
   signup: { limit: 5, windowMs: 60_000 },
   forgotPassword: { limit: 5, windowMs: 60_000 },
+  refresh: { limit: 30, windowMs: 60_000 },
 } as const;
 
 /**

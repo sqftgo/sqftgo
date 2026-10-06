@@ -7,9 +7,25 @@ import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { authSessionPayload } from "@/lib/mappers/profile";
 import { profileUpdateSchema, profileZodError } from "@/lib/validation/profile";
 
+function bearerToken(request: NextRequest): string | undefined {
+  const header = request.headers.get("authorization");
+  if (!header?.toLowerCase().startsWith("bearer ")) return undefined;
+  return header.slice(7).trim() || undefined;
+}
+
 export async function GET(request: NextRequest) {
   if (!hasSupabaseEnv()) {
     return jsonError("Supabase is not configured", 503);
+  }
+
+  const bearer = bearerToken(request);
+  if (bearer) {
+    const { user, profile } = await authenticateApiRequest(request);
+    if (!user || !profile) return jsonError("Unauthorized", 401);
+    if (profile.status === "suspended") {
+      return jsonError("This account has been suspended", 403);
+    }
+    return jsonOk(authSessionPayload(profile, bearer));
   }
 
   const { supabase, applyCookies } = createRouteClient(request);
@@ -52,11 +68,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const bearer = request.headers.get("authorization")?.toLowerCase().startsWith("bearer ")
-    ? request.headers.get("authorization")!.slice(7).trim()
-    : undefined;
-
-  return applyCookies(jsonOk(authSessionPayload(profile, bearer || undefined)));
+  return applyCookies(jsonOk(authSessionPayload(profile)));
 }
 
 export async function PATCH(request: NextRequest) {

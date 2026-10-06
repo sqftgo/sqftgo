@@ -11,6 +11,9 @@ const FALLBACK: PublicPlatformSettings = {
   supportPhone: null,
   allowUserListings: true,
   maxListingsPerUser: 3,
+  maxListingsPerDealer: 3,
+  requireListingApproval: true,
+  maintenanceMode: false,
   currencyCode: "INR",
   priceRanges: null,
 };

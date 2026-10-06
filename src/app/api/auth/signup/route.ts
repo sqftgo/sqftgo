@@ -136,9 +136,13 @@ export async function POST(request: NextRequest) {
     if (promoted) profile = { ...profile, role: promoted };
 
     return applyCookies(
-      NextResponse.json(authSessionPayload(profile, signInData.session?.access_token), {
-        status: 201,
-      })
+      NextResponse.json(
+        authSessionPayload(profile, signInData.session?.access_token, {
+          refreshToken: signInData.session?.refresh_token,
+          expiresAt: signInData.session?.expires_at,
+        }),
+        { status: 201 }
+      )
     );
   }
 
@@ -187,7 +191,10 @@ export async function POST(request: NextRequest) {
 
   return applyCookies(
     NextResponse.json(
-      authSessionPayload(profile, data.session?.access_token),
+      authSessionPayload(profile, data.session?.access_token, {
+        refreshToken: data.session?.refresh_token,
+        expiresAt: data.session?.expires_at,
+      }),
       { status: 201 }
     )
   );

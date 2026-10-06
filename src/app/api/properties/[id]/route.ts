@@ -53,8 +53,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   if (profile.status === "suspended") return jsonError("Forbidden", 403);
 
   const isAdmin = profile.role === "admin";
-  const isBroker = profile.role === "broker";
-  if (!isAdmin && !isBroker) return jsonError("Forbidden", 403);
+  const canOwnListings = profile.role === "broker" || profile.role === "user";
+  if (!isAdmin && !canOwnListings) return jsonError("Forbidden", 403);
+  if (profile.role === "user" && profile.listing_status === "rejected") {
+    return jsonError("Your listing access has been revoked", 403);
+  }
 
   let body: unknown;
   try {
@@ -218,8 +221,8 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
   if (profile.status === "suspended") return jsonError("Forbidden", 403);
 
   const isAdmin = profile.role === "admin";
-  const isBroker = profile.role === "broker";
-  if (!isAdmin && !isBroker) return jsonError("Forbidden", 403);
+  const canOwnListings = profile.role === "broker" || profile.role === "user";
+  if (!isAdmin && !canOwnListings) return jsonError("Forbidden", 403);
 
   const admin = createServiceClient();
   const { data: existing, error: loadError } = await admin

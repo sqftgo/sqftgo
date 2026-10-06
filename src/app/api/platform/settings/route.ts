@@ -7,7 +7,7 @@ import type { PlatformSettingsRow } from "@/types/database";
 
 /**
  * Public platform config used by marketplace UI (branding, caps, price filters).
- * Does not expose maintenance mode or analytics IDs.
+ * Exposes maintenance mode for native clients (middleware only gates web pages); never analytics IDs.
  */
 export async function GET() {
   if (!hasSupabaseEnv()) return jsonError("Supabase is not configured", 503);

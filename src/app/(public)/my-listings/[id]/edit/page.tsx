@@ -97,7 +97,12 @@ export default function EditMyListingPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <PropertyForm mode="edit" initialProperty={prop} onSubmit={handleSubmit} />
+      <PropertyForm
+        mode="edit"
+        initialProperty={prop}
+        onSubmit={handleSubmit}
+        returnPath="/my-listings"
+      />
     </div>
   );
 }

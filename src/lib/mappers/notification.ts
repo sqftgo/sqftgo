@@ -10,5 +10,8 @@ export function mapNotificationRow(row: NotificationRow): Notification {
     read: row.read,
     date: row.created_at.split("T")[0] ?? row.created_at,
     forRole: row.for_role,
+    entityType: row.entity_type ?? undefined,
+    entityId: row.entity_id ?? undefined,
+    createdAt: row.created_at,
   };
 }
