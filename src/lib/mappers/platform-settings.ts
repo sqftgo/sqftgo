@@ -57,6 +57,10 @@ export function mapPublicPlatformSettings(
     supportPhone: full.supportPhone,
     allowUserListings: full.allowUserListings,
     maxListingsPerUser: full.maxListingsPerUser,
+    maxListingsPerDealer:
+      full.maxListingsPerDealer && full.maxListingsPerDealer >= 1 ? full.maxListingsPerDealer : 3,
+    requireListingApproval: full.requireListingApproval,
+    maintenanceMode: full.maintenanceMode,
     currencyCode: full.currencyCode,
     priceRanges: full.priceRanges ?? DEFAULT_PRICE_RANGES,
   };

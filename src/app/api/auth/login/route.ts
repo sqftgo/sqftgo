@@ -113,6 +113,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const accessToken = data.session?.access_token;
-  return applyCookies(NextResponse.json(authSessionPayload(profile, accessToken)));
+  return applyCookies(
+    NextResponse.json(
+      authSessionPayload(profile, data.session?.access_token, {
+        refreshToken: data.session?.refresh_token,
+        expiresAt: data.session?.expires_at,
+      })
+    )
+  );
 }

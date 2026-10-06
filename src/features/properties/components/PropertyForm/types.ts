@@ -60,6 +60,8 @@ export type PropertyFormProps = {
   mode: "create" | "edit";
   initialProperty?: Property;
   onSubmit: (data: PropertyFormSubmitData) => void | Promise<void>;
+  /** Where to go after saving; owners return to My Listings, dealers to their dashboard. */
+  returnPath?: string;
 };
 
 export type SetFormField = (k: keyof FormState, v: FormState[keyof FormState]) => void;

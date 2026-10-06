@@ -21,7 +21,16 @@ export function mapProfileRow(profile: ProfileRow): UserProfile {
  * Session JSON for web (cookies) and mobile (Bearer).
  * Flat fields + accessToken support Expo clients that cannot use Next cookies.
  */
-export function authSessionPayload(profile: ProfileRow, accessToken?: string) {
+export type AuthSessionTokens = {
+  refreshToken?: string;
+  expiresAt?: number;
+};
+
+export function authSessionPayload(
+  profile: ProfileRow,
+  accessToken?: string,
+  tokens: AuthSessionTokens = {}
+) {
   const mapped = mapProfileRow(profile);
   return {
     email: profile.email,
@@ -37,5 +46,7 @@ export function authSessionPayload(profile: ProfileRow, accessToken?: string) {
     dealerAccess: profile.role === "broker" ? ("approved" as const) : ("none" as const),
     joinedDate: profile.created_at,
     ...(accessToken ? { accessToken } : {}),
+    ...(tokens.refreshToken ? { refreshToken: tokens.refreshToken } : {}),
+    ...(tokens.expiresAt ? { expiresAt: tokens.expiresAt } : {}),
   };
 }

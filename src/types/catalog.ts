@@ -6,6 +6,9 @@ export interface Notification {
   read: boolean;
   date: string;
   forRole: "user" | "broker" | "admin" | "all";
+  entityType?: string;
+  entityId?: string;
+  createdAt?: string;
 }
 
 export interface Category {
