@@ -3,12 +3,13 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, MapPin, ChevronLeft, ChevronRight, Phone, UserCheck } from "lucide-react";
+import { Heart, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Property } from "@/types";
 import { useApp } from "@/context/AppContext";
+import { SignupPrompt } from "@/components/shared/SignupPrompt";
+import { useAuth } from "@/hooks/useAuth";
 import { formatIndianCurrency } from "@/lib/format";
 import { motion } from "framer-motion";
-import { Avatar } from "@/components/ui/Avatar";
 import { ContactOwnerModal } from "@/features/inquiries";
 
 export { formatIndianCurrency } from "@/lib/format";
@@ -30,8 +31,10 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   onToggleFavorite,
 }) => {
   const { favorites, toggleFavorite } = useApp();
+  const { isLoggedIn } = useAuth();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [contactOpen, setContactOpen] = useState(false);
+  const [signupOpen, setSignupOpen] = useState(false);
 
   const isFavorite = isFavoriteProp ?? favorites.includes(property.id);
   const handleToggleFavorite = () => {
@@ -69,6 +72,9 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         className={`relative overflow-hidden bg-sand/30 ${
           isListLayout ? "w-full md:w-80 h-48 md:h-full flex-shrink-0" : "aspect-video w-full"
         }`}
+        onClick={() => {
+          if (!isLoggedIn) setSignupOpen(true);
+        }}
       >
         <Image
           src={imageSrc}
@@ -180,7 +186,15 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
 
       <div className={`flex flex-col md:flex-row flex-grow bg-white ${isListLayout ? "md:divide-x md:divide-sand" : ""}`}>
         <div className="flex flex-col flex-grow p-5 text-left justify-between min-w-0">
-          <Link href={`/property/${property.id}`} className="flex flex-col gap-1.5 group/title">
+          <Link
+            href={`/property/${property.id}`}
+            onClick={(e) => {
+              if (isLoggedIn) return;
+              e.preventDefault();
+              setSignupOpen(true);
+            }}
+            className="flex flex-col gap-1.5 group/title"
+          >
             <span className="text-[9px] font-bold text-indigo bg-indigo/5 border border-indigo/10 px-2.5 py-0.5 rounded-md tracking-wider uppercase w-fit">
               {property.type}
             </span>
@@ -227,12 +241,15 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  if (!isLoggedIn) {
+                    setSignupOpen(true);
+                    return;
+                  }
                   setContactOpen(true);
                 }}
                 className="py-2 px-3.5 rounded-xl bg-terracotta hover:bg-terracotta-hover active:scale-95 text-white font-bold text-xs shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
               >
-                <Phone className="w-3.5 h-3.5" />
-                <span>Contact Owner</span>
+                <span>WhatsApp SqftGo</span>
               </button>
             </div>
           )}
@@ -252,28 +269,20 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-2.5 py-3.5 border-y border-sand/50 my-2">
-            <Avatar name={property.ownerName} size="sm" tone="indigo" />
-            <div className="flex flex-col min-w-0">
-              <span className="text-[10px] font-black text-charcoal truncate">{property.ownerName}</span>
-              <span className="text-[8px] font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-0.5 mt-0.5">
-                <UserCheck className="w-2.5 h-2.5" />
-                <span>Verified Owner</span>
-              </span>
-            </div>
-          </div>
-
           <button
             type="button"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              if (!isLoggedIn) {
+                setSignupOpen(true);
+                return;
+              }
               setContactOpen(true);
             }}
             className="w-full py-2 px-3.5 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white text-center font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
-            <Phone className="w-3.5 h-3.5" />
-            <span>Contact Owner</span>
+            <span>WhatsApp SqftGo</span>
           </button>
         </div>
       </div>
@@ -283,6 +292,12 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         open={contactOpen}
         onClose={() => setContactOpen(false)}
       />
+      {signupOpen ? (
+        <SignupPrompt
+          nextPath={`/property/${property.id}`}
+          onClose={() => setSignupOpen(false)}
+        />
+      ) : null}
     </motion.div>
   );
 };

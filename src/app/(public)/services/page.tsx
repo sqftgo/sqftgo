@@ -8,6 +8,7 @@ import { isAllBharatCity } from "@/constants/cities";
 import { isServiceDirectoryCategory } from "@/features/dealers";
 import { servicePlatformService } from "@/services";
 import type { ServiceType } from "@/types";
+import { serviceIconFor } from "@/lib/services/service-icons";
 import {
   Plus,
   ArrowUpRight,
@@ -20,6 +21,7 @@ import {
   Grid,
   UserCheck,
   CheckCircle,
+  LogIn,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -116,6 +118,23 @@ function ServicesContent() {
                 by the city in the header.
               </p>
 
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href="/services/login"
+                  className="relative z-30 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo text-white text-xs font-black uppercase tracking-wider"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Service professional login
+                </Link>
+                <Link
+                  href="/services/register"
+                  className="relative z-30 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-terracotta text-terracotta text-xs font-black uppercase tracking-wider bg-white"
+                >
+                  <Plus className="w-4 h-4" />
+                  Register your service
+                </Link>
+              </div>
+
               <div className="w-full max-w-xl flex flex-col sm:flex-row gap-3 mt-2">
                 <div className="relative flex-1">
                   <input
@@ -204,6 +223,7 @@ function ServicesContent() {
                 {categoryMeta.map((cat) => {
                   const count = cityProfiles.filter((p) => p.category === cat.name).length;
                   const isSelected = selectedCategory === cat.name;
+                  const CatIcon = serviceIconFor(cat.name);
                   return (
                     <button
                       key={cat.name}
@@ -215,7 +235,10 @@ function ServicesContent() {
                           : "bg-transparent hover:bg-sand/30 text-charcoal/70"
                       }`}
                     >
-                      <span className="truncate text-left">{cat.title}</span>
+                      <span className="flex items-center gap-2 min-w-0">
+                        <CatIcon className="w-4 h-4 shrink-0" />
+                        <span className="truncate text-left">{cat.title}</span>
+                      </span>
                       <span className="text-[10px] font-black">{count}</span>
                     </button>
                   );
@@ -279,8 +302,11 @@ function ServicesContent() {
                       className="bg-white border border-sand rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all flex flex-col gap-5 text-left"
                     >
                       <div className="flex items-start gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-indigo text-[#D4AF37] flex items-center justify-center font-black text-xl relative">
-                          {profile.ownerName.charAt(0)}
+                        <div className="w-14 h-14 rounded-2xl bg-indigo text-white flex items-center justify-center relative">
+                          {(() => {
+                            const ProIcon = serviceIconFor(profile.category);
+                            return <ProIcon className="w-6 h-6" />;
+                          })()}
                           {profile.verificationStatus === "verified" ? (
                             <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 bg-emerald-500 border-[3px] border-white rounded-full flex items-center justify-center">
                               <CheckCircle className="w-3.5 h-3.5 text-white" />
@@ -328,18 +354,24 @@ function ServicesContent() {
                         >
                           View profile
                         </Link>
-                        <a
-                          href={`tel:${profile.mobile}`}
-                          className="w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-sand text-charcoal"
-                        >
-                          <Phone className="w-4 h-4" />
-                        </a>
-                        <a
-                          href={`mailto:${profile.email}`}
-                          className="w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-sand text-charcoal"
-                        >
-                          <Mail className="w-4 h-4" />
-                        </a>
+                        {profile.mobile?.trim() ? (
+                          <a
+                            href={`tel:${profile.mobile}`}
+                            className="w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-sand text-charcoal"
+                            aria-label={`Call ${profile.firmName}`}
+                          >
+                            <Phone className="w-4 h-4" />
+                          </a>
+                        ) : null}
+                        {profile.email?.includes("@") ? (
+                          <a
+                            href={`mailto:${profile.email}`}
+                            className="w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-sand text-charcoal"
+                            aria-label={`Email ${profile.firmName}`}
+                          >
+                            <Mail className="w-4 h-4" />
+                          </a>
+                        ) : null}
                       </div>
                     </motion.div>
                   ))}
@@ -381,10 +413,10 @@ function ServicesContent() {
               your profile, verification, and bookings in one place.
             </p>
             <Link
-              href="/services/register"
-              className="w-fit flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white text-indigo font-black text-xs uppercase tracking-widest shadow-lg"
+              href="/services/login"
+              className="relative z-30 w-fit flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white text-indigo font-black text-xs uppercase tracking-widest shadow-lg"
             >
-              <span>List Your Business Today</span>
+              <span>List your business</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
 import { Destination } from "../data/destinations";
 import { destinationSlug } from "../logic";
+import { cityCoverImage } from "@/constants/city-images";
 
 interface DestinationCardProps {
   dest: Destination;
@@ -21,6 +22,7 @@ export default function DestinationCard({
   viewMode = "grid",
 }: DestinationCardProps) {
   const targetUrl = `/destinations/${destinationSlug(dest.name)}`;
+  const cover = cityCoverImage(dest.name, dest.image);
   const listingLabel = `${propertyCount} ${propertyCount === 1 ? "listing" : "listings"}`;
 
   // Compact Horizontal List Layout
@@ -34,7 +36,7 @@ export default function DestinationCard({
         {/* Fix 3: next/image */}
         <div className="relative md:w-2/5 h-48 md:h-auto overflow-hidden bg-slate-900 flex-shrink-0">
           <Image
-            src={dest.image}
+            src={cover}
             alt={dest.name}
             fill
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 brightness-90 saturate-110"
@@ -96,7 +98,7 @@ export default function DestinationCard({
       {/* Fix 3: next/image — Cover Photo with Sunset luxury filter grading */}
       <div className="absolute inset-0 z-0 bg-[#0F172A] overflow-hidden">
         <Image
-          src={dest.image}
+          src={cover}
           alt={dest.name}
           fill
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 brightness-[85%] saturate-[115%]"
