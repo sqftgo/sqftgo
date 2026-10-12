@@ -12,6 +12,7 @@ import {
   faWhatsapp,
 } from "@fortawesome/free-brands-svg-icons";
 import { usePublicPlatformSettings } from "@/hooks/usePublicPlatformSettings";
+import { companyWhatsappUrl } from "@/lib/contact/company-whatsapp";
 
 
 export const Footer: React.FC = () => {
@@ -21,25 +22,47 @@ export const Footer: React.FC = () => {
   const supportPhone = settings.supportPhone || "+91 88540 65069";
   const phoneHref = `tel:${supportPhone.replace(/\s+/g, "")}`;
 
-  // Hide Footer on dashboard and auth pages
-  if (
+  const hideFullFooter =
     pathname === "/login" || pathname === "/signup" || pathname === "/register" ||
     pathname === "/forgot-password" || pathname === "/update-password" || pathname === "/dealer/register" ||
     pathname === "/admin/login" ||
-    pathname.startsWith("/dealer/dashboard") || pathname.startsWith("/admin")
-  ) {
-    return null;
-  }
+    pathname.startsWith("/dealer/dashboard") || pathname.startsWith("/admin");
 
   const socials = [
     { name: "Instagram", icon: faInstagram, href: "https://instagram.com/sqftgo" },
     { name: "Facebook", icon: faFacebookF, href: "https://facebook.com/sqftgo" },
     { name: "YouTube", icon: faYoutube, href: "https://youtube.com/sqftgo" },
-    { name: "WhatsApp", icon: faWhatsapp, href: "https://wa.me/918854065069" },
+    { name: "WhatsApp", icon: faWhatsapp, href: companyWhatsappUrl("Hi SqftGo", supportPhone) },
   ];
 
+  const socialRow = (align: "start" | "center" = "center") => (
+    <div className={`flex items-center gap-3 ${align === "center" ? "justify-center" : "justify-start"}`}>
+      {socials.map((social) => (
+        <a
+          key={social.name}
+          href={social.href}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={social.name}
+          className="w-9 h-9 rounded-full border border-terracotta/20 text-terracotta hover:border-terracotta hover:bg-terracotta/5 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+        >
+          <FontAwesomeIcon icon={social.icon} className="w-4 h-4" />
+        </a>
+      ))}
+    </div>
+  );
+
+  if (hideFullFooter) {
+    return (
+      <div className="border-t border-sand bg-white py-4 px-6 flex flex-col items-center gap-2">
+        {socialRow("center")}
+        <p className="text-[10px] font-bold text-charcoal/40">SqftGo</p>
+      </div>
+    );
+  }
+
   return (
-    <footer className="relative z-10 bg-sand/50 text-charcoal/80 pt-20 pb-10 border-t border-sand/40 overflow-hidden select-none">
+    <footer className="relative z-10 bg-sand/50 text-charcoal/80 pt-20 pb-10 border-t border-sand/40 overflow-hidden">
 
       {/* Background Watermark 1: Elegant Palace Silhouette at bottom right */}
       <div className="absolute bottom-[-10px] right-[-10px] w-[95%] sm:w-[60%] md:w-[45%] lg:w-[35%] max-w-[500px] aspect-[1.3/1] opacity-[0.05] text-terracotta pointer-events-none z-0">
@@ -146,20 +169,7 @@ export const Footer: React.FC = () => {
             </p>
 
             {/* Social Icons Inline */}
-            <div className="flex items-center gap-3 mt-2">
-              {socials.map((social) => (
-                <a
-                  key={social.name}
-                  href={social.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={social.name}
-                  className="w-9 h-9 rounded-full border border-terracotta/20 text-terracotta hover:border-terracotta hover:bg-terracotta/5 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
-                >
-                  <FontAwesomeIcon icon={social.icon} className="w-4 h-4" />
-                </a>
-              ))}
-            </div>
+            <div className="mt-2">{socialRow("start")}</div>
           </div>
 
           {/* Column 2: Discover Links (span 2) */}

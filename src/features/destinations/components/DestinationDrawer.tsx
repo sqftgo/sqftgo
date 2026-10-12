@@ -9,6 +9,7 @@ import { destinationListingsHref, destinationSlug } from "../logic";
 import WeddingInquiryModal from "./WeddingInquiryModal";
 import WeddingVenueCard from "./WeddingVenueCard";
 import WeddingEstateCard from "./WeddingEstateCard";
+import { cityCoverImage } from "@/constants/city-images";
 
 interface DestinationDrawerProps {
   selectedDestination: Destination | null;
@@ -47,7 +48,7 @@ export default function DestinationDrawer({
         {/* Header Cover Image */}
         <div className="relative h-64 md:h-72 w-full bg-sand overflow-hidden flex-shrink-0 animate-fade-in-quick">
           <Image
-            src={selectedDestination.image}
+            src={cityCoverImage(selectedDestination.name, selectedDestination.image)}
             alt={selectedDestination.name}
             fill
             className="object-cover"

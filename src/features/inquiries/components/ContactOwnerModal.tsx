@@ -11,15 +11,14 @@ import {
   CheckCircle2,
   ShieldCheck,
   MapPin,
-  BadgeCheck,
-  Check,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Property } from "@/types";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/hooks/useAuth";
+import { usePublicPlatformSettings } from "@/hooks/usePublicPlatformSettings";
+import { companyWhatsappUrl } from "@/lib/contact/company-whatsapp";
 import { formatIndianCurrency } from "@/lib/format";
-import { Avatar } from "@/components/ui/Avatar";
 
 interface ContactOwnerModalProps {
   property: Property | null;
@@ -34,6 +33,7 @@ export function ContactOwnerModal({
 }: ContactOwnerModalProps) {
   const { submitInquiry } = useApp();
   const { userName, userEmail, userProfile } = useAuth();
+  const settings = usePublicPlatformSettings();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -50,7 +50,7 @@ export function ContactOwnerModal({
   // Autofill user details and default message accurately based on present property data
   useEffect(() => {
     if (open && property) {
-      const defaultMsg = `Hi ${property.ownerName || "Owner"}, I am interested in "${property.title}" in ${property.locality}, ${property.city} (${formatIndianCurrency(property.price, property.purpose)}). Please contact me with more details.`;
+      const defaultMsg = `Hi SqftGo, I am interested in "${property.title}" in ${property.locality}, ${property.city} (${formatIndianCurrency(property.price, property.purpose)}). Please contact me with more details.`;
       
       setFormData({
         name: userName || "",
@@ -80,14 +80,10 @@ export function ContactOwnerModal({
 
   if (!property) return null;
 
-  const rawPhone = property.ownerPhone || "9876543210";
-  const digitsOnly = rawPhone.replace(/\D/g, "");
-  const whatsappPhone = digitsOnly.length === 10 ? `91${digitsOnly}` : digitsOnly;
-
-  const whatsappMessage = encodeURIComponent(
-    `Hi ${property.ownerName || "Owner"}, I found your listing "${property.title}" (${formatIndianCurrency(property.price, property.purpose)}) on SqftGo. Is it still available for discussion?`
+  const whatsappUrl = companyWhatsappUrl(
+    `Hi SqftGo, I found "${property.title}" (${formatIndianCurrency(property.price, property.purpose)}) in ${property.locality}, ${property.city}. Is it still available?`,
+    settings.supportPhone
   );
-  const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${whatsappMessage}`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,77 +218,25 @@ export function ContactOwnerModal({
                 </div>
               </div>
 
-              {/* Verified Owner Direct Connect Card */}
               <div className="p-4 sm:p-5 flex flex-col justify-between gap-3 flex-1">
                 <div className="bg-white rounded-2xl p-3.5 border border-sand shadow-xs">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="relative shrink-0">
-                        <Avatar
-                          name={property.ownerName || "Owner"}
-                          size="md"
-                          tone="indigo"
-                          className="w-11 h-11 text-sm font-bold shadow-xs ring-2 ring-indigo/15"
-                        />
-                        <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center">
-                          <Check className="w-2 h-2 text-white" />
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col min-w-0">
-                        <div className="flex items-center gap-1">
-                          <span className="font-black text-indigo text-sm truncate">
-                            {property.ownerName || "Direct Owner"}
-                          </span>
-                          <BadgeCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                        </div>
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded w-fit mt-0.5">
-                          Verified Owner
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="text-right shrink-0">
-                      <span className="text-[9px] uppercase tracking-wider text-charcoal/40 font-bold block">
-                        Phone
-                      </span>
-                      <span className="text-xs font-mono font-bold text-indigo">
-                        {rawPhone}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 2 Instant Direct Connect Buttons */}
-                  <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-sand/60">
-                    <a
-                      href={whatsappUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold shadow-xs transition-all text-center"
-                      title="Chat on WhatsApp"
-                    >
-                      <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
-                        <path d="M17.472 14.382c-.301-.15-1.78-.878-2.056-.978-.276-.1-.477-.15-.678.15-.2.3-.778.978-.954 1.178-.175.2-.351.225-.652.075-.301-.15-1.27-.468-2.42-1.493-.895-.798-1.5-1.784-1.676-2.084-.175-.3-.019-.462.132-.612.136-.135.301-.35.452-.525.15-.175.2-.3.301-.5.1-.2.05-.375-.025-.525-.075-.15-.678-1.636-.93-2.242-.244-.589-.493-.509-.678-.518-.175-.009-.376-.01-.577-.01-.2 0-.526.075-.802.375-.276.3-1.054 1.03-1.054 2.512 0 1.482 1.079 2.912 1.23 3.113.15.2 2.122 3.24 5.14 4.542.718.31 1.278.495 1.716.634.721.23 1.378.198 1.9.12.58-.088 1.78-.727 2.03-1.43.251-.703.251-1.306.176-1.43-.075-.125-.276-.2-.577-.35zM12.04 21.785c-1.85 0-3.664-.498-5.263-1.442l-.377-.224-3.916 1.027 1.045-3.817-.247-.393A9.878 9.878 0 012.16 12.04C2.16 6.594 6.594 2.16 12.04 2.16s9.88 4.434 9.88 9.88-4.434 9.745-9.88 9.745zm0-18.04c-4.555 0-8.26 3.705-8.26 8.26 0 1.597.46 3.136 1.332 4.464l.206.314-.62 2.268 2.325-.61.304.181a8.232 8.232 0 004.713 1.443c4.555 0 8.26-3.705 8.26-8.26s-3.705-8.06-8.26-8.06z" />
-                      </svg>
-                      <span>WhatsApp</span>
-                    </a>
-
-                    <a
-                      href={`tel:${rawPhone}`}
-                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-indigo hover:bg-indigo-hover active:scale-95 text-white text-xs font-bold shadow-xs transition-all text-center"
-                      title="Call Owner Directly"
-                    >
-                      <Phone className="w-3.5 h-3.5 shrink-0" />
-                      <span>Call Owner</span>
-                    </a>
-                  </div>
+                  <p className="text-sm font-black text-indigo">Talk to SqftGo</p>
+                  <p className="mt-1 text-xs font-semibold text-charcoal/60 leading-relaxed">
+                    Dealer phone numbers stay private. Message the SqftGo team on WhatsApp and we will connect you.
+                  </p>
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 flex items-center justify-center gap-1.5 py-2.5 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold"
+                  >
+                    WhatsApp SqftGo
+                  </a>
                 </div>
-
-                {/* Trust Pledge Footer */}
                 <div className="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/70 text-[10.5px] text-amber-950 flex items-center gap-2">
                   <ShieldCheck className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                   <span className="leading-tight">
-                    <strong>Zero Brokerage:</strong> Direct connect with verified owner credentials.
+                    SqftGo handles the introduction. The listing owner is not contacted directly from this page.
                   </span>
                 </div>
               </div>
@@ -328,10 +272,10 @@ export function ContactOwnerModal({
                         Inquiry Transmitted
                       </span>
                       <h3 className="text-lg sm:text-xl font-serif font-black text-indigo mt-1.5">
-                        Message Sent to {property.ownerName || "Owner"}!
+                        Message sent to SqftGo
                       </h3>
                       <p className="text-xs text-charcoal/65 font-medium max-w-xs mx-auto mt-1 leading-relaxed">
-                        The owner has received your contact details and message. They will respond shortly.
+                        SqftGo has your message and will reply on WhatsApp.
                       </p>
                     </div>
 

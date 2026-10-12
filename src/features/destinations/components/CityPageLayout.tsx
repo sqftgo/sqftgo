@@ -18,6 +18,7 @@ import {
 import WeddingInquiryModal from "./WeddingInquiryModal";
 import WeddingVenueCard from "./WeddingVenueCard";
 import WeddingEstateCard from "./WeddingEstateCard";
+import { cityCoverImage } from "@/constants/city-images";
 
 interface CityPageLayoutProps {
   destination: Destination;
@@ -76,7 +77,7 @@ export default function CityPageLayout({ destination, providedDestinations }: Ci
           {/* Cover image with zoom effect */}
           <div className="absolute inset-0 overflow-hidden rounded-[40px] select-none pointer-events-none z-0">
             <Image
-              src={destination.image}
+              src={cityCoverImage(destination.name, destination.image)}
               alt={destination.name}
               fill
               className="object-cover object-center scale-100 group-hover:scale-105 transition-transform duration-[8000ms] ease-out brightness-[75%] saturate-[125%]"
@@ -334,7 +335,7 @@ export default function CityPageLayout({ destination, providedDestinations }: Ci
               >
                 <div className="relative w-18 h-18 rounded-2xl overflow-hidden shrink-0">
                   <Image
-                    src={d.image}
+                    src={cityCoverImage(d.name, d.image)}
                     alt={d.name}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"

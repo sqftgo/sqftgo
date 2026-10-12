@@ -1,6 +1,6 @@
 # SqftGo — remaining work
 
-Last updated: **2026-09-14**  
+Last updated: **2026-10-12**  
 Phases **1–14** shipped on `main`. Phase **15** covers cleanup + Dream Project inspiration uploads + notification pref persistence.
 
 Auth-specific checklist: see also [`AUTH_REMAINING.md`](./AUTH_REMAINING.md).
@@ -43,6 +43,28 @@ Auth-specific checklist: see also [`AUTH_REMAINING.md`](./AUTH_REMAINING.md).
 **Today:** Dead mock path removed in Phase 15. Type `CustomerReview` may remain unused.
 
 **To ship:** Design a review surface (property and/or dealer) → table + RLS + APIs + UI. Do not invent DB without UI.
+
+---
+
+### 4. Host destination city covers (CDN / Supabase Storage)
+
+**Today (2026-10-12):** City card / city-page / login slide covers are **static files** in `public/cities/*.jpg`, mapped by `src/constants/city-images.ts` via `cityCoverImage()`. `locations` has **no image column**. Property/dealer images already use Supabase Storage; city covers do not.
+
+**Why change later:** Repo ships ~10MB of JPGs; adding cities needs a code deploy; admins cannot swap a cover from the console.
+
+**To ship when prioritized:**
+
+1. Add `cover_image_url` (nullable text) on `locations` (+ migration).
+2. Upload city landmarks to a public Storage bucket (e.g. `city-covers`) or CDN.
+3. Admin Locations UI: upload / replace cover; seed existing `public/cities` files once.
+4. Resolve covers: DB URL → else `cityCoverImage(name)` → else `/DestinationHero.png`.
+5. After DB is source of truth, optionally delete large files from `public/cities` (keep map as fallback only).
+
+**Out of scope until then:** Scraping Unsplash at runtime; hotlinking random CDNs without hosting.
+
+**Resume prompt:**
+
+> Read `@docs/REMAINING.md` §4 and move destination city covers to Supabase Storage + `locations.cover_image_url`.
 
 ---
 
@@ -116,3 +138,5 @@ From `AUTH_REMAINING.md` (summary):
 > Add signed-URL viewing of KYC documents in admin review UI.
 
 > Finish **Razorpay ops**: local test keys, webhook `payment.captured` → `/api/webhooks/razorpay`, one `broker@sqftgo.com` pack buy and one monthly plan buy, then live keys. Do not commit secrets.
+
+> Read `@docs/REMAINING.md` §4 and move destination city covers to Supabase Storage + `locations.cover_image_url`.

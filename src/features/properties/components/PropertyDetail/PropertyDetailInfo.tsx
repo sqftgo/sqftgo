@@ -294,7 +294,7 @@ export function PropertyDetailInfo({
                   <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest block pb-2 border-b border-sand/40">Audit Certificate</span>
                   <div className="flex items-center gap-2.5 mt-2">
                     <Avatar
-                      name={property.ownerName}
+                      name="SqftGo"
                       size="sm"
                       shape="square"
                       tone="indigo"

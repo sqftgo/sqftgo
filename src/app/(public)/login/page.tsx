@@ -13,28 +13,28 @@ const SHOW_DEMO_LOGIN = process.env.NODE_ENV !== "production";
 
 const SLIDES = [
   {
-    image: "https://images.unsplash.com/photo-1589901164570-f9de6556e1c1?q=80&w=1332&auto=format&fit=crop",
+    image: "/cities/udaipur.jpg",
     title: "LAKEVIEW HAVELI",
     desc: "Experience heritage living with gorgeous lake-facing suites in Udaipur.",
-    label: "Udaipur Suite"
+    label: "Udaipur"
   },
   {
-    image: "https://images.unsplash.com/featured/1200x800/?jaipur,palace,fort",
+    image: "/cities/jaipur.jpg",
     title: "ROYAL PALACE VILLA",
     desc: "Indulge in grand sandstone architecture and private courtyards in Jaipur.",
-    label: "Jaipur Palace"
+    label: "Jaipur"
   },
   {
-    image: "https://images.unsplash.com/featured/1200x800/?jaisalmer,desert,haveli",
+    image: "/cities/jaisalmer.jpg",
     title: "DESERT RETREAT",
     desc: "Unwind under the golden skies in curated heritage structures in Jaisalmer.",
-    label: "Golden Fort"
+    label: "Jaisalmer"
   },
   {
-    image: "https://images.unsplash.com/featured/1200x800/?jodhpur,fort,bluecity",
+    image: "/cities/jodhpur.jpg",
     title: "BLUE CITY MANSION",
     desc: "Discover beautiful boutique stays surrounded by historic fort views in Jodhpur.",
-    label: "Mehrangarh Vista"
+    label: "Jodhpur"
   }
 ];
 
@@ -102,7 +102,11 @@ function AuthForm() {
       return;
     }
     if (role === "broker") {
-      router.push(next.startsWith("/dealer") ? next : "/dealer/dashboard");
+      if (next.startsWith("/services") || next.startsWith("/dealer")) {
+        router.push(next);
+        return;
+      }
+      router.push("/dealer/dashboard");
       return;
     }
     router.push(next || "/");
