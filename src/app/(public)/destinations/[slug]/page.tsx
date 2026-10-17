@@ -12,6 +12,7 @@ import CityPageLayout from "@/features/destinations/components/CityPageLayout";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { listActiveLocations } from "@/lib/server/active-city";
+import { JsonLd, cityPlaceJsonLd } from "@/lib/seo/json-ld";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -94,9 +95,33 @@ export default async function CityDetailPage({ params }: PageProps) {
   }
 
   return (
-    <CityPageLayout
-      destination={destination}
-      providedDestinations={providedDestinations}
-    />
+    <>
+      <JsonLd
+        data={cityPlaceJsonLd({
+          slug,
+          name: destination.name,
+          title: destination.title,
+          description: destination.desc,
+          history: destination.history,
+          region: destination.tag,
+          localities: destination.topLocalities,
+          averagePrice: destination.averagePrice,
+        })}
+      />
+      <section className="mx-auto max-w-4xl px-6 pt-28 text-left">
+        <h1 className="font-serif text-3xl font-black text-indigo">
+          {destination.name} property facts
+        </h1>
+        <p className="mt-3 text-sm font-semibold leading-relaxed text-charcoal/80">{destination.desc}</p>
+        <p className="mt-2 text-sm leading-relaxed text-charcoal/70">{destination.history}</p>
+        <p className="mt-2 text-sm font-semibold text-charcoal/80">
+          Localities: {destination.topLocalities.join(", ")}. Typical range: {destination.averagePrice}.
+        </p>
+      </section>
+      <CityPageLayout
+        destination={destination}
+        providedDestinations={providedDestinations}
+      />
+    </>
   );
 }
