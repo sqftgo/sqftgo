@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { openApiSpec } from "@/lib/openapi/spec";
 
 export const metadata: Metadata = {
-  title: "API docs | SqftGo",
+  title: "API docs",
   description: "Minimal OpenAPI reference for the SqftGo marketplace API.",
+  robots: { index: false, follow: false },
 };
 
 type Operation = {
@@ -16,12 +17,12 @@ type Operation = {
 const METHOD_ORDER = ["get", "post", "put", "patch", "delete"] as const;
 
 export default function ApiDocsPage() {
-  const paths = openApiSpec.paths as Record<string, Record<string, Operation>>;
+  const paths = openApiSpec.paths as Record<string, Partial<Record<(typeof METHOD_ORDER)[number], Operation>>>;
   const rows = Object.entries(paths).flatMap(([path, ops]) =>
     METHOD_ORDER.filter((method) => ops[method]).map((method) => ({
       method,
       path,
-      op: ops[method],
+      op: ops[method] as Operation,
     }))
   );
 

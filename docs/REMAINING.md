@@ -1,6 +1,6 @@
 # SqftGo — remaining work
 
-Last updated: **2026-10-12**  
+Last updated: **2026-10-17**  
 Phases **1–14** shipped on `main`. Phase **15** covers cleanup + Dream Project inspiration uploads + notification pref persistence.
 
 Auth-specific checklist: see also [`AUTH_REMAINING.md`](./AUTH_REMAINING.md).
@@ -65,6 +65,30 @@ Auth-specific checklist: see also [`AUTH_REMAINING.md`](./AUTH_REMAINING.md).
 **Resume prompt:**
 
 > Read `@docs/REMAINING.md` §4 and move destination city covers to Supabase Storage + `locations.cover_image_url`.
+
+---
+
+### 5. SEO ops (Google / human — ~30%)
+
+**Code side (done):** `metadataBase`, page titles/descriptions, Open Graph, `robots.ts`, `sitemap.ts`, Organization + RealEstateListing JSON-LD.
+
+**Still needed (you / ops — not code):**
+
+1. **Google Search Console** (required for organic SEO)
+   - Add property `https://www.sqftgo.com`
+   - Verify ownership (DNS TXT, HTML file, or meta tag — paste token into a follow-up if you want the meta in repo)
+   - Submit sitemap: `https://www.sqftgo.com/sitemap.xml`
+   - Watch Coverage / Page indexing for errors
+2. Confirm production `NEXT_PUBLIC_SITE_URL=https://www.sqftgo.com` (no trailing slash) so sitemap/OG URLs are absolute and correct
+3. **Google Analytics (GA4)** — optional traffic dashboards; not required for ranking
+4. **Google Business Profile** — optional for local “SqftGo Udaipur” pack
+5. Do **not** need Google Ads for organic SEO
+
+**Out of scope until then:** Paid ads, link buying, keyword agency retainers.
+
+**Resume prompt:**
+
+> Read `@docs/REMAINING.md` §5 and finish Search Console verification + sitemap submit for SqftGo production.
 
 ---
 
@@ -140,3 +164,5 @@ From `AUTH_REMAINING.md` (summary):
 > Finish **Razorpay ops**: local test keys, webhook `payment.captured` → `/api/webhooks/razorpay`, one `broker@sqftgo.com` pack buy and one monthly plan buy, then live keys. Do not commit secrets.
 
 > Read `@docs/REMAINING.md` §4 and move destination city covers to Supabase Storage + `locations.cover_image_url`.
+
+> Read `@docs/REMAINING.md` §5 and finish Search Console verification + sitemap submit for SqftGo production.

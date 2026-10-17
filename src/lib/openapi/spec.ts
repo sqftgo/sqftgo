@@ -195,4 +195,4 @@ export const openApiSpec = {
       },
     },
   },
-} as const;
+};

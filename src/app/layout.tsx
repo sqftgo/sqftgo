@@ -13,6 +13,14 @@ config.autoAddCss = false;
 import Footer from "@/components/shared/Footer";
 import DepthBackground from "@/components/shared/DepthBackground";
 import { PostPropertyButton } from "@/features/properties";
+import { JsonLd, organizationJsonLd } from "@/lib/seo/json-ld";
+import {
+  DEFAULT_DESCRIPTION,
+  DEFAULT_OG_IMAGE,
+  DEFAULT_TITLE,
+  getSiteOrigin,
+  SITE_NAME,
+} from "@/lib/seo/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,9 +32,46 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteOrigin = getSiteOrigin();
+
 export const metadata: Metadata = {
-  title: "SqftGo | Bharat Real Estate Marketplace",
-  description: "Buy, rent, sell properties in Udaipur, Jaipur, Jodhpur, and across Bharat. Find heritage havelis, luxury lakeview villas, modern apartments, and get relocating assistance.",
+  metadataBase: new URL(siteOrigin),
+  title: {
+    default: DEFAULT_TITLE,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: DEFAULT_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: [
+    "SqftGo",
+    "Bharat real estate",
+    "buy property India",
+    "rent property",
+    "Udaipur property",
+    "Jaipur property",
+    "heritage homes",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: siteOrigin,
+    siteName: SITE_NAME,
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    images: [{ url: DEFAULT_OG_IMAGE, alt: SITE_NAME }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
 };
 
 export default function RootLayout({
@@ -41,6 +86,7 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
     >
       <body className="min-h-full flex flex-col font-sans">
+        <JsonLd data={organizationJsonLd()} />
         <AppProviders>
           {/* Depth drifting background layers */}
           <DepthBackground />
