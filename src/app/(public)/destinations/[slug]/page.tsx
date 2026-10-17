@@ -25,11 +25,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const destination = await resolveProvidedDestination(slug);
   if (!destination) {
-    return { title: "Destination Not Found | SqftGo" };
+    return { title: { absolute: "Destination Not Found | SqftGo" }, robots: { index: false } };
   }
+  const title = `${destination.name} | ${destination.title} | SqftGo`;
   return {
-    title: `${destination.name} | ${destination.title} | SqftGo`,
+    title: { absolute: title },
     description: destination.desc,
+    openGraph: {
+      title,
+      description: destination.desc,
+      images: destination.image ? [{ url: destination.image }] : undefined,
+    },
   };
 }
 
