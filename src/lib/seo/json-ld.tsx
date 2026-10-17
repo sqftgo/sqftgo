@@ -62,3 +62,40 @@ export function realEstateListingJsonLd(input: {
     },
   };
 }
+
+/** City page facts for search and AI answers. */
+export function cityPlaceJsonLd(input: {
+  slug: string;
+  name: string;
+  title: string;
+  description: string;
+  history: string;
+  region: string;
+  localities: string[];
+  averagePrice: string;
+}) {
+  const origin = getSiteOrigin();
+  const url = `${origin}/destinations/${input.slug}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Place",
+    name: input.name,
+    alternateName: input.title,
+    description: `${input.description} ${input.history}`.slice(0, 700),
+    url,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: input.name,
+      addressRegion: input.region,
+      addressCountry: "IN",
+    },
+    containedInPlace: {
+      "@type": "AdministrativeArea",
+      name: input.region,
+    },
+    additionalProperty: [
+      { "@type": "PropertyValue", name: "Typical listing range", value: input.averagePrice },
+      { "@type": "PropertyValue", name: "Localities", value: input.localities.join(", ") },
+    ],
+  };
+}

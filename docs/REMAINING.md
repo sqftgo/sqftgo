@@ -92,6 +92,22 @@ Auth-specific checklist: see also [`AUTH_REMAINING.md`](./AUTH_REMAINING.md).
 
 ---
 
+### 6. GEO ops (human — after the code brief)
+
+**Code side (done):** `/llms.txt` lists citeable pages and city facts. Each destination page includes a short factual summary plus Place JSON-LD so answer engines can quote a city without guessing.
+
+**Still needed (you — not code):**
+
+1. **Google Business Profile** for the local Maps pack (city name, address, hours). No code can create that listing.
+2. Search Console (same as §5) so you can see whether city pages and `/llms.txt` are indexed.
+3. No paid GEO tool, no Google Ads, and no extra AI vendor.
+
+**Resume prompt:**
+
+> Read `@docs/REMAINING.md` §6 and create the SqftGo Google Business Profile. Do not add another GEO product.
+
+---
+
 ## Intentionally local (not bugs)
 
 | Item | Why |
@@ -166,3 +182,5 @@ From `AUTH_REMAINING.md` (summary):
 > Read `@docs/REMAINING.md` §4 and move destination city covers to Supabase Storage + `locations.cover_image_url`.
 
 > Read `@docs/REMAINING.md` §5 and finish Search Console verification + sitemap submit for SqftGo production.
+
+> Read `@docs/REMAINING.md` §6 and create the SqftGo Google Business Profile. Do not add another GEO product.

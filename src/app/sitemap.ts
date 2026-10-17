@@ -18,6 +18,7 @@ const STATIC_PATHS: { path: string; changeFrequency: MetadataRoute.Sitemap[0]["c
   { path: "/terms", changeFrequency: "yearly", priority: 0.2 },
   { path: "/help", changeFrequency: "monthly", priority: 0.3 },
   { path: "/api-docs", changeFrequency: "monthly", priority: 0.2 },
+  { path: "/llms.txt", changeFrequency: "weekly", priority: 0.3 },
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
