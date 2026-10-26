@@ -11,6 +11,7 @@ import {
   faYoutube,
   faWhatsapp,
 } from "@fortawesome/free-brands-svg-icons";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 import { usePublicPlatformSettings } from "@/hooks/usePublicPlatformSettings";
 import { companyWhatsappUrl } from "@/lib/contact/company-whatsapp";
 
@@ -153,16 +154,7 @@ export const Footer: React.FC = () => {
 
           {/* Column 1: Brand & Bios (span 4) */}
           <div className="lg:col-span-4 flex flex-col gap-5 text-left">
-            <Link href="/" className="flex items-center gap-2 group w-fit">
-              <div className="flex flex-col">
-                <span className="font-logo text-2xl leading-none text-indigo group-hover:text-indigo-hover transition-colors">
-                  {settings.siteName}
-                </span>
-                <span className="text-[10px] text-terracotta font-extrabold tracking-widest uppercase mt-1">
-                  {settings.tagline || "Real Estate"}
-                </span>
-              </div>
-            </Link>
+            <BrandLogo height={52} className="w-fit" />
 
             <p className="text-charcoal/70 text-xs font-semibold leading-relaxed max-w-sm">
               Serving the luxury heritage real estate needs in Bharat. Curating boutique residential, commercial, and agricultural properties across Bharat&apos;s historic locations.

@@ -7,6 +7,7 @@ import { useApp } from "@/context/AppContext";
 import { MapPin, Plus, ChevronDown, User, Users, LogOut, Home, Search, MessageSquare, Briefcase, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CitySelectorDropdown, Avatar } from "@/components/ui";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 import { UserDropdown } from "@/features/auth";
 import { useActiveCities } from "@/hooks/useActiveCities";
 
@@ -98,16 +99,7 @@ export const Navbar: React.FC = () => {
       >
         <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="flex flex-col">
-              <span className="font-logo text-xl leading-none text-indigo">
-                SqftGo
-              </span>
-              <span className="text-[10px] text-charcoal/60 font-bold tracking-widest uppercase mt-0.5">
-                SQFTGO.com
-              </span>
-            </div>
-          </Link>
+          <BrandLogo height={40} priority />
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-1">
