@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
       country: parsed.data.country,
       active: parsed.data.active ?? true,
       sort_order: parsed.data.sortOrder ?? 100,
+      cover_image_url: parsed.data.coverImageUrl ?? null,
     })
     .select("*")
     .single();

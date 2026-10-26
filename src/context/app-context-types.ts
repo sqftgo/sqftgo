@@ -130,11 +130,19 @@ export interface AppContextType {
     city: string;
     state: string;
     country: string;
+    coverImageUrl?: string | null;
   }) => Promise<Location>;
   updateLocation: (
     id: string,
-    updates: { city?: string; state?: string; country?: string; active?: boolean }
+    updates: {
+      city?: string;
+      state?: string;
+      country?: string;
+      active?: boolean;
+      coverImageUrl?: string | null;
+    }
   ) => Promise<Location>;
+  uploadCityCover: (id: string, file: File) => Promise<Location>;
   deleteLocation: (id: string) => Promise<void>;
   amenities: Amenity[];
   amenitiesReady: boolean;

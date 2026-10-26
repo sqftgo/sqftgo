@@ -20,6 +20,8 @@ export type TaxonomyRow = {
   title: string;
   subtitle?: string;
   leading?: React.ReactNode;
+  /** Extra controls beside toggle/delete (e.g. city cover upload). */
+  trailing?: React.ReactNode;
   active: boolean;
 };
 
@@ -277,6 +279,7 @@ function TaxonomyListRow({
         {item.active ? "Active" : "Inactive"}
       </Badge>
       <div className="flex items-center gap-1.5 shrink-0">
+        {item.trailing}
         <Switch
           checked={item.active}
           onCheckedChange={() => onToggle(item.id, item.active)}
@@ -316,7 +319,7 @@ function TaxonomyCard({
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex items-start gap-3">
           {item.leading ? (
-            <div className="w-10 h-10 rounded-xl bg-white border border-indigo/5 flex items-center justify-center shrink-0 text-lg">
+            <div className="w-10 h-10 rounded-xl bg-white border border-indigo/5 flex items-center justify-center shrink-0 text-lg overflow-hidden">
               {item.leading}
             </div>
           ) : null}
@@ -333,14 +336,17 @@ function TaxonomyCard({
           {item.active ? "Active" : "Inactive"}
         </Badge>
       </div>
-      <div className="flex items-center justify-between pt-1 border-t border-indigo/5">
-        <Switch
-          checked={item.active}
-          onCheckedChange={() => onToggle(item.id, item.active)}
-          size="sm"
-          accent="terracotta"
-          aria-label={`Toggle ${item.title}`}
-        />
+      <div className="flex items-center justify-between gap-2 pt-1 border-t border-indigo/5">
+        <div className="flex items-center gap-1.5 min-w-0">
+          {item.trailing}
+          <Switch
+            checked={item.active}
+            onCheckedChange={() => onToggle(item.id, item.active)}
+            size="sm"
+            accent="terracotta"
+            aria-label={`Toggle ${item.title}`}
+          />
+        </div>
         <button
           type="button"
           onClick={() => onDeleteRequest(item.id, item.title)}

@@ -39,6 +39,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   if (parsed.data.country !== undefined) patch.country = parsed.data.country;
   if (parsed.data.active !== undefined) patch.active = parsed.data.active;
   if (parsed.data.sortOrder !== undefined) patch.sort_order = parsed.data.sortOrder;
+  if (parsed.data.coverImageUrl !== undefined) {
+    patch.cover_image_url = parsed.data.coverImageUrl;
+  }
 
   const admin = createServiceClient();
   const { data, error: updateError } = await admin

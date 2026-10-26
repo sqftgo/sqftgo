@@ -20,6 +20,7 @@ export function mapLocationRow(row: LocationRow, propertyCount = 0): Location {
     active: row.active,
     propertyCount,
     sortOrder: row.sort_order ?? 0,
+    coverImageUrl: row.cover_image_url ?? null,
   };
 }
 
