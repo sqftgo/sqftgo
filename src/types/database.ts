@@ -592,6 +592,7 @@ export type LocationRow = {
   country: string;
   active: boolean;
   sort_order: number;
+  cover_image_url: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -603,6 +604,7 @@ export type LocationInsert = {
   country?: string;
   active?: boolean;
   sort_order?: number;
+  cover_image_url?: string | null;
   created_at?: string;
   updated_at?: string;
 };

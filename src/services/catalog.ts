@@ -15,11 +15,19 @@ export interface CatalogRepository {
     state: string;
     country: string;
     active?: boolean;
+    coverImageUrl?: string | null;
   }): Promise<Location>;
   updateLocation(
     id: string,
-    updates: { city?: string; state?: string; country?: string; active?: boolean }
+    updates: {
+      city?: string;
+      state?: string;
+      country?: string;
+      active?: boolean;
+      coverImageUrl?: string | null;
+    }
   ): Promise<Location>;
+  uploadCityCover(locationId: string, file: File): Promise<Location>;
   deleteLocation(id: string): Promise<{ ok: boolean; deactivated?: boolean }>;
   listAmenities(opts?: { all?: boolean }): Promise<Amenity[]>;
   createAmenity(input: { name: string; active?: boolean }): Promise<Amenity>;
@@ -76,6 +84,25 @@ export const catalogApi: CatalogRepository = {
       method: "PATCH",
       body: JSON.stringify(updates),
     });
+  },
+
+  async uploadCityCover(locationId, file) {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("locationId", locationId);
+    const res = await fetch("/api/uploads/city-cover", {
+      method: "POST",
+      body: form,
+      credentials: "same-origin",
+    });
+    const data = (await res.json().catch(() => ({}))) as {
+      location?: Location;
+      error?: string;
+    };
+    if (!res.ok || !data.location) {
+      throw new Error(data.error || "City cover upload failed");
+    }
+    return data.location;
   },
 
   async deleteLocation(id) {

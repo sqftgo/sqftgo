@@ -17,12 +17,17 @@ export const categoryUpdateSchema = z
   .strict()
   .refine((v) => Object.keys(v).length > 0, { message: "No updates provided" });
 
+const coverImageUrlSchema = z
+  .union([z.string().trim().url().max(2000), z.string().trim().startsWith("/").max(500), z.null()])
+  .optional();
+
 export const locationCreateSchema = z.object({
   city: z.string().trim().min(2).max(100),
   state: z.string().trim().min(2).max(100),
   country: z.string().trim().min(2).max(100).default("India"),
   active: z.boolean().optional(),
   sortOrder: z.number().int().min(0).max(10000).optional(),
+  coverImageUrl: coverImageUrlSchema,
 });
 
 export const locationUpdateSchema = z
@@ -32,6 +37,7 @@ export const locationUpdateSchema = z
     country: z.string().trim().min(2).max(100).optional(),
     active: z.boolean().optional(),
     sortOrder: z.number().int().min(0).max(10000).optional(),
+    coverImageUrl: coverImageUrlSchema,
   })
   .strict()
   .refine((v) => Object.keys(v).length > 0, { message: "No updates provided" });

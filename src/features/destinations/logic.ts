@@ -8,11 +8,39 @@ export type ProvidedLocation = {
   city: string;
   state?: string;
   active?: boolean;
+  coverImageUrl?: string | null;
 };
+
+function resolveDestinationImage(loc: ProvidedLocation, destImage?: string): string {
+  const cover = loc.coverImageUrl?.trim();
+  if (cover) return cover;
+  return destImage || "/DestinationHero.png";
+}
+
+function stubDestination(loc: ProvidedLocation): Destination {
+  const city = loc.city.trim();
+  return {
+    name: city,
+    title: city,
+    desc: `Explore properties and local lifestyle in ${city}.`,
+    image: resolveDestinationImage(loc),
+    tag: loc.state?.trim() || "Bharat",
+    vibe: "Marketplace city",
+    investmentIndex: "—",
+    topLocalities: [],
+    averagePrice: "On request",
+    agentName: "SqftGo Concierge",
+    agentPhone: "",
+    history: "",
+    weddingVenues: [],
+    uniqueWeddingProperties: [],
+  };
+}
 
 /**
  * Destinations whose city exists in the admin locations catalog.
- * `name` / `tag` are rewritten to the catalog spelling (city / state).
+ * `name` / `tag` / `image` follow catalog spelling and admin cover URLs.
+ * Cities not in the static DESTINATIONS pack still appear as lightweight stubs.
  */
 export function destinationsForProvidedCities(
   locations: ProvidedLocation[],
@@ -25,17 +53,27 @@ export function destinationsForProvidedCities(
       : CITIES_WITHOUT_ALL.map((city) => ({ city, active: true }));
 
   const byKey = new Map(catalog.map((l) => [l.city.trim().toLowerCase(), l] as const));
+  const used = new Set<string>();
 
   const out: Destination[] = [];
   for (const dest of destinations) {
     const loc = byKey.get(dest.name.trim().toLowerCase());
     if (!loc) continue;
+    used.add(loc.city.trim().toLowerCase());
     out.push({
       ...dest,
       name: loc.city,
       tag: loc.state?.trim() || dest.tag,
+      image: resolveDestinationImage(loc, dest.image),
     });
   }
+
+  for (const loc of catalog) {
+    const key = loc.city.trim().toLowerCase();
+    if (used.has(key)) continue;
+    out.push(stubDestination(loc));
+  }
+
   return out;
 }
 

@@ -1,7 +1,8 @@
 /**
- * Destination cover photos — hosted under /public/cities (Wikimedia Commons landmarks).
- * Prefer these over hotlinked Unsplash URLs so images stay correct and online.
+ * Destination cover photos.
+ * Priority: admin `locations.cover_image_url` (runtime map) → static `/public/cities` → fallback.
  */
+
 const CITY_IMAGE_FILES: Record<string, string> = {
   Udaipur: "/cities/udaipur.jpg",
   Jaipur: "/cities/jaipur.jpg",
@@ -41,12 +42,44 @@ const CITY_IMAGE_FILES: Record<string, string> = {
 /** @deprecated use cityCoverImage — kept for callers that import the map */
 export const CITY_IMAGES: Record<string, string> = CITY_IMAGE_FILES;
 
-export function cityCoverImage(name: string, fallback?: string): string {
-  const key = name?.trim();
-  if (!key) return fallback ?? "/DestinationHero.png";
-  if (CITY_IMAGE_FILES[key]) return CITY_IMAGE_FILES[key];
+/** Populated from active/admin locations catalog so every cityCoverImage() call prefers DB covers. */
+let locationCoverByCity = new Map<string, string>();
+
+export function setLocationCoverMap(
+  entries: Array<{ city: string; coverImageUrl?: string | null }>
+): void {
+  const next = new Map<string, string>();
+  for (const entry of entries) {
+    const city = entry.city?.trim();
+    const url = entry.coverImageUrl?.trim();
+    if (!city || !url) continue;
+    next.set(city.toLowerCase(), url);
+  }
+  locationCoverByCity = next;
+}
+
+function staticCoverFor(name: string): string | undefined {
+  if (CITY_IMAGE_FILES[name]) return CITY_IMAGE_FILES[name];
   const match = Object.entries(CITY_IMAGE_FILES).find(
-    ([city]) => city.toLowerCase() === key.toLowerCase()
+    ([city]) => city.toLowerCase() === name.toLowerCase()
   );
-  return match?.[1] ?? fallback ?? "/DestinationHero.png";
+  return match?.[1];
+}
+
+export function cityCoverImage(name: string, fallback?: string | null): string {
+  const key = name?.trim();
+  if (!key) return fallback?.trim() || "/DestinationHero.png";
+
+  const fromDb = locationCoverByCity.get(key.toLowerCase());
+  if (fromDb) return fromDb;
+
+  const preferred = fallback?.trim();
+  if (preferred && (preferred.startsWith("http") || preferred.startsWith("/cities/"))) {
+    return preferred;
+  }
+
+  const fromStatic = staticCoverFor(key);
+  if (fromStatic) return fromStatic;
+
+  return preferred || "/DestinationHero.png";
 }

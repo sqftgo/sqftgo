@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { setLocationCoverMap } from "@/constants/city-images";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import type { ActivityLog, Amenity, Category, Location } from "@/types";
 import { catalogService } from "@/services";
@@ -40,18 +41,25 @@ export function useCatalog({ sessionReady, isLoggedIn, userRole }: UseCatalogArg
   const refreshLocations = useCallback(async () => {
     if (!hasSupabaseEnv()) {
       setLocationsState([]);
+      setLocationCoverMap([]);
       setLocationsReady(true);
       return;
     }
     try {
       const rows = await catalogService.listLocations({ all: userRole === "admin" });
       setLocationsState(rows);
+      setLocationCoverMap(rows);
     } catch {
       setLocationsState([]);
+      setLocationCoverMap([]);
     } finally {
       setLocationsReady(true);
     }
   }, [userRole]);
+
+  useEffect(() => {
+    setLocationCoverMap(locations);
+  }, [locations]);
 
   const refreshAmenities = useCallback(async () => {
     if (!hasSupabaseEnv()) {
@@ -151,7 +159,12 @@ export function useCatalog({ sessionReady, isLoggedIn, userRole }: UseCatalogArg
   }, []);
 
   const createLocation = useCallback(
-    async (input: { city: string; state: string; country: string }) => {
+    async (input: {
+      city: string;
+      state: string;
+      country: string;
+      coverImageUrl?: string | null;
+    }) => {
       const created = await catalogService.createLocation(input);
       setLocationsState((prev) => [...prev, created]);
       return created;
@@ -162,7 +175,13 @@ export function useCatalog({ sessionReady, isLoggedIn, userRole }: UseCatalogArg
   const updateLocation = useCallback(
     async (
       id: string,
-      updates: { city?: string; state?: string; country?: string; active?: boolean }
+      updates: {
+        city?: string;
+        state?: string;
+        country?: string;
+        active?: boolean;
+        coverImageUrl?: string | null;
+      }
     ) => {
       const updated = await catalogService.updateLocation(id, updates);
       setLocationsState((prev) => prev.map((l) => (l.id === id ? updated : l)));
@@ -170,6 +189,16 @@ export function useCatalog({ sessionReady, isLoggedIn, userRole }: UseCatalogArg
     },
     []
   );
+
+  const uploadCityCover = useCallback(async (id: string, file: File) => {
+    const updated = await catalogService.uploadCityCover(id, file);
+    setLocationsState((prev) =>
+      prev.map((l) =>
+        l.id === id ? { ...l, ...updated, propertyCount: l.propertyCount } : l
+      )
+    );
+    return updated;
+  }, []);
 
   const deleteLocation = useCallback(async (id: string) => {
     const result = await catalogService.deleteLocation(id);
@@ -233,6 +262,7 @@ export function useCatalog({ sessionReady, isLoggedIn, userRole }: UseCatalogArg
     setLocations,
     createLocation,
     updateLocation,
+    uploadCityCover,
     deleteLocation,
     amenities,
     amenitiesReady,

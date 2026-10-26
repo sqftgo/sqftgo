@@ -27,6 +27,8 @@ export interface Location {
   active: boolean;
   propertyCount: number;
   sortOrder: number;
+  /** Admin-managed cover; preferred by cityCoverImage() app-wide. */
+  coverImageUrl?: string | null;
 }
 
 export interface Amenity {

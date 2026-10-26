@@ -1,6 +1,6 @@
 # SqftGo — remaining work
 
-Last updated: **2026-10-17**  
+Last updated: **2026-10-26**  
 Phases **1–14** shipped on `main`. Phase **15** covers cleanup + Dream Project inspiration uploads + notification pref persistence.
 
 Auth-specific checklist: see also [`AUTH_REMAINING.md`](./AUTH_REMAINING.md).
@@ -46,25 +46,24 @@ Auth-specific checklist: see also [`AUTH_REMAINING.md`](./AUTH_REMAINING.md).
 
 ---
 
-### 4. Host destination city covers (CDN / Supabase Storage)
+### 4. Image hosting + admin city covers (shipped 2026-10-26)
 
-**Today (2026-10-12):** City card / city-page / login slide covers are **static files** in `public/cities/*.jpg`, mapped by `src/constants/city-images.ts` via `cityCoverImage()`. `locations` has **no image column**. Property/dealer images already use Supabase Storage; city covers do not.
+**Policy:**
 
-**Why change later:** Repo ships ~10MB of JPGs; adding cities needs a code deploy; admins cannot swap a cover from the console.
+| Asset | Where |
+|-------|--------|
+| Logo, favicon, fixed heroes, static city fallbacks | `/public` |
+| Admin-uploaded city covers | Supabase `city-covers` bucket + `locations.cover_image_url` |
+| Property / avatar / KYC / dream uploads | Existing Storage buckets |
 
-**To ship when prioritized:**
+**Shipped:**
 
-1. Add `cover_image_url` (nullable text) on `locations` (+ migration).
-2. Upload city landmarks to a public Storage bucket (e.g. `city-covers`) or CDN.
-3. Admin Locations UI: upload / replace cover; seed existing `public/cities` files once.
-4. Resolve covers: DB URL → else `cityCoverImage(name)` → else `/DestinationHero.png`.
-5. After DB is source of truth, optionally delete large files from `public/cities` (keep map as fallback only).
+- `locations.cover_image_url` + public `city-covers` bucket (seeded from `/cities/*` paths for known cities)
+- Admin `/admin/locations`: add city, enable/disable, upload cover (**Image** on each row)
+- `cityCoverImage()` prefers admin cover app-wide; destinations (including newly added cities) use it
+- Static `/public/cities` remains fallback when no DB cover is set
 
-**Out of scope until then:** Scraping Unsplash at runtime; hotlinking random CDNs without hosting.
-
-**Resume prompt:**
-
-> Read `@docs/REMAINING.md` §4 and move destination city covers to Supabase Storage + `locations.cover_image_url`.
+**Optional later:** drop large static city JPGs once every active city has a Storage cover; mobile app parity if needed.
 
 ---
 
@@ -162,7 +161,5 @@ From `AUTH_REMAINING.md` (summary):
 > Add signed-URL viewing of KYC documents in admin review UI.
 
 > Finish **Razorpay ops**: local test keys, webhook `payment.captured` → `/api/webhooks/razorpay`, one `broker@sqftgo.com` pack buy and one monthly plan buy, then live keys. Do not commit secrets.
-
-> Read `@docs/REMAINING.md` §4 and move destination city covers to Supabase Storage + `locations.cover_image_url`.
 
 > Read `@docs/REMAINING.md` §5 and finish Search Console verification + sitemap submit for SqftGo production.

@@ -1,17 +1,18 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useApp } from "@/context/AppContext";
-import { MapPin } from "lucide-react";
+import { ImagePlus, MapPin } from "lucide-react";
 import { TextInput } from "@/components/ui";
 import { TaxonomyManager } from "@/features/admin";
-
+import { cityCoverImage } from "@/constants/city-images";
 
 export default function AdminLocationsPage() {
   const {
     locations,
     createLocation,
     updateLocation,
+    uploadCityCover,
     deleteLocation,
     addLog,
     userEmail,
@@ -21,24 +22,84 @@ export default function AdminLocationsPage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
+  const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  const handleUpload = useCallback(
+    async (id: string, city: string, file: File) => {
+      setUploadingId(id);
+      setError(null);
+      try {
+        await uploadCityCover(id, file);
+        addLog({
+          action: "City Cover Updated",
+          performedBy: userEmail,
+          role: "Admin",
+          target: city,
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unable to upload city image");
+      } finally {
+        setUploadingId(null);
+      }
+    },
+    [uploadCityCover, addLog, userEmail]
+  );
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const rows = locations.map((loc) => ({
-      id: loc.id,
-      title: loc.city,
-      subtitle: `${loc.state}, ${loc.country} · ${loc.propertyCount} properties`,
-      leading: <MapPin className="w-4 h-4 text-terracotta" />,
-      active: loc.active,
-    }));
+    const rows = locations.map((loc) => {
+      const cover = loc.coverImageUrl?.trim() || cityCoverImage(loc.city);
+      return {
+        id: loc.id,
+        title: loc.city,
+        subtitle: `${loc.state}, ${loc.country} · ${loc.propertyCount} properties`,
+        leading: (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={cover}
+            alt=""
+            className="w-full h-full object-cover rounded-xl"
+          />
+        ),
+        trailing: (
+          <div className="flex items-center gap-1">
+            <input
+              ref={(el) => {
+                fileInputs.current[loc.id] = el;
+              }}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (file) void handleUpload(loc.id, loc.city, file);
+              }}
+            />
+            <button
+              type="button"
+              disabled={uploadingId === loc.id || busy}
+              onClick={() => fileInputs.current[loc.id]?.click()}
+              className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide bg-indigo/5 text-indigo hover:bg-indigo/10 disabled:opacity-50 cursor-pointer"
+              aria-label={`Upload cover for ${loc.city}`}
+            >
+              <ImagePlus className="w-3.5 h-3.5" />
+              {uploadingId === loc.id ? "…" : "Image"}
+            </button>
+          </div>
+        ),
+        active: loc.active,
+      };
+    });
     if (!q) return rows;
     return rows.filter(
       (r) =>
         r.title.toLowerCase().includes(q) ||
         (r.subtitle?.toLowerCase().includes(q) ?? false)
     );
-  }, [locations, search]);
+  }, [locations, search, uploadingId, busy, handleUpload]);
 
   const handleAdd = async () => {
     if (!form.city.trim() || !form.state.trim() || busy) return;
@@ -96,7 +157,7 @@ export default function AdminLocationsPage() {
   return (
     <TaxonomyManager
       title="Locations"
-      description="Manage cities and regions available on the marketplace"
+      description="Add cities, enable or disable them, and set the cover image used across the site"
       icon={MapPin}
       itemLabel="Location"
       items={filtered}
@@ -137,6 +198,10 @@ export default function AdminLocationsPage() {
               aria-label="Country"
             />
           </div>
+          <p className="text-[11px] font-semibold text-charcoal/50 leading-relaxed">
+            After adding a city, use <span className="text-indigo">Image</span> on the row to upload
+            a cover. That image is used for destinations, city pages, and other city UI.
+          </p>
         </div>
       }
     />

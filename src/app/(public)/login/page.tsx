@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { DEMO_ACCOUNTS } from "@/constants/demoAccounts";
+import { cityCoverImage } from "@/constants/city-images";
 import { safeRedirectPath } from "@/lib/auth/urls";
 import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,29 +14,25 @@ const SHOW_DEMO_LOGIN = process.env.NODE_ENV !== "production";
 
 const SLIDES = [
   {
-    image: "/cities/udaipur.jpg",
     title: "LAKEVIEW HAVELI",
     desc: "Experience heritage living with gorgeous lake-facing suites in Udaipur.",
-    label: "Udaipur"
+    label: "Udaipur",
   },
   {
-    image: "/cities/jaipur.jpg",
     title: "ROYAL PALACE VILLA",
     desc: "Indulge in grand sandstone architecture and private courtyards in Jaipur.",
-    label: "Jaipur"
+    label: "Jaipur",
   },
   {
-    image: "/cities/jaisalmer.jpg",
     title: "DESERT RETREAT",
     desc: "Unwind under the golden skies in curated heritage structures in Jaisalmer.",
-    label: "Jaisalmer"
+    label: "Jaisalmer",
   },
   {
-    image: "/cities/jodhpur.jpg",
     title: "BLUE CITY MANSION",
     desc: "Discover beautiful boutique stays surrounded by historic fort views in Jodhpur.",
-    label: "Jodhpur"
-  }
+    label: "Jodhpur",
+  },
 ];
 
 function AuthForm() {
@@ -445,7 +442,7 @@ function AuthForm() {
 
         <div className="absolute inset-0 w-full h-full z-0 select-none pointer-events-none transition-all duration-700 ease-in-out">
           <img
-            src={SLIDES[activeSlide].image}
+            src={cityCoverImage(SLIDES[activeSlide].label)}
             alt={SLIDES[activeSlide].title}
             className="w-full h-full object-cover object-center brightness-[0.5] contrast-[1.05] scale-[1.01] transition-all duration-700 ease-in-out"
           />
