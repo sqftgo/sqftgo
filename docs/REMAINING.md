@@ -1,6 +1,6 @@
 # SqftGo — remaining work
 
-Last updated: **2026-10-26**  
+Last updated: **2026-11-02**  
 Phases **1–14** shipped on `main`. Phase **15** covers cleanup + Dream Project inspiration uploads + notification pref persistence.
 
 Auth-specific checklist: see also [`AUTH_REMAINING.md`](./AUTH_REMAINING.md).
@@ -105,7 +105,10 @@ Auth-specific checklist: see also [`AUTH_REMAINING.md`](./AUTH_REMAINING.md).
 
 From `AUTH_REMAINING.md` (summary):
 
-- [ ] Leaked password protection (Supabase Pro)
+- [ ] **Leaked password protection — blocked on Free plan (needs Supabase Pro)**  
+  Tried 2026-11-02: Dashboard → Authentication → **Attack Protection** → Leaked password protection (HaveIBeenPwned). Toggle requires **Pro**. Leave off until upgrade. After Pro: enable → Save → re-check `get_advisors` type `security` (`auth_leaked_password_protection` should clear).  
+  Docs: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+- [x] DB security advisor hardening (2026-11-02) — migration `20261102120000_security_advisor_hardening.sql` applied (RPC revoke, service-only table policies, extensions schema). Remaining advisor WARN: `is_admin()` for authenticated (intentional for RLS).
 - [ ] Production site URL + redirect allowlist (ops checklist)
 - [x] Rate limit auth APIs (in-memory per IP; Upstash later for multi-node)
 - [x] `AUTH_SKIP_EMAIL_CONFIRM` ignored in production

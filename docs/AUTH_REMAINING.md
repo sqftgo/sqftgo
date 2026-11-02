@@ -55,10 +55,11 @@ Notes from testing:
 
 ### 1. Leaked password protection — **needs Supabase Pro**
 
-Skipped on Free plan. Do this after upgrade:
+**Blocked 2026-11-02 on Free plan** (Attempted: Authentication → Attack Protection → Leaked password protection — Pro required). Also noted in [`REMAINING.md`](./REMAINING.md). Do this after upgrade:
 
-1. Open: https://supabase.com/dashboard/project/iwldglorfloyupayvmxd/auth/providers?provider=Email  
-2. Under Email / Password security → enable **Prevent the use of leaked passwords** (HaveIBeenPwned).  
+1. Open: https://supabase.com/dashboard/project/iwldglorfloyupayvmxd/auth/attack-protection  
+   (or Authentication → **Attack Protection**)
+2. Enable **Leaked password protection** (HaveIBeenPwned).  
 3. Optional: stronger min length / required character classes.  
 4. Save.  
 5. In Cursor with Supabase MCP: `get_advisors` type `security` — warning `auth_leaked_password_protection` should clear.
