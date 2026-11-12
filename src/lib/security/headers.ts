@@ -10,7 +10,8 @@ export function buildContentSecurityPolicy(): string {
     "default-src 'self'",
     // Next.js App Router still requires unsafe-inline/eval for runtime chunks
     // until a nonce-based middleware CSP is introduced.
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    // va.vercel-scripts.com = Vercel Web Analytics script
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
     // Google Fonts CSS is loaded from fonts.googleapis.com (see globals.css).
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     [
@@ -29,6 +30,8 @@ export function buildContentSecurityPolicy(): string {
       "connect-src 'self'",
       "https://*.supabase.co",
       "wss://*.supabase.co",
+      "https://va.vercel-scripts.com",
+      "https://vitals.vercel-insights.com",
     ].join(" "),
     "frame-src 'self' https://maps.google.com https://www.google.com",
     "worker-src 'self' blob:",
