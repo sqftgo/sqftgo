@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { config } from "@fortawesome/fontawesome-svg-core";
@@ -109,6 +110,7 @@ export default function RootLayout({
 
           {/* Logged-in user: Post Property FAB */}
           <PostPropertyButton />
+          <Analytics />
         </AppProviders>
       </body>
     </html>
