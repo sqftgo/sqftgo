@@ -4,6 +4,7 @@ export const metadata: Metadata = {
   title: "Destinations",
   description:
     "Explore heritage real estate destinations across Rajasthan, Gujarat, and Bharat on SqftGo.",
+  alternates: { canonical: "/destinations" },
   openGraph: {
     title: "Destinations | SqftGo",
     description:

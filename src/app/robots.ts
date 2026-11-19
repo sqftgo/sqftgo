@@ -8,6 +8,8 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
+        // Private / auth / app flows — intentional (not a homepage block).
+        // Lighthouse "blocked from indexing" on these URLs is expected.
         disallow: [
           "/admin/",
           "/dealer/dashboard/",

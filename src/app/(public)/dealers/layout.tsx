@@ -4,6 +4,7 @@ export const metadata: Metadata = {
   title: "Dealers Directory",
   description:
     "Find verified real estate dealers and brokers in your city on SqftGo.",
+  alternates: { canonical: "/dealers" },
   openGraph: {
     title: "Dealers Directory | SqftGo",
     description: "Find verified real estate dealers and brokers in your city on SqftGo.",
