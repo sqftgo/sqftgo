@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import {
+  Geist_Mono,
+  Mozilla_Text,
+  Stack_Sans_Headline,
+  Uncial_Antiqua,
+} from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import "@fortawesome/fontawesome-svg-core/styles.css";
@@ -8,12 +13,11 @@ import { AppProviders } from "@/providers/AppProviders";
 import Navbar from "@/components/shared/Navbar";
 import MainWrapper from "@/components/shared/MainWrapper";
 
-
 // Prevent Font Awesome from dynamically adding its CSS since we imported it above
 config.autoAddCss = false;
 import Footer from "@/components/shared/Footer";
 import DepthBackground from "@/components/shared/DepthBackground";
-import { PostPropertyButton } from "@/features/properties";
+import PostPropertyButton from "@/features/properties/components/PostPropertyButton";
 import { JsonLd, organizationJsonLd } from "@/lib/seo/json-ld";
 import {
   DEFAULT_DESCRIPTION,
@@ -23,14 +27,30 @@ import {
   SITE_NAME,
 } from "@/lib/seo/site";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const mozillaText = Mozilla_Text({
   subsets: ["latin"],
+  variable: "--font-mozilla-text",
+  display: "swap",
+});
+
+const stackSansHeadline = Stack_Sans_Headline({
+  subsets: ["latin"],
+  variable: "--font-stack-sans-headline",
+  display: "swap",
+});
+
+const uncialAntiqua = Uncial_Antiqua({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-uncial-antiqua",
+  display: "swap",
+  preload: false,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  preload: false,
 });
 
 const siteOrigin = getSiteOrigin();
@@ -52,7 +72,7 @@ export const metadata: Metadata = {
     "Jaipur property",
     "heritage homes",
   ],
-  alternates: { canonical: "/" },
+  // Do not set a global canonical here — it would force every page to "/" .
   openGraph: {
     type: "website",
     locale: "en_IN",
@@ -86,29 +106,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${mozillaText.variable} ${stackSansHeadline.variable} ${uncialAntiqua.variable} ${geistMono.variable} h-full antialiased`}
       data-scroll-behavior="smooth"
     >
       <body className="min-h-full flex flex-col font-sans">
         <JsonLd data={organizationJsonLd()} />
         <AppProviders>
-          {/* Depth drifting background layers */}
           <DepthBackground />
-          
-          {/* Global Header */}
           <Navbar />
-          
-          {/* Main content, adding margin-top for fixed navbar clearance, and bottom padding on mobile for floating bar clearance */}
-          <MainWrapper>
-            {children}
-          </MainWrapper>
-          
-          {/* Global Footer */}
+          <MainWrapper>{children}</MainWrapper>
           <Footer />
-          
-
-
-          {/* Logged-in user: Post Property FAB */}
           <PostPropertyButton />
           <Analytics />
         </AppProviders>

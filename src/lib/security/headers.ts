@@ -12,8 +12,8 @@ export function buildContentSecurityPolicy(): string {
     // until a nonce-based middleware CSP is introduced.
     // va.vercel-scripts.com = Vercel Web Analytics script
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
-    // Google Fonts CSS is loaded from fonts.googleapis.com (see globals.css).
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    // Fonts are self-hosted via next/font — no fonts.googleapis.com CSS needed.
+    "style-src 'self' 'unsafe-inline'",
     [
       "img-src 'self' data: blob:",
       "https://*.supabase.co",
@@ -24,8 +24,8 @@ export function buildContentSecurityPolicy(): string {
       "https://content.jdmagicbox.com",
       "https://ui-avatars.com",
     ].join(" "),
-    // Font files are served from fonts.gstatic.com after the CSS loads.
-    "font-src 'self' data: https://fonts.gstatic.com",
+    // next/font serves self-hosted font files from this origin.
+    "font-src 'self' data:",
     [
       "connect-src 'self'",
       "https://*.supabase.co",

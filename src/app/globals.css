@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Mozilla+Text:wght@200..700&family=Stack+Sans+Headline:wght@200..700&family=Uncial+Antiqua&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -47,10 +46,10 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   
-  --font-sans: "Mozilla Text", var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Stack Sans Headline", sans-serif;
+  --font-sans: var(--font-mozilla-text), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-stack-sans-headline), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
-  --font-logo: "Uncial Antiqua", serif;
+  --font-logo: var(--font-uncial-antiqua), serif;
 
   /* Custom Color Mappings for ease of use in Tailwind v4 */
   --color-cream: var(--brand-cream);

@@ -4,6 +4,7 @@ export const metadata: Metadata = {
   title: "Property Listings",
   description:
     "Browse verified homes, villas, apartments, and commercial spaces across Bharat on SqftGo.",
+  alternates: { canonical: "/listings" },
   openGraph: {
     title: "Property Listings | SqftGo",
     description:

@@ -28,12 +28,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: { absolute: "Destination Not Found | SqftGo" }, robots: { index: false } };
   }
   const title = `${destination.name} | ${destination.title} | SqftGo`;
+  const canonical = `/destinations/${slug}`;
   return {
     title: { absolute: title },
     description: destination.desc,
+    alternates: { canonical },
     openGraph: {
       title,
       description: destination.desc,
+      url: canonical,
       images: destination.image ? [{ url: destination.image }] : undefined,
     },
   };
