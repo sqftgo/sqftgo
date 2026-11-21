@@ -10,6 +10,7 @@ export function mapDealerRow(row: DirectoryProfileRow): DirectoryProfileView {
   return {
     id: row.id,
     userId: row.user_id,
+    slug: row.slug ?? null,
     firmName: row.firm_name,
     ownerName: row.owner_name,
     category: row.category,
@@ -20,6 +21,7 @@ export function mapDealerRow(row: DirectoryProfileRow): DirectoryProfileView {
     website: row.website,
     mobile: row.mobile,
     description: row.description,
+    intro: row.intro ?? "",
     reraId: row.rera_id ?? undefined,
     experience: row.experience ?? undefined,
     specialties: row.specialties ?? [],
@@ -33,6 +35,7 @@ export function mapDealerRow(row: DirectoryProfileRow): DirectoryProfileView {
     logoUrl: row.logo_url,
     businessHours: row.business_hours,
     servicesOffered: row.services_offered ?? [],
+    socialLinks: row.social_links ?? {},
   };
 }
 
@@ -60,11 +63,15 @@ export function mapDealerCreateToInsert(
     lat?: number | null;
     lng?: number | null;
     verificationStatus?: DirectoryProfile["verificationStatus"];
+    intro?: string;
+    socialLinks?: DirectoryProfile["socialLinks"];
+    slug?: string | null;
   },
   userId: string | null
 ): DirectoryProfileInsert {
   return {
     user_id: userId,
+    slug: input.slug ?? null,
     firm_name: input.firmName,
     owner_name: input.ownerName,
     category: input.category,
@@ -74,6 +81,7 @@ export function mapDealerCreateToInsert(
     website: input.website ?? "",
     mobile: input.mobile,
     description: input.description ?? "",
+    intro: input.intro ?? "",
     rera_id: input.reraId || null,
     experience: input.experience || null,
     specialties: input.specialties ?? [],
@@ -86,6 +94,7 @@ export function mapDealerCreateToInsert(
     logo_url: input.logoUrl ?? null,
     lat: input.lat ?? null,
     lng: input.lng ?? null,
+    social_links: input.socialLinks ?? {},
     verification_status: input.verificationStatus ?? "unverified",
     listing_active: true,
   };
@@ -118,5 +127,8 @@ export function mapDealerUpdateToPatch(updates: DealerUpdateInput): DirectoryPro
   if (updates.verificationStatus !== undefined) {
     patch.verification_status = updates.verificationStatus;
   }
+  if (updates.intro !== undefined) patch.intro = updates.intro;
+  if (updates.socialLinks !== undefined) patch.social_links = updates.socialLinks;
+  if (updates.slug !== undefined) patch.slug = updates.slug;
   return patch;
 }

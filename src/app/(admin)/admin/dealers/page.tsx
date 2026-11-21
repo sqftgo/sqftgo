@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   MapPin,
   Phone,
-  Globe,
   ExternalLink,
   MoreVertical,
   ShieldCheck,
@@ -259,14 +258,6 @@ export default function AdminDealersPage() {
                       href: `/dealers/${dealer.id}`,
                       target: "_blank",
                       icon: ExternalLink,
-                    },
-                    {
-                      id: "website",
-                      label: "Visit Website",
-                      href: dealer.website ? `https://${dealer.website}` : undefined,
-                      disabled: !dealer.website,
-                      target: "_blank",
-                      icon: Globe,
                     },
                     {
                       id: "call",

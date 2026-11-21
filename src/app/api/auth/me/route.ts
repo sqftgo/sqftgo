@@ -91,15 +91,29 @@ export async function PATCH(request: NextRequest) {
   const parsed = profileUpdateSchema.safeParse(body);
   if (!parsed.success) return jsonError(profileZodError(parsed.error));
 
+  const admin = createServiceClient();
   const patch: ProfileUpdate = {};
   if (parsed.data.name !== undefined) patch.name = parsed.data.name;
   if (parsed.data.phone !== undefined) patch.phone = parsed.data.phone;
   if (parsed.data.bio !== undefined) patch.bio = parsed.data.bio;
   if (parsed.data.city !== undefined) patch.city = parsed.data.city;
+  if (parsed.data.cityId !== undefined) {
+    if (parsed.data.cityId === null) {
+      patch.city_id = null;
+    } else {
+      const { data: loc } = await admin
+        .from("locations")
+        .select("id")
+        .eq("id", parsed.data.cityId)
+        .eq("active", true)
+        .maybeSingle();
+      if (!loc) return jsonError("Choose a valid active city.", 400);
+      patch.city_id = loc.id;
+    }
+  }
   if (parsed.data.avatarUrl !== undefined) patch.avatar_url = parsed.data.avatarUrl;
   if (Object.keys(patch).length === 0) return jsonError("No updates provided");
 
-  const admin = createServiceClient();
   const { data, error: updateError } = await admin
     .from("profiles")
     .update(patch)

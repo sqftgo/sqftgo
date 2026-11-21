@@ -3,6 +3,7 @@ import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapLocationRow } from "@/lib/mappers/catalog";
+import { slugify } from "@/lib/slug";
 import { locationUpdateSchema, catalogZodError } from "@/lib/validation/catalog";
 import type { LocationRow, LocationUpdate } from "@/types/database";
 
@@ -33,17 +34,31 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   const parsed = locationUpdateSchema.safeParse(body);
   if (!parsed.success) return jsonError(catalogZodError(parsed.error));
 
+  const admin = createServiceClient();
   const patch: LocationUpdate = {};
   if (parsed.data.city !== undefined) patch.city = parsed.data.city;
   if (parsed.data.state !== undefined) patch.state = parsed.data.state;
   if (parsed.data.country !== undefined) patch.country = parsed.data.country;
+  if (parsed.data.slug !== undefined) {
+    patch.slug = parsed.data.slug;
+  } else if (parsed.data.city !== undefined || parsed.data.state !== undefined) {
+    const { data: existing } = await admin
+      .from("locations")
+      .select("city, state")
+      .eq("id", id)
+      .maybeSingle();
+    const city = parsed.data.city ?? existing?.city ?? "";
+    const state = parsed.data.state ?? existing?.state ?? "";
+    if (city && state) patch.slug = slugify(`${city}-${state}`);
+  }
   if (parsed.data.active !== undefined) patch.active = parsed.data.active;
   if (parsed.data.sortOrder !== undefined) patch.sort_order = parsed.data.sortOrder;
   if (parsed.data.coverImageUrl !== undefined) {
     patch.cover_image_url = parsed.data.coverImageUrl;
   }
+  if (parsed.data.latitude !== undefined) patch.latitude = parsed.data.latitude;
+  if (parsed.data.longitude !== undefined) patch.longitude = parsed.data.longitude;
 
-  const admin = createServiceClient();
   const { data, error: updateError } = await admin
     .from("locations")
     .update(patch)
@@ -52,7 +67,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     .single();
 
   if (updateError || !data) {
-    return jsonError(updateError?.message ?? "Unable to update location", 500);
+    const message = updateError?.message ?? "Unable to update location";
+    if (/duplicate|unique/i.test(message)) {
+      return jsonError("A location with this city/state or slug already exists", 409);
+    }
+    return jsonError(message, 500);
   }
 
   return jsonOk(mapLocationRow(data as LocationRow, 0));

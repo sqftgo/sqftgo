@@ -1,9 +1,39 @@
 import { z } from "zod";
+import {
+  DEFAULT_SERVICE_ICON,
+  isCatalogIconName,
+} from "@/lib/icons/catalog-icon-names";
+
+const serviceSlugSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(2)
+  .max(120)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use a lowercase slug like interior-decorator")
+  .optional();
+
+const serviceImageUrlSchema = z
+  .union([
+    z.string().trim().url().max(2000),
+    z.string().trim().startsWith("/").max(500),
+    z.null(),
+  ])
+  .optional();
+
+const catalogIconSchema = z
+  .string()
+  .trim()
+  .refine((v) => isCatalogIconName(v), {
+    message: "Choose an icon from the Lucide catalog",
+  });
 
 export const serviceTypeCreateSchema = z.object({
   name: z.string().trim().min(2).max(120),
+  slug: serviceSlugSchema,
   description: z.string().trim().max(2000).optional().default(""),
-  icon: z.string().trim().min(1).max(16).optional().default("🔧"),
+  icon: catalogIconSchema.optional().default(DEFAULT_SERVICE_ICON),
+  imageUrl: serviceImageUrlSchema,
   active: z.boolean().optional().default(true),
   sortOrder: z.number().int().min(0).max(100000).optional().default(100),
 });
@@ -11,8 +41,10 @@ export const serviceTypeCreateSchema = z.object({
 export const serviceTypeUpdateSchema = z
   .object({
     name: z.string().trim().min(2).max(120).optional(),
+    slug: serviceSlugSchema,
     description: z.string().trim().max(2000).optional(),
-    icon: z.string().trim().min(1).max(16).optional(),
+    icon: catalogIconSchema.optional(),
+    imageUrl: serviceImageUrlSchema,
     active: z.boolean().optional(),
     sortOrder: z.number().int().min(0).max(100000).optional(),
   })

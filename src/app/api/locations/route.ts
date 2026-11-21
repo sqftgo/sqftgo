@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapLocationRow } from "@/lib/mappers/catalog";
+import { slugify } from "@/lib/slug";
 import { locationCreateSchema, catalogZodError } from "@/lib/validation/catalog";
 import type { LocationRow } from "@/types/database";
 
@@ -83,21 +84,31 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) return jsonError(catalogZodError(parsed.error));
 
   const admin = createServiceClient();
+  const slug =
+    parsed.data.slug?.trim() ||
+    slugify(`${parsed.data.city}-${parsed.data.state}`);
   const { data, error: insertError } = await admin
     .from("locations")
     .insert({
       city: parsed.data.city,
       state: parsed.data.state,
       country: parsed.data.country,
+      slug,
       active: parsed.data.active ?? true,
       sort_order: parsed.data.sortOrder ?? 100,
       cover_image_url: parsed.data.coverImageUrl ?? null,
+      latitude: parsed.data.latitude ?? null,
+      longitude: parsed.data.longitude ?? null,
     })
     .select("*")
     .single();
 
   if (insertError || !data) {
-    return jsonError(insertError?.message ?? "Unable to create location", 500);
+    const message = insertError?.message ?? "Unable to create location";
+    if (/duplicate|unique/i.test(message)) {
+      return jsonError("A location with this city/state or slug already exists", 409);
+    }
+    return jsonError(message, 500);
   }
 
   return jsonOk(mapLocationRow(data as LocationRow, 0), { status: 201 });

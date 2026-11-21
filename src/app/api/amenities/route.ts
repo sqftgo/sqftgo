@@ -71,6 +71,9 @@ export async function POST(request: NextRequest) {
     .from("amenities")
     .insert({
       name: parsed.data.name,
+      description: parsed.data.description ?? "",
+      icon: parsed.data.icon ?? "Star",
+      category: parsed.data.category ?? null,
       active: parsed.data.active ?? true,
       sort_order: parsed.data.sortOrder ?? 100,
     })
@@ -78,7 +81,11 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (insertError || !data) {
-    return jsonError(insertError?.message ?? "Unable to create amenity", 500);
+    const message = insertError?.message ?? "Unable to create amenity";
+    if (/duplicate|unique/i.test(message)) {
+      return jsonError("An amenity with this name already exists", 409);
+    }
+    return jsonError(message, 500);
   }
 
   return jsonOk(mapAmenityRow(data as AmenityRow), { status: 201 });

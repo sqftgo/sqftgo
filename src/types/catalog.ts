@@ -14,9 +14,15 @@ export interface Notification {
 export interface Category {
   id: string;
   name: string;
+  slug: string;
+  description: string;
   icon: string;
+  imageUrl?: string | null;
   count: number;
   active: boolean;
+  sortOrder: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Location {
@@ -24,17 +30,28 @@ export interface Location {
   city: string;
   state: string;
   country: string;
+  slug: string;
   active: boolean;
   propertyCount: number;
   sortOrder: number;
   /** Admin-managed cover; preferred by cityCoverImage() app-wide. */
   coverImageUrl?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Amenity {
   id: string;
   name: string;
+  description: string;
+  icon: string;
+  category?: string | null;
   active: boolean;
+  sortOrder: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ActivityLog {
@@ -55,16 +72,31 @@ export type DirectoryVerificationStatus =
 export interface ServiceType {
   id: string;
   name: string;
+  slug: string;
   description: string;
   icon: string;
+  imageUrl?: string | null;
   active: boolean;
   sortOrder: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
+
+export type DirectorySocialLinks = {
+  facebook?: string;
+  instagram?: string;
+  linkedin?: string;
+  twitter?: string;
+  youtube?: string;
+  whatsapp?: string;
+};
 
 export interface DirectoryProfile {
   id: string;
   /** Linked auth/profiles id when the directory card is claimed. */
   userId?: string | null;
+  /** SEO-friendly public path segment (`/services/{slug}`). */
+  slug?: string | null;
   firmName: string;
   ownerName: string;
   /** Dealer enum-legacy values or service type name. */
@@ -76,6 +108,8 @@ export interface DirectoryProfile {
   website: string;
   mobile: string;
   description: string;
+  /** Short hero introduction; falls back to description when empty. */
+  intro?: string;
   reraId?: string;
   experience?: string;
   specialties?: string[];
@@ -89,6 +123,89 @@ export interface DirectoryProfile {
   logoUrl?: string | null;
   businessHours?: Record<string, string> | null;
   servicesOffered?: string[];
+  socialLinks?: DirectorySocialLinks;
+  /** True when premium website promotion is currently active (server-enriched). */
+  websitePromotionActive?: boolean;
+  averageRating?: number | null;
+  reviewCount?: number;
+}
+
+export interface ServicePortfolioImage {
+  id: string;
+  directoryProfileId: string;
+  imageUrl: string;
+  caption: string;
+  sortOrder: number;
+  createdAt?: string;
+}
+
+export interface ServiceReview {
+  id: string;
+  directoryProfileId: string;
+  userId: string;
+  rating: number;
+  title: string;
+  body: string;
+  status: "published" | "hidden" | "pending";
+  createdAt: string;
+  updatedAt?: string;
+  reviewerName?: string;
+}
+
+export type WebsitePromotionBillingType = "one_time" | "recurring";
+export type WebsitePromotionStatus =
+  | "inactive"
+  | "pending"
+  | "active"
+  | "expired"
+  | "cancelled";
+
+export interface ServiceWebsitePromotionPlan {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  pricePaise: number;
+  currency: string;
+  billingType: WebsitePromotionBillingType;
+  durationDays: number;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ServiceWebsitePromotion {
+  id: string;
+  directoryProfileId: string;
+  userId: string;
+  planId: string | null;
+  status: WebsitePromotionStatus;
+  startsAt: string | null;
+  expiresAt: string | null;
+  websiteUrl: string;
+  adminNotes?: string;
+  lastPaymentId?: string | null;
+  isActive: boolean;
+  plan?: ServiceWebsitePromotionPlan | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ServiceWebsitePromotionPayment {
+  id: string;
+  directoryProfileId: string;
+  userId: string;
+  planId: string | null;
+  amountPaise: number;
+  currency: string;
+  status: "created" | "paid" | "failed" | "refunded";
+  razorpayOrderId?: string | null;
+  razorpayPaymentId?: string | null;
+  receipt?: string | null;
+  paidAt?: string | null;
+  createdAt: string;
+  planName?: string;
 }
 
 export type ServiceBookingStatus = "pending" | "confirmed" | "cancelled" | "completed";

@@ -28,7 +28,10 @@ const filterProperties = (
   catalog: ListingFilter[]
 ): Property[] => {
   const custom = catalog.filter(
-    (f) => f.active && (f.kind === "text" || f.kind === "toggle" || f.kind === "multi")
+    (f) => {
+      const custom = ["text","toggle","multi","dropdown","checkbox","range","boolean","number","date"];
+      return f.active && custom.includes(f.kind);
+    }
   );
   const enabled = (key: string) => catalog.length === 0 || catalog.some((f) => f.key === key && f.active);
   return list.filter((p) => {

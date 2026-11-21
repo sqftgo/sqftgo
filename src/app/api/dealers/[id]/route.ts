@@ -3,6 +3,7 @@ import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
+import { isDealerCategory } from "@/features/dealers/lib/is-dealer-category";
 import { mapDealerRow, mapDealerUpdateToPatch } from "@/lib/mappers/dealer";
 import { requireActiveCity } from "@/lib/server/active-city";
 import { dealerUpdateSchema, dealerZodError } from "@/lib/validation/dealer";
@@ -16,12 +17,11 @@ export async function GET(_request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
   if (!id) return jsonError("Dealer id is required");
 
+  const { looksLikeUuid } = await import("@/lib/services/profile-slug");
   const supabase = hasServiceRoleKey() ? createServiceClient() : await createClient();
-  const { data, error } = await supabase
-    .from("directory_profiles")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
+  let query = supabase.from("directory_profiles").select("*");
+  query = looksLikeUuid(id) ? query.eq("id", id) : query.eq("slug", id);
+  const { data, error } = await query.maybeSingle();
 
   if (error) return jsonError(error.message, 500);
   if (!data) return jsonError("Directory profile not found", 404);
@@ -87,6 +87,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 
   const patch = mapDealerUpdateToPatch(parsed.data);
+
+  // Dealers cannot set or keep a website link on their profile.
+  const nextCategory = parsed.data.category ?? row.category;
+  if (isDealerCategory(row.category) || isDealerCategory(nextCategory)) {
+    delete parsed.data.website;
+    patch.website = "";
+  }
+
   if (Object.keys(patch).length === 0) {
     return jsonOk(mapDealerRow(row));
   }

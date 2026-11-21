@@ -11,7 +11,6 @@ import {
   MapPin, 
   Phone, 
   Mail, 
-  Globe, 
   Building2, 
   User, 
   Star, 
@@ -353,19 +352,6 @@ export default function DealerProfilePage() {
                       <span className="text-charcoal group-hover:text-indigo transition-colors truncate mt-0.5">{profile.email}</span>
                     </div>
                   </a>
-
-                  {/* Website */}
-                  {profile.website && (
-                    <a href={`https://${profile.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3.5 group overflow-hidden cursor-pointer">
-                      <div className="w-8.5 h-8.5 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0 transition-transform group-hover:scale-105">
-                        <Globe className="w-4 h-4 shrink-0" />
-                      </div>
-                      <div className="flex flex-col text-left overflow-hidden">
-                        <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest">Website</span>
-                        <span className="text-charcoal group-hover:text-emerald-600 transition-colors truncate mt-0.5">{profile.website}</span>
-                      </div>
-                    </a>
-                  )}
 
                   {/* Business Hours */}
                   {profile.businessHours && (

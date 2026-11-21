@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CUSTOM_LISTING_FILTER_KINDS } from "@/types/listing-filter";
 
 export const listingFilterKindSchema = z.enum([
   "purpose",
@@ -15,6 +16,12 @@ export const listingFilterKindSchema = z.enum([
   "text",
   "toggle",
   "multi",
+  "dropdown",
+  "checkbox",
+  "range",
+  "boolean",
+  "number",
+  "date",
 ]);
 
 export const listingFilterCatalogSchema = z.enum(["cities", "categories", "amenities"]);
@@ -24,12 +31,19 @@ export const listingFilterOptionSchema = z.object({
   value: z.string().trim().min(1).max(80),
 });
 
+/** Fields on Property that custom filters may legally map to. */
 export const PROPERTY_FIELD_WHITELIST = [
+  "title",
   "city",
   "locality",
   "purpose",
   "type",
   "bhk",
+  "bathrooms",
+  "parking",
+  "yearBuilt",
+  "price",
+  "size",
   "furnished",
   "amenities",
   "reraApproved",
@@ -37,7 +51,11 @@ export const PROPERTY_FIELD_WHITELIST = [
   "nearbyHospital",
   "nearbySchool",
   "nearbyTransportation",
+  "description",
 ] as const;
+
+const KINDS_REQUIRING_OPTIONS = new Set(["multi", "dropdown", "checkbox"]);
+const CUSTOM_KINDS = new Set(CUSTOM_LISTING_FILTER_KINDS);
 
 export const listingFilterCreateSchema = z
   .object({
@@ -58,7 +76,7 @@ export const listingFilterCreateSchema = z
   })
   .strict()
   .superRefine((v, ctx) => {
-    if (v.kind === "text" || v.kind === "toggle" || v.kind === "multi") {
+    if (CUSTOM_KINDS.has(v.kind)) {
       if (!v.propertyField) {
         ctx.addIssue({
           code: "custom",
@@ -67,10 +85,10 @@ export const listingFilterCreateSchema = z
         });
       }
     }
-    if (v.kind === "multi" && (!v.options || v.options.length === 0)) {
+    if (KINDS_REQUIRING_OPTIONS.has(v.kind) && (!v.options || v.options.length === 0)) {
       ctx.addIssue({
         code: "custom",
-        message: "At least one option is required for multi filters",
+        message: "At least one option is required for this filter type",
         path: ["options"],
       });
     }

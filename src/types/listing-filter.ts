@@ -12,7 +12,13 @@ export type ListingFilterKind =
   | "featured"
   | "text"
   | "toggle"
-  | "multi";
+  | "multi"
+  | "dropdown"
+  | "checkbox"
+  | "range"
+  | "boolean"
+  | "number"
+  | "date";
 
 export type ListingFilterCatalog = "cities" | "categories" | "amenities";
 
@@ -34,5 +40,27 @@ export type ListingFilter = {
   sortOrder: number;
 };
 
-/** Extra values for custom text / toggle / multi filters keyed by filter.key */
-export type ListingFilterExtra = Record<string, string | string[] | boolean>;
+export type ListingFilterRangeValue = { min?: string; max?: string };
+
+/** Extra values for custom filters keyed by filter.key */
+export type ListingFilterExtra = Record<
+  string,
+  string | string[] | boolean | ListingFilterRangeValue
+>;
+
+/** Custom (admin-created) filter kinds that map onto property fields. */
+export const CUSTOM_LISTING_FILTER_KINDS: ListingFilterKind[] = [
+  "text",
+  "toggle",
+  "multi",
+  "dropdown",
+  "checkbox",
+  "range",
+  "boolean",
+  "number",
+  "date",
+];
+
+export function isCustomListingFilterKind(kind: ListingFilterKind): boolean {
+  return CUSTOM_LISTING_FILTER_KINDS.includes(kind);
+}

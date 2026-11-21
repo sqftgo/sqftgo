@@ -139,7 +139,6 @@ export default function DealerProfilePage() {
     address:         profile?.address         || "",
     mobile:          profile?.mobile          || "",
     email:           profile?.email           || userEmail || "",
-    website:         profile?.website         || "",
     reraId:          profile?.reraId          || "",
     description:     profile?.description     || "",
     specialties:     profile?.specialties     || [] as string[],
@@ -165,7 +164,6 @@ export default function DealerProfilePage() {
         address:         prev.address || profile.address || "",
         mobile:          prev.mobile || profile.mobile || "",
         email:           prev.email || profile.email || userEmail || "",
-        website:         prev.website || profile.website || "",
         reraId:          prev.reraId || profile.reraId || "",
         description:     prev.description || profile.description || "",
         specialties:     prev.specialties.length > 0 ? prev.specialties : profile.specialties || [],
@@ -209,7 +207,6 @@ export default function DealerProfilePage() {
         address:         form.address,
         mobile:          form.mobile,
         email:           form.email,
-        website:         form.website,
         reraId:          form.reraId || undefined,
         description:     form.description,
         specialties:     form.specialties,
@@ -608,19 +605,6 @@ export default function DealerProfilePage() {
                         </div>
                       </div>
 
-                      {/* Website */}
-                      {form.website && (
-                        <div className="flex items-center gap-3.5 overflow-hidden">
-                          <div className="w-8.5 h-8.5 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
-                            <Globe className="w-4 h-4 shrink-0" />
-                          </div>
-                          <div className="flex flex-col text-left overflow-hidden">
-                            <span className="text-[9px] font-bold text-charcoal/40 uppercase tracking-widest">Website</span>
-                            <span className="text-charcoal font-bold truncate mt-0.5">{form.website}</span>
-                          </div>
-                        </div>
-                      )}
-
                       {/* Working Hours */}
                       <div className="flex items-start gap-3.5 pt-2 border-t border-sand/60">
                         <div className="w-8.5 h-8.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-700 shrink-0">
@@ -931,35 +915,11 @@ export default function DealerProfilePage() {
             {activeTab === "Services" && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-sm font-serif font-black text-charcoal">Services, Hours & Online Presence</h3>
+                  <h3 className="text-sm font-serif font-black text-charcoal">Services & Hours</h3>
                   <p className="text-[10px] text-charcoal/40 font-semibold mt-0.5">
-                    Manage your website link, working hours, and directory listing status.
+                    Manage your working hours and directory listing status.
                   </p>
                 </div>
-
-                {/* Website */}
-                <FormField label="Website / Portfolio URL" hint="Shown as a clickable link on your public profile">
-                  <div className="relative">
-                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/35" />
-                    <TextInput
-                      type="url"
-                      value={form.website}
-                      onChange={(e) => set("website", e.target.value)}
-                      placeholder="https://youragency.com"
-                      className={`pl-9 ${inputClass}`}
-                    />
-                  </div>
-                  {form.website && (
-                    <a
-                      href={form.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[11px] text-indigo font-bold mt-1.5 hover:underline"
-                    >
-                      <ExternalLink className="w-3 h-3" /> Preview link
-                    </a>
-                  )}
-                </FormField>
 
                 {/* Operating Hours */}
                 <div className="space-y-3 pt-2">

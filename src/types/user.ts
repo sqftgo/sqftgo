@@ -7,9 +7,13 @@ export interface UserProfile {
   name: string;
   email: string;
   phone?: string;
+  countryCode?: string;
+  mobileVerified?: boolean;
+  mobileVerifiedAt?: string | null;
   avatar?: string;
   bio?: string;
   city?: string;
+  cityId?: string;
   role: AuthRole;
   joinedDate: string;
   listingStatus?: ListerStatus;

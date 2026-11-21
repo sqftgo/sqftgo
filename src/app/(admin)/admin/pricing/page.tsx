@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Plus, RotateCcw, Save, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
 import {
   DashboardPageHeader,
   Alert,
@@ -92,6 +92,17 @@ export default function AdminPricingPage() {
     );
   };
 
+  const moveOption = (key: PriceRangeGroupKey, value: string, direction: -1 | 1) => {
+    const list = config[key].filter((o) => o.value !== "");
+    const idx = list.findIndex((o) => o.value === value);
+    const swap = list[idx + direction];
+    if (!swap || idx < 0) return;
+    const next = [...list];
+    next[idx] = swap;
+    next[idx + direction] = list[idx];
+    updateGroup(key, next);
+  };
+
   const handleLabelChange = (
     key: PriceRangeGroupKey,
     value: string,
@@ -150,8 +161,16 @@ export default function AdminPricingPage() {
   };
 
   const handleReset = () => {
-    setConfig(DEFAULT_PRICE_RANGES);
-    void persist(DEFAULT_PRICE_RANGES);
+    const reset = { ...DEFAULT_PRICE_RANGES };
+    for (const group of PRICE_RANGE_GROUPS) {
+      reset[group.key] = normalizePriceOptions(
+        DEFAULT_PRICE_RANGES[group.key],
+        group.placeholderLabel,
+        { sortByValue: true }
+      );
+    }
+    setConfig(reset);
+    void persist(reset);
   };
 
   return (
@@ -267,8 +286,24 @@ export default function AdminPricingPage() {
                             aria-label={`Label for ${option.value}`}
                           />
                           <span className="text-[10px] font-bold text-charcoal/40 w-24 text-right shrink-0 tabular-nums">
-                            {Number(option.value).toLocaleString("en-IN")}
+                            ₹{Number(option.value).toLocaleString("en-IN")}
                           </span>
+                          <button
+                            type="button"
+                            onClick={() => moveOption(group.key, option.value, -1)}
+                            className="p-1.5 text-charcoal/35 hover:text-indigo hover:bg-indigo/10 rounded-lg transition-colors cursor-pointer"
+                            aria-label={`Move ${option.label} up`}
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveOption(group.key, option.value, 1)}
+                            className="p-1.5 text-charcoal/35 hover:text-indigo hover:bg-indigo/10 rounded-lg transition-colors cursor-pointer"
+                            aria-label={`Move ${option.label} down`}
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => handleRemove(group.key, option.value)}

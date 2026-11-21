@@ -1,40 +1,56 @@
 import { apiClient } from "@/lib/api/client";
 import type { ActivityLog, Amenity, Category, Location } from "@/types";
 
+export type CategoryCreateInput = {
+  name: string;
+  icon?: string;
+  description?: string;
+  slug?: string;
+  imageUrl?: string | null;
+  active?: boolean;
+  sortOrder?: number;
+};
+
+export type CategoryUpdateInput = Partial<CategoryCreateInput>;
+
+export type LocationCreateInput = {
+  city: string;
+  state: string;
+  country: string;
+  slug?: string;
+  active?: boolean;
+  sortOrder?: number;
+  coverImageUrl?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+};
+
+export type LocationUpdateInput = Partial<LocationCreateInput>;
+
+export type AmenityCreateInput = {
+  name: string;
+  description?: string;
+  icon?: string;
+  category?: string | null;
+  active?: boolean;
+  sortOrder?: number;
+};
+
+export type AmenityUpdateInput = Partial<AmenityCreateInput>;
+
 export interface CatalogRepository {
   listCategories(opts?: { all?: boolean }): Promise<Category[]>;
-  createCategory(input: { name: string; icon: string; active?: boolean }): Promise<Category>;
-  updateCategory(
-    id: string,
-    updates: { name?: string; icon?: string; active?: boolean }
-  ): Promise<Category>;
+  createCategory(input: CategoryCreateInput): Promise<Category>;
+  updateCategory(id: string, updates: CategoryUpdateInput): Promise<Category>;
   deleteCategory(id: string): Promise<{ ok: boolean; deactivated?: boolean }>;
   listLocations(opts?: { all?: boolean }): Promise<Location[]>;
-  createLocation(input: {
-    city: string;
-    state: string;
-    country: string;
-    active?: boolean;
-    coverImageUrl?: string | null;
-  }): Promise<Location>;
-  updateLocation(
-    id: string,
-    updates: {
-      city?: string;
-      state?: string;
-      country?: string;
-      active?: boolean;
-      coverImageUrl?: string | null;
-    }
-  ): Promise<Location>;
+  createLocation(input: LocationCreateInput): Promise<Location>;
+  updateLocation(id: string, updates: LocationUpdateInput): Promise<Location>;
   uploadCityCover(locationId: string, file: File): Promise<Location>;
   deleteLocation(id: string): Promise<{ ok: boolean; deactivated?: boolean }>;
   listAmenities(opts?: { all?: boolean }): Promise<Amenity[]>;
-  createAmenity(input: { name: string; active?: boolean }): Promise<Amenity>;
-  updateAmenity(
-    id: string,
-    updates: { name?: string; active?: boolean }
-  ): Promise<Amenity>;
+  createAmenity(input: AmenityCreateInput): Promise<Amenity>;
+  updateAmenity(id: string, updates: AmenityUpdateInput): Promise<Amenity>;
   deleteAmenity(id: string): Promise<{ ok: boolean; deactivated?: boolean }>;
   listLogs(): Promise<ActivityLog[]>;
   addLog(log: Omit<ActivityLog, "id" | "timestamp">): Promise<ActivityLog>;

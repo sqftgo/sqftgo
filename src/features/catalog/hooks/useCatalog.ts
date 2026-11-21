@@ -132,16 +132,19 @@ export function useCatalog({ sessionReady, isLoggedIn, userRole }: UseCatalogArg
     []
   );
 
-  const createCategory = useCallback(async (input: { name: string; icon: string }) => {
-    const created = await catalogService.createCategory(input);
-    setCategoriesState((prev) => [...prev, created]);
-    return created;
-  }, []);
+  const createCategory = useCallback(
+    async (input: Parameters<typeof catalogService.createCategory>[0]) => {
+      const created = await catalogService.createCategory(input);
+      setCategoriesState((prev) => [...prev, created]);
+      return created;
+    },
+    []
+  );
 
   const updateCategory = useCallback(
-    async (id: string, updates: { name?: string; icon?: string; active?: boolean }) => {
+    async (id: string, updates: Parameters<typeof catalogService.updateCategory>[1]) => {
       const updated = await catalogService.updateCategory(id, updates);
-      setCategoriesState((prev) => prev.map((c) => (c.id === id ? updated : c)));
+      setCategoriesState((prev) => prev.map((c) => (c.id === id ? { ...c, ...updated } : c)));
       return updated;
     },
     []
@@ -159,12 +162,7 @@ export function useCatalog({ sessionReady, isLoggedIn, userRole }: UseCatalogArg
   }, []);
 
   const createLocation = useCallback(
-    async (input: {
-      city: string;
-      state: string;
-      country: string;
-      coverImageUrl?: string | null;
-    }) => {
+    async (input: Parameters<typeof catalogService.createLocation>[0]) => {
       const created = await catalogService.createLocation(input);
       setLocationsState((prev) => [...prev, created]);
       return created;
@@ -173,18 +171,11 @@ export function useCatalog({ sessionReady, isLoggedIn, userRole }: UseCatalogArg
   );
 
   const updateLocation = useCallback(
-    async (
-      id: string,
-      updates: {
-        city?: string;
-        state?: string;
-        country?: string;
-        active?: boolean;
-        coverImageUrl?: string | null;
-      }
-    ) => {
+    async (id: string, updates: Parameters<typeof catalogService.updateLocation>[1]) => {
       const updated = await catalogService.updateLocation(id, updates);
-      setLocationsState((prev) => prev.map((l) => (l.id === id ? updated : l)));
+      setLocationsState((prev) =>
+        prev.map((l) => (l.id === id ? { ...l, ...updated, propertyCount: l.propertyCount } : l))
+      );
       return updated;
     },
     []
@@ -211,14 +202,17 @@ export function useCatalog({ sessionReady, isLoggedIn, userRole }: UseCatalogArg
     }
   }, []);
 
-  const createAmenity = useCallback(async (input: { name: string }) => {
-    const created = await catalogService.createAmenity(input);
-    setAmenitiesState((prev) => [...prev, created]);
-    return created;
-  }, []);
+  const createAmenity = useCallback(
+    async (input: Parameters<typeof catalogService.createAmenity>[0]) => {
+      const created = await catalogService.createAmenity(input);
+      setAmenitiesState((prev) => [...prev, created]);
+      return created;
+    },
+    []
+  );
 
   const updateAmenity = useCallback(
-    async (id: string, updates: { name?: string; active?: boolean }) => {
+    async (id: string, updates: Parameters<typeof catalogService.updateAmenity>[1]) => {
       const updated = await catalogService.updateAmenity(id, updates);
       setAmenitiesState((prev) => prev.map((a) => (a.id === id ? updated : a)));
       return updated;

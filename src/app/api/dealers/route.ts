@@ -151,14 +151,20 @@ export async function POST(request: NextRequest) {
     serviceTypeId = st?.id ?? null;
   }
 
+  const { allocateDirectorySlug } = await import("@/lib/services/profile-slug");
+  const slug = await allocateDirectorySlug(admin, parsed.data.firmName);
+
   const insert = mapDealerCreateToInsert(
     {
       ...parsed.data,
       category,
       serviceTypeId,
       city: cityCheck.location.city,
+      // Dealers are not allowed to publish an external website link.
+      website: isDealerCategory(category) ? "" : parsed.data.website,
       coverImageUrl: parsed.data.coverImageUrl || null,
       logoUrl: parsed.data.logoUrl || null,
+      slug,
       // Dealer applications start pending until admin KYC / verification.
       verificationStatus: isDealerCategory(category) ? "pending" : "unverified",
     },

@@ -36,6 +36,8 @@ Notes from testing:
 
 ## Already done
 
+- [x] Mobile OTP login + WhatsApp/SMS via MSG91 (`/api/auth/mobile/**`) wired into `/login` + dealer register (dev channel returns `debugCode` when MSG91 unset)
+- [x] Signup requires verified mobile claim + optional `cityId` from `locations`
 - [x] Supabase cookie sessions (`@supabase/ssr` + `getUser()`)
 - [x] Profiles table + RLS (own or admin select/update)
 - [x] Role protect + single-admin triggers
@@ -47,7 +49,9 @@ Notes from testing:
 - [x] Demo passwords removed from client bundle
 - [x] Dealer register no longer fakes `broker` role client-side
 - [x] Logout clears Supabase cookies (Navbar / profile)
-- [x] Supabase MCP for this project (`.cursor/mcp.json`)
+- [x] Supabase MCP **workspace-only** (`f:\real-state\.cursor\mcp.json`, project_ref `iwldglorfloyupayvmxd` + feedback/notebooks) — not in global `~/.cursor/mcp.json`
+- [x] Supabase agent skills installed under `.agents/skills/` (`supabase`, `supabase-postgres-best-practices`)
+- [x] Cursor Supabase plugin MCP authenticated; `list_projects` currently only returns SqftGo (`iwldglorfloyupayvmxd`)
 
 ---
 

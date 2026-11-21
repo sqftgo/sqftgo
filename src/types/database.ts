@@ -130,8 +130,10 @@ export type ServiceBookingStatusDb = "pending" | "confirmed" | "cancelled" | "co
 export type ServiceTypeRow = {
   id: string;
   name: string;
+  slug: string;
   description: string;
   icon: string;
+  image_url: string | null;
   active: boolean;
   sort_order: number;
   created_at: string;
@@ -141,8 +143,10 @@ export type ServiceTypeRow = {
 export type ServiceTypeInsert = {
   id?: string;
   name: string;
+  slug?: string;
   description?: string;
   icon?: string;
+  image_url?: string | null;
   active?: boolean;
   sort_order?: number;
   created_at?: string;
@@ -199,9 +203,14 @@ export type ProfileRow = {
   email: string;
   name: string;
   phone: string | null;
+  country_code?: string | null;
+  mobile_verified?: boolean;
+  mobile_verified_at?: string | null;
+  auth_provider?: string | null;
   avatar_url: string | null;
   bio: string | null;
   city: string | null;
+  city_id?: string | null;
   role: AppRole;
   status: ProfileStatus;
   listing_status: ListerStatusDb;
@@ -216,9 +225,14 @@ export type ProfileInsert = {
   email: string;
   name?: string;
   phone?: string | null;
+  country_code?: string | null;
+  mobile_verified?: boolean;
+  mobile_verified_at?: string | null;
+  auth_provider?: string | null;
   avatar_url?: string | null;
   bio?: string | null;
   city?: string | null;
+  city_id?: string | null;
   role?: AppRole;
   status?: ProfileStatus;
   listing_status?: ListerStatusDb;
@@ -233,9 +247,14 @@ export type ProfileUpdate = {
   email?: string;
   name?: string;
   phone?: string | null;
+  country_code?: string | null;
+  mobile_verified?: boolean;
+  mobile_verified_at?: string | null;
+  auth_provider?: string | null;
   avatar_url?: string | null;
   bio?: string | null;
   city?: string | null;
+  city_id?: string | null;
   role?: AppRole;
   status?: ProfileStatus;
   listing_status?: ListerStatusDb;
@@ -358,9 +377,19 @@ export type PropertyInquiryInsert = {
 
 export type PropertyInquiryUpdate = Partial<PropertyInquiryInsert>;
 
+export type DirectorySocialLinksDb = {
+  facebook?: string;
+  instagram?: string;
+  linkedin?: string;
+  twitter?: string;
+  youtube?: string;
+  whatsapp?: string;
+};
+
 export type DirectoryProfileRow = {
   id: string;
   user_id: string | null;
+  slug: string | null;
   firm_name: string;
   owner_name: string;
   category: DirectoryCategoryDb;
@@ -370,6 +399,7 @@ export type DirectoryProfileRow = {
   website: string;
   mobile: string;
   description: string;
+  intro: string;
   rera_id: string | null;
   experience: string | null;
   specialties: string[];
@@ -384,6 +414,7 @@ export type DirectoryProfileRow = {
   logo_url: string | null;
   business_hours: Record<string, string> | null;
   services_offered: string[];
+  social_links: DirectorySocialLinksDb;
   created_at: string;
   updated_at: string;
 };
@@ -391,6 +422,7 @@ export type DirectoryProfileRow = {
 export type DirectoryProfileInsert = {
   id?: string;
   user_id?: string | null;
+  slug?: string | null;
   firm_name: string;
   owner_name: string;
   category: DirectoryCategoryDb;
@@ -400,6 +432,7 @@ export type DirectoryProfileInsert = {
   website?: string;
   mobile: string;
   description?: string;
+  intro?: string;
   rera_id?: string | null;
   experience?: string | null;
   specialties?: string[];
@@ -414,8 +447,85 @@ export type DirectoryProfileInsert = {
   logo_url?: string | null;
   business_hours?: Record<string, string> | null;
   services_offered?: string[];
+  social_links?: DirectorySocialLinksDb;
   created_at?: string;
   updated_at?: string;
+};
+
+export type ServicePortfolioImageRow = {
+  id: string;
+  directory_profile_id: string;
+  image_url: string;
+  caption: string;
+  sort_order: number;
+  created_at: string;
+};
+
+export type ServiceReviewRow = {
+  id: string;
+  directory_profile_id: string;
+  user_id: string;
+  rating: number;
+  title: string;
+  body: string;
+  status: "published" | "hidden" | "pending";
+  created_at: string;
+  updated_at: string;
+};
+
+export type WebsitePromotionBillingTypeDb = "one_time" | "recurring";
+export type WebsitePromotionStatusDb =
+  | "inactive"
+  | "pending"
+  | "active"
+  | "expired"
+  | "cancelled";
+
+export type ServiceWebsitePromotionPlanRow = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  price_paise: number;
+  currency: string;
+  billing_type: WebsitePromotionBillingTypeDb;
+  duration_days: number;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ServiceWebsitePromotionRow = {
+  id: string;
+  directory_profile_id: string;
+  user_id: string;
+  plan_id: string | null;
+  status: WebsitePromotionStatusDb;
+  starts_at: string | null;
+  expires_at: string | null;
+  website_url: string;
+  admin_notes: string;
+  last_payment_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ServiceWebsitePromotionPaymentRow = {
+  id: string;
+  directory_profile_id: string;
+  user_id: string;
+  plan_id: string | null;
+  amount_paise: number;
+  currency: string;
+  status: "created" | "paid" | "failed" | "refunded";
+  razorpay_order_id: string | null;
+  razorpay_payment_id: string | null;
+  razorpay_signature: string | null;
+  receipt: string | null;
+  notes: Record<string, unknown>;
+  paid_at: string | null;
+  created_at: string;
 };
 
 export type DirectoryProfileUpdate = Partial<DirectoryProfileInsert>;
@@ -566,7 +676,10 @@ export type SiteVisitUpdate = Partial<SiteVisitInsert>;
 export type CategoryRow = {
   id: string;
   name: string;
+  slug: string;
+  description: string;
   icon: string;
+  image_url: string | null;
   active: boolean;
   sort_order: number;
   created_at: string;
@@ -576,7 +689,10 @@ export type CategoryRow = {
 export type CategoryInsert = {
   id?: string;
   name: string;
+  slug?: string;
+  description?: string;
   icon?: string;
+  image_url?: string | null;
   active?: boolean;
   sort_order?: number;
   created_at?: string;
@@ -590,9 +706,12 @@ export type LocationRow = {
   city: string;
   state: string;
   country: string;
+  slug: string;
   active: boolean;
   sort_order: number;
   cover_image_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -602,9 +721,12 @@ export type LocationInsert = {
   city: string;
   state: string;
   country?: string;
+  slug?: string;
   active?: boolean;
   sort_order?: number;
   cover_image_url?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -614,6 +736,9 @@ export type LocationUpdate = Partial<LocationInsert>;
 export type AmenityRow = {
   id: string;
   name: string;
+  description: string;
+  icon: string;
+  category: string | null;
   active: boolean;
   sort_order: number;
   created_at: string;
@@ -623,6 +748,9 @@ export type AmenityRow = {
 export type AmenityInsert = {
   id?: string;
   name: string;
+  description?: string;
+  icon?: string;
+  category?: string | null;
   active?: boolean;
   sort_order?: number;
   created_at?: string;
@@ -645,7 +773,13 @@ export type ListingFilterKindDb =
   | "featured"
   | "text"
   | "toggle"
-  | "multi";
+  | "multi"
+  | "dropdown"
+  | "checkbox"
+  | "range"
+  | "boolean"
+  | "number"
+  | "date";
 
 export type ListingFilterRow = {
   id: string;
@@ -1153,6 +1287,94 @@ export type Database = {
         Update: Partial<ServiceBookingRow>;
         Relationships: [];
       };
+      service_portfolio_images: {
+        Row: ServicePortfolioImageRow;
+        Insert: Omit<ServicePortfolioImageRow, "id" | "created_at" | "caption" | "sort_order"> & {
+          id?: string;
+          caption?: string;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: Partial<ServicePortfolioImageRow>;
+        Relationships: [];
+      };
+      service_reviews: {
+        Row: ServiceReviewRow;
+        Insert: Omit<ServiceReviewRow, "id" | "created_at" | "updated_at" | "status" | "title"> & {
+          id?: string;
+          title?: string;
+          status?: ServiceReviewRow["status"];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<ServiceReviewRow>;
+        Relationships: [];
+      };
+      service_website_promotion_plans: {
+        Row: ServiceWebsitePromotionPlanRow;
+        Insert: Omit<
+          ServiceWebsitePromotionPlanRow,
+          "id" | "created_at" | "updated_at" | "description" | "currency" | "is_active" | "sort_order"
+        > & {
+          id?: string;
+          description?: string;
+          currency?: string;
+          is_active?: boolean;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<ServiceWebsitePromotionPlanRow>;
+        Relationships: [];
+      };
+      service_website_promotions: {
+        Row: ServiceWebsitePromotionRow;
+        Insert: {
+          id?: string;
+          directory_profile_id: string;
+          user_id: string;
+          plan_id?: string | null;
+          status?: WebsitePromotionStatusDb;
+          starts_at?: string | null;
+          expires_at?: string | null;
+          website_url?: string;
+          admin_notes?: string;
+          last_payment_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<ServiceWebsitePromotionRow>;
+        Relationships: [];
+      };
+      service_website_promotion_payments: {
+        Row: ServiceWebsitePromotionPaymentRow;
+        Insert: Omit<
+          ServiceWebsitePromotionPaymentRow,
+          | "id"
+          | "created_at"
+          | "status"
+          | "currency"
+          | "notes"
+          | "razorpay_order_id"
+          | "razorpay_payment_id"
+          | "razorpay_signature"
+          | "receipt"
+          | "paid_at"
+        > & {
+          id?: string;
+          status?: ServiceWebsitePromotionPaymentRow["status"];
+          currency?: string;
+          notes?: Record<string, unknown>;
+          razorpay_order_id?: string | null;
+          razorpay_payment_id?: string | null;
+          razorpay_signature?: string | null;
+          receipt?: string | null;
+          paid_at?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<ServiceWebsitePromotionPaymentRow>;
+        Relationships: [];
+      };
       assistance_requests: {
         Row: AssistanceRequestRow;
         Insert: AssistanceRequestInsert;
@@ -1365,6 +1587,35 @@ export type Database = {
       increment_listing_slots: {
         Args: { p_dealer_id: string; p_slots: number };
         Returns: number;
+      };
+      issue_auth_mobile_otp: {
+        Args: { p_purpose: string; p_country: string; p_national: string };
+        Returns: Json;
+      };
+      consume_auth_mobile_otp: {
+        Args: {
+          p_purpose: string;
+          p_country: string;
+          p_national: string;
+          p_code: string;
+        };
+        Returns: Json;
+      };
+      claim_mobile_verification: {
+        Args: { p_claim_token: string; p_user_id: string };
+        Returns: Json;
+      };
+      void_mobile_otp: {
+        Args: { p_challenge: string };
+        Returns: undefined;
+      };
+      expire_service_website_promotions: {
+        Args: Record<string, never>;
+        Returns: number;
+      };
+      service_website_promotion_is_active: {
+        Args: { p_status: string; p_expires_at: string | null };
+        Returns: boolean;
       };
     };
     Enums: {

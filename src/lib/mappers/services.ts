@@ -10,15 +10,21 @@ import type {
   ServiceVerificationDocumentRow,
   ServiceVerificationRow,
 } from "@/types/database";
+import { DEFAULT_SERVICE_ICON } from "@/lib/icons/catalog-icon-names";
+import { slugify } from "@/lib/slug";
 
 export function mapServiceTypeRow(row: ServiceTypeRow): ServiceType {
   return {
     id: row.id,
     name: row.name,
+    slug: row.slug || slugify(row.name),
     description: row.description ?? "",
-    icon: row.icon,
+    icon: row.icon || DEFAULT_SERVICE_ICON,
+    imageUrl: row.image_url ?? null,
     active: row.active,
     sortOrder: row.sort_order,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
   };
 }
 

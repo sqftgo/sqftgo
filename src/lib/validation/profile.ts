@@ -17,6 +17,14 @@ export const profileUpdateSchema = z
     phone: optionalNullableText(30),
     bio: optionalNullableText(500),
     city: optionalNullableText(100),
+    cityId: z
+      .union([z.string().uuid(), z.literal(""), z.null()])
+      .optional()
+      .transform((v) => {
+        if (v === undefined) return undefined;
+        if (v === null || v === "") return null;
+        return v;
+      }),
     avatarUrl: z
       .union([z.string().url().max(2000), z.literal(""), z.null()])
       .optional()
@@ -33,6 +41,7 @@ export const profileUpdateSchema = z
       v.phone !== undefined ||
       v.bio !== undefined ||
       v.city !== undefined ||
+      v.cityId !== undefined ||
       v.avatarUrl !== undefined,
     { message: "No updates provided" }
   );
