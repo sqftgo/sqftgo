@@ -4,6 +4,7 @@ export type {
   TaxonomyRow,
   TaxonomyManagerProps,
 } from "./components/TaxonomyManager";
+export { CatalogIconPicker } from "./components/CatalogIconPicker";
 export {
   ListingPreviewModal,
   type ListingPreviewModalProps,

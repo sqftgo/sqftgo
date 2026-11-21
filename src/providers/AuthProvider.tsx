@@ -13,7 +13,12 @@ import { SESSION_STORAGE_KEY } from "@/constants/demoAccounts";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/client";
 import { queryKeys } from "@/lib/queryKeys";
-import { authService, type AuthSession, type AuthRole } from "@/services/auth";
+import {
+  authService,
+  type AuthSession,
+  type AuthRole,
+  type SignupInput,
+} from "@/services/auth";
 import type { UserProfile } from "@/types";
 
 type AuthContextValue = {
@@ -24,12 +29,19 @@ type AuthContextValue = {
   userName: string;
   userProfile: UserProfile | null;
   login: (email: string, password: string) => Promise<AuthSession>;
-  signup: (input: {
-    name: string;
-    email: string;
-    password: string;
-    intent?: "user" | "dealer";
-  }) => Promise<
+  loginWithMobile: (input: {
+    countryCode: string;
+    mobileNumber: string;
+    code: string;
+  }) => Promise<AuthSession>;
+  loginServiceProviderWithMobile: (input: {
+    countryCode: string;
+    mobileNumber: string;
+    code: string;
+  }) => Promise<AuthSession>;
+  signup: (
+    input: SignupInput
+  ) => Promise<
     | { status: "authenticated"; session: AuthSession }
     | { status: "confirm_email"; email: string; message: string }
   >;
@@ -40,6 +52,7 @@ type AuthContextValue = {
     phone?: string | null;
     bio?: string | null;
     city?: string | null;
+    cityId?: string | null;
     avatarUrl?: string | null;
   }) => Promise<UserProfile>;
   /** Apply a verified session from BFF (login/signup/me). Not for spoofing roles. */
@@ -168,13 +181,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [applySession, queryClient]
   );
 
+  const loginWithMobile = useCallback(
+    async (input: { countryCode: string; mobileNumber: string; code: string }) => {
+      const session = await authService.loginWithMobile(input);
+      applySession(session);
+      void queryClient.invalidateQueries();
+      return session;
+    },
+    [applySession, queryClient]
+  );
+
+  const loginServiceProviderWithMobile = useCallback(
+    async (input: { countryCode: string; mobileNumber: string; code: string }) => {
+      const session = await authService.loginServiceProviderWithMobile(input);
+      applySession(session);
+      void queryClient.invalidateQueries();
+      return session;
+    },
+    [applySession, queryClient]
+  );
+
   const signup = useCallback(
-    async (input: {
-      name: string;
-      email: string;
-      password: string;
-      intent?: "user" | "dealer";
-    }) => {
+    async (input: SignupInput) => {
       const result = await authService.signup(input);
       if (result.status === "authenticated") {
         applySession(result.session);
@@ -205,6 +233,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       phone?: string | null;
       bio?: string | null;
       city?: string | null;
+      cityId?: string | null;
       avatarUrl?: string | null;
     }) => {
       const session = await authService.updateProfile(input);
@@ -223,6 +252,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       userName,
       userProfile,
       login,
+      loginWithMobile,
+      loginServiceProviderWithMobile,
       signup,
       loginWithGoogle,
       logout,
@@ -237,6 +268,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       userName,
       userProfile,
       login,
+      loginWithMobile,
+      loginServiceProviderWithMobile,
       signup,
       loginWithGoogle,
       logout,

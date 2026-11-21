@@ -35,6 +35,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
   const patch: AmenityUpdate = {};
   if (parsed.data.name !== undefined) patch.name = parsed.data.name;
+  if (parsed.data.description !== undefined) patch.description = parsed.data.description;
+  if (parsed.data.icon !== undefined) patch.icon = parsed.data.icon;
+  if (parsed.data.category !== undefined) patch.category = parsed.data.category;
   if (parsed.data.active !== undefined) patch.active = parsed.data.active;
   if (parsed.data.sortOrder !== undefined) patch.sort_order = parsed.data.sortOrder;
 

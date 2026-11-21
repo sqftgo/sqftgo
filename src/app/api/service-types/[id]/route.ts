@@ -3,6 +3,7 @@ import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapServiceTypeRow } from "@/lib/mappers/services";
+import { slugify } from "@/lib/slug";
 import { serviceTypeUpdateSchema, serviceZodError } from "@/lib/validation/services";
 import type { ServiceTypeRow, ServiceTypeUpdate } from "@/types/database";
 
@@ -34,9 +35,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   if (!parsed.success) return jsonError(serviceZodError(parsed.error));
 
   const patch: ServiceTypeUpdate = {};
-  if (parsed.data.name !== undefined) patch.name = parsed.data.name;
+  if (parsed.data.name !== undefined) {
+    patch.name = parsed.data.name;
+    if (parsed.data.slug === undefined) patch.slug = slugify(parsed.data.name);
+  }
+  if (parsed.data.slug !== undefined) patch.slug = parsed.data.slug;
   if (parsed.data.description !== undefined) patch.description = parsed.data.description;
   if (parsed.data.icon !== undefined) patch.icon = parsed.data.icon;
+  if (parsed.data.imageUrl !== undefined) patch.image_url = parsed.data.imageUrl;
   if (parsed.data.active !== undefined) patch.active = parsed.data.active;
   if (parsed.data.sortOrder !== undefined) patch.sort_order = parsed.data.sortOrder;
 

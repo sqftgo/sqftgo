@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
 import { mapCategoryRow } from "@/lib/mappers/catalog";
+import { slugify } from "@/lib/slug";
 import { categoryCreateSchema, catalogZodError } from "@/lib/validation/catalog";
 import type { CategoryRow } from "@/types/database";
 
@@ -82,11 +83,15 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) return jsonError(catalogZodError(parsed.error));
 
   const admin = createServiceClient();
+  const slug = parsed.data.slug?.trim() || slugify(parsed.data.name);
   const { data, error: insertError } = await admin
     .from("categories")
     .insert({
       name: parsed.data.name,
+      slug,
+      description: parsed.data.description ?? "",
       icon: parsed.data.icon,
+      image_url: parsed.data.imageUrl ?? null,
       active: parsed.data.active ?? true,
       sort_order: parsed.data.sortOrder ?? 100,
     })
@@ -94,7 +99,11 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (insertError || !data) {
-    return jsonError(insertError?.message ?? "Unable to create category", 500);
+    const message = insertError?.message ?? "Unable to create category";
+    if (/duplicate|unique/i.test(message)) {
+      return jsonError("A category with this name or slug already exists", 409);
+    }
+    return jsonError(message, 500);
   }
 
   return jsonOk(mapCategoryRow(data as CategoryRow, 0), { status: 201 });

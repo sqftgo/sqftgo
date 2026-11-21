@@ -92,23 +92,30 @@ export function savePriceRanges(config: PriceRangeConfig) {
   window.dispatchEvent(new Event("sqftgo:price-ranges-updated"));
 }
 
-/** Keep the empty placeholder first, then sort numeric values ascending. */
+/**
+ * Keep the empty placeholder first, dedupe by value, preserve admin order.
+ * Pass `sortByValue: true` only when resetting to a numeric default order.
+ */
 export function normalizePriceOptions(
   options: PriceOption[],
-  placeholderLabel: string
+  placeholderLabel: string,
+  opts?: { sortByValue?: boolean }
 ): PriceOption[] {
   const placeholder = options.find((o) => o.value === "") ?? {
     label: placeholderLabel,
     value: "",
   };
-  const rest = options
+  let rest = options
     .filter((o) => o.value !== "")
     .map((o) => ({
       label: o.label.trim() || formatPriceLabel(Number(o.value) || 0),
       value: String(Math.max(0, Number(o.value) || 0)),
     }))
-    .filter((o, index, arr) => arr.findIndex((x) => x.value === o.value) === index)
-    .sort((a, b) => Number(a.value) - Number(b.value));
+    .filter((o, index, arr) => arr.findIndex((x) => x.value === o.value) === index);
+
+  if (opts?.sortByValue) {
+    rest = [...rest].sort((a, b) => Number(a.value) - Number(b.value));
+  }
 
   return [{ ...placeholder, label: placeholderLabel }, ...rest];
 }

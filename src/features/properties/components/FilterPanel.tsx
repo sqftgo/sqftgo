@@ -13,7 +13,12 @@ import {
 } from "@/constants";
 import { useBudgetPriceOptions } from "@/features/admin";
 import { useActiveCities } from "@/hooks/useActiveCities";
-import type { ListingFilter, ListingFilterExtra } from "@/types/listing-filter";
+import type {
+  ListingFilter,
+  ListingFilterExtra,
+  ListingFilterRangeValue,
+} from "@/types/listing-filter";
+import { isCustomListingFilterKind } from "@/types/listing-filter";
 import { isListingFilterOn } from "@/lib/listing-filters/defaults";
 
 export interface FilterState {
@@ -83,14 +88,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   }, [listingFilters]);
 
   const customFilters = useMemo(
-    () =>
-      listingFilters.filter(
-        (f) => f.active && (f.kind === "text" || f.kind === "toggle" || f.kind === "multi")
-      ),
+    () => listingFilters.filter((f) => f.active && isCustomListingFilterKind(f.kind)),
     [listingFilters]
   );
 
-  const setExtra = (key: string, value: string | string[] | boolean) => {
+  const setExtra = (
+    key: string,
+    value: string | string[] | boolean | ListingFilterRangeValue
+  ) => {
     onFilterChange({
       ...filters,
       extra: { ...(filters.extra ?? {}), [key]: value },
@@ -426,7 +431,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 
         {customFilters.map((def) => {
           const extraVal = filters.extra?.[def.key];
-          if (def.kind === "toggle") {
+          if (def.kind === "toggle" || def.kind === "boolean") {
             return (
               <label
                 key={def.id}
@@ -442,7 +447,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               </label>
             );
           }
-          if (def.kind === "multi") {
+          if (def.kind === "multi" || def.kind === "checkbox") {
             const selected = Array.isArray(extraVal) ? extraVal : [];
             return (
               <div key={def.id} className="flex flex-col gap-2">
@@ -451,26 +456,112 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   {def.options.map((opt) => {
                     const isSel = selected.includes(opt.value);
                     return (
-                      <button
+                      <label
                         key={opt.value}
-                        type="button"
-                        onClick={() => {
-                          const next = isSel
-                            ? selected.filter((v) => v !== opt.value)
-                            : [...selected, opt.value];
-                          setExtra(def.key, next);
-                        }}
-                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all duration-150 ${
-                          isSel
-                            ? "bg-terracotta border-terracotta text-white shadow-sm"
-                            : "bg-white border-sand text-charcoal hover:border-terracotta/40"
-                        }`}
+                        className={
+                          def.kind === "checkbox"
+                            ? "flex items-center gap-2 text-xs text-charcoal/80 font-semibold cursor-pointer"
+                            : undefined
+                        }
                       >
-                        {opt.label}
-                      </button>
+                        {def.kind === "checkbox" ? (
+                          <>
+                            <input
+                              type="checkbox"
+                              checked={isSel}
+                              onChange={() => {
+                                const next = isSel
+                                  ? selected.filter((v) => v !== opt.value)
+                                  : [...selected, opt.value];
+                                setExtra(def.key, next);
+                              }}
+                              className="rounded accent-terracotta text-terracotta focus:ring-terracotta w-4 h-4 cursor-pointer"
+                            />
+                            <span>{opt.label}</span>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = isSel
+                                ? selected.filter((v) => v !== opt.value)
+                                : [...selected, opt.value];
+                              setExtra(def.key, next);
+                            }}
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all duration-150 ${
+                              isSel
+                                ? "bg-terracotta border-terracotta text-white shadow-sm"
+                                : "bg-white border-sand text-charcoal hover:border-terracotta/40"
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        )}
+                      </label>
                     );
                   })}
                 </div>
+              </div>
+            );
+          }
+          if (def.kind === "dropdown") {
+            const value = typeof extraVal === "string" ? extraVal : "";
+            return (
+              <div key={def.id} className="flex flex-col gap-2">
+                <span className="text-xs font-bold text-indigo uppercase tracking-wide">{def.label}</span>
+                <CustomSelect
+                  options={[
+                    { label: `Any ${def.label}`, value: "" },
+                    ...def.options,
+                  ]}
+                  value={value}
+                  onChange={(v) => setExtra(def.key, v)}
+                />
+              </div>
+            );
+          }
+          if (def.kind === "range") {
+            const range =
+              extraVal && typeof extraVal === "object" && !Array.isArray(extraVal)
+                ? (extraVal as ListingFilterRangeValue)
+                : { min: "", max: "" };
+            return (
+              <div key={def.id} className="flex flex-col gap-2">
+                <span className="text-xs font-bold text-indigo uppercase tracking-wide">{def.label}</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    value={range.min ?? ""}
+                    onChange={(e) =>
+                      setExtra(def.key, { ...range, min: e.target.value })
+                    }
+                    placeholder="Min"
+                    className="w-full bg-white border border-sand text-charcoal rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-colors"
+                  />
+                  <input
+                    type="number"
+                    value={range.max ?? ""}
+                    onChange={(e) =>
+                      setExtra(def.key, { ...range, max: e.target.value })
+                    }
+                    placeholder="Max"
+                    className="w-full bg-white border border-sand text-charcoal rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-colors"
+                  />
+                </div>
+              </div>
+            );
+          }
+          if (def.kind === "number" || def.kind === "date") {
+            return (
+              <div key={def.id} className="flex flex-col gap-2">
+                <span className="text-xs font-bold text-indigo uppercase tracking-wide">{def.label}</span>
+                <input
+                  type={def.kind === "date" ? "date" : "number"}
+                  value={typeof extraVal === "string" ? extraVal : ""}
+                  onChange={(e) => setExtra(def.key, e.target.value)}
+                  placeholder={def.label}
+                  className="w-full bg-white border border-sand text-charcoal rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-colors"
+                />
               </div>
             );
           }

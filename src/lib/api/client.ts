@@ -2,17 +2,19 @@ export class ApiError extends Error {
   readonly status: number;
   readonly code?: string;
   readonly checkoutPath?: string;
+  readonly resendAfterSeconds?: number;
 
   constructor(
     message: string,
     status: number,
-    extra?: { code?: string; checkoutPath?: string }
+    extra?: { code?: string; checkoutPath?: string; resendAfterSeconds?: number }
   ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = extra?.code;
     this.checkoutPath = extra?.checkoutPath;
+    this.resendAfterSeconds = extra?.resendAfterSeconds;
   }
 }
 
@@ -57,21 +59,29 @@ export async function apiClient<T>(
 
     const data = (await res.json().catch(() => ({}))) as T & {
       error?: string;
+      message?: string;
       code?: string;
       checkoutPath?: string;
+      resendAfterSeconds?: number;
     };
     if (!res.ok) {
-      throw new ApiError(
-        typeof data === "object" && data && "error" in data && data.error
-          ? String(data.error)
-          : "Request failed",
-        res.status,
-        {
-          code: typeof data?.code === "string" ? data.code : undefined,
-          checkoutPath:
-            typeof data?.checkoutPath === "string" ? data.checkoutPath : undefined,
-        }
-      );
+      const errMsg =
+        typeof data === "object" && data
+          ? data.error
+            ? String(data.error)
+            : typeof data.message === "string"
+              ? data.message
+              : null
+          : null;
+      throw new ApiError(errMsg || "Request failed", res.status, {
+        code: typeof data?.code === "string" ? data.code : undefined,
+        checkoutPath:
+          typeof data?.checkoutPath === "string" ? data.checkoutPath : undefined,
+        resendAfterSeconds:
+          typeof data?.resendAfterSeconds === "number"
+            ? data.resendAfterSeconds
+            : undefined,
+      });
     }
     return data as T;
   } catch (err) {

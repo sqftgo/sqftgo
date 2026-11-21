@@ -1,12 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
-import { LayoutGrid, List, Plus, Search, Trash2, type LucideIcon } from "lucide-react";
+import React, { useRef, useState } from "react";
+import {
+  GripVertical,
+  LayoutGrid,
+  List,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+  type LucideIcon,
+} from "lucide-react";
 import { DashboardPageHeader } from "@/components/ui/DashboardPageHeader";
 import { Alert } from "@/components/ui/Alert";
 import { Switch } from "@/components/ui/Switch";
 import { Badge } from "@/components/ui/Badge";
-import { ConfirmDialog } from "@/components/ui/Dialog";
+import { ConfirmDialog, Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/FormField";
 import { Panel } from "@/components/ui/Panel";
@@ -51,6 +60,16 @@ export type TaxonomyManagerProps = {
   defaultLayout?: TaxonomyLayout;
   search: string;
   onSearchChange: (value: string) => void;
+  /** Optional edit dialog content + handlers */
+  onEditRequest?: (id: string) => void;
+  editingId?: string | null;
+  editTitle?: string;
+  editForm?: React.ReactNode;
+  onCloseEdit?: () => void;
+  onSaveEdit?: () => void;
+  editSubmitDisabled?: boolean;
+  /** Drag-and-drop reorder (list view). Pass ordered ids after drop. */
+  onReorder?: (orderedIds: string[]) => void;
 };
 
 export function TaxonomyManager({
@@ -78,9 +97,38 @@ export function TaxonomyManager({
   defaultLayout = "list",
   search,
   onSearchChange,
+  onEditRequest,
+  editingId,
+  editTitle,
+  editForm,
+  onCloseEdit,
+  onSaveEdit,
+  editSubmitDisabled,
+  onReorder,
 }: TaxonomyManagerProps) {
   const [layout, setLayout] = useState<TaxonomyLayout>(defaultLayout);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const dragOverId = useRef<string | null>(null);
   const activeCount = items.filter((i) => i.active).length;
+
+  const handleDropReorder = (targetId: string) => {
+    if (!onReorder || !dragId || dragId === targetId) {
+      setDragId(null);
+      return;
+    }
+    const ids = items.map((i) => i.id);
+    const from = ids.indexOf(dragId);
+    const to = ids.indexOf(targetId);
+    if (from < 0 || to < 0) {
+      setDragId(null);
+      return;
+    }
+    const next = [...ids];
+    next.splice(from, 1);
+    next.splice(to, 0, dragId);
+    onReorder(next);
+    setDragId(null);
+  };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -113,7 +161,7 @@ export function TaxonomyManager({
       {saved ? (
         <Alert
           variant="success"
-          title={`${itemLabel} added`}
+          title={`${itemLabel} saved`}
           onDismiss={onDismissSaved}
         />
       ) : null}
@@ -216,6 +264,7 @@ export function TaxonomyManager({
                   item={item}
                   onToggle={onToggle}
                   onDeleteRequest={onDeleteRequest}
+                  onEditRequest={onEditRequest}
                 />
               ))}
             </div>
@@ -227,6 +276,17 @@ export function TaxonomyManager({
                   item={item}
                   onToggle={onToggle}
                   onDeleteRequest={onDeleteRequest}
+                  onEditRequest={onEditRequest}
+                  draggable={Boolean(onReorder)}
+                  dragging={dragId === item.id}
+                  onDragStart={() => setDragId(item.id)}
+                  onDragOver={(e) => {
+                    if (!onReorder) return;
+                    e.preventDefault();
+                    dragOverId.current = item.id;
+                  }}
+                  onDrop={() => handleDropReorder(item.id)}
+                  onDragEnd={() => setDragId(null)}
                 />
               ))}
             </div>
@@ -247,6 +307,32 @@ export function TaxonomyManager({
         confirmLabel="Delete"
         tone="danger"
       />
+
+      {onCloseEdit && editForm ? (
+        <Dialog
+          open={Boolean(editingId)}
+          onClose={onCloseEdit}
+          title={editTitle ?? `Edit ${itemLabel}`}
+          description={`Update this ${itemLabel.toLowerCase()}`}
+          className="max-w-lg"
+          footer={
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={onCloseEdit}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                disabled={editSubmitDisabled || busy}
+                onClick={() => onSaveEdit?.()}
+              >
+                Save changes
+              </Button>
+            </div>
+          }
+        >
+          <div className="space-y-4">{editForm}</div>
+        </Dialog>
+      ) : null}
     </div>
   );
 }
@@ -255,15 +341,47 @@ function TaxonomyListRow({
   item,
   onToggle,
   onDeleteRequest,
+  onEditRequest,
+  draggable,
+  dragging,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
 }: {
   item: TaxonomyRow;
   onToggle: (id: string, active: boolean) => void;
   onDeleteRequest: (id: string, name: string) => void;
+  onEditRequest?: (id: string) => void;
+  draggable?: boolean;
+  dragging?: boolean;
+  onDragStart?: () => void;
+  onDragOver?: (e: React.DragEvent) => void;
+  onDrop?: () => void;
+  onDragEnd?: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 hover:bg-sand/30 transition-colors">
+    <div
+      className={cn(
+        "flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 hover:bg-sand/30 transition-colors",
+        dragging && "opacity-50 bg-sand/40"
+      )}
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+    >
+      {draggable ? (
+        <span
+          className="text-charcoal/30 cursor-grab active:cursor-grabbing shrink-0"
+          aria-hidden
+        >
+          <GripVertical className="w-4 h-4" />
+        </span>
+      ) : null}
       {item.leading ? (
-        <div className="w-11 h-11 rounded-xl bg-sand/50 border border-indigo/5 flex items-center justify-center shrink-0 text-xl">
+        <div className="w-11 h-11 rounded-xl bg-sand/50 border border-indigo/5 flex items-center justify-center shrink-0 text-xl overflow-hidden">
           {item.leading}
         </div>
       ) : null}
@@ -280,6 +398,16 @@ function TaxonomyListRow({
       </Badge>
       <div className="flex items-center gap-1.5 shrink-0">
         {item.trailing}
+        {onEditRequest ? (
+          <button
+            type="button"
+            onClick={() => onEditRequest(item.id)}
+            className="p-2 bg-indigo/5 hover:bg-indigo/10 text-charcoal/40 hover:text-indigo rounded-lg transition-all cursor-pointer"
+            aria-label={`Edit ${item.title}`}
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+        ) : null}
         <Switch
           checked={item.active}
           onCheckedChange={() => onToggle(item.id, item.active)}
@@ -304,10 +432,12 @@ function TaxonomyCard({
   item,
   onToggle,
   onDeleteRequest,
+  onEditRequest,
 }: {
   item: TaxonomyRow;
   onToggle: (id: string, active: boolean) => void;
   onDeleteRequest: (id: string, name: string) => void;
+  onEditRequest?: (id: string) => void;
 }) {
   return (
     <div
@@ -339,6 +469,16 @@ function TaxonomyCard({
       <div className="flex items-center justify-between gap-2 pt-1 border-t border-indigo/5">
         <div className="flex items-center gap-1.5 min-w-0">
           {item.trailing}
+          {onEditRequest ? (
+            <button
+              type="button"
+              onClick={() => onEditRequest(item.id)}
+              className="p-2 hover:bg-indigo/10 text-charcoal/40 hover:text-indigo rounded-lg transition-all cursor-pointer"
+              aria-label={`Edit ${item.title}`}
+            >
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+          ) : null}
           <Switch
             checked={item.active}
             onCheckedChange={() => onToggle(item.id, item.active)}

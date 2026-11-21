@@ -1,47 +1,61 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { DEMO_ACCOUNTS } from "@/constants/demoAccounts";
 import { cityCoverImage } from "@/constants/city-images";
 import { safeRedirectPath } from "@/lib/auth/urls";
-import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, X } from "lucide-react";
+import { authService } from "@/services/auth";
+import { ApiError } from "@/lib/api/client";
+import {
+  MobilePhoneField,
+  mobileFieldError,
+} from "@/components/auth/MobilePhoneField";
+import { OtpCodeInput } from "@/components/auth/OtpCodeInput";
+import { AuthCitySelect } from "@/components/auth/AuthCitySelect";
+import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, X, Smartphone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const SHOW_DEMO_LOGIN = process.env.NODE_ENV !== "production";
 
 const SLIDES = [
   {
-    title: "LAKEVIEW HAVELI",
-    desc: "Experience heritage living with gorgeous lake-facing suites in Udaipur.",
+    title: "LAKESIDE LIVING",
+    desc: "Discover curated waterfront homes and heritage estates across Udaipur.",
     label: "Udaipur",
   },
   {
-    title: "ROYAL PALACE VILLA",
-    desc: "Indulge in grand sandstone architecture and private courtyards in Jaipur.",
-    label: "Jaipur",
+    title: "METRO RESIDENCES",
+    desc: "Browse premium apartments and villas in Bengaluru’s fastest-growing corridors.",
+    label: "Bengaluru",
   },
   {
-    title: "DESERT RETREAT",
-    desc: "Unwind under the golden skies in curated heritage structures in Jaisalmer.",
-    label: "Jaisalmer",
+    title: "CAPITAL HOMES",
+    desc: "Find verified listings across Delhi NCR with trusted local dealers.",
+    label: "Delhi",
   },
   {
-    title: "BLUE CITY MANSION",
-    desc: "Discover beautiful boutique stays surrounded by historic fort views in Jodhpur.",
-    label: "Jodhpur",
+    title: "COASTAL GATEWAY",
+    desc: "Explore modern homes and investment properties throughout Hyderabad.",
+    label: "Hyderabad",
   },
 ];
+
+type LoginMethod = "email" | "mobile";
+type SignupStep = "details" | "otp";
 
 function AuthForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, signup, loginWithGoogle } = useAuth();
+  const { login, loginWithMobile, signup, loginWithGoogle } = useAuth();
 
   const initialTab = searchParams.get("tab") === "signup" ? "signup" : "login";
   const [activeTab, setActiveTab] = useState<"login" | "signup">(initialTab);
+  const [loginMethod, setLoginMethod] = useState<LoginMethod>("email");
+  const [signupStep, setSignupStep] = useState<SignupStep>("details");
+  const [mobileLoginStep, setMobileLoginStep] = useState<"phone" | "otp">("phone");
 
   const [activeSlide, setActiveSlide] = useState(0);
 
@@ -65,6 +79,13 @@ function AuthForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [countryCode, setCountryCode] = useState("91");
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [cityId, setCityId] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [resendIn, setResendIn] = useState(0);
+  const [otpChannel, setOtpChannel] = useState<string | null>(null);
+  const [debugCode, setDebugCode] = useState<string | null>(null);
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,10 +93,21 @@ function AuthForm() {
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
 
   useEffect(() => {
+    if (resendIn <= 0) return;
+    const t = setTimeout(() => setResendIn((s) => Math.max(0, s - 1)), 1000);
+    return () => clearTimeout(t);
+  }, [resendIn]);
+
+  useEffect(() => {
     if (activeTab === "signup") {
       setEmail("");
       setPassword("");
       setFormError(null);
+      setSignupStep("details");
+      setOtpCode("");
+    } else {
+      setMobileLoginStep("phone");
+      setOtpCode("");
     }
   }, [activeTab]);
 
@@ -92,8 +124,6 @@ function AuthForm() {
 
   const redirectAfterAuth = (role: "user" | "broker" | "admin") => {
     const next = safeRedirectPath(searchParams.get("next"), "");
-    // Admins/brokers always land in their portal unless `next` is already in-portal.
-    // A leftover ?next=/profile (etc.) must not dump them on the public site UI.
     if (role === "admin") {
       router.push(next.startsWith("/admin") ? next : "/admin");
       return;
@@ -109,47 +139,172 @@ function AuthForm() {
     router.push(next || "/");
   };
 
+  const startOtpCooldown = useCallback((seconds: number) => {
+    setResendIn(Math.max(0, Math.floor(seconds)));
+  }, []);
+
+  const sendRegisterOtp = async () => {
+    const phoneErr = mobileFieldError(countryCode, mobileNumber);
+    if (phoneErr) {
+      setFormError(phoneErr);
+      return false;
+    }
+    const sent = await authService.sendMobileOtp({
+      purpose: "register",
+      countryCode,
+      mobileNumber,
+    });
+    startOtpCooldown(sent.resendAfterSeconds);
+    setOtpChannel(sent.channel);
+    setDebugCode(sent.debugCode ?? null);
+    setOtpCode(sent.debugCode ?? "");
+    setSignupStep("otp");
+    setFormSuccess(
+      sent.channel === "dev"
+        ? "Dev mode: use the code shown below (MSG91 not configured)."
+        : sent.channel === "sms"
+          ? "We sent a verification code by SMS."
+          : "We sent a verification code on WhatsApp."
+    );
+    return true;
+  };
+
+  const sendLoginOtp = async () => {
+    const phoneErr = mobileFieldError(countryCode, mobileNumber);
+    if (phoneErr) {
+      setFormError(phoneErr);
+      return false;
+    }
+    const sent = await authService.sendMobileOtp({
+      purpose: "login",
+      countryCode,
+      mobileNumber,
+    });
+    startOtpCooldown(sent.resendAfterSeconds);
+    setOtpChannel(sent.channel);
+    setDebugCode(sent.debugCode ?? null);
+    setOtpCode(sent.debugCode ?? "");
+    setMobileLoginStep("otp");
+    setFormSuccess(
+      sent.channel === "dev"
+        ? "Dev mode: use the code shown below (MSG91 not configured)."
+        : sent.channel === "sms"
+          ? "We sent a login code by SMS."
+          : "We sent a login code on WhatsApp."
+    );
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return;
-
     setFormError(null);
     setFormSuccess(null);
-
-    if (activeTab === "signup") {
-      if (email.trim().toLowerCase() === "admin@sqftgo.com") {
-        setFormError("The admin account cannot be registered here.");
-        return;
-      }
-      if (!name || !confirmPassword) return;
-      if (password.length < 8) {
-        setFormError("Password must be at least 8 characters.");
-        return;
-      }
-      if (password !== confirmPassword) {
-        setFormError("Passwords do not match.");
-        return;
-      }
-    }
 
     setIsSubmitting(true);
     try {
       if (activeTab === "signup") {
-        const result = await signup({ name, email, password });
+        if (signupStep === "details") {
+          if (email.trim().toLowerCase() === "admin@sqftgo.com") {
+            setFormError("The admin account cannot be registered here.");
+            return;
+          }
+          if (!name || !email || !password || !confirmPassword) return;
+          if (password.length < 8) {
+            setFormError("Password must be at least 8 characters.");
+            return;
+          }
+          if (password !== confirmPassword) {
+            setFormError("Passwords do not match.");
+            return;
+          }
+          if (!cityId) {
+            setFormError("Select your city.");
+            return;
+          }
+          await sendRegisterOtp();
+          return;
+        }
+
+        if (!/^[0-9]{6}$/.test(otpCode.trim())) {
+          setFormError("Enter the 6-digit verification code.");
+          return;
+        }
+
+        const verified = await authService.verifyMobileOtpForRegister({
+          countryCode,
+          mobileNumber,
+          code: otpCode,
+        });
+        const result = await signup({
+          name,
+          email,
+          password,
+          countryCode,
+          mobileNumber,
+          mobileClaimToken: verified.claimToken,
+          cityId,
+        });
         if (result.status === "confirm_email") {
           setActiveTab("login");
+          setLoginMethod("email");
           setPassword("");
           setConfirmPassword("");
+          setSignupStep("details");
           setFormSuccess(result.message);
           return;
         }
         redirectAfterAuth(result.session.role);
-      } else {
+        return;
+      }
+
+      // Login
+      if (loginMethod === "email") {
+        if (!email || !password) return;
         const session = await login(email, password);
         redirectAfterAuth(session.role);
+        return;
+      }
+
+      if (mobileLoginStep === "phone") {
+        await sendLoginOtp();
+        return;
+      }
+
+      if (!/^[0-9]{6}$/.test(otpCode.trim())) {
+        setFormError("Enter the 6-digit verification code.");
+        return;
+      }
+      const session = await loginWithMobile({
+        countryCode,
+        mobileNumber,
+        code: otpCode,
+      });
+      redirectAfterAuth(session.role);
+    } catch (err) {
+      if (err instanceof ApiError && err.resendAfterSeconds != null) {
+        startOtpCooldown(err.resendAfterSeconds);
+      }
+      setFormError(err instanceof Error ? err.message : "Authentication failed");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendIn > 0 || isSubmitting) return;
+    setFormError(null);
+    setIsSubmitting(true);
+    try {
+      if (activeTab === "signup") {
+        await sendRegisterOtp();
+      } else {
+        await sendLoginOtp();
       }
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Authentication failed");
+      if (err instanceof ApiError && err.resendAfterSeconds != null) {
+        startOtpCooldown(err.resendAfterSeconds);
+      }
+      setFormError(err instanceof Error ? err.message : "Couldn't resend code");
     } finally {
       setIsSubmitting(false);
     }
@@ -158,6 +313,8 @@ function AuthForm() {
   const handleTabToggle = () => {
     const nextTab = activeTab === "login" ? "signup" : "login";
     setActiveTab(nextTab);
+    setFormError(null);
+    setFormSuccess(null);
 
     const params = new URLSearchParams(window.location.search);
     if (nextTab === "signup") {
@@ -180,11 +337,24 @@ function AuthForm() {
     }
   };
 
+  const showOtpPanel =
+    (activeTab === "signup" && signupStep === "otp") ||
+    (activeTab === "login" && loginMethod === "mobile" && mobileLoginStep === "otp");
+
+  const submitLabel = (() => {
+    if (isSubmitting) return "Authenticating...";
+    if (activeTab === "signup") {
+      return signupStep === "details" ? "Continue" : "Verify & create account";
+    }
+    if (loginMethod === "mobile") {
+      return mobileLoginStep === "phone" ? "Send OTP" : "Verify & sign in";
+    }
+    return "Sign In";
+  })();
+
   return (
     <div className="fixed inset-0 w-full h-full min-h-screen bg-white text-charcoal z-50 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden select-none font-sans">
-
       <div className="w-full lg:w-[42%] xl:w-[38%] bg-white flex flex-col justify-center px-6 sm:px-12 xl:px-16 py-12 relative z-10 min-h-full border-r border-sand">
-
         <button
           type="button"
           onClick={() => {
@@ -212,121 +382,240 @@ function AuthForm() {
               Welcome to SqftGo
             </h1>
             <p className="text-xs text-slate-500 mt-1.5 text-center font-medium">
-              {activeTab === "login" ? "Sign in to access your portal" : "Create an account to search or list properties"}
+              {activeTab === "login"
+                ? "Sign in with email or mobile"
+                : "Create an account with verified mobile"}
             </p>
           </div>
 
           <div className="flex flex-col gap-4">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-xs font-bold text-slate-700">
+            {activeTab === "login" && !showOtpPanel ? (
+              <div className="grid grid-cols-2 gap-1 p-1 rounded-2xl bg-slate-50 border border-sand">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginMethod("email");
+                    setMobileLoginStep("phone");
+                    setFormError(null);
+                    setFormSuccess(null);
+                  }}
+                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
+                    loginMethod === "email"
+                      ? "bg-white text-indigo shadow-sm border border-sand"
+                      : "text-slate-500 hover:text-charcoal"
+                  }`}
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  Email
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginMethod("mobile");
+                    setMobileLoginStep("phone");
+                    setFormError(null);
+                    setFormSuccess(null);
+                  }}
+                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
+                    loginMethod === "mobile"
+                      ? "bg-white text-indigo shadow-sm border border-sand"
+                      : "text-slate-500 hover:text-charcoal"
+                  }`}
+                >
+                  <Smartphone className="w-3.5 h-3.5" />
+                  Mobile OTP
+                </button>
+              </div>
+            ) : null}
 
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-xs font-bold text-slate-700">
               <AnimatePresence mode="wait">
-                {activeTab === "signup" ? (
+                {showOtpPanel ? (
                   <motion.div
-                    key="signup-fields"
+                    key="otp-panel"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.15 }}
                     className="flex flex-col gap-4"
                   >
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-slate-500">Full Name</label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          required
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          placeholder="Full Name"
-                          className="w-full bg-slate-50 border border-sand rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-indigo text-charcoal placeholder-charcoal/30 transition-colors"
-                        />
-                        <User className="absolute left-3.5 top-3.5 w-4.5 h-4.5 text-charcoal/40" />
-                      </div>
-                    </div>
-                  </motion.div>
-                ) : null}
-              </AnimatePresence>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-slate-500">Email Address</label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Email Address"
-                    className="w-full bg-slate-50 border border-sand rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-indigo text-charcoal placeholder-charcoal/30 transition-colors"
-                  />
-                  <Mail className="absolute left-3.5 top-3.5 w-4.5 h-4.5 text-charcoal/40" />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-slate-500">Password</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Password"
-                    className="w-full bg-slate-50 border border-sand rounded-xl py-3 pl-10 pr-10 focus:outline-none focus:border-indigo text-charcoal placeholder-charcoal/30 transition-colors"
-                  />
-                  <Lock className="absolute left-3.5 top-3.5 w-4.5 h-4.5 text-charcoal/40" />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3.5 text-charcoal/40 hover:text-indigo cursor-pointer"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <AnimatePresence mode="wait">
-                {activeTab === "signup" ? (
-                  <motion.div
-                    key="signup-confirm-password"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.15 }}
-                    className="flex flex-col gap-1.5"
-                  >
-                    <label className="text-slate-500">Confirm Password</label>
-                    <div className="relative">
-                      <input
-                        type="password"
-                        required
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Confirm Password"
-                        className="w-full bg-slate-50 border border-sand rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-indigo text-charcoal placeholder-charcoal/30 transition-colors"
-                      />
-                      <Lock className="absolute left-3.5 top-3.5 w-4.5 h-4.5 text-charcoal/40" />
+                    <p className="text-[11px] font-semibold text-slate-500 leading-relaxed">
+                      Enter the 6-digit code sent to{" "}
+                      <span className="text-charcoal">
+                        +{countryCode} {mobileNumber}
+                      </span>
+                      {otpChannel && otpChannel !== "dev" ? (
+                        <span> via {otpChannel === "sms" ? "SMS" : "WhatsApp"}</span>
+                      ) : null}
+                      .
+                    </p>
+                    <OtpCodeInput value={otpCode} onChange={setOtpCode} disabled={isSubmitting} />
+                    {debugCode ? (
+                      <p className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
+                        Dev OTP: {debugCode}
+                      </p>
+                    ) : null}
+                    <div className="flex items-center justify-between text-[11px]">
+                      <button
+                        type="button"
+                        disabled={isSubmitting}
+                        onClick={() => {
+                          setFormError(null);
+                          setFormSuccess(null);
+                          setOtpCode("");
+                          setDebugCode(null);
+                          if (activeTab === "signup") {
+                            setSignupStep("details");
+                          } else {
+                            setMobileLoginStep("phone");
+                          }
+                        }}
+                        className="text-slate-500 hover:text-indigo font-bold cursor-pointer bg-transparent border-none"
+                      >
+                        Change number
+                      </button>
+                      <button
+                        type="button"
+                        disabled={resendIn > 0 || isSubmitting}
+                        onClick={() => void handleResendOtp()}
+                        className="text-indigo font-extrabold hover:underline disabled:opacity-40 disabled:no-underline cursor-pointer bg-transparent border-none"
+                      >
+                        {resendIn > 0 ? `Resend in ${resendIn}s` : "Resend OTP"}
+                      </button>
                     </div>
                   </motion.div>
                 ) : (
                   <motion.div
-                    key="login-extra"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center justify-between text-[11px] font-bold text-slate-500 mt-1 select-none"
+                    key="main-fields"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex flex-col gap-4"
                   >
-                    <label className="flex items-center gap-2 cursor-pointer text-charcoal/70">
-                      <input
-                        type="checkbox"
-                        checked={keepLoggedIn}
-                        onChange={(e) => setKeepLoggedIn(e.target.checked)}
-                        className="rounded border-sand text-indigo w-3.5 h-3.5 cursor-pointer focus:ring-indigo bg-slate-50"
+                    {activeTab === "signup" ? (
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-slate-500">Full Name</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            required
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Full Name"
+                            className="w-full bg-slate-50 border border-sand rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-indigo text-charcoal placeholder-charcoal/30 transition-colors"
+                          />
+                          <User className="absolute left-3.5 top-3.5 w-4.5 h-4.5 text-charcoal/40" />
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {activeTab === "login" && loginMethod === "mobile" ? (
+                      <MobilePhoneField
+                        countryCode={countryCode}
+                        mobileNumber={mobileNumber}
+                        onCountryChange={setCountryCode}
+                        onMobileChange={setMobileNumber}
+                        disabled={isSubmitting}
                       />
-                      <span>Keep me logged in</span>
-                    </label>
-                    <Link href="/forgot-password" className="text-indigo hover:underline">
-                      Forgot password?
-                    </Link>
+                    ) : null}
+
+                    {(activeTab === "signup" || loginMethod === "email") && (
+                      <>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-slate-500">Email Address</label>
+                          <div className="relative">
+                            <input
+                              type="email"
+                              required
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              placeholder="Email Address"
+                              className="w-full bg-slate-50 border border-sand rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-indigo text-charcoal placeholder-charcoal/30 transition-colors"
+                            />
+                            <Mail className="absolute left-3.5 top-3.5 w-4.5 h-4.5 text-charcoal/40" />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-slate-500">Password</label>
+                          <div className="relative">
+                            <input
+                              type={showPassword ? "text" : "password"}
+                              required
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              placeholder="Password"
+                              className="w-full bg-slate-50 border border-sand rounded-xl py-3 pl-10 pr-10 focus:outline-none focus:border-indigo text-charcoal placeholder-charcoal/30 transition-colors"
+                            />
+                            <Lock className="absolute left-3.5 top-3.5 w-4.5 h-4.5 text-charcoal/40" />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-3.5 text-charcoal/40 hover:text-indigo cursor-pointer"
+                            >
+                              {showPassword ? (
+                                <EyeOff className="w-4 h-4" />
+                              ) : (
+                                <Eye className="w-4 h-4" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {activeTab === "signup" ? (
+                      <>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-slate-500">Confirm Password</label>
+                          <div className="relative">
+                            <input
+                              type="password"
+                              required
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              placeholder="Confirm Password"
+                              className="w-full bg-slate-50 border border-sand rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-indigo text-charcoal placeholder-charcoal/30 transition-colors"
+                            />
+                            <Lock className="absolute left-3.5 top-3.5 w-4.5 h-4.5 text-charcoal/40" />
+                          </div>
+                        </div>
+
+                        <MobilePhoneField
+                          countryCode={countryCode}
+                          mobileNumber={mobileNumber}
+                          onCountryChange={setCountryCode}
+                          onMobileChange={setMobileNumber}
+                          disabled={isSubmitting}
+                          label="WhatsApp / Mobile"
+                        />
+
+                        <AuthCitySelect
+                          cityId={cityId}
+                          required
+                          onChange={(id) => setCityId(id)}
+                          disabled={isSubmitting}
+                        />
+                      </>
+                    ) : null}
+
+                    {activeTab === "login" && loginMethod === "email" ? (
+                      <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 mt-1 select-none">
+                        <label className="flex items-center gap-2 cursor-pointer text-charcoal/70">
+                          <input
+                            type="checkbox"
+                            checked={keepLoggedIn}
+                            onChange={(e) => setKeepLoggedIn(e.target.checked)}
+                            className="rounded border-sand text-indigo w-3.5 h-3.5 cursor-pointer focus:ring-indigo bg-slate-50"
+                          />
+                          <span>Keep me logged in</span>
+                        </label>
+                        <Link href="/forgot-password" className="text-indigo hover:underline">
+                          Forgot password?
+                        </Link>
+                      </div>
+                    ) : null}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -350,22 +639,33 @@ function AuthForm() {
                 {isSubmitting ? (
                   <>
                     <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
                     </svg>
                     <span>Authenticating...</span>
                   </>
                 ) : (
-                  <span>
-                    {activeTab === "login" ? "Sign In" : "Sign Up"}
-                  </span>
+                  <span>{submitLabel}</span>
                 )}
               </button>
             </form>
 
-            {SHOW_DEMO_LOGIN && activeTab === "login" && (
+            {SHOW_DEMO_LOGIN && activeTab === "login" && loginMethod === "email" && (
               <div className="bg-sand/20 border border-sand/40 rounded-xl p-3.5 mt-1 text-[11px] font-semibold text-charcoal/65 flex flex-col gap-2">
-                <span className="text-[9px] font-black text-indigo uppercase tracking-wider">Quick Demo Login</span>
+                <span className="text-[9px] font-black text-indigo uppercase tracking-wider">
+                  Quick Demo Login
+                </span>
                 <p className="text-[10px] font-medium text-charcoal/50 leading-snug">
                   Fills email only — use local seed passwords from{" "}
                   <code className="text-[9px]">.env.example</code>.
@@ -389,24 +689,33 @@ function AuthForm() {
               </div>
             )}
 
-            <div className="flex items-center justify-center my-2 relative w-full">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-sand/55" /></div>
-              <span className="relative px-3.5 bg-white text-[10px] font-black text-charcoal/40 uppercase tracking-widest leading-none select-none">
-                or continue with
-              </span>
-            </div>
+            {!showOtpPanel ? (
+              <>
+                <div className="flex items-center justify-center my-2 relative w-full">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-sand/55" />
+                  </div>
+                  <span className="relative px-3.5 bg-white text-[10px] font-black text-charcoal/40 uppercase tracking-widest leading-none select-none">
+                    or continue with
+                  </span>
+                </div>
 
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={() => void handleGoogleSignIn()}
-              className="w-full flex items-center justify-center gap-2.5 px-4 py-3.5 rounded-2xl border border-sand bg-white hover:bg-slate-50 text-charcoal hover:border-indigo/40 shadow-sm active:scale-[0.99] transition-all font-bold text-xs tracking-wide cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
-            >
-              <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" fill="currentColor" />
-              </svg>
-              <span>{isSubmitting ? "Redirecting to Google..." : "Continue with Google"}</span>
-            </button>
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => void handleGoogleSignIn()}
+                  className="w-full flex items-center justify-center gap-2.5 px-4 py-3.5 rounded-2xl border border-sand bg-white hover:bg-slate-50 text-charcoal hover:border-indigo/40 shadow-sm active:scale-[0.99] transition-all font-bold text-xs tracking-wide cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  <span>{isSubmitting ? "Redirecting to Google..." : "Continue with Google"}</span>
+                </button>
+              </>
+            ) : null}
           </div>
 
           <p className="text-center text-xs text-slate-500 font-bold mt-8">
@@ -435,11 +744,9 @@ function AuthForm() {
             )}
           </p>
         </div>
-
       </div>
 
       <div className="hidden lg:flex w-full lg:w-[58%] xl:w-[62%] h-full bg-charcoal border-l border-sand/40 relative overflow-hidden items-center justify-center min-h-full">
-
         <div className="absolute inset-0 w-full h-full z-0 select-none pointer-events-none transition-all duration-700 ease-in-out">
           <img
             src={cityCoverImage(SLIDES[activeSlide].label)}
@@ -459,7 +766,7 @@ function AuthForm() {
 
         <div className="absolute left-12 bottom-28 right-12 z-10 flex flex-col gap-3.5 text-left select-none pointer-events-none max-w-xl">
           <div className="w-fit bg-white/20 text-gold border border-white/20 font-black text-[9px] tracking-widest uppercase py-1 px-3.5 rounded-full mb-1">
-            Heritage Portal
+            Trusted marketplace
           </div>
 
           <h2 className="text-4xl xl:text-5xl font-serif font-black text-white leading-tight tracking-tight drop-shadow-xl">
@@ -493,24 +800,31 @@ function AuthForm() {
                     <div className="absolute inset-0 bg-white" />
                   )}
                 </div>
-                <span className={`text-[9px] font-black tracking-wider transition-colors uppercase ${isActive ? "text-gold" : "text-white/40 group-hover:text-white"
-                  }`}>
+                <span
+                  className={`text-[9px] font-black tracking-wider transition-colors uppercase ${
+                    isActive ? "text-gold" : "text-white/40 group-hover:text-white"
+                  }`}
+                >
                   {slide.label}
                 </span>
               </div>
             );
           })}
         </div>
-
       </div>
-
     </div>
   );
 }
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="fixed inset-0 bg-white z-50 flex items-center justify-center text-indigo font-bold">Loading auth...</div>}>
+    <Suspense
+      fallback={
+        <div className="fixed inset-0 bg-white z-50 flex items-center justify-center text-indigo font-bold">
+          Loading auth...
+        </div>
+      }
+    >
       <AuthForm />
     </Suspense>
   );

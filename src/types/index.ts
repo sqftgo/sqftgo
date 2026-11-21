@@ -19,6 +19,7 @@ export type {
   Amenity,
   ActivityLog,
   DirectoryProfile,
+  DirectorySocialLinks,
   DirectoryVerificationStatus,
   ServiceType,
   ServiceBooking,
@@ -26,6 +27,13 @@ export type {
   ServiceVerification,
   ServiceVerificationStatus,
   ServiceVerificationDocument,
+  ServicePortfolioImage,
+  ServiceReview,
+  ServiceWebsitePromotionPlan,
+  ServiceWebsitePromotion,
+  ServiceWebsitePromotionPayment,
+  WebsitePromotionBillingType,
+  WebsitePromotionStatus,
 } from "./catalog";
 export type { VisitBooking, VisitStatusUi } from "./visit";
 export type {

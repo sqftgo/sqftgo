@@ -58,7 +58,8 @@ export default function RegisterServicePage() {
   useEffect(() => {
     if (!sessionReady) return;
     if (!isLoggedIn) {
-      router.push(`/login?next=${encodeURIComponent("/services/register")}`);
+      // Dedicated SP entry → customer account creation, then back to this onboarding form.
+      router.push(`/login?tab=signup&next=${encodeURIComponent("/services/register")}`);
     }
   }, [sessionReady, isLoggedIn, router]);
 

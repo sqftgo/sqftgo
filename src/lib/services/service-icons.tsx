@@ -12,6 +12,7 @@ import {
   Truck,
   type LucideIcon,
 } from "lucide-react";
+import { tryGetCatalogIcon } from "@/lib/icons/catalog-icons";
 
 const KEYWORD_ICONS: [RegExp, LucideIcon][] = [
   [/interior|decor|paint/i, Paintbrush],
@@ -26,7 +27,10 @@ const KEYWORD_ICONS: [RegExp, LucideIcon][] = [
   [/inspect|valuat/i, FileCheck2],
 ];
 
+/** Resolve a Lucide icon from a stored icon name, emoji legacy value, or service name. */
 export function serviceIconFor(nameOrIcon?: string | null): LucideIcon {
+  const fromCatalog = tryGetCatalogIcon(nameOrIcon);
+  if (fromCatalog) return fromCatalog;
   if (!nameOrIcon) return Briefcase;
   return KEYWORD_ICONS.find(([pattern]) => pattern.test(nameOrIcon))?.[1] ?? Briefcase;
 }

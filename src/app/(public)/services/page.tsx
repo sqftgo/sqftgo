@@ -9,6 +9,7 @@ import { isServiceDirectoryCategory } from "@/features/dealers";
 import { servicePlatformService } from "@/services";
 import type { ServiceType } from "@/types";
 import { serviceIconFor } from "@/lib/services/service-icons";
+import { serviceProfilePath } from "@/lib/services/public-profile-path";
 import {
   Plus,
   ArrowUpRight,
@@ -85,12 +86,14 @@ function ServicesContent() {
         name: st.name,
         title: st.name,
         desc: st.description,
+        icon: st.icon,
       }));
     }
     return Array.from(new Set(cityProfiles.map((p) => p.category))).map((name) => ({
       name,
       title: name,
       desc: "",
+      icon: undefined as string | undefined,
     }));
   }, [serviceTypes, cityProfiles]);
 
@@ -223,7 +226,7 @@ function ServicesContent() {
                 {categoryMeta.map((cat) => {
                   const count = cityProfiles.filter((p) => p.category === cat.name).length;
                   const isSelected = selectedCategory === cat.name;
-                  const CatIcon = serviceIconFor(cat.name);
+                  const CatIcon = serviceIconFor(cat.icon || cat.name);
                   return (
                     <button
                       key={cat.name}
@@ -318,7 +321,7 @@ function ServicesContent() {
                             {profile.category}
                           </span>
                           <Link
-                            href={`/services/${profile.id}`}
+                            href={serviceProfilePath(profile)}
                             className="font-serif font-black text-lg text-indigo hover:text-terracotta truncate"
                           >
                             {profile.firmName}
@@ -349,7 +352,7 @@ function ServicesContent() {
 
                       <div className="flex gap-2 pt-2 mt-auto">
                         <Link
-                          href={`/services/${profile.id}`}
+                          href={serviceProfilePath(profile)}
                           className="flex-1 py-3 rounded-xl bg-indigo hover:bg-indigo-hover text-white flex items-center justify-center gap-2 text-sm font-bold shadow-md"
                         >
                           View profile

@@ -6,7 +6,14 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { isServiceDirectoryCategory } from "@/features/dealers";
 import { servicePlatformService } from "@/services";
-import type { ServiceBooking, ServiceVerification } from "@/types";
+import type {
+  ServiceBooking,
+  ServicePortfolioImage,
+  ServiceVerification,
+  ServiceWebsitePromotion,
+  ServiceWebsitePromotionPayment,
+  ServiceWebsitePromotionPlan,
+} from "@/types";
 import {
   Alert,
   Badge,
@@ -20,9 +27,13 @@ import {
   ArrowUpRight,
   Calendar,
   CheckCircle2,
+  Crown,
   MapPin,
   ShieldCheck,
 } from "lucide-react";
+import { openRazorpayCheckout } from "@/lib/razorpay/checkout";
+import { serviceProfilePath } from "@/lib/services/public-profile-path";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function ManageServicePage() {
   const router = useRouter();
@@ -45,15 +56,27 @@ export default function ManageServicePage() {
     );
   }, [directoryProfiles, userProfile?.id, userEmail]);
 
+  const { userName, userEmail: authEmail } = useAuth();
   const [description, setDescription] = useState("");
+  const [intro, setIntro] = useState("");
   const [address, setAddress] = useState("");
   const [mobile, setMobile] = useState("");
-  const [website, setWebsite] = useState("");
   const [offerings, setOfferings] = useState("");
+  const [experience, setExperience] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [portfolioUrl, setPortfolioUrl] = useState("");
+  const [portfolioCaption, setPortfolioCaption] = useState("");
+  const [portfolio, setPortfolio] = useState<ServicePortfolioImage[]>([]);
   const [regId, setRegId] = useState("");
   const [ownerNotes, setOwnerNotes] = useState("");
   const [verification, setVerification] = useState<ServiceVerification | null>(null);
   const [bookings, setBookings] = useState<ServiceBooking[]>([]);
+  const [promo, setPromo] = useState<ServiceWebsitePromotion | null>(null);
+  const [promoPlans, setPromoPlans] = useState<ServiceWebsitePromotionPlan[]>([]);
+  const [promoPayments, setPromoPayments] = useState<ServiceWebsitePromotionPayment[]>([]);
+  const [promoWebsite, setPromoWebsite] = useState("");
+  const [selectedPlanId, setSelectedPlanId] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -68,22 +91,34 @@ export default function ManageServicePage() {
   useEffect(() => {
     if (!myProfile) return;
     setDescription(myProfile.description || "");
+    setIntro(myProfile.intro || "");
     setAddress(myProfile.address || "");
     setMobile(myProfile.mobile || "");
-    setWebsite(myProfile.website || "");
     setOfferings((myProfile.servicesOffered ?? []).join(", "));
+    setExperience(myProfile.experience || "");
+    setLogoUrl(myProfile.logoUrl || "");
+    setCoverImageUrl(myProfile.coverImageUrl || "");
+    setPromoWebsite(myProfile.website || "");
   }, [myProfile]);
 
   useEffect(() => {
     if (!myProfile) return;
     void (async () => {
       try {
-        const [v, b] = await Promise.all([
+        const [v, b, port, website] = await Promise.all([
           servicePlatformService.getMyVerification(),
           servicePlatformService.listOwnerBookings(myProfile.id),
+          servicePlatformService.listPortfolio(myProfile.id),
+          servicePlatformService.getWebsitePromotion(),
         ]);
         setVerification(v);
         setBookings(b.items);
+        setPortfolio(port.items);
+        setPromo(website.promotion);
+        setPromoPlans(website.plans);
+        setPromoPayments(website.payments);
+        setPromoWebsite(website.promotion?.websiteUrl || website.profileWebsite || "");
+        setSelectedPlanId((prev) => prev || website.plans[0]?.id || "");
         if (v?.businessRegistrationId) setRegId(v.businessRegistrationId);
       } catch {
         /* ignore */
@@ -98,9 +133,12 @@ export default function ManageServicePage() {
     try {
       await updateDirectoryProfile(myProfile.id, {
         description,
+        intro,
         address,
         mobile,
-        website,
+        experience: experience || undefined,
+        logoUrl: logoUrl || null,
+        coverImageUrl: coverImageUrl || null,
         servicesOffered: offerings
           .split(",")
           .map((s) => s.trim())
@@ -109,6 +147,93 @@ export default function ManageServicePage() {
       setMessage("Profile saved.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to save");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const purchaseWebsitePromo = async () => {
+    if (!myProfile || !selectedPlanId || busy) return;
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const order = await servicePlatformService.createWebsitePromotionOrder({
+        planId: selectedPlanId,
+        websiteUrl: promoWebsite || undefined,
+      });
+      await openRazorpayCheckout({
+        key: order.keyId,
+        amount: order.amount,
+        currency: order.currency,
+        name: "SqftGo",
+        description: order.plan.name,
+        order_id: order.orderId,
+        prefill: {
+          name: userName || myProfile.ownerName,
+          email: authEmail || myProfile.email,
+          contact: myProfile.mobile,
+        },
+        notes: { purpose: "service_website_promotion" },
+        theme: { color: "#2D375F" },
+        handler: async (response) => {
+          try {
+            const verified = await servicePlatformService.verifyWebsitePromotionPayment({
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+            setPromo(verified.promotion);
+            setMessage("Premium Website Promotion activated.");
+            const refreshed = await servicePlatformService.getWebsitePromotion();
+            setPromoPayments(refreshed.payments);
+            setPromo(refreshed.promotion);
+          } catch (err) {
+            setError(err instanceof Error ? err.message : "Payment verification failed");
+          } finally {
+            setBusy(false);
+          }
+        },
+        modal: {
+          ondismiss: () => setBusy(false),
+        },
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to start checkout");
+      setBusy(false);
+    }
+  };
+
+  const savePromoWebsite = async () => {
+    if (!myProfile || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await servicePlatformService.updateWebsitePromotionUrl(promoWebsite);
+      setPromo(res.promotion);
+      setMessage("Website URL updated on your public profile.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to update website");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const addPortfolio = async () => {
+    if (!myProfile || !portfolioUrl.trim() || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const img = await servicePlatformService.addPortfolioImage(myProfile.id, {
+        imageUrl: portfolioUrl.trim(),
+        caption: portfolioCaption,
+      });
+      setPortfolio((prev) => [...prev, img]);
+      setPortfolioUrl("");
+      setPortfolioCaption("");
+      setMessage("Portfolio image added.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to add image");
     } finally {
       setBusy(false);
     }
@@ -192,7 +317,7 @@ export default function ManageServicePage() {
             {myProfile.verificationStatus ?? "unverified"}
           </Badge>
           <Link
-            href={`/services/${myProfile.id}`}
+            href={serviceProfilePath(myProfile)}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo hover:text-terracotta"
           >
             Public profile <ArrowUpRight className="w-3.5 h-3.5" />
@@ -205,7 +330,14 @@ export default function ManageServicePage() {
 
       <Panel className="p-6 space-y-4">
         <h2 className="font-serif font-black text-lg text-indigo">Profile details</h2>
-        <FormField label="Description">
+        <FormField label="Short introduction">
+          <TextInput
+            value={intro}
+            onChange={(e) => setIntro(e.target.value)}
+            placeholder="One-line pitch shown near the top of your profile"
+          />
+        </FormField>
+        <FormField label="Business description">
           <TextArea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
         </FormField>
         <FormField label="Address">
@@ -215,8 +347,20 @@ export default function ManageServicePage() {
           <FormField label="Mobile">
             <TextInput value={mobile} onChange={(e) => setMobile(e.target.value)} />
           </FormField>
-          <FormField label="Website">
-            <TextInput value={website} onChange={(e) => setWebsite(e.target.value)} />
+          <FormField label="Years of experience">
+            <TextInput
+              value={experience}
+              onChange={(e) => setExperience(e.target.value)}
+              placeholder="e.g. 12 years"
+            />
+          </FormField>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField label="Logo image URL">
+            <TextInput value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} />
+          </FormField>
+          <FormField label="Cover / banner image URL">
+            <TextInput value={coverImageUrl} onChange={(e) => setCoverImageUrl(e.target.value)} />
           </FormField>
         </div>
         <FormField label="Services offered (comma-separated)">
@@ -225,6 +369,120 @@ export default function ManageServicePage() {
         <Button type="button" loading={busy} onClick={() => void saveProfile()}>
           Save profile
         </Button>
+      </Panel>
+
+      <Panel className="p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Crown className="w-5 h-5 text-amber-600" />
+          <h2 className="font-serif font-black text-lg text-indigo">Premium Website Promotion</h2>
+        </div>
+        <p className="text-xs font-semibold text-charcoal/60 leading-relaxed">
+          Free profiles do not show a clickable external website link. Purchase Premium Website
+          Promotion to display a Visit Website button on your public profile. Pricing is managed by
+          SqftGo admins.
+        </p>
+        {promo?.isActive ? (
+          <Alert
+            variant="success"
+            title="Premium active"
+            description={`Valid until ${
+              promo.expiresAt
+                ? new Date(promo.expiresAt).toLocaleDateString("en-IN")
+                : "further notice"
+            }`}
+          />
+        ) : (
+          <Alert
+            variant="warning"
+            title="Not active"
+            description="Your website link is hidden from customers until you activate a plan."
+          />
+        )}
+        <FormField label="Official website URL">
+          <TextInput
+            value={promoWebsite}
+            onChange={(e) => setPromoWebsite(e.target.value)}
+            placeholder="https://www.yourbusiness.com"
+          />
+        </FormField>
+        {promo?.isActive ? (
+          <Button type="button" loading={busy} onClick={() => void savePromoWebsite()}>
+            Update website URL
+          </Button>
+        ) : (
+          <div className="space-y-3">
+            <FormField label="Choose a plan">
+              <select
+                className="w-full rounded-xl border border-sand bg-cream px-3 py-2.5 text-sm font-semibold"
+                value={selectedPlanId}
+                onChange={(e) => setSelectedPlanId(e.target.value)}
+              >
+                {promoPlans.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} — ₹{(p.pricePaise / 100).toFixed(0)} · {p.durationDays} days ·{" "}
+                    {p.billingType === "recurring" ? "recurring" : "one-time"}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+            <Button type="button" loading={busy} onClick={() => void purchaseWebsitePromo()}>
+              Pay & activate
+            </Button>
+          </div>
+        )}
+        {promoPayments.length > 0 ? (
+          <div className="pt-2 border-t border-sand">
+            <h3 className="text-xs font-black uppercase tracking-wider text-charcoal/40 mb-2">
+              Payment history
+            </h3>
+            <ul className="space-y-1.5">
+              {promoPayments.slice(0, 5).map((p) => (
+                <li
+                  key={p.id}
+                  className="text-xs font-semibold text-charcoal/65 flex justify-between gap-2"
+                >
+                  <span>
+                    {p.planName || "Plan"} · {p.status}
+                  </span>
+                  <span>
+                    ₹{(p.amountPaise / 100).toFixed(0)}
+                    {p.paidAt ? ` · ${new Date(p.paidAt).toLocaleDateString("en-IN")}` : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </Panel>
+
+      <Panel className="p-6 space-y-4">
+        <h2 className="font-serif font-black text-lg text-indigo">Portfolio</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField label="Image URL">
+            <TextInput value={portfolioUrl} onChange={(e) => setPortfolioUrl(e.target.value)} />
+          </FormField>
+          <FormField label="Caption">
+            <TextInput
+              value={portfolioCaption}
+              onChange={(e) => setPortfolioCaption(e.target.value)}
+            />
+          </FormField>
+        </div>
+        <Button type="button" variant="outline" loading={busy} onClick={() => void addPortfolio()}>
+          Add portfolio image
+        </Button>
+        {portfolio.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {portfolio.map((img) => (
+              <div key={img.id} className="rounded-xl overflow-hidden border border-sand">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={img.imageUrl} alt={img.caption} className="w-full h-24 object-cover" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm font-semibold text-charcoal/50">No portfolio images yet.</p>
+        )}
       </Panel>
 
       <Panel className="p-6 space-y-4">

@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { activateDealerSubscription } from "@/lib/billing/activate";
+import { fulfillWebsitePromotionOrderByRazorpayOrder } from "@/lib/billing/activate-website-promotion";
 import { fulfillListingOrder } from "@/lib/payments/listing-orders";
 import { getRazorpayConfig } from "@/lib/razorpay/config";
 import { verifyWebhookSignature } from "@/lib/razorpay/verify";
@@ -90,6 +91,15 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+  }
+
+  const websiteFulfilled = await fulfillWebsitePromotionOrderByRazorpayOrder(
+    supabase,
+    orderId,
+    paymentId
+  );
+  if (websiteFulfilled) {
+    return NextResponse.json({ ok: true, kind: "service_website_promotion" });
   }
 
   const { data: paymentRow } = await supabase

@@ -92,6 +92,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           { href: "/admin/dealers", label: "Dealers", icon: Briefcase },
           { href: "/admin/services", label: "Services", icon: Wrench },
           { href: "/admin/service-verifications", label: "Service Verify", icon: ShieldCheck },
+          { href: "/admin/website-promotion", label: "Website Promo", icon: CreditCard },
           { href: "/admin/kyc", label: "KYC Reviews", icon: Shield },
         ],
       },

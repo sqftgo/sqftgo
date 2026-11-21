@@ -202,6 +202,9 @@ export const AUTH_RATE_LIMITS = {
   signup: { limit: 5, windowMs: 60_000 },
   forgotPassword: { limit: 5, windowMs: 60_000 },
   refresh: { limit: 30, windowMs: 60_000 },
+  mobileOtpSend: { limit: 8, windowMs: 60_000 },
+  mobileOtpVerify: { limit: 20, windowMs: 60_000 },
+  mobileLogin: { limit: 20, windowMs: 60_000 },
 } as const;
 
 /**

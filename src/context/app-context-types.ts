@@ -116,10 +116,26 @@ export interface AppContextType {
   categoriesReady: boolean;
   refreshCategories: () => Promise<void>;
   setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
-  createCategory: (input: { name: string; icon: string }) => Promise<Category>;
+  createCategory: (input: {
+    name: string;
+    icon?: string;
+    description?: string;
+    slug?: string;
+    imageUrl?: string | null;
+    active?: boolean;
+    sortOrder?: number;
+  }) => Promise<Category>;
   updateCategory: (
     id: string,
-    updates: { name?: string; icon?: string; active?: boolean }
+    updates: {
+      name?: string;
+      icon?: string;
+      description?: string;
+      slug?: string;
+      imageUrl?: string | null;
+      active?: boolean;
+      sortOrder?: number;
+    }
   ) => Promise<Category>;
   deleteCategory: (id: string) => Promise<void>;
   locations: Location[];
@@ -130,7 +146,12 @@ export interface AppContextType {
     city: string;
     state: string;
     country: string;
+    slug?: string;
     coverImageUrl?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    active?: boolean;
+    sortOrder?: number;
   }) => Promise<Location>;
   updateLocation: (
     id: string,
@@ -138,8 +159,12 @@ export interface AppContextType {
       city?: string;
       state?: string;
       country?: string;
+      slug?: string;
       active?: boolean;
+      sortOrder?: number;
       coverImageUrl?: string | null;
+      latitude?: number | null;
+      longitude?: number | null;
     }
   ) => Promise<Location>;
   uploadCityCover: (id: string, file: File) => Promise<Location>;
@@ -148,10 +173,24 @@ export interface AppContextType {
   amenitiesReady: boolean;
   refreshAmenities: () => Promise<void>;
   setAmenities: React.Dispatch<React.SetStateAction<Amenity[]>>;
-  createAmenity: (input: { name: string }) => Promise<Amenity>;
+  createAmenity: (input: {
+    name: string;
+    description?: string;
+    icon?: string;
+    category?: string | null;
+    active?: boolean;
+    sortOrder?: number;
+  }) => Promise<Amenity>;
   updateAmenity: (
     id: string,
-    updates: { name?: string; active?: boolean }
+    updates: {
+      name?: string;
+      description?: string;
+      icon?: string;
+      category?: string | null;
+      active?: boolean;
+      sortOrder?: number;
+    }
   ) => Promise<Amenity>;
   deleteAmenity: (id: string) => Promise<void>;
   activityLogs: ActivityLog[];

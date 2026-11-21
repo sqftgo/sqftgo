@@ -27,6 +27,24 @@ const dealerFields = {
   lng: z.number().min(-180).max(180).nullable(),
   listingActive: z.boolean(),
   verificationStatus: z.enum(["unverified", "pending", "verified", "rejected"]),
+  intro: z.string().trim().max(500),
+  socialLinks: z
+    .object({
+      facebook: z.string().trim().max(300).optional(),
+      instagram: z.string().trim().max(300).optional(),
+      linkedin: z.string().trim().max(300).optional(),
+      twitter: z.string().trim().max(300).optional(),
+      youtube: z.string().trim().max(300).optional(),
+      whatsapp: z.string().trim().max(40).optional(),
+    })
+    .partial(),
+  slug: z
+    .string()
+    .trim()
+    .min(2)
+    .max(120)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .nullable(),
 };
 
 export const dealerCreateSchema = z.object({
@@ -51,6 +69,8 @@ export const dealerCreateSchema = z.object({
   logoUrl: dealerFields.logoUrl.optional().nullable(),
   lat: dealerFields.lat.optional().nullable(),
   lng: dealerFields.lng.optional().nullable(),
+  intro: dealerFields.intro.optional().default(""),
+  socialLinks: dealerFields.socialLinks.optional().default({}),
 });
 
 /** Partial update — no defaults, so omitted keys are left unchanged. */
@@ -79,6 +99,9 @@ export const dealerUpdateSchema = z
     lng: dealerFields.lng.optional().nullable(),
     listingActive: dealerFields.listingActive.optional(),
     verificationStatus: dealerFields.verificationStatus.optional(),
+    intro: dealerFields.intro.optional(),
+    socialLinks: dealerFields.socialLinks.optional(),
+    slug: dealerFields.slug.optional(),
   })
   .strict();
 
