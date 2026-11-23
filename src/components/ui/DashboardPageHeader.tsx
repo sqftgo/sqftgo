@@ -19,7 +19,7 @@ export function DashboardPageHeader({
   return (
     <div
       className={cn(
-        "rounded-2xl bg-white border border-indigo/10 px-6 py-5 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4",
+        "surface-card rounded-3xl px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4",
         className
       )}
     >

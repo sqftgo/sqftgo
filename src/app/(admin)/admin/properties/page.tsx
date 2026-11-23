@@ -3,19 +3,30 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { propertyService } from "@/services";
 import type { Property } from "@/types";
-import { Trash2, ExternalLink, MoreVertical, CheckCircle2, XCircle, Star } from "lucide-react";
+import {
+  Trash2,
+  ExternalLink,
+  MoreVertical,
+  CheckCircle2,
+  XCircle,
+  Star,
+  MapPin,
+} from "lucide-react";
 import {
   DropdownMenu,
   CustomSelect,
   DashboardPageHeader,
   SearchInput,
-  DataTable,
   ConfirmDialog,
   Badge,
   Alert,
-  type DataTableColumn,
+  AdminCard,
+  EmptyState,
 } from "@/components/ui";
 import { useActiveCities } from "@/hooks/useActiveCities";
+
+const FALLBACK_IMG =
+  "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80";
 
 export default function AdminPropertiesPage() {
   const { updateProperty, deleteProperty, addLog, userEmail, refreshProperties } = useApp();
@@ -139,144 +150,12 @@ export default function AdminPropertiesPage() {
   const formatPrice = (v: number) =>
     "₹" + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(v);
 
-  const columns: DataTableColumn<Property>[] = [
-    {
-      key: "property",
-      header: "Property",
-      render: (prop) => (
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl overflow-hidden bg-sand/35 border border-indigo/5 shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={
-                prop.images?.[0] ||
-                "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=200&q=80"
-              }
-              alt=""
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="max-w-[200px]">
-            <p className="text-sm font-bold text-charcoal truncate">{prop.title}</p>
-            <p className="text-[10px] text-charcoal/40 font-semibold truncate">
-              {prop.type} · {prop.purpose}
-              {prop.featured ? " · Featured" : ""}
-            </p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "owner",
-      header: "Owner",
-      render: (prop) => (
-        <span className="text-xs text-charcoal/60 font-semibold">{prop.ownerName}</span>
-      ),
-    },
-    {
-      key: "city",
-      header: "City",
-      render: (prop) => (
-        <span className="text-xs text-charcoal/60 font-semibold">{prop.city}</span>
-      ),
-    },
-    {
-      key: "price",
-      header: "Price",
-      render: (prop) => (
-        <span className="text-sm font-serif font-black text-indigo">{formatPrice(prop.price)}</span>
-      ),
-    },
-    {
-      key: "status",
-      header: "Status",
-      render: (prop) => (
-        <div className="space-y-1 max-w-[160px]">
-          <select
-            value={prop.status === "Rejected" ? "Rejected" : prop.status}
-            disabled={busy || prop.status === "Rejected"}
-            onChange={(e) =>
-              handleStatusChange(prop.id, prop.title, e.target.value as Property["status"])
-            }
-            className="bg-transparent cursor-pointer text-xs font-semibold disabled:opacity-60"
-          >
-            {["Active", "Pending Review", "Sold", "Rented"].map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-            {prop.status === "Rejected" ? <option value="Rejected">Rejected</option> : null}
-          </select>
-          {prop.status === "Rejected" && prop.rejectionReason ? (
-            <p className="text-[10px] text-rose-600 font-semibold leading-snug line-clamp-2">
-              {prop.rejectionReason}
-            </p>
-          ) : null}
-        </div>
-      ),
-    },
-    {
-      key: "actions",
-      header: "Actions",
-      render: (prop) => (
-        <div className="flex items-center gap-2">
-          <Badge status={prop.status} size="sm">
-            {prop.status}
-          </Badge>
-          <DropdownMenu
-            accent="terracotta"
-            align="right"
-            trigger={
-              <button
-                type="button"
-                className="p-2 hover:bg-indigo/5 text-charcoal/40 hover:text-terracotta rounded-xl transition-all cursor-pointer"
-              >
-                <MoreVertical className="w-4 h-4" />
-              </button>
-            }
-            items={[
-              {
-                id: "view",
-                label: "View Public Page",
-                href: `/property/${prop.id}`,
-                target: "_blank",
-                icon: ExternalLink,
-              },
-              {
-                id: "feature",
-                label: prop.featured ? "Remove Featured" : "Mark Featured",
-                onClick: () => void toggleFeatured(prop),
-                icon: Star,
-                disabled: busy,
-              },
-              {
-                id: "status-active",
-                label: "Approve Listing",
-                onClick: () => void handleStatusChange(prop.id, prop.title, "Active"),
-                icon: CheckCircle2,
-                disabled: busy || prop.status === "Active",
-              },
-              {
-                id: "status-pending",
-                label: "Mark Pending Review",
-                onClick: () => void handleStatusChange(prop.id, prop.title, "Pending Review"),
-                icon: XCircle,
-                disabled: busy || prop.status === "Pending Review",
-              },
-              {
-                id: "delete",
-                label: "Delete Listing",
-                onClick: () => setPendingDelete({ id: prop.id, title: prop.title }),
-                icon: Trash2,
-                variant: "danger",
-                dividerBefore: true,
-              },
-            ]}
-          />
-        </div>
-      ),
-    },
-  ];
+  const accentFor = (status: Property["status"]) => {
+    if (status === "Active") return "emerald" as const;
+    if (status === "Pending Review") return "gold" as const;
+    if (status === "Rejected") return "rose" as const;
+    return "indigo" as const;
+  };
 
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
@@ -323,12 +202,146 @@ export default function AdminPropertiesPage() {
         />
       </div>
 
-      <DataTable
-        columns={columns}
-        rows={filtered}
-        rowKey={(p) => p.id}
-        emptyMessage={loading ? "Loading…" : "No properties found."}
-      />
+      {loading ? (
+        <p className="text-sm font-semibold text-charcoal/50">Loading…</p>
+      ) : filtered.length === 0 ? (
+        <EmptyState title="No properties found" description="Try a different search or filter." />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {filtered.map((prop) => (
+            <AdminCard
+              key={prop.id}
+              accent={accentFor(prop.status)}
+              media={
+                <div className="relative h-44 w-full bg-sand/40">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={prop.images?.[0] || FALLBACK_IMG}
+                    alt=""
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/55 via-transparent to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2">
+                    <p className="font-serif text-xl font-black text-white drop-shadow-sm">
+                      {formatPrice(prop.price)}
+                    </p>
+                    <Badge status={prop.status} size="sm" className="bg-white/95">
+                      {prop.status}
+                    </Badge>
+                  </div>
+                </div>
+              }
+              footer={
+                <>
+                  <select
+                    value={prop.status === "Rejected" ? "Rejected" : prop.status}
+                    disabled={busy || prop.status === "Rejected"}
+                    onChange={(e) =>
+                      handleStatusChange(
+                        prop.id,
+                        prop.title,
+                        e.target.value as Property["status"]
+                      )
+                    }
+                    className="bg-white border border-indigo/10 rounded-xl px-3 py-1.5 text-xs font-semibold cursor-pointer disabled:opacity-60"
+                  >
+                    {["Active", "Pending Review", "Sold", "Rented"].map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                    {prop.status === "Rejected" ? (
+                      <option value="Rejected">Rejected</option>
+                    ) : null}
+                  </select>
+                  <DropdownMenu
+                    accent="terracotta"
+                    align="right"
+                    trigger={
+                      <button
+                        type="button"
+                        className="p-2 bg-white border border-indigo/10 text-charcoal/45 hover:text-terracotta rounded-xl transition-colors cursor-pointer"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                    }
+                    items={[
+                      {
+                        id: "view",
+                        label: "View Public Page",
+                        href: `/property/${prop.id}`,
+                        target: "_blank",
+                        icon: ExternalLink,
+                      },
+                      {
+                        id: "feature",
+                        label: prop.featured ? "Remove Featured" : "Mark Featured",
+                        onClick: () => void toggleFeatured(prop),
+                        icon: Star,
+                        disabled: busy,
+                      },
+                      {
+                        id: "status-active",
+                        label: "Approve Listing",
+                        onClick: () => void handleStatusChange(prop.id, prop.title, "Active"),
+                        icon: CheckCircle2,
+                        disabled: busy || prop.status === "Active",
+                      },
+                      {
+                        id: "status-pending",
+                        label: "Mark Pending Review",
+                        onClick: () =>
+                          void handleStatusChange(prop.id, prop.title, "Pending Review"),
+                        icon: XCircle,
+                        disabled: busy || prop.status === "Pending Review",
+                      },
+                      {
+                        id: "delete",
+                        label: "Delete Listing",
+                        onClick: () => setPendingDelete({ id: prop.id, title: prop.title }),
+                        icon: Trash2,
+                        variant: "danger",
+                        dividerBefore: true,
+                      },
+                    ]}
+                  />
+                </>
+              }
+            >
+              <div>
+                <h3 className="font-serif text-base font-black text-charcoal line-clamp-2 leading-snug">
+                  {prop.title}
+                </h3>
+                <div className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-charcoal/50">
+                  <MapPin className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">
+                    {prop.locality ? `${prop.locality}, ` : ""}
+                    {prop.city}
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                <Badge tone="neutral" size="sm">
+                  {prop.type} · {prop.purpose}
+                </Badge>
+                {prop.featured ? (
+                  <Badge tone="warning" size="sm">
+                    Featured
+                  </Badge>
+                ) : null}
+              </div>
+              <p className="text-xs font-semibold text-charcoal/55">
+                Owner · {prop.ownerName}
+              </p>
+              {prop.status === "Rejected" && prop.rejectionReason ? (
+                <p className="text-[11px] text-rose-600 font-semibold leading-snug line-clamp-2">
+                  {prop.rejectionReason}
+                </p>
+              ) : null}
+            </AdminCard>
+          ))}
+        </div>
+      )}
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}

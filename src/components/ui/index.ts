@@ -10,6 +10,11 @@ export {
   type ConfirmDialogProps,
 } from "./Dialog";
 export { Panel, type PanelProps } from "./Panel";
+export {
+  AdminCard,
+  type AdminCardProps,
+  type AdminCardAccent,
+} from "./AdminCard";
 export { Avatar, type AvatarProps, type AvatarSize, type AvatarTone, type AvatarShape } from "./Avatar";
 export {
   MonthlyTrendChart,

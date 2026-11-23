@@ -15,8 +15,12 @@ import {
   Alert,
   FormField,
   TextArea,
+  AdminCard,
 } from "@/components/ui";
 import { ListingPreviewModal } from "@/features/admin";
+
+const FALLBACK_IMG =
+  "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80";
 
 type QueueKind = "property" | "project";
 
@@ -206,90 +210,86 @@ export default function AdminApprovalsPage() {
           icon={<CheckCircle2 className="w-14 h-14 text-emerald-600/40" />}
         />
       ) : (
-        <div className="space-y-5">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
           {queue.map((entry, i) => {
             if (entry.kind === "project") {
               const project = entry.item;
               return (
                 <motion.div
                   key={`project-${project.id}`}
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.06 }}
-                  className="bg-white/80 border border-amber-500/20 rounded-2xl overflow-hidden shadow-sm"
+                  transition={{ delay: i * 0.05 }}
                 >
-                  <div className="p-5 md:p-6">
-                    <div className="flex flex-col md:flex-row gap-5">
-                      <div className="w-full md:w-48 h-40 rounded-xl overflow-hidden shrink-0 bg-sand/35 border border-indigo/5">
+                  <AdminCard
+                    accent="gold"
+                    media={
+                      <div className="relative h-48 w-full bg-sand/40">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={
-                            project.images?.[0] ||
-                            "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=200&q=80"
-                          }
+                          src={project.images?.[0] || FALLBACK_IMG}
                           alt={project.title}
-                          className="w-full h-full object-cover"
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                         />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-                          <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge tone="info" size="sm">
-                                Project
-                              </Badge>
-                            </div>
-                            <h3 className="text-base font-serif font-black text-charcoal">
-                              {project.title}
-                            </h3>
-                            <div className="flex items-center gap-1.5 mt-1">
-                              <MapPin className="w-3 h-3 text-charcoal/30" />
-                              <p className="text-xs text-charcoal/50 font-semibold">
-                                {project.city}
-                              </p>
-                            </div>
-                          </div>
-                          <Badge status="Pending Review" className="gap-1.5 py-1.5 px-3 rounded-xl">
+                        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/60 via-transparent to-transparent" />
+                        <div className="absolute top-3 left-3 right-3 flex justify-between gap-2">
+                          <Badge tone="info" size="sm" className="bg-white/95">
+                            Project
+                          </Badge>
+                          <Badge
+                            status="Pending Review"
+                            className="gap-1.5 bg-white/95 py-1.5 px-3 rounded-xl"
+                          >
                             <Clock className="w-3.5 h-3.5" />
-                            Pending Review
+                            Pending
                           </Badge>
                         </div>
-                        <p className="text-xs text-charcoal/50 font-semibold leading-relaxed line-clamp-2 mb-4">
-                          {project.description}
-                        </p>
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <div>
-                            <p className="text-[10px] text-charcoal/30 font-black uppercase tracking-wider">
-                              Submitted by
-                            </p>
-                            <p className="text-sm font-bold text-charcoal">
-                              {project.contactName || "Dealer"}
-                            </p>
-                          </div>
-                          <div className="flex gap-3">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled={busy}
-                              onClick={() => openReject("project", project.id, project.title)}
-                              className="border-rose-500/20 text-rose-600 hover:bg-rose-500/10"
-                            >
-                              <XCircle className="w-4 h-4" /> Reject
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled={busy}
-                              onClick={() => approve("project", project.id, project.title)}
-                              className="border-emerald-500/20 text-emerald-600 hover:bg-emerald-500/10"
-                            >
-                              <CheckCircle2 className="w-4 h-4" /> Approve
-                            </Button>
-                          </div>
-                        </div>
                       </div>
+                    }
+                    footer={
+                      <>
+                        <div>
+                          <p className="text-[10px] text-charcoal/40 font-black uppercase tracking-wider">
+                            Submitted by
+                          </p>
+                          <p className="text-sm font-bold text-charcoal">
+                            {project.contactName || "Dealer"}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={busy}
+                            onClick={() => openReject("project", project.id, project.title)}
+                            className="border-rose-500/20 text-rose-600 hover:bg-rose-500/10"
+                          >
+                            <XCircle className="w-4 h-4" /> Reject
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={busy}
+                            onClick={() => approve("project", project.id, project.title)}
+                            className="border-emerald-500/20 text-emerald-600 hover:bg-emerald-500/10"
+                          >
+                            <CheckCircle2 className="w-4 h-4" /> Approve
+                          </Button>
+                        </div>
+                      </>
+                    }
+                  >
+                    <h3 className="font-serif text-lg font-black text-charcoal leading-snug">
+                      {project.title}
+                    </h3>
+                    <div className="flex items-center gap-1.5 text-xs text-charcoal/50 font-semibold">
+                      <MapPin className="w-3.5 h-3.5" />
+                      {project.city}
                     </div>
-                  </div>
+                    <p className="text-xs text-charcoal/55 font-semibold leading-relaxed line-clamp-2">
+                      {project.description}
+                    </p>
+                  </AdminCard>
                 </motion.div>
               );
             }
@@ -298,140 +298,122 @@ export default function AdminApprovalsPage() {
             return (
               <motion.div
                 key={`property-${prop.id}`}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.06 }}
-                className="bg-white/80 border border-amber-500/20 rounded-2xl overflow-hidden shadow-sm"
+                transition={{ delay: i * 0.05 }}
               >
-                <div className="p-5 md:p-6">
-                  <div className="flex flex-col md:flex-row gap-5">
-                    <div className="w-full md:w-48 h-40 rounded-xl overflow-hidden shrink-0 bg-sand/35 border border-indigo/5">
+                <AdminCard
+                  accent="gold"
+                  media={
+                    <div className="relative h-48 w-full bg-sand/40">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={
-                          prop.images?.[0] ||
-                          "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=200&q=80"
-                        }
+                        src={prop.images?.[0] || FALLBACK_IMG}
                         alt={prop.title}
-                        className="w-full h-full object-cover"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                       />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <Badge tone="neutral" size="sm" className="gap-1">
-                              <Building2 className="w-3 h-3" /> Property
-                            </Badge>
-                          </div>
-                          <h3 className="text-base font-serif font-black text-charcoal">
-                            {prop.title}
-                          </h3>
-                          <div className="flex items-center gap-1.5 mt-1">
-                            <MapPin className="w-3 h-3 text-charcoal/30" />
-                            <p className="text-xs text-charcoal/50 font-semibold">
-                              {prop.locality}, {prop.city}
-                            </p>
-                          </div>
-                        </div>
-                        <Badge status="Pending Review" className="gap-1.5 py-1.5 px-3 rounded-xl">
+                      <div className="absolute inset-0 bg-gradient-to-t from-charcoal/65 via-transparent to-transparent" />
+                      <div className="absolute top-3 left-3 right-3 flex justify-between gap-2">
+                        <Badge tone="neutral" size="sm" className="gap-1 bg-white/95">
+                          <Building2 className="w-3 h-3" /> Property
+                        </Badge>
+                        <Badge
+                          status="Pending Review"
+                          className="gap-1.5 bg-white/95 py-1.5 px-3 rounded-xl"
+                        >
                           <Clock className="w-3.5 h-3.5" />
-                          Pending Review
+                          Pending
                         </Badge>
                       </div>
-
-                      <div className="flex flex-wrap gap-4 mb-3">
-                        <div className="flex items-center gap-1.5 text-xs text-charcoal/50 font-semibold">
-                          <Bed className="w-3.5 h-3.5 text-charcoal/30" />
-                          {prop.bhk || "—"} BHK
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-charcoal/50 font-semibold">
-                          <Square className="w-3.5 h-3.5 text-charcoal/30" />
-                          {prop.size} sq.ft.
-                        </div>
-                        <span className="text-xs text-charcoal/50 font-semibold">
-                          {prop.type} · {prop.furnished}
-                        </span>
-                      </div>
-
-                      <p className="text-xs text-charcoal/50 font-semibold leading-relaxed line-clamp-2 mb-4">
-                        {prop.description}
+                      <p className="absolute bottom-3 left-4 font-serif text-2xl font-black text-white drop-shadow">
+                        {formatPrice(prop.price)}
                       </p>
-
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <p className="text-[10px] text-charcoal/30 font-black uppercase tracking-wider">
-                            Submitted by
-                          </p>
-                          <p className="text-sm font-bold text-charcoal">{prop.ownerName}</p>
-                          <p className="text-[10px] text-charcoal/40">{prop.ownerEmail}</p>
-                          {adminUsers.find(
-                            (u) =>
-                              u.email.toLowerCase() === (prop.ownerEmail || "").toLowerCase()
-                          )?.role === "user" ? (
-                            <Badge tone="info" size="sm" className="mt-1">
-                              Client listing
-                            </Badge>
-                          ) : (
-                            <Badge tone="neutral" size="sm" className="mt-1">
-                              Dealer listing
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <p className="text-[10px] text-charcoal/30 font-black uppercase tracking-wider">
-                            Price
-                          </p>
-                          <p className="text-xl font-serif font-black text-indigo">
-                            {formatPrice(prop.price)}
-                          </p>
-                        </div>
-                      </div>
                     </div>
+                  }
+                  footer={
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => setPreviewProperty(prop)}
+                        className="text-indigo font-bold px-0 hover:bg-transparent hover:underline"
+                      >
+                        Preview →
+                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={busy}
+                          onClick={() => openReject("property", prop.id, prop.title)}
+                          className="border-rose-500/20 text-rose-600 hover:bg-rose-500/10"
+                        >
+                          <XCircle className="w-4 h-4" /> Reject
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={busy}
+                          onClick={() => approve("property", prop.id, prop.title)}
+                          className="border-emerald-500/20 text-emerald-600 hover:bg-emerald-500/10"
+                        >
+                          <CheckCircle2 className="w-4 h-4" /> Approve
+                        </Button>
+                      </div>
+                    </>
+                  }
+                >
+                  <h3 className="font-serif text-lg font-black text-charcoal leading-snug">
+                    {prop.title}
+                  </h3>
+                  <div className="flex items-center gap-1.5 text-xs text-charcoal/50 font-semibold">
+                    <MapPin className="w-3.5 h-3.5" />
+                    {prop.locality}, {prop.city}
                   </div>
-
-                  {prop.reraId && (
-                    <div className="mt-4 pt-4 border-t border-indigo/5 flex items-center gap-2">
+                  <div className="flex flex-wrap gap-3 text-xs text-charcoal/55 font-semibold">
+                    <span className="inline-flex items-center gap-1">
+                      <Bed className="w-3.5 h-3.5" />
+                      {prop.bhk || "—"} BHK
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Square className="w-3.5 h-3.5" />
+                      {prop.size} sq.ft.
+                    </span>
+                    <span>
+                      {prop.type} · {prop.furnished}
+                    </span>
+                  </div>
+                  <p className="text-xs text-charcoal/55 font-semibold leading-relaxed line-clamp-2">
+                    {prop.description}
+                  </p>
+                  <div className="rounded-2xl bg-sand/40 px-3 py-2.5">
+                    <p className="text-[10px] text-charcoal/40 font-black uppercase tracking-wider">
+                      Submitted by
+                    </p>
+                    <p className="text-sm font-bold text-charcoal">{prop.ownerName}</p>
+                    <p className="text-[11px] text-charcoal/45">{prop.ownerEmail}</p>
+                    {adminUsers.find(
+                      (u) => u.email.toLowerCase() === (prop.ownerEmail || "").toLowerCase()
+                    )?.role === "user" ? (
+                      <Badge tone="info" size="sm" className="mt-1.5">
+                        Client listing
+                      </Badge>
+                    ) : (
+                      <Badge tone="neutral" size="sm" className="mt-1.5">
+                        Dealer listing
+                      </Badge>
+                    )}
+                  </div>
+                  {prop.reraId ? (
+                    <div className="flex items-center gap-2">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                      <span className="text-[10px] text-emerald-600 font-bold">
-                        RERA Registered: {prop.reraId}
+                      <span className="text-[11px] text-emerald-700 font-bold">
+                        RERA {prop.reraId}
                       </span>
                     </div>
-                  )}
-
-                  <div className="mt-5 pt-4 border-t border-indigo/5 flex items-center justify-between flex-wrap gap-3">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={busy}
-                      onClick={() => setPreviewProperty(prop)}
-                      className="text-indigo font-bold px-0 hover:bg-transparent hover:underline"
-                    >
-                      Preview Listing →
-                    </Button>
-                    <div className="flex gap-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={busy}
-                        onClick={() => openReject("property", prop.id, prop.title)}
-                        className="border-rose-500/20 text-rose-600 hover:bg-rose-500/10"
-                      >
-                        <XCircle className="w-4 h-4" /> Reject
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={busy}
-                        onClick={() => approve("property", prop.id, prop.title)}
-                        className="border-emerald-500/20 text-emerald-600 hover:bg-emerald-500/10"
-                      >
-                        <CheckCircle2 className="w-4 h-4" /> Approve
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                  ) : null}
+                </AdminCard>
               </motion.div>
             );
           })}
