@@ -4,21 +4,24 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { projectService } from "@/services";
 import type { Project } from "@/types";
-import { Trash2, MoreVertical, CheckCircle2, XCircle, Star } from "lucide-react";
+import { Trash2, MoreVertical, CheckCircle2, XCircle, Star, MapPin } from "lucide-react";
 import {
   DropdownMenu,
   CustomSelect,
   DashboardPageHeader,
   SearchInput,
-  DataTable,
   ConfirmDialog,
   Badge,
   Alert,
   FormField,
   TextArea,
-  type DataTableColumn,
+  AdminCard,
+  EmptyState,
 } from "@/components/ui";
 import { useInvalidateMarketplace, useActiveCities } from "@/hooks";
+
+const FALLBACK_IMG =
+  "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80";
 
 export default function AdminProjectsPage() {
   const { addLog, userEmail } = useApp();
@@ -59,7 +62,7 @@ export default function AdminProjectsPage() {
         label: s === "All" ? "All Statuses" : s,
         value: s,
       })),
-    [],
+    []
   );
 
   const filtered = projects.filter((p) => {
@@ -85,7 +88,7 @@ export default function AdminProjectsPage() {
     id: string,
     title: string,
     status: Project["status"],
-    reason?: string,
+    reason?: string
   ) => {
     if (status === "Rejected") {
       const trimmed = reason?.trim() ?? "";
@@ -163,127 +166,12 @@ export default function AdminProjectsPage() {
     }
   };
 
-  const columns: DataTableColumn<Project>[] = [
-    {
-      key: "project",
-      header: "Project",
-      render: (row) => (
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl overflow-hidden bg-sand/35 border border-indigo/5 shrink-0">
-            {row.images[0] ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={row.images[0]} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-indigo/5" />
-            )}
-          </div>
-          <div className="max-w-[220px]">
-            <p className="text-sm font-bold text-charcoal truncate">{row.title}</p>
-            <p className="text-[10px] text-charcoal/40 font-semibold truncate">
-              {row.ownershipRole} · {row.lifecycle}
-              {row.featured ? " · Featured" : ""}
-            </p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "contact",
-      header: "Contact",
-      render: (row) => (
-        <span className="text-xs text-charcoal/60 font-semibold">{row.contactName}</span>
-      ),
-    },
-    {
-      key: "city",
-      header: "City",
-      render: (row) => (
-        <span className="text-xs text-charcoal/60 font-semibold">
-          {row.locality}, {row.city}
-        </span>
-      ),
-    },
-    {
-      key: "price",
-      header: "Price",
-      render: (row) => (
-        <span className="text-sm font-serif font-black text-indigo">{formatPrice(row)}</span>
-      ),
-    },
-    {
-      key: "status",
-      header: "Status",
-      render: (row) => (
-        <div className="space-y-1 max-w-[160px]">
-          <Badge status={row.status}>{row.status}</Badge>
-          {row.status === "Rejected" && row.rejectionReason ? (
-            <p className="text-[10px] text-rose-600 font-semibold leading-snug line-clamp-2">
-              {row.rejectionReason}
-            </p>
-          ) : null}
-        </div>
-      ),
-    },
-    {
-      key: "actions",
-      header: "Actions",
-      render: (row) => (
-        <DropdownMenu
-          accent="terracotta"
-          align="right"
-          trigger={
-            <button
-              type="button"
-              className="p-2 hover:bg-indigo/5 text-charcoal/40 hover:text-terracotta rounded-xl transition-all cursor-pointer"
-            >
-              <MoreVertical className="w-4 h-4" />
-            </button>
-          }
-          items={[
-            {
-              id: "feature",
-              label: row.featured ? "Remove Featured" : "Mark Featured",
-              onClick: () => void toggleFeatured(row),
-              icon: Star,
-              disabled: busy,
-            },
-            {
-              id: "status-active",
-              label: "Approve Project",
-              onClick: () => void handleStatusChange(row.id, row.title, "Active"),
-              icon: CheckCircle2,
-              disabled: busy || row.status === "Active",
-            },
-            {
-              id: "status-pending",
-              label: "Mark Pending Review",
-              onClick: () => void handleStatusChange(row.id, row.title, "Pending Review"),
-              icon: XCircle,
-              disabled: busy || row.status === "Pending Review",
-            },
-            {
-              id: "reject",
-              label: "Reject…",
-              onClick: () => {
-                setRejectReason("");
-                setPendingReject({ id: row.id, title: row.title });
-              },
-              icon: XCircle,
-              disabled: busy,
-            },
-            {
-              id: "delete",
-              label: "Delete Project",
-              onClick: () => setPendingDelete({ id: row.id, title: row.title }),
-              icon: Trash2,
-              variant: "danger",
-              dividerBefore: true,
-            },
-          ]}
-        />
-      ),
-    },
-  ];
+  const accentFor = (status: Project["status"]) => {
+    if (status === "Active") return "emerald" as const;
+    if (status === "Pending Review") return "gold" as const;
+    if (status === "Rejected") return "rose" as const;
+    return "indigo" as const;
+  };
 
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
@@ -330,12 +218,127 @@ export default function AdminProjectsPage() {
         />
       </div>
 
-      <DataTable
-        columns={columns}
-        rows={filtered}
-        rowKey={(p) => p.id}
-        emptyMessage={loading ? "Loading…" : "No projects found."}
-      />
+      {loading ? (
+        <p className="text-sm font-semibold text-charcoal/50">Loading…</p>
+      ) : filtered.length === 0 ? (
+        <EmptyState title="No projects found" description="Try a different search or filter." />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {filtered.map((row) => (
+            <AdminCard
+              key={row.id}
+              accent={accentFor(row.status)}
+              media={
+                <div className="relative h-44 w-full bg-sand/40">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={row.images[0] || FALLBACK_IMG}
+                    alt=""
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/55 via-transparent to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2">
+                    <p className="font-serif text-lg font-black text-white drop-shadow-sm line-clamp-1">
+                      {formatPrice(row)}
+                    </p>
+                    <Badge status={row.status} size="sm" className="bg-white/95 shrink-0">
+                      {row.status}
+                    </Badge>
+                  </div>
+                </div>
+              }
+              footer={
+                <>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-charcoal/45">
+                    {row.contactName}
+                  </span>
+                  <DropdownMenu
+                    accent="terracotta"
+                    align="right"
+                    trigger={
+                      <button
+                        type="button"
+                        className="p-2 bg-white border border-indigo/10 text-charcoal/45 hover:text-terracotta rounded-xl transition-colors cursor-pointer"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                    }
+                    items={[
+                      {
+                        id: "feature",
+                        label: row.featured ? "Remove Featured" : "Mark Featured",
+                        onClick: () => void toggleFeatured(row),
+                        icon: Star,
+                        disabled: busy,
+                      },
+                      {
+                        id: "status-active",
+                        label: "Approve Project",
+                        onClick: () => void handleStatusChange(row.id, row.title, "Active"),
+                        icon: CheckCircle2,
+                        disabled: busy || row.status === "Active",
+                      },
+                      {
+                        id: "status-pending",
+                        label: "Mark Pending Review",
+                        onClick: () =>
+                          void handleStatusChange(row.id, row.title, "Pending Review"),
+                        icon: XCircle,
+                        disabled: busy || row.status === "Pending Review",
+                      },
+                      {
+                        id: "reject",
+                        label: "Reject…",
+                        onClick: () => {
+                          setRejectReason("");
+                          setPendingReject({ id: row.id, title: row.title });
+                        },
+                        icon: XCircle,
+                        disabled: busy,
+                      },
+                      {
+                        id: "delete",
+                        label: "Delete Project",
+                        onClick: () => setPendingDelete({ id: row.id, title: row.title }),
+                        icon: Trash2,
+                        variant: "danger",
+                        dividerBefore: true,
+                      },
+                    ]}
+                  />
+                </>
+              }
+            >
+              <div>
+                <h3 className="font-serif text-base font-black text-charcoal line-clamp-2 leading-snug">
+                  {row.title}
+                </h3>
+                <div className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-charcoal/50">
+                  <MapPin className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">
+                    {row.locality}, {row.city}
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                <Badge tone="neutral" size="sm">
+                  {row.ownershipRole} · {row.lifecycle}
+                </Badge>
+                {row.featured ? (
+                  <Badge tone="warning" size="sm">
+                    Featured
+                  </Badge>
+                ) : null}
+              </div>
+              {row.status === "Rejected" && row.rejectionReason ? (
+                <p className="text-[11px] text-rose-600 font-semibold leading-snug line-clamp-2">
+                  {row.rejectionReason}
+                </p>
+              ) : null}
+            </AdminCard>
+          ))}
+        </div>
+      )}
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}
@@ -364,7 +367,7 @@ export default function AdminProjectsPage() {
             pendingReject.id,
             pendingReject.title,
             "Rejected",
-            rejectReason,
+            rejectReason
           );
         }}
         title="Reject project?"

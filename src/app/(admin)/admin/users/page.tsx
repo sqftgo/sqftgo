@@ -12,10 +12,11 @@ import {
   Badge,
   Button,
   Alert,
+  Avatar,
   ConfirmDialog,
   CustomSelect,
   EmptyState,
-  Panel,
+  AdminCard,
 } from "@/components/ui";
 
 const ROLE_OPTIONS = [
@@ -113,167 +114,195 @@ export default function AdminUsersPage() {
           icon={<Users className="w-14 h-14 text-charcoal/25" />}
         />
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           {filtered.map((user) => {
             const isSelf = user.id === userProfile?.id;
             const busy = busyId === user.id;
             const isAdminRole = user.role === "admin";
+            const accent =
+              user.status === "suspended"
+                ? "rose"
+                : user.role === "broker"
+                  ? "terracotta"
+                  : isAdminRole
+                    ? "indigo"
+                    : "emerald";
 
             return (
-              <Panel key={user.id} padding="md" rounded="2xl" className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-bold text-charcoal truncate">{user.name}</p>
-                    <Badge
-                      tone={user.status === "active" ? "success" : "danger"}
-                      size="sm"
-                    >
-                      {user.status}
-                    </Badge>
-                    <Badge tone="neutral" size="sm">
-                      {user.role}
-                    </Badge>
-                    {user.role === "user" ? (
-                      <Badge
-                        tone={
-                          user.listingStatus === "approved"
-                            ? "success"
-                            : user.listingStatus === "pending"
-                              ? "warning"
-                              : user.listingStatus === "rejected"
-                                ? "danger"
-                                : "info"
-                        }
-                        size="sm"
+              <AdminCard
+                key={user.id}
+                accent={accent}
+                footer={
+                  <div className="flex w-full flex-wrap items-center gap-2">
+                    {!isAdminRole ? (
+                      <div
+                        className={`w-40 ${busy || isSelf ? "pointer-events-none opacity-50" : ""}`}
                       >
-                        {user.listingStatus === "approved"
-                          ? "Lister verified"
-                          : user.listingStatus === "pending"
-                            ? "Lister pending"
-                            : user.listingStatus === "rejected"
-                              ? "Lister declined"
-                              : "Not listing"}
-                      </Badge>
-                    ) : null}
-                  </div>
-                  <p className="text-xs text-charcoal/50 font-semibold mt-1 truncate">
-                    {user.email}
-                  </p>
-                  <p className="text-[10px] text-charcoal/35 font-semibold mt-0.5">
-                    Joined {user.joinedDate}
-                    {user.role === "broker"
-                      ? ` · ${user.listingSlotsPurchased ?? 0} extra listing slots`
-                      : ""}
-                  </p>
-                </div>
+                        <CustomSelect
+                          value={user.role}
+                          onChange={(value) => {
+                            if (busy || isSelf) return;
+                            const role = value as AuthRole;
+                            if (role === user.role) return;
+                            void patchUser(
+                              user,
+                              { role },
+                              `Changed role of ${user.email} to ${role}`
+                            );
+                          }}
+                          options={[...ROLE_OPTIONS]}
+                          accent="terracotta"
+                          buttonClassName="px-3 py-2 text-xs font-bold bg-white border border-indigo/10"
+                        />
+                      </div>
+                    ) : (
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-charcoal/40 flex items-center gap-1">
+                        <Briefcase className="w-3 h-3" /> Admin (locked)
+                      </span>
+                    )}
 
-                <div className="flex flex-wrap items-center gap-2 shrink-0">
-                  {!isAdminRole ? (
-                    <div
-                      className={`w-40 ${busy || isSelf ? "pointer-events-none opacity-50" : ""}`}
-                    >
-                      <CustomSelect
-                        value={user.role}
-                        onChange={(value) => {
-                          if (busy || isSelf) return;
-                          const role = value as AuthRole;
-                          if (role === user.role) return;
+                    {!isAdminRole && user.role === "broker" ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={busy || isSelf}
+                        onClick={() =>
                           void patchUser(
                             user,
-                            { role },
-                            `Changed role of ${user.email} to ${role}`
-                          );
-                        }}
-                        options={[...ROLE_OPTIONS]}
-                        accent="terracotta"
-                        buttonClassName="px-3 py-2 text-xs font-bold bg-sand/30 border border-indigo/10"
-                      />
+                            { grantListingSlots: 10 },
+                            `Granted 10 listing slots to ${user.email}`
+                          )
+                        }
+                      >
+                        Grant +10 slots
+                      </Button>
+                    ) : null}
+
+                    {!isAdminRole &&
+                    user.role === "user" &&
+                    user.listingStatus !== "approved" ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={busy || isSelf}
+                        onClick={() =>
+                          void patchUser(
+                            user,
+                            { listingStatus: "approved" },
+                            `Verified listing access for ${user.email}`
+                          )
+                        }
+                        className="border-emerald-500/20 text-emerald-700 hover:bg-emerald-500/10"
+                      >
+                        <UserCheck className="w-4 h-4" /> Verify lister
+                      </Button>
+                    ) : null}
+                    {!isAdminRole &&
+                    user.role === "user" &&
+                    user.listingStatus === "approved" ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={busy || isSelf}
+                        onClick={() =>
+                          void patchUser(
+                            user,
+                            { listingStatus: "rejected" },
+                            `Revoked listing access for ${user.email}`
+                          )
+                        }
+                        className="border-rose-500/20 text-rose-600 hover:bg-rose-500/10"
+                      >
+                        <ShieldOff className="w-4 h-4" /> Revoke listings
+                      </Button>
+                    ) : null}
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={busy || isSelf || isAdminRole}
+                      onClick={() => setPendingSuspend(user)}
+                      className={
+                        user.status === "suspended"
+                          ? "border-emerald-500/20 text-emerald-700 hover:bg-emerald-500/10 ml-auto"
+                          : "border-rose-500/20 text-rose-600 hover:bg-rose-500/10 ml-auto"
+                      }
+                    >
+                      {user.status === "suspended" ? (
+                        <>
+                          <UserCheck className="w-4 h-4" /> Reactivate
+                        </>
+                      ) : (
+                        <>
+                          <ShieldOff className="w-4 h-4" /> Suspend
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                }
+              >
+                <div className="flex items-start gap-4">
+                  <Avatar
+                    name={user.name}
+                    size="lg"
+                    tone={user.role === "broker" ? "terracotta" : "indigo"}
+                    className="shrink-0 ring-4 ring-sand/60"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-serif text-lg font-black text-charcoal truncate">
+                        {user.name}
+                      </h3>
+                      <Badge
+                        tone={user.status === "active" ? "success" : "danger"}
+                        size="sm"
+                      >
+                        {user.status}
+                      </Badge>
                     </div>
-                  ) : (
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-charcoal/40 flex items-center gap-1">
-                      <Briefcase className="w-3 h-3" /> Admin (locked)
-                    </span>
-                  )}
-
-                  {!isAdminRole && user.role === "broker" ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={busy || isSelf}
-                      onClick={() =>
-                        void patchUser(
-                          user,
-                          { grantListingSlots: 10 },
-                          `Granted 10 listing slots to ${user.email}`
-                        )
-                      }
-                    >
-                      Grant +10 slots
-                    </Button>
-                  ) : null}
-
-                  {!isAdminRole && user.role === "user" && user.listingStatus !== "approved" ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={busy || isSelf}
-                      onClick={() =>
-                        void patchUser(
-                          user,
-                          { listingStatus: "approved" },
-                          `Verified listing access for ${user.email}`
-                        )
-                      }
-                      className="border-emerald-500/20 text-emerald-700 hover:bg-emerald-500/10"
-                    >
-                      <UserCheck className="w-4 h-4" /> Verify lister
-                    </Button>
-                  ) : null}
-                  {!isAdminRole && user.role === "user" && user.listingStatus === "approved" ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={busy || isSelf}
-                      onClick={() =>
-                        void patchUser(
-                          user,
-                          { listingStatus: "rejected" },
-                          `Revoked listing access for ${user.email}`
-                        )
-                      }
-                      className="border-rose-500/20 text-rose-600 hover:bg-rose-500/10"
-                    >
-                      <ShieldOff className="w-4 h-4" /> Revoke listings
-                    </Button>
-                  ) : null}
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={busy || isSelf || isAdminRole}
-                    onClick={() => setPendingSuspend(user)}
-                    className={
-                      user.status === "suspended"
-                        ? "border-emerald-500/20 text-emerald-700 hover:bg-emerald-500/10"
-                        : "border-rose-500/20 text-rose-600 hover:bg-rose-500/10"
-                    }
-                  >
-                    {user.status === "suspended" ? (
-                      <>
-                        <UserCheck className="w-4 h-4" /> Reactivate
-                      </>
-                    ) : (
-                      <>
-                        <ShieldOff className="w-4 h-4" /> Suspend
-                      </>
-                    )}
-                  </Button>
+                    <p className="mt-1 text-sm font-semibold text-charcoal/55 truncate">
+                      {user.email}
+                    </p>
+                    <div className="mt-2.5 flex flex-wrap gap-1.5">
+                      <Badge tone="neutral" size="sm">
+                        {user.role}
+                      </Badge>
+                      {user.role === "user" ? (
+                        <Badge
+                          tone={
+                            user.listingStatus === "approved"
+                              ? "success"
+                              : user.listingStatus === "pending"
+                                ? "warning"
+                                : user.listingStatus === "rejected"
+                                  ? "danger"
+                                  : "info"
+                          }
+                          size="sm"
+                        >
+                          {user.listingStatus === "approved"
+                            ? "Lister verified"
+                            : user.listingStatus === "pending"
+                              ? "Lister pending"
+                              : user.listingStatus === "rejected"
+                                ? "Lister declined"
+                                : "Not listing"}
+                        </Badge>
+                      ) : null}
+                    </div>
+                    <p className="mt-2 text-[11px] font-semibold text-charcoal/40">
+                      Joined {user.joinedDate}
+                      {user.role === "broker"
+                        ? ` · ${user.listingSlotsPurchased ?? 0} extra listing slots`
+                        : ""}
+                    </p>
+                  </div>
                 </div>
-              </Panel>
+              </AdminCard>
             );
           })}
         </div>

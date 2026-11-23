@@ -13,11 +13,11 @@ export interface StatCardProps {
 }
 
 const toneMap = {
-  default: "bg-white border-indigo/10 text-indigo",
-  terracotta: "bg-terracotta/5 border-terracotta/15 text-terracotta",
-  indigo: "bg-indigo/5 border-indigo/15 text-indigo",
-  success: "bg-emerald-50 border-emerald-100 text-emerald-700",
-  warning: "bg-amber-50 border-amber-100 text-amber-700",
+  default: "text-indigo",
+  terracotta: "!bg-terracotta/5 text-terracotta",
+  indigo: "!bg-indigo/5 text-indigo",
+  success: "!bg-emerald-50 text-emerald-700",
+  warning: "!bg-amber-50 text-amber-700",
 };
 
 export function StatCard({
@@ -31,7 +31,7 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border p-5 shadow-sm transition-shadow hover:shadow-md",
+        "surface-card surface-card-interactive rounded-2xl p-5",
         toneMap[tone],
         className
       )}

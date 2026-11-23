@@ -10,6 +10,8 @@ export interface PanelProps {
   actions?: React.ReactNode;
   padding?: "sm" | "md" | "lg" | "none";
   rounded?: "2xl" | "3xl";
+  /** Soft lift on hover — use for list/grid item cards */
+  interactive?: boolean;
   className?: string;
   headerClassName?: string;
   bodyClassName?: string;
@@ -29,6 +31,7 @@ export function Panel({
   actions,
   padding = "lg",
   rounded = "3xl",
+  interactive = false,
   className,
   headerClassName,
   bodyClassName,
@@ -38,7 +41,8 @@ export function Panel({
   return (
     <div
       className={cn(
-        "bg-white border border-indigo/10 shadow-sm",
+        "surface-card",
+        interactive && "surface-card-interactive",
         rounded === "3xl" ? "rounded-3xl" : "rounded-2xl",
         !hasHeader && paddingMap[padding],
         className

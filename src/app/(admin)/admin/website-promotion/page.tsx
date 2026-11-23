@@ -9,6 +9,7 @@ import {
   FormField,
   Panel,
   TextInput,
+  AdminCard,
 } from "@/components/ui";
 import { servicePlatformService } from "@/services";
 import type {
@@ -129,7 +130,7 @@ export default function AdminWebsitePromotionPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
       <DashboardPageHeader
         title="Website promotion"
         description="Configure premium website-link pricing and manage service-provider entitlements."
@@ -141,27 +142,41 @@ export default function AdminWebsitePromotionPage() {
         <p className="text-sm font-semibold text-charcoal/50">Loading…</p>
       ) : (
         <>
-          <Panel className="p-6 space-y-4">
+          <Panel padding="lg" rounded="3xl" className="space-y-4">
             <h2 className="font-serif font-black text-lg text-indigo">Plans</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {plans.map((p) => (
-                <div key={p.id} className="border border-sand rounded-2xl p-4 space-y-2">
+                <AdminCard
+                  key={p.id}
+                  accent={p.isActive ? "emerald" : "indigo"}
+                  footer={
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => void togglePlan(p)}
+                    >
+                      {p.isActive ? "Deactivate" : "Activate"}
+                    </Button>
+                  }
+                >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="text-sm font-black text-charcoal">{p.name}</p>
-                      <p className="text-[11px] font-semibold text-charcoal/50">{p.slug}</p>
+                      <h3 className="font-serif text-base font-black text-charcoal">{p.name}</h3>
+                      <p className="text-[11px] font-semibold text-charcoal/45 mt-0.5">{p.slug}</p>
                     </div>
                     <Badge tone={p.isActive ? "success" : "neutral"}>
                       {p.isActive ? "active" : "off"}
                     </Badge>
                   </div>
-                  <p className="text-xs font-semibold text-charcoal/65">
-                    ₹{(p.pricePaise / 100).toFixed(0)} · {p.durationDays} days · {p.billingType}
+                  <p className="font-serif text-2xl font-black text-indigo">
+                    ₹{(p.pricePaise / 100).toFixed(0)}
                   </p>
-                  <Button type="button" size="sm" variant="outline" onClick={() => void togglePlan(p)}>
-                    {p.isActive ? "Deactivate" : "Activate"}
-                  </Button>
-                </div>
+                  <p className="text-xs font-semibold text-charcoal/55">
+                    {p.durationDays} days · {p.billingType}
+                  </p>
+                </AdminCard>
               ))}
             </div>
 
@@ -224,66 +239,78 @@ export default function AdminWebsitePromotionPage() {
             </Button>
           </Panel>
 
-          <Panel className="p-6 space-y-4">
+          <Panel padding="lg" rounded="3xl" className="space-y-4">
             <h2 className="font-serif font-black text-lg text-indigo">Provider entitlements</h2>
             {items.length === 0 ? (
               <p className="text-sm font-semibold text-charcoal/50">No promotions yet.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {items.map((item) => (
-                  <div
+                  <AdminCard
                     key={item.id}
-                    className="border border-sand rounded-2xl p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3"
+                    accent={
+                      item.isActive ? "emerald" : item.status === "expired" ? "gold" : "indigo"
+                    }
+                    footer={
+                      <div className="flex w-full flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => void extendPromo(item.id, 30)}
+                        >
+                          +30 days
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => void setStatus(item.id, "active")}
+                        >
+                          Activate
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => void setStatus(item.id, "cancelled")}
+                        >
+                          Deactivate
+                        </Button>
+                      </div>
+                    }
                   >
-                    <div>
-                      <p className="text-sm font-black text-charcoal">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-serif text-base font-black text-charcoal">
                         {item.firmName || item.directoryProfileId}
-                      </p>
-                      <p className="text-xs font-semibold text-charcoal/60 mt-1">
-                        {item.websiteUrl || "No website URL"} · expires{" "}
-                        {item.expiresAt
-                          ? new Date(item.expiresAt).toLocaleDateString("en-IN")
-                          : "—"}
-                      </p>
+                      </h3>
                       <Badge
-                        className="mt-2"
-                        tone={item.isActive ? "success" : item.status === "expired" ? "warning" : "neutral"}
+                        tone={
+                          item.isActive
+                            ? "success"
+                            : item.status === "expired"
+                              ? "warning"
+                              : "neutral"
+                        }
                       >
                         {item.status}
                       </Badge>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => void extendPromo(item.id, 30)}
-                      >
-                        +30 days
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => void setStatus(item.id, "active")}
-                      >
-                        Activate
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => void setStatus(item.id, "cancelled")}
-                      >
-                        Deactivate
-                      </Button>
-                    </div>
-                  </div>
+                    <p className="text-xs font-semibold text-charcoal/55">
+                      {item.websiteUrl || "No website URL"}
+                    </p>
+                    <p className="text-[11px] font-semibold text-charcoal/40">
+                      Expires{" "}
+                      {item.expiresAt
+                        ? new Date(item.expiresAt).toLocaleDateString("en-IN")
+                        : "—"}
+                    </p>
+                  </AdminCard>
                 ))}
               </div>
             )}
           </Panel>
 
-          <Panel className="p-6 space-y-3">
+          <Panel padding="lg" rounded="3xl" className="space-y-3">
             <h2 className="font-serif font-black text-lg text-indigo">Recent payments</h2>
             {payments.length === 0 ? (
               <p className="text-sm font-semibold text-charcoal/50">No payments yet.</p>
