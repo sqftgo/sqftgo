@@ -10,8 +10,8 @@ export function buildContentSecurityPolicy(): string {
     "default-src 'self'",
     // Next.js App Router still requires unsafe-inline/eval for runtime chunks
     // until a nonce-based middleware CSP is introduced.
-    // va.vercel-scripts.com = Vercel Web Analytics script
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
+    // va.vercel-scripts.com = Vercel Web Analytics; checkout.razorpay.com = pay modal
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://checkout.razorpay.com",
     // Fonts are self-hosted via next/font — no fonts.googleapis.com CSS needed.
     "style-src 'self' 'unsafe-inline'",
     [
@@ -23,6 +23,7 @@ export function buildContentSecurityPolicy(): string {
       "https://*.gstatic.com",
       "https://content.jdmagicbox.com",
       "https://ui-avatars.com",
+      "https://cdn.razorpay.com",
     ].join(" "),
     // next/font serves self-hosted font files from this origin.
     "font-src 'self' data:",
@@ -32,8 +33,11 @@ export function buildContentSecurityPolicy(): string {
       "wss://*.supabase.co",
       "https://va.vercel-scripts.com",
       "https://vitals.vercel-insights.com",
+      "https://api.razorpay.com",
+      "https://lumberjack.razorpay.com",
+      "https://checkout.razorpay.com",
     ].join(" "),
-    "frame-src 'self' https://maps.google.com https://www.google.com",
+    "frame-src 'self' https://maps.google.com https://www.google.com https://api.razorpay.com https://*.razorpay.com",
     "worker-src 'self' blob:",
     "media-src 'self' https://*.supabase.co blob: data:",
     "object-src 'none'",
@@ -70,7 +74,7 @@ export const SECURITY_HEADERS: { key: string; value: string }[] = [
   {
     key: "Permissions-Policy",
     value:
-      "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
+      "camera=(), microphone=(), geolocation=(), usb=(), interest-cohort=()",
   },
   {
     key: "X-DNS-Prefetch-Control",
