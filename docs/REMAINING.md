@@ -152,9 +152,16 @@ From `AUTH_REMAINING.md` (summary):
 - [x] DB security advisor hardening (2026-11-02) — migration `20261102120000_security_advisor_hardening.sql` applied (RPC revoke, service-only table policies, extensions schema). Remaining advisor WARN: `is_admin()` for authenticated (intentional for RLS).
 - [ ] Production site URL + redirect allowlist (ops checklist)
 - [x] Rate limit auth APIs (in-memory per IP; Upstash later for multi-node)
+- [x] Rate limit payment verify routes (listing / subscription / website-promo)
 - [x] `AUTH_SKIP_EMAIL_CONFIRM` ignored in production
-- [ ] Rotate demo passwords before shared staging
+- [x] Service reviews insert as `pending` (not live-published)
+- [x] KYC uploads verified by magic bytes (JPEG/PNG/WebP/PDF)
+- [x] Public service SSR uses RLS client (no service-role bypass)
+- [ ] **Prod:** set `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` (otherwise rate limits are per-instance memory only)
+- [ ] Rotate demo passwords before shared staging (`sqftgo26` in seed scripts — do not use on real prod)
 - [ ] Optional CAPTCHA / MFA for admin
+- [ ] Tighten CSP (`unsafe-inline` / `unsafe-eval` still required for some checkout scripts — revisit)
+- [ ] CI: Dependabot + Semgrep/Trivy (or OSV-Scanner) on PRs
 
 ### Phase A honesty (2026-07-25)
 

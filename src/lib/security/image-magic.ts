@@ -115,3 +115,48 @@ export function verifyAllowedImageBytes(
 
   return { ok: true, mime: detected };
 }
+
+/** KYC uploads: images + PDF, verified by magic bytes. */
+export type AllowedKycMime = AllowedImageMime | "application/pdf";
+
+export function detectAllowedKycMime(bytes: Uint8Array): AllowedKycMime | null {
+  const image = detectAllowedImageMime(bytes);
+  if (image && image !== "image/gif") return image;
+  // PDF: %PDF
+  if (startsWith(bytes, [0x25, 0x50, 0x44, 0x46])) return "application/pdf";
+  return null;
+}
+
+export type KycMagicCheckResult =
+  | { ok: true; mime: AllowedKycMime }
+  | { ok: false; error: string };
+
+export function verifyAllowedKycBytes(
+  bytes: Uint8Array,
+  claimedMime?: string | null,
+): KycMagicCheckResult {
+  const detected = detectAllowedKycMime(bytes);
+  if (!detected) {
+    return {
+      ok: false,
+      error: "File content must be a valid JPEG, PNG, WebP, or PDF",
+    };
+  }
+
+  const claimed = claimedMime?.trim().toLowerCase() ?? "";
+  const allowedClaim = new Set([
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "application/pdf",
+    "application/octet-stream",
+  ]);
+  if (claimed && allowedClaim.has(claimed) && claimed !== "application/octet-stream" && claimed !== detected) {
+    return {
+      ok: false,
+      error: "Declared file type does not match file content",
+    };
+  }
+
+  return { ok: true, mime: detected };
+}

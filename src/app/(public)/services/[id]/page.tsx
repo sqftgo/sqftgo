@@ -3,9 +3,8 @@ import { isServiceDirectoryCategory } from "@/features/dealers/lib/is-dealer-cat
 import { mapDealerRow } from "@/lib/mappers/dealer";
 import { looksLikeUuid } from "@/lib/services/profile-slug";
 import { DEFAULT_OG_IMAGE, getSiteOrigin, SITE_NAME } from "@/lib/seo/site";
-import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
 import type { DirectoryProfileRow } from "@/types/database";
 import { ServicePublicProfile } from "@/features/services/components/ServicePublicProfile";
 
@@ -16,7 +15,8 @@ interface PageProps {
 async function loadServiceProfile(idOrSlug: string) {
   if (!hasSupabaseEnv()) return null;
   try {
-    const supabase = hasServiceRoleKey() ? createServiceClient() : await createClient();
+    // Public SSR must use the anon/user client so RLS still applies (no service-role bypass).
+    const supabase = await createClient();
     let q = supabase.from("directory_profiles").select("*");
     q = looksLikeUuid(idOrSlug) ? q.eq("id", idOrSlug) : q.eq("slug", idOrSlug);
     const { data } = await q.maybeSingle();

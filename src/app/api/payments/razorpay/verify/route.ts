@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
+import { enforceRateLimit } from "@/lib/auth/rate-limit";
 import { loadDealerListingQuota } from "@/lib/dealer-listing-quota";
 import { fulfillListingOrder } from "@/lib/payments/listing-orders";
 import { fetchRazorpayPayment } from "@/lib/razorpay/client";
@@ -13,6 +14,15 @@ export async function POST(request: NextRequest) {
   if (!hasServiceRoleKey()) {
     return jsonError("SUPABASE_SERVICE_ROLE_KEY is required.", 503);
   }
+
+  const limited = await enforceRateLimit(
+    request,
+    "payments:verify",
+    12,
+    60_000,
+    "Too many payment verification attempts. Try again shortly.",
+  );
+  if (limited) return limited;
 
   const { user, profile, error } = await authenticateApiRequest(request);
   if (error || !user || !profile) return jsonError("Unauthorized", 401);
