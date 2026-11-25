@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { useRouter } from "next/navigation";
 import type { Property } from "@/types";
 import { useApp } from "@/context/AppContext";
@@ -106,7 +107,7 @@ export function PropertyForm({
       }
       setForm((f) => ({ ...f, images: [...f.images, ...urls] }));
     } catch (err) {
-      setUploadError(err instanceof Error ? err.message : "Image upload failed");
+      handleClientError(err, { fallback: "Image upload failed" });
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -129,7 +130,7 @@ export function PropertyForm({
       setSubmitted(status === "Draft" ? "draft" : "published");
       setTimeout(() => router.push(returnPath), 2000);
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Unable to save listing");
+      handleClientError(err, { fallback: "Unable to save listing" });
     } finally {
       setSaving(false);
     }
@@ -151,7 +152,7 @@ export function PropertyForm({
         router.push(returnPath);
       }, 1500);
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Unable to save listing");
+      handleClientError(err, { fallback: "Unable to save listing" });
     } finally {
       setSaving(false);
     }

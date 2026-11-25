@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
@@ -95,7 +96,7 @@ export function ServicePublicProfile({ profileKey }: Props) {
       } catch (err) {
         if (cancelled) return;
         if (!cached) {
-          setLoadError(err instanceof Error ? err.message : "Unable to load service profile");
+          handleClientError(err, { fallback: "Unable to load service profile" });
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -167,7 +168,7 @@ export function ServicePublicProfile({ profileKey }: Props) {
       setSuccess(true);
       setMessage("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to book");
+      handleClientError(err, { fallback: "Unable to book" });
     } finally {
       setBusy(false);
     }
@@ -193,7 +194,7 @@ export function ServicePublicProfile({ profileKey }: Props) {
       setAvgRating(refreshed.averageRating);
       setReviewCount(refreshed.reviewCount);
     } catch (err) {
-      setReviewMsg(err instanceof Error ? err.message : "Unable to submit review");
+      handleClientError(err, { fallback: "Unable to submit review" });
     } finally {
       setReviewBusy(false);
     }

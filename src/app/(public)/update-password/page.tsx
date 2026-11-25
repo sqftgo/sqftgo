@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Lock, ArrowLeft, CheckCircle2 } from "lucide-react";
@@ -41,7 +42,7 @@ export default function UpdatePasswordPage() {
       setDone(true);
       setTimeout(() => router.push("/login"), 1800);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update password");
+      handleClientError(err, { fallback: "Unable to update password" });
     } finally {
       setLoading(false);
     }

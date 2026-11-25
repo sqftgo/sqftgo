@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import Image from "next/image";
 import {
   X,
@@ -100,7 +101,7 @@ export function ContactOwnerModal({
       });
       setIsSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to send inquiry. Please try again.");
+      handleClientError(err, { fallback: "Unable to send inquiry. Please try again." });
     } finally {
       setIsSubmitting(false);
     }

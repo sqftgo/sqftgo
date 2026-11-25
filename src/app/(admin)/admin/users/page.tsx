@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { useApp } from "@/context/AppContext";
 import { authService } from "@/services";
 import { useInvalidateMarketplace } from "@/hooks/queries/marketplace";
@@ -65,7 +66,7 @@ export default function AdminUsersPage() {
       });
       await invalidateAdminUsers();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update user");
+      handleClientError(err, { fallback: "Unable to update user" });
     } finally {
       setBusyId(null);
     }

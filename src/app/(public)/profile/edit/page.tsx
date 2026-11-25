@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { useApp } from "@/context/AppContext";
 import { useActiveCities } from "@/hooks/useActiveCities";
 import { ArrowLeft, Camera, Save } from "lucide-react";
@@ -66,7 +67,7 @@ export default function EditProfilePage() {
       const url = await uploadAvatar(file);
       setForm((f) => ({ ...f, avatarUrl: url }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Avatar upload failed");
+      handleClientError(err, { fallback: "Avatar upload failed" });
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -92,7 +93,7 @@ export default function EditProfilePage() {
         router.push("/profile");
       }, 1200);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update profile");
+      handleClientError(err, { fallback: "Unable to update profile" });
     } finally {
       setBusy(false);
     }

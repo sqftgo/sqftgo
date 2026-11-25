@@ -7,7 +7,7 @@ Auth-specific checklist: see also [`AUTH_REMAINING.md`](./AUTH_REMAINING.md).
 
 ---
 
-## Transactional email (ops / implement when prioritized)
+## Transactional email + API failure alerts
 
 **Plan:** keep mail sending continuous on free tiers by chaining providers.
 
@@ -15,26 +15,36 @@ Auth-specific checklist: see also [`AUTH_REMAINING.md`](./AUTH_REMAINING.md).
 |----------|----------|------------------------------|------|
 | 1st | **Resend** | ~**3,000** emails / month | Primary sender |
 | 2nd | **Mailjet** | ~**6,000** emails / month | Fallback when Resend free quota is exhausted |
+| 3rd | **MSG91 Email** (optional) | per MSG91 plan | Last fallback if configured |
 
-**How it should work:**
+**How mail send works (code shipped):**
 
-1. Send all transactional mail through **Resend** first (OTP / auth, inquiries, receipts, admin alerts — whatever we wire).
-2. When Resend hits its free limit (API quota / 429 / billing cap), automatically fall over to **Mailjet** so mail keeps going the same month.
-3. Track which provider sent each message (logs / metadata) so ops can see failover.
-4. Do not commit API keys; keep Resend + Mailjet secrets in env only.
+1. `src/lib/mail/send.ts` tries **Resend → Mailjet → MSG91** automatically.
+2. When Resend hits free limit / 429, next provider is tried so mail can continue.
+3. Do not commit API keys; keep secrets in env only (see `.env.example`).
 
-**Still needed (code + ops — not started):**
+**API failure alerts (code shipped — reactive, not a poller):**
 
-1. Shared mail sender abstraction with provider order: Resend → Mailjet
-2. Detect Resend free-limit failure and retry once via Mailjet
-3. Env: Resend API key + from domain; Mailjet API key/secret + from domain (DNS/SPF/DKIM for both)
-4. Confirm current free-tier numbers in each dashboard before launch (limits can change)
+- When **our own** `/api/*` routes return **5xx** (`jsonError`) or throw (**uncaught** via `src/instrumentation.ts`), we build a proper alert and email **`bhaveshanjana58@gmail.com`** (override with `API_ALERT_EMAIL`).
+- Does **not** ping third-party services and does **not** actively health-check every route — only fires when a real request hits a failing endpoint.
+- Same route is rate-limited (~15 min) so one outage does not flood the inbox.
+- Alerts run in **production** once a mail provider is configured; set `API_ALERT_IN_DEV=true` to test locally. Set `API_ALERTS_DISABLED=true` to mute.
 
-**Out of scope until then:** paid Resend/Mailjet plans, full ESP analytics dashboards, marketing blasts.
+**Still needed (ops — when mail service is available):**
+
+1. Create Resend account + API key; verify sending domain (SPF/DKIM); set `RESEND_API_KEY` + `RESEND_FROM`
+2. Create Mailjet account + API key/secret; verify sender; set `MAILJET_API_KEY` + `MAILJET_API_SECRET` + `MAILJET_FROM_EMAIL`
+3. Optional: MSG91 Email domain + `MSG91_EMAIL_*` (or reuse `MSG91_AUTH_KEY` with email domain/from)
+4. Set production env on Vercel: mail keys + `API_ALERT_EMAIL=bhaveshanjana58@gmail.com`
+5. Confirm free-tier numbers in each dashboard before launch (limits can change)
+6. Smoke test: force a 500 on a non-critical API in staging with mail configured → confirm inbox message
+7. Confirm current free-tier numbers again after first production week
+
+**Out of scope until then:** paid Resend/Mailjet plans, full ESP analytics, marketing blasts, third-party uptime monitors.
 
 **Resume prompt:**
 
-> Read `@docs/REMAINING.md` transactional email section and implement Resend-first + Mailjet fallback so free-tier mail keeps sending after Resend’s ~3k/mo limit.
+> Read `@docs/REMAINING.md` transactional email + API alerts section and finish Resend/Mailjet (optional MSG91) env + DNS so API 5xx alerts reach bhaveshanjana58@gmail.com.
 
 ---
 

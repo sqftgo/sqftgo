@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { useApp } from "@/context/AppContext";
 import {
   Save,
@@ -73,7 +74,7 @@ export default function DealerSettingsPage() {
       setTimeout(() => setSaved(false), 5000);
     } catch (err) {
       setSaveTone("danger");
-      setSaveMessage(err instanceof Error ? err.message : "Unable to send reset email");
+      handleClientError(err, { fallback: "Unable to send reset email" });
       setSaved(true);
     } finally {
       setResetBusy(false);

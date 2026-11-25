@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { kycService } from "@/services";
 import type { DealerKycRecord } from "@/types";
 import {
@@ -31,7 +32,7 @@ export function AdminKycQueue() {
       const res = await kycService.adminList("pending");
       setItems(res.items);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load KYC queue");
+      handleClientError(err, { fallback: "Failed to load KYC queue" });
     } finally {
       setLoading(false);
     }
@@ -60,7 +61,7 @@ export function AdminKycQueue() {
       setNotes("");
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Review failed");
+      handleClientError(err, { fallback: "Review failed" });
     } finally {
       setBusy(false);
     }

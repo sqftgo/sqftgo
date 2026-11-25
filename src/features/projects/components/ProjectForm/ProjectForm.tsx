@@ -18,6 +18,10 @@ import {
   Building2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  handleClientError,
+  notifyWarning,
+} from "@/lib/errors/handle-client-error";
 import { PROJECT_CREATE_STEPS } from "./constants";
 import {
   emptyProjectForm,
@@ -98,7 +102,7 @@ export function ProjectForm({
       }
       setForm((f) => ({ ...f, images: [...f.images, ...urls].slice(0, 30) }));
     } catch (err) {
-      setUploadError(err instanceof Error ? err.message : "Image upload failed");
+      handleClientError(err, { fallback: "Image upload failed" });
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -148,6 +152,7 @@ export function ProjectForm({
   const runSubmit = async (status: "Draft" | "Pending Review") => {
     const err = validateForStatus(status);
     if (err) {
+      notifyWarning(err);
       setFormError(err);
       return;
     }
@@ -166,7 +171,7 @@ export function ProjectForm({
         }, 1500);
       }
     } catch (e) {
-      setFormError(e instanceof Error ? e.message : "Could not save project");
+      handleClientError(e, { fallback: "Could not save project" });
     } finally {
       setSaving(false);
     }

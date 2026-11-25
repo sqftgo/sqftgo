@@ -12,6 +12,8 @@ import { hasSupabaseEnv } from "@/lib/supabase/env";
 import type { PaginatedResult } from "@/lib/api/client";
 import type { DirectoryProfile, AdminUser } from "@/types";
 import { dealerService } from "@/services";
+import { ApiError } from "@/lib/api/client";
+import { toPublicErrorMessage } from "@/lib/api/public-error";
 
 export function useDirectoryProfiles() {
   const queryClient = useQueryClient();
@@ -20,12 +22,14 @@ export function useDirectoryProfiles() {
   const directoryProfiles = dealersQuery.data?.items ?? [];
   const adminUsers = adminUsersQuery.data?.items ?? [];
   const directoryProfilesReady = dealersQuery.isFetched || !hasSupabaseEnv();
-  const directoryProfilesError =
-    dealersQuery.isError && dealersQuery.error instanceof Error
-      ? dealersQuery.error.message
-      : dealersQuery.isError
-        ? "Unable to load dealer directory"
-        : null;
+  const directoryProfilesError = dealersQuery.isError
+    ? toPublicErrorMessage(
+        dealersQuery.error instanceof Error
+          ? dealersQuery.error.message
+          : "Unable to load dealer directory",
+        dealersQuery.error instanceof ApiError ? dealersQuery.error.status : 500,
+      )
+    : null;
 
   const refreshDirectoryProfiles = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.dealers.all });

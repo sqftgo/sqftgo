@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import type { ListingFilter } from "@/types/listing-filter";
 import { listingFilterApi } from "@/services";
 import { DEFAULT_LISTING_FILTERS, isListingFilterOn } from "@/lib/listing-filters/defaults";
@@ -17,7 +18,7 @@ export function useListingFilters(opts?: { all?: boolean }) {
       setFilters(rows);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load listing filters");
+      handleClientError(err, { fallback: "Unable to load listing filters" });
       if (!all) setFilters(DEFAULT_LISTING_FILTERS);
     } finally {
       setReady(true);

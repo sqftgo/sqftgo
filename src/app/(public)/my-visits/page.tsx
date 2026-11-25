@@ -4,8 +4,12 @@ import React, { useMemo, useState } from "react";
 import { useApp } from "@/context/AppContext";
 import type { VisitBooking } from "@/types";
 import Link from "next/link";
-import { Calendar, MapPin, Phone, User, Clock, CheckCircle2, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, Phone, User, Clock, ChevronRight } from "lucide-react";
 import { Badge, ConfirmDialog, EmptyState, PageLoader } from "@/components/ui";
+import {
+  handleClientError,
+  notifySuccess,
+} from "@/lib/errors/handle-client-error";
 
 const TIME_SLOTS = [
   "10:00 AM",
@@ -20,17 +24,11 @@ const TIME_SLOTS = [
 export default function MyVisitsPage() {
   const { isLoggedIn, visits, visitsReady, updateVisit, sessionReady } = useApp();
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [pendingCancelId, setPendingCancelId] = useState<string | null>(null);
   const [rescheduleId, setRescheduleId] = useState<string | null>(null);
   const [rescheduleDate, setRescheduleDate] = useState("");
   const [rescheduleTime, setRescheduleTime] = useState("11:00 AM");
   const [busy, setBusy] = useState(false);
-
-  const triggerToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
 
   const confirmCancelVisit = async () => {
     if (!pendingCancelId || busy) return;
@@ -38,9 +36,9 @@ export default function MyVisitsPage() {
     try {
       await updateVisit(pendingCancelId, { status: "Cancelled" });
       setPendingCancelId(null);
-      triggerToast("Property visit cancelled successfully.");
+      notifySuccess("Property visit cancelled successfully.");
     } catch (err) {
-      triggerToast(err instanceof Error ? err.message : "Unable to cancel visit.");
+      handleClientError(err, { fallback: "Unable to cancel visit." });
     } finally {
       setBusy(false);
     }
@@ -52,9 +50,9 @@ export default function MyVisitsPage() {
     try {
       await updateVisit(rescheduleId, { date: rescheduleDate, time: rescheduleTime });
       setRescheduleId(null);
-      triggerToast("Visit reschedule requested.");
+      notifySuccess("Visit reschedule requested.");
     } catch (err) {
-      triggerToast(err instanceof Error ? err.message : "Unable to reschedule visit.");
+      handleClientError(err, { fallback: "Unable to reschedule visit." });
     } finally {
       setBusy(false);
     }
@@ -105,13 +103,6 @@ export default function MyVisitsPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 relative">
-      {toastMessage && (
-        <div className="fixed bottom-10 right-10 bg-indigo text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2 border border-indigo/20 z-50 text-xs font-bold">
-          <CheckCircle2 className="w-4 h-4 text-white" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-serif font-black text-charcoal">My Property Visits</h1>

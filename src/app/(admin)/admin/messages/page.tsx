@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import {
   Archive,
   CheckCircle2,
@@ -71,7 +72,7 @@ export default function AdminMessagesPage() {
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Unable to load support messages");
+          handleClientError(err, { fallback: "Unable to load support messages" });
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -95,7 +96,7 @@ export default function AdminMessagesPage() {
         if (!cancelled) setDetail(d);
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Unable to load conversation");
+          handleClientError(err, { fallback: "Unable to load conversation" });
         }
       } finally {
         if (!cancelled) setDetailLoading(false);
@@ -144,7 +145,7 @@ export default function AdminMessagesPage() {
       const d = await messageService.getThread(selectedId);
       setDetail(d);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to reply");
+      handleClientError(err, { fallback: "Unable to reply" });
     } finally {
       setBusy(false);
     }
@@ -160,7 +161,7 @@ export default function AdminMessagesPage() {
       const d = await messageService.getThread(selectedId);
       setDetail(d);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to resolve thread");
+      handleClientError(err, { fallback: "Unable to resolve thread" });
     } finally {
       setBusy(false);
     }
@@ -185,7 +186,7 @@ export default function AdminMessagesPage() {
       await refresh();
       setSelectedId(created.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to create ticket");
+      handleClientError(err, { fallback: "Unable to create ticket" });
     } finally {
       setBusy(false);
     }

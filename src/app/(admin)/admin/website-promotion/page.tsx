@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import {
   DashboardPageHeader,
   Alert,
@@ -64,7 +65,7 @@ export default function AdminWebsitePromotionPage() {
       try {
         await refresh();
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Unable to load");
+        handleClientError(err, { fallback: "Unable to load" });
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -87,7 +88,7 @@ export default function AdminWebsitePromotionPage() {
       setNotice("Plan created.");
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to create plan");
+      handleClientError(err, { fallback: "Unable to create plan" });
     } finally {
       setSaving(false);
     }
@@ -101,7 +102,7 @@ export default function AdminWebsitePromotionPage() {
       });
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update plan");
+      handleClientError(err, { fallback: "Unable to update plan" });
     }
   };
 
@@ -112,7 +113,7 @@ export default function AdminWebsitePromotionPage() {
       setNotice(`Extended by ${days} days.`);
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to extend");
+      handleClientError(err, { fallback: "Unable to extend" });
     }
   };
 
@@ -125,7 +126,7 @@ export default function AdminWebsitePromotionPage() {
       await servicePlatformService.adminPatchWebsitePromotion(id, { status });
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update status");
+      handleClientError(err, { fallback: "Unable to update status" });
     }
   };
 

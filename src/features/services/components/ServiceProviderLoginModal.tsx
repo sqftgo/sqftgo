@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Dialog, Button, Alert } from "@/components/ui";
@@ -78,7 +79,7 @@ export function ServiceProviderLoginModal({ open, onClose }: Props) {
             : "We sent a login code on WhatsApp."
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't send a code.");
+      handleClientError(err, { fallback: "Couldn't send a code." });
     } finally {
       setBusy(false);
     }
@@ -105,7 +106,7 @@ export function ServiceProviderLoginModal({ open, onClose }: Props) {
           "No service business is registered with this mobile number. Register your business to continue."
         );
       } else {
-        setError(err instanceof Error ? err.message : "Couldn't verify that code.");
+        handleClientError(err, { fallback: "Couldn't verify that code." });
       }
     } finally {
       setBusy(false);

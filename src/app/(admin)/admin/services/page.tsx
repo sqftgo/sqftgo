@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { Wrench } from "lucide-react";
 import { TextInput, TextArea } from "@/components/ui";
 import { CatalogIconPicker, TaxonomyManager } from "@/features/admin";
@@ -38,7 +39,7 @@ export default function AdminServicesPage() {
     try {
       setItems(await servicePlatformService.listServiceTypes(true));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load service types");
+      handleClientError(err, { fallback: "Unable to load service types" });
     }
   };
 
@@ -92,7 +93,7 @@ export default function AdminServicesPage() {
       setTimeout(() => setSaved(false), 2000);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to add service type");
+      handleClientError(err, { fallback: "Unable to add service type" });
     } finally {
       setBusy(false);
     }
@@ -103,7 +104,7 @@ export default function AdminServicesPage() {
       await servicePlatformService.updateServiceType(id, { active: !active });
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update service type");
+      handleClientError(err, { fallback: "Unable to update service type" });
     }
   };
 
@@ -139,7 +140,7 @@ export default function AdminServicesPage() {
       setTimeout(() => setSaved(false), 2000);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update service type");
+      handleClientError(err, { fallback: "Unable to update service type" });
     } finally {
       setBusy(false);
     }
@@ -154,7 +155,7 @@ export default function AdminServicesPage() {
       );
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to reorder service types");
+      handleClientError(err, { fallback: "Unable to reorder service types" });
     }
   };
 
@@ -172,7 +173,7 @@ export default function AdminServicesPage() {
       setPendingDelete(null);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to delete service type");
+      handleClientError(err, { fallback: "Unable to delete service type" });
     } finally {
       setBusy(false);
     }

@@ -1,5 +1,6 @@
 "use client";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { useApp } from "@/context/AppContext";
 import { propertyService } from "@/services";
 import type { Property } from "@/types";
@@ -47,7 +48,7 @@ export default function AdminPropertiesPage() {
       const page = await propertyService.listPage({ limit: 100, offset: 0 });
       setProperties(page.items.filter((p) => p.status !== "Draft"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load properties");
+      handleClientError(err, { fallback: "Unable to load properties" });
       setProperties([]);
     } finally {
       setLoading(false);
@@ -100,7 +101,7 @@ export default function AdminPropertiesPage() {
       });
       void refreshProperties();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update status");
+      handleClientError(err, { fallback: "Unable to update status" });
     } finally {
       setBusy(false);
     }
@@ -120,7 +121,7 @@ export default function AdminPropertiesPage() {
       });
       void refreshProperties();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update featured flag");
+      handleClientError(err, { fallback: "Unable to update featured flag" });
     } finally {
       setBusy(false);
     }
@@ -141,7 +142,7 @@ export default function AdminPropertiesPage() {
       setPendingDelete(null);
       void refreshProperties();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to delete property");
+      handleClientError(err, { fallback: "Unable to delete property" });
     } finally {
       setBusy(false);
     }

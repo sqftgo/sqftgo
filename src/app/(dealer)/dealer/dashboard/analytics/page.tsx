@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { platformService } from "@/services";
 import type { DealerAnalytics } from "@/types";
 import {
@@ -38,7 +39,7 @@ export default function DealerAnalyticsPage() {
       const analytics = await platformService.getDealerAnalytics();
       setData(analytics);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load analytics");
+      handleClientError(err, { fallback: "Failed to load analytics" });
     } finally {
       setLoading(false);
     }

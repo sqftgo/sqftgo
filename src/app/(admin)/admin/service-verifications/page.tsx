@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { servicePlatformService } from "@/services";
 import type { ServiceVerification } from "@/types";
 import {
@@ -31,7 +32,7 @@ export default function AdminServiceVerificationsPage() {
       const res = await servicePlatformService.adminListVerifications("pending");
       setItems(res.items);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load verification queue");
+      handleClientError(err, { fallback: "Failed to load verification queue" });
     } finally {
       setLoading(false);
     }
@@ -60,7 +61,7 @@ export default function AdminServiceVerificationsPage() {
       setNotes("");
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Review failed");
+      handleClientError(err, { fallback: "Review failed" });
     } finally {
       setBusy(false);
     }

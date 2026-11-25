@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
@@ -60,7 +61,7 @@ export default function DealerProfilePage() {
       } catch (err) {
         if (cancelled) return;
         if (!cached) {
-          setLoadError(err instanceof Error ? err.message : "Unable to load dealer profile");
+          handleClientError(err, { fallback: "Unable to load dealer profile" });
         }
       } finally {
         if (!cancelled) setLoading(false);

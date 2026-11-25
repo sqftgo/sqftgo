@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { useApp } from "@/context/AppContext";
 import { platformService } from "@/services";
 import type { PlatformSettings } from "@/types";
@@ -67,7 +68,7 @@ export default function AdminSettingsPage() {
         setMeta({ updatedAt: settings.updatedAt, updatedBy: settings.updatedBy });
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Unable to load settings");
+          handleClientError(err, { fallback: "Unable to load settings" });
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -122,7 +123,7 @@ export default function AdminSettingsPage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to save settings");
+      handleClientError(err, { fallback: "Unable to save settings" });
     } finally {
       setSaving(false);
     }

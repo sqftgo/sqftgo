@@ -1,5 +1,6 @@
 "use client";
 import React, { useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { useApp } from "@/context/AppContext";
 import { isDealerCategory } from "@/features/dealers";
 import { authService } from "@/services/auth";
@@ -87,7 +88,7 @@ export default function AdminDealersPage() {
       });
       void refreshDirectoryProfiles();
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Unable to update verification");
+      handleClientError(err, { fallback: "Unable to update verification" });
     } finally {
       setBusyId(null);
     }
@@ -123,7 +124,7 @@ export default function AdminDealersPage() {
       });
       void refreshDirectoryProfiles();
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Unable to update dealer access");
+      handleClientError(err, { fallback: "Unable to update dealer access" });
     } finally {
       setBusyId(null);
     }

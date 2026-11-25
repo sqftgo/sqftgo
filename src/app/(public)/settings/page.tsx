@@ -14,13 +14,15 @@ import {
   CustomSelect,
 } from "@/components/ui";
 import { authService } from "@/services/auth";
+import {
+  handleClientError,
+  notifySuccess,
+  notifyWarning,
+} from "@/lib/errors/handle-client-error";
+import { toast } from "@/lib/toast/store";
 
 export default function PublicSettingsPage() {
   const { isLoggedIn, userEmail } = useApp();
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [toastTone, setToastTone] = useState<"info" | "success" | "danger" | "warning">(
-    "info"
-  );
   const [resetBusy, setResetBusy] = useState(false);
 
   const [settings, setSettings] = useState({
@@ -31,23 +33,13 @@ export default function PublicSettingsPage() {
     language: "English",
   });
 
-  const triggerToast = (
-    msg: string,
-    tone: "info" | "success" | "danger" | "warning" = "info"
-  ) => {
-    setToastTone(tone);
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 4000);
-  };
-
   const handleToggle = (key: keyof typeof settings) => {
     setSettings((prev) => ({
       ...prev,
       [key]: !prev[key],
     }));
-    triggerToast(
+    notifyWarning(
       "Preference updated on this device only — server sync is not available yet.",
-      "warning"
     );
   };
 
@@ -56,29 +48,24 @@ export default function PublicSettingsPage() {
       ...prev,
       [key]: value,
     }));
-    triggerToast(
+    notifyWarning(
       "Preference updated on this device only — server sync is not available yet.",
-      "warning"
     );
   };
 
   const handlePasswordReset = async () => {
     if (!userEmail) {
-      triggerToast("No signed-in email found.", "danger");
+      toast.error("No signed-in email found.");
       return;
     }
     setResetBusy(true);
     try {
       await authService.resetPassword(userEmail);
-      triggerToast(
+      notifySuccess(
         "If an account exists for your email, a password reset link has been sent.",
-        "success"
       );
     } catch (err) {
-      triggerToast(
-        err instanceof Error ? err.message : "Unable to send reset email",
-        "danger"
-      );
+      handleClientError(err, { fallback: "Unable to send reset email" });
     } finally {
       setResetBusy(false);
     }
@@ -104,16 +91,6 @@ export default function PublicSettingsPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 relative">
-      {toastMessage && (
-        <div className="fixed bottom-10 right-10 z-50 max-w-sm">
-          <Alert
-            variant={toastTone}
-            title={toastMessage}
-            onDismiss={() => setToastMessage(null)}
-          />
-        </div>
-      )}
-
       <div className="mb-8">
         <h1 className="text-3xl font-serif font-black text-charcoal">Account Settings</h1>
         <p className="text-charcoal/50 text-sm font-semibold mt-1">

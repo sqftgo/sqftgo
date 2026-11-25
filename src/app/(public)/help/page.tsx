@@ -10,6 +10,7 @@ import {
   LifeBuoy,
 } from "lucide-react";
 import { SearchInput, EmptyState, Panel, Alert } from "@/components/ui";
+import { notifyInfo } from "@/lib/errors/handle-client-error";
 
 interface FaqItem {
   q: string;
@@ -23,8 +24,6 @@ export default function HelpCenterPage() {
   const [activeCategory, setActiveCategory] = useState<
     "all" | "booking" | "verification" | "listings"
   >("all");
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
   const faqs: FaqItem[] = [
     {
       category: "booking",
@@ -58,11 +57,6 @@ export default function HelpCenterPage() {
     },
   ];
 
-  const triggerToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
-
   const filteredFaqs = faqs.filter((faq) => {
     const matchesSearch =
       faq.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -73,12 +67,6 @@ export default function HelpCenterPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 relative">
-      {toastMessage && (
-        <div className="fixed bottom-10 right-10 z-50 max-w-sm">
-          <Alert variant="info" title={toastMessage} onDismiss={() => setToastMessage(null)} />
-        </div>
-      )}
-
       <div className="text-center py-8 mb-8 bg-indigo/5 rounded-3xl border border-indigo/5 px-6">
         <LifeBuoy className="w-10 h-10 text-indigo mx-auto mb-4" />
         <h1 className="text-3xl font-serif font-black text-charcoal">How can we help you?</h1>
@@ -104,21 +92,21 @@ export default function HelpCenterPage() {
             title: "Call Support",
             desc: "Mon-Sat, 9AM to 7PM",
             detail: "+91 94140 SQFTGO",
-            action: () => triggerToast("Broker hotline is online. Dialling..."),
+            action: () => notifyInfo("Broker hotline is online. Dialling..."),
           },
           {
             icon: Mail,
             title: "Email Broker Desk",
             desc: "Average response: 2 hrs",
             detail: "desk@sqftgo.com",
-            action: () => triggerToast("Opening email client draft to desk@sqftgo.com..."),
+            action: () => notifyInfo("Opening email client draft to desk@sqftgo.com..."),
           },
           {
             icon: MessageSquare,
             title: "Chat Broker",
             desc: "Available 24/7",
             detail: "Live Chat Agent",
-            action: () => triggerToast("Connecting to live support broker agent..."),
+            action: () => notifyInfo("Connecting to live support broker agent..."),
           },
         ].map((item, idx) => {
           const Icon = item.icon;
