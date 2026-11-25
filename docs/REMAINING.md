@@ -1,9 +1,40 @@
 # SqftGo — remaining work
 
-Last updated: **2026-11-02**  
+Last updated: **2026-11-25**  
 Phases **1–14** shipped on `main`. Phase **15** covers cleanup + Dream Project inspiration uploads + notification pref persistence.
 
 Auth-specific checklist: see also [`AUTH_REMAINING.md`](./AUTH_REMAINING.md).
+
+---
+
+## Transactional email (ops / implement when prioritized)
+
+**Plan:** keep mail sending continuous on free tiers by chaining providers.
+
+| Priority | Provider | Free monthly limit (approx.) | Role |
+|----------|----------|------------------------------|------|
+| 1st | **Resend** | ~**3,000** emails / month | Primary sender |
+| 2nd | **Mailjet** | ~**6,000** emails / month | Fallback when Resend free quota is exhausted |
+
+**How it should work:**
+
+1. Send all transactional mail through **Resend** first (OTP / auth, inquiries, receipts, admin alerts — whatever we wire).
+2. When Resend hits its free limit (API quota / 429 / billing cap), automatically fall over to **Mailjet** so mail keeps going the same month.
+3. Track which provider sent each message (logs / metadata) so ops can see failover.
+4. Do not commit API keys; keep Resend + Mailjet secrets in env only.
+
+**Still needed (code + ops — not started):**
+
+1. Shared mail sender abstraction with provider order: Resend → Mailjet
+2. Detect Resend free-limit failure and retry once via Mailjet
+3. Env: Resend API key + from domain; Mailjet API key/secret + from domain (DNS/SPF/DKIM for both)
+4. Confirm current free-tier numbers in each dashboard before launch (limits can change)
+
+**Out of scope until then:** paid Resend/Mailjet plans, full ESP analytics dashboards, marketing blasts.
+
+**Resume prompt:**
+
+> Read `@docs/REMAINING.md` transactional email section and implement Resend-first + Mailjet fallback so free-tier mail keeps sending after Resend’s ~3k/mo limit.
 
 ---
 
