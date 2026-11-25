@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import { platformService } from "@/services";
@@ -39,7 +40,7 @@ export default function AdminDashboardPage() {
     try {
       setAnalytics(await platformService.getAnalytics());
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load dashboard KPIs");
+      handleClientError(err, { fallback: "Failed to load dashboard KPIs" });
     } finally {
       setLoading(false);
     }

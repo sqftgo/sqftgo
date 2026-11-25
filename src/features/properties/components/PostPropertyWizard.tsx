@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
@@ -116,7 +117,7 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
       }
       setUploadedImages((prev) => [...prev, ...urls]);
     } catch (err) {
-      setUploadError(err instanceof Error ? err.message : "Image upload failed");
+      handleClientError(err, { fallback: "Image upload failed" });
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -191,7 +192,7 @@ export function PostPropertyWizard({ onSuccess }: PostPropertyWizardProps) {
         onSuccess?.();
       })
       .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : "Unable to create property");
+        handleClientError(err, { fallback: "Unable to create property" });
       });
   };
 

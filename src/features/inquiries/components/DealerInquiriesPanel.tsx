@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import {
   Send,
   Trash2,
@@ -97,7 +98,7 @@ export function DealerInquiriesPanel() {
         closeReply();
       }, 1500);
     } catch (err) {
-      setReplyError(err instanceof Error ? err.message : "Unable to send reply");
+      handleClientError(err, { fallback: "Unable to send reply" });
     } finally {
       setBusy(false);
     }

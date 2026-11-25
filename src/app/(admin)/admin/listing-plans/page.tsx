@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { DashboardPageHeader, Alert, Badge, Button, FormField, Panel, TextInput } from "@/components/ui";
 import { listingPlanApi } from "@/services/listing-plans";
 import type { ListingPlan } from "@/types/listing-plan";
@@ -39,7 +40,7 @@ export default function AdminListingPlansPage() {
       try {
         await refresh();
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Unable to load plans");
+        handleClientError(err, { fallback: "Unable to load plans" });
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -65,7 +66,7 @@ export default function AdminListingPlansPage() {
       setDraft(emptyDraft);
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to create plan");
+      handleClientError(err, { fallback: "Unable to create plan" });
     } finally {
       setSaving(false);
     }
@@ -77,7 +78,7 @@ export default function AdminListingPlansPage() {
       await listingPlanApi.adminPatch(plan.id, { isActive: !plan.isActive });
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update plan");
+      handleClientError(err, { fallback: "Unable to update plan" });
     }
   };
 
@@ -106,7 +107,7 @@ export default function AdminListingPlansPage() {
       setEditDraft(null);
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update plan");
+      handleClientError(err, { fallback: "Unable to update plan" });
     } finally {
       setSaving(false);
     }

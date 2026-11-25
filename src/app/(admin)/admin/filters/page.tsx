@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useRef, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { GripVertical, SlidersHorizontal } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { listingFilterApi } from "@/services";
@@ -66,7 +67,7 @@ export default function AdminListingFiltersPage() {
       await listingFilterApi.update(id, { active: !active });
       await refresh();
     } catch (err) {
-      setLocalError(err instanceof Error ? err.message : "Unable to update filter");
+      handleClientError(err, { fallback: "Unable to update filter" });
     }
   };
 
@@ -77,7 +78,7 @@ export default function AdminListingFiltersPage() {
       await listingFilterApi.update(id, { label: trimmed });
       await refresh();
     } catch (err) {
-      setLocalError(err instanceof Error ? err.message : "Unable to rename filter");
+      handleClientError(err, { fallback: "Unable to rename filter" });
     }
   };
 
@@ -91,7 +92,7 @@ export default function AdminListingFiltersPage() {
       );
       await refresh();
     } catch (err) {
-      setLocalError(err instanceof Error ? err.message : "Unable to reorder filters");
+      handleClientError(err, { fallback: "Unable to reorder filters" });
     }
   };
 
@@ -148,7 +149,7 @@ export default function AdminListingFiltersPage() {
       flashSaved();
       await refresh();
     } catch (err) {
-      setLocalError(err instanceof Error ? err.message : "Unable to add filter");
+      handleClientError(err, { fallback: "Unable to add filter" });
     } finally {
       setBusy(false);
     }
@@ -166,7 +167,7 @@ export default function AdminListingFiltersPage() {
       });
       await refresh();
     } catch (err) {
-      setLocalError(err instanceof Error ? err.message : "Unable to remove filter");
+      handleClientError(err, { fallback: "Unable to remove filter" });
     }
   };
 

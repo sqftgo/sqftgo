@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
@@ -125,7 +126,7 @@ export default function RegisterServicePage() {
       setAgreeToVettingPledge(false);
       setTimeout(() => router.push("/services/manage"), 1200);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to register. Please try again.");
+      handleClientError(err, { fallback: "Unable to register. Please try again." });
     } finally {
       setIsSubmitting(false);
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import type { DealerKycRecord, DirectoryProfile } from "@/types";
@@ -225,7 +226,7 @@ export default function DealerProfilePage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "Unable to save profile");
+      handleClientError(err, { fallback: "Unable to save profile" });
     }
   };
 

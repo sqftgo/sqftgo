@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import type { Property } from "@/types";
 import { useApp } from "@/context/AppContext";
 import { Calendar, CheckCircle2, Clock, User, Mail, Phone, MessageSquare } from "lucide-react";
@@ -66,7 +67,7 @@ export const VisitBookingForm: React.FC<VisitBookingFormProps> = ({ property }) 
       });
       setIsSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to book visit. Please try again.");
+      handleClientError(err, { fallback: "Unable to book visit. Please try again." });
     } finally {
       setIsSubmitting(false);
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { useApp } from "@/context/AppContext";
 import { Star } from "lucide-react";
 import { TextInput, TextArea } from "@/components/ui";
@@ -97,7 +98,7 @@ export default function AdminAmenitiesPage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to add amenity");
+      handleClientError(err, { fallback: "Unable to add amenity" });
     } finally {
       setBusy(false);
     }
@@ -107,7 +108,7 @@ export default function AdminAmenitiesPage() {
     try {
       await updateAmenity(id, { active: !active });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update amenity");
+      handleClientError(err, { fallback: "Unable to update amenity" });
     }
   };
 
@@ -144,7 +145,7 @@ export default function AdminAmenitiesPage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update amenity");
+      handleClientError(err, { fallback: "Unable to update amenity" });
     } finally {
       setBusy(false);
     }
@@ -156,7 +157,7 @@ export default function AdminAmenitiesPage() {
         orderedIds.map((id, index) => updateAmenity(id, { sortOrder: (index + 1) * 10 }))
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to reorder amenities");
+      handleClientError(err, { fallback: "Unable to reorder amenities" });
     }
   };
 
@@ -173,7 +174,7 @@ export default function AdminAmenitiesPage() {
       });
       setPendingDelete(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to delete amenity");
+      handleClientError(err, { fallback: "Unable to delete amenity" });
     } finally {
       setBusy(false);
     }

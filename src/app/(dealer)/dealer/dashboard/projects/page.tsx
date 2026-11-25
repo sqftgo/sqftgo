@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useProjectsQuery, useInvalidateMarketplace } from "@/hooks";
@@ -64,7 +65,7 @@ export default function DealerProjectsPage() {
       await invalidateProjects();
       setPendingDelete(null);
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Delete failed");
+      handleClientError(e, { fallback: "Delete failed" });
     } finally {
       setBusyId(null);
     }
@@ -76,7 +77,7 @@ export default function DealerProjectsPage() {
       await projectService.update(id, { status });
       await invalidateProjects();
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Update failed");
+      handleClientError(e, { fallback: "Update failed" });
     } finally {
       setBusyId(null);
     }
@@ -87,7 +88,7 @@ export default function DealerProjectsPage() {
     return (
       <ErrorState
         title="Could not load projects"
-        message={query.error instanceof Error ? query.error.message : "Try again"}
+        message="Something went wrong. Please try again."
       />
     );
   }

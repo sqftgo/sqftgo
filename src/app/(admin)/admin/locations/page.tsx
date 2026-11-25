@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useMemo, useRef, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { useApp } from "@/context/AppContext";
 import { ImagePlus, MapPin } from "lucide-react";
 import { TextInput } from "@/components/ui";
@@ -54,7 +55,7 @@ export default function AdminLocationsPage() {
           target: city,
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Unable to upload city image");
+        handleClientError(err, { fallback: "Unable to upload city image" });
       } finally {
         setUploadingId(null);
       }
@@ -143,7 +144,7 @@ export default function AdminLocationsPage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to add location");
+      handleClientError(err, { fallback: "Unable to add location" });
     } finally {
       setBusy(false);
     }
@@ -153,7 +154,7 @@ export default function AdminLocationsPage() {
     try {
       await updateLocation(id, { active: !active });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update location");
+      handleClientError(err, { fallback: "Unable to update location" });
     }
   };
 
@@ -192,7 +193,7 @@ export default function AdminLocationsPage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update location");
+      handleClientError(err, { fallback: "Unable to update location" });
     } finally {
       setBusy(false);
     }
@@ -204,7 +205,7 @@ export default function AdminLocationsPage() {
         orderedIds.map((id, index) => updateLocation(id, { sortOrder: (index + 1) * 10 }))
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to reorder locations");
+      handleClientError(err, { fallback: "Unable to reorder locations" });
     }
   };
 
@@ -221,7 +222,7 @@ export default function AdminLocationsPage() {
       });
       setPendingDelete(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to delete location");
+      handleClientError(err, { fallback: "Unable to delete location" });
     } finally {
       setBusy(false);
     }

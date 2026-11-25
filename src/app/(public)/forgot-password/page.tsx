@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import Link from "next/link";
 import { CheckCircle2, Mail, ArrowLeft } from "lucide-react";
 import { authService } from "@/services";
@@ -18,7 +19,7 @@ export default function ForgotPasswordPage() {
       await authService.resetPassword(email);
       setSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to send reset email");
+      handleClientError(err, { fallback: "Unable to send reset email" });
     } finally {
       setLoading(false);
     }

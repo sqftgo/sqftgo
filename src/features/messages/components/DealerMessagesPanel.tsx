@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import {
   Send,
   Trash2,
@@ -61,7 +62,7 @@ export function DealerMessagesPanel() {
         await refreshThreads();
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Unable to load messages");
+          handleClientError(err, { fallback: "Unable to load messages" });
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -82,7 +83,7 @@ export function DealerMessagesPanel() {
         prev.map((t) => (t.id === id ? { ...t, unread: false } : t))
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to open conversation");
+      handleClientError(err, { fallback: "Unable to open conversation" });
     }
   };
 
@@ -105,7 +106,7 @@ export function DealerMessagesPanel() {
       setNewMsg("");
       await refreshThreads();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to send message");
+      handleClientError(err, { fallback: "Unable to send message" });
     } finally {
       setSending(false);
     }
@@ -127,7 +128,7 @@ export function DealerMessagesPanel() {
       await refreshThreads();
       await openThread(created.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to start conversation");
+      handleClientError(err, { fallback: "Unable to start conversation" });
     } finally {
       setSending(false);
     }

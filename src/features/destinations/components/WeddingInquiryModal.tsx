@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { X, Calendar, Users, Send, CheckCircle2, Phone, Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { WeddingVenue, WeddingProperty } from "../data/destinations";
 import { useApp } from "@/context/AppContext";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 
 interface WeddingInquiryModalProps {
   item: WeddingVenue | WeddingProperty | null;
@@ -67,9 +68,9 @@ export default function WeddingInquiryModal({
       setSubmitted(true);
     } catch (err) {
       setErrorMsg(
-        err instanceof Error
-          ? err.message
-          : "Unable to send inquiry. Please try again."
+        handleClientError(err, {
+          fallback: "Unable to send inquiry. Please try again.",
+        }),
       );
     } finally {
       setIsLoading(false);

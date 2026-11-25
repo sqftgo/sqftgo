@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
@@ -27,7 +28,7 @@ export default function MyServiceBookingsPage() {
         const res = await servicePlatformService.listMyBookings();
         setItems(res.items);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Unable to load bookings");
+        handleClientError(err, { fallback: "Unable to load bookings" });
       } finally {
         setLoading(false);
       }
@@ -39,7 +40,7 @@ export default function MyServiceBookingsPage() {
       const updated = await servicePlatformService.updateBooking(id, { status: "cancelled" });
       setItems((prev) => prev.map((b) => (b.id === id ? updated : b)));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to cancel");
+      handleClientError(err, { fallback: "Unable to cancel" });
     }
   };
 

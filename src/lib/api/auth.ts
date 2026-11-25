@@ -5,6 +5,7 @@ import type { Database, ProfileRow } from "@/types/database";
 import { getSupabaseEnv, hasServiceRoleKey } from "@/lib/supabase/env";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient as createServerCookieClient } from "@/lib/supabase/server";
+import { toPublicErrorMessage } from "@/lib/api/public-error";
 
 export type ApiAuthResult =
   | { user: User; profile: ProfileRow | null; error: null }
@@ -83,5 +84,53 @@ export function jsonError(
   status = 400,
   extra?: Record<string, unknown>
 ) {
-  return NextResponse.json({ error: message, ...extra }, { status });
+  const publicMessage = toPublicErrorMessage(message, status);
+
+  if (status >= 500) {
+    // Log + alert with the real backend message; client only gets publicMessage.
+    console.error("[api]", status, message, extra ?? "");
+    void import("@/lib/ops/api-alert")
+      .then(async ({ notifyApiJsonError }) => {
+        let path = "/api";
+        let method: string | undefined;
+        try {
+          const { headers } = await import("next/headers");
+          const h = await headers();
+          path = h.get("x-sqftgo-api-path") || path;
+          method = h.get("x-sqftgo-api-method") || undefined;
+        } catch {
+          /* headers() unavailable outside a request context */
+        }
+        notifyApiJsonError({ message, status, path, method, extra });
+      })
+      .catch(() => undefined);
+  }
+
+  // Only allow non-secret structural fields through (never raw provider payloads).
+  const allowedExtraKeys = new Set([
+    "code",
+    "checkoutPath",
+    "resendAfterSeconds",
+    "ok",
+    "db",
+    "checkedAt",
+    "latencyMs",
+    "pauseAfterInactiveDays",
+    "service",
+  ]);
+  const publicExtra = extra
+    ? Object.fromEntries(
+        Object.entries(extra).filter(([key, value]) => {
+          if (!allowedExtraKeys.has(key)) return false;
+          // Block string extras that look like backend dumps.
+          if (typeof value === "string" && value.length > 120) return false;
+          return true;
+        }),
+      )
+    : undefined;
+
+  return NextResponse.json(
+    { error: publicMessage, ...(publicExtra && Object.keys(publicExtra).length ? publicExtra : {}) },
+    { status },
+  );
 }

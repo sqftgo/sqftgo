@@ -3,6 +3,7 @@ export { Badge, StatusBadge, toneFromStatus, type BadgeProps, type BadgeTone } f
 export { SearchInput, type SearchInputProps } from "./SearchInput";
 export { Switch, type SwitchProps } from "./Switch";
 export { Alert, type AlertProps, type AlertVariant } from "./Alert";
+export { Toaster } from "./Toaster";
 export {
   Dialog,
   ConfirmDialog,

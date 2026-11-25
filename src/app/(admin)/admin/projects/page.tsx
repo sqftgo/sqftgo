@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { useApp } from "@/context/AppContext";
 import { projectService } from "@/services";
 import type { Project } from "@/types";
@@ -45,7 +46,7 @@ export default function AdminProjectsPage() {
       const page = await projectService.listPage({ limit: 100, offset: 0 });
       setProjects(page.items.filter((p) => p.status !== "Draft"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load projects");
+      handleClientError(err, { fallback: "Unable to load projects" });
       setProjects([]);
     } finally {
       setLoading(false);
@@ -119,7 +120,7 @@ export default function AdminProjectsPage() {
       setPendingReject(null);
       setRejectReason("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update status");
+      handleClientError(err, { fallback: "Unable to update status" });
     } finally {
       setBusy(false);
     }
@@ -139,7 +140,7 @@ export default function AdminProjectsPage() {
       });
       void invalidateProjects();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update featured flag");
+      handleClientError(err, { fallback: "Unable to update featured flag" });
     } finally {
       setBusy(false);
     }
@@ -160,7 +161,7 @@ export default function AdminProjectsPage() {
       setPendingDelete(null);
       void invalidateProjects();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to delete project");
+      handleClientError(err, { fallback: "Unable to delete project" });
     } finally {
       setBusy(false);
     }

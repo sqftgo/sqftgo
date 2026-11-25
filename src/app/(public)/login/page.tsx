@@ -17,6 +17,11 @@ import { OtpCodeInput } from "@/components/auth/OtpCodeInput";
 import { AuthCitySelect } from "@/components/auth/AuthCitySelect";
 import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, X, Smartphone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  handleClientError,
+  notifySuccess,
+  notifyWarning,
+} from "@/lib/errors/handle-client-error";
 
 const SHOW_DEMO_LOGIN = process.env.NODE_ENV !== "production";
 
@@ -89,9 +94,6 @@ function AuthForm() {
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [formSuccess, setFormSuccess] = useState<string | null>(null);
-
   useEffect(() => {
     if (resendIn <= 0) return;
     const t = setTimeout(() => setResendIn((s) => Math.max(0, s - 1)), 1000);
@@ -102,7 +104,6 @@ function AuthForm() {
     if (activeTab === "signup") {
       setEmail("");
       setPassword("");
-      setFormError(null);
       setSignupStep("details");
       setOtpCode("");
     } else {
@@ -119,7 +120,9 @@ function AuthForm() {
       auth_callback_missing_code: "Google sign-in was cancelled or incomplete.",
       auth_not_configured: "Authentication is not configured on this server.",
     };
-    setFormError(messages[err] ?? "Sign-in failed. Please try again.");
+    handleClientError(messages[err] ?? "Sign-in failed. Please try again.", {
+      tone: "danger",
+    });
   }, [searchParams]);
 
   const redirectAfterAuth = (role: "user" | "broker" | "admin") => {
@@ -146,7 +149,7 @@ function AuthForm() {
   const sendRegisterOtp = async () => {
     const phoneErr = mobileFieldError(countryCode, mobileNumber);
     if (phoneErr) {
-      setFormError(phoneErr);
+      notifyWarning(phoneErr);
       return false;
     }
     const sent = await authService.sendMobileOtp({
@@ -159,12 +162,12 @@ function AuthForm() {
     setDebugCode(sent.debugCode ?? null);
     setOtpCode(sent.debugCode ?? "");
     setSignupStep("otp");
-    setFormSuccess(
+    notifySuccess(
       sent.channel === "dev"
         ? "Dev mode: use the code shown below (MSG91 not configured)."
         : sent.channel === "sms"
           ? "We sent a verification code by SMS."
-          : "We sent a verification code on WhatsApp."
+          : "We sent a verification code on WhatsApp.",
     );
     return true;
   };
@@ -172,7 +175,7 @@ function AuthForm() {
   const sendLoginOtp = async () => {
     const phoneErr = mobileFieldError(countryCode, mobileNumber);
     if (phoneErr) {
-      setFormError(phoneErr);
+      notifyWarning(phoneErr);
       return false;
     }
     const sent = await authService.sendMobileOtp({
@@ -185,40 +188,38 @@ function AuthForm() {
     setDebugCode(sent.debugCode ?? null);
     setOtpCode(sent.debugCode ?? "");
     setMobileLoginStep("otp");
-    setFormSuccess(
+    notifySuccess(
       sent.channel === "dev"
         ? "Dev mode: use the code shown below (MSG91 not configured)."
         : sent.channel === "sms"
           ? "We sent a login code by SMS."
-          : "We sent a login code on WhatsApp."
+          : "We sent a login code on WhatsApp.",
     );
     return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormError(null);
-    setFormSuccess(null);
 
     setIsSubmitting(true);
     try {
       if (activeTab === "signup") {
         if (signupStep === "details") {
           if (email.trim().toLowerCase() === "admin@sqftgo.com") {
-            setFormError("The admin account cannot be registered here.");
+            notifyWarning("The admin account cannot be registered here.");
             return;
           }
           if (!name || !email || !password || !confirmPassword) return;
           if (password.length < 8) {
-            setFormError("Password must be at least 8 characters.");
+            notifyWarning("Password must be at least 8 characters.");
             return;
           }
           if (password !== confirmPassword) {
-            setFormError("Passwords do not match.");
+            notifyWarning("Passwords do not match.");
             return;
           }
           if (!cityId) {
-            setFormError("Select your city.");
+            notifyWarning("Select your city.");
             return;
           }
           await sendRegisterOtp();
@@ -226,7 +227,7 @@ function AuthForm() {
         }
 
         if (!/^[0-9]{6}$/.test(otpCode.trim())) {
-          setFormError("Enter the 6-digit verification code.");
+          notifyWarning("Enter the 6-digit verification code.");
           return;
         }
 
@@ -250,7 +251,7 @@ function AuthForm() {
           setPassword("");
           setConfirmPassword("");
           setSignupStep("details");
-          setFormSuccess(result.message);
+          notifySuccess(result.message);
           return;
         }
         redirectAfterAuth(result.session.role);
@@ -271,7 +272,7 @@ function AuthForm() {
       }
 
       if (!/^[0-9]{6}$/.test(otpCode.trim())) {
-        setFormError("Enter the 6-digit verification code.");
+        notifyWarning("Enter the 6-digit verification code.");
         return;
       }
       const session = await loginWithMobile({
@@ -284,7 +285,7 @@ function AuthForm() {
       if (err instanceof ApiError && err.resendAfterSeconds != null) {
         startOtpCooldown(err.resendAfterSeconds);
       }
-      setFormError(err instanceof Error ? err.message : "Authentication failed");
+      handleClientError(err, { fallback: "Authentication failed" });
     } finally {
       setIsSubmitting(false);
     }
@@ -292,7 +293,6 @@ function AuthForm() {
 
   const handleResendOtp = async () => {
     if (resendIn > 0 || isSubmitting) return;
-    setFormError(null);
     setIsSubmitting(true);
     try {
       if (activeTab === "signup") {
@@ -304,7 +304,7 @@ function AuthForm() {
       if (err instanceof ApiError && err.resendAfterSeconds != null) {
         startOtpCooldown(err.resendAfterSeconds);
       }
-      setFormError(err instanceof Error ? err.message : "Couldn't resend code");
+      handleClientError(err, { fallback: "Couldn't resend code" });
     } finally {
       setIsSubmitting(false);
     }
@@ -313,8 +313,6 @@ function AuthForm() {
   const handleTabToggle = () => {
     const nextTab = activeTab === "login" ? "signup" : "login";
     setActiveTab(nextTab);
-    setFormError(null);
-    setFormSuccess(null);
 
     const params = new URLSearchParams(window.location.search);
     if (nextTab === "signup") {
@@ -326,13 +324,11 @@ function AuthForm() {
   };
 
   const handleGoogleSignIn = async () => {
-    setFormError(null);
-    setFormSuccess(null);
     setIsSubmitting(true);
     try {
       await loginWithGoogle(searchParams.get("next"));
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Google sign-in failed");
+      handleClientError(err, { fallback: "Google sign-in failed" });
       setIsSubmitting(false);
     }
   };
@@ -396,8 +392,6 @@ function AuthForm() {
                   onClick={() => {
                     setLoginMethod("email");
                     setMobileLoginStep("phone");
-                    setFormError(null);
-                    setFormSuccess(null);
                   }}
                   className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
                     loginMethod === "email"
@@ -413,8 +407,6 @@ function AuthForm() {
                   onClick={() => {
                     setLoginMethod("mobile");
                     setMobileLoginStep("phone");
-                    setFormError(null);
-                    setFormSuccess(null);
                   }}
                   className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
                     loginMethod === "mobile"
@@ -460,8 +452,6 @@ function AuthForm() {
                         type="button"
                         disabled={isSubmitting}
                         onClick={() => {
-                          setFormError(null);
-                          setFormSuccess(null);
                           setOtpCode("");
                           setDebugCode(null);
                           if (activeTab === "signup") {
@@ -620,17 +610,6 @@ function AuthForm() {
                 )}
               </AnimatePresence>
 
-              {formError ? (
-                <p className="text-[11px] font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">
-                  {formError}
-                </p>
-              ) : null}
-              {formSuccess ? (
-                <p className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
-                  {formSuccess}
-                </p>
-              ) : null}
-
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -678,7 +657,6 @@ function AuthForm() {
                       onClick={() => {
                         setEmail(account.email);
                         setPassword("");
-                        setFormError(null);
                       }}
                       className="py-1.5 px-2 bg-white hover:bg-slate-100 border border-sand rounded-lg text-[10px] font-bold text-slate-700 cursor-pointer text-center whitespace-nowrap"
                     >

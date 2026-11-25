@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import { PropertyForm, type PropertyFormSubmitData } from "@/features/properties";
@@ -34,7 +35,7 @@ export default function AddPropertyPage() {
         await refreshQuota();
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Unable to check listing slots");
+          handleClientError(err, { fallback: "Unable to check listing slots" });
         }
       } finally {
         if (!cancelled) setLoading(false);

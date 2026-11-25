@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { ArrowDown, ArrowUp, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
 import {
   DashboardPageHeader,
@@ -142,7 +143,7 @@ export default function AdminPricingPage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to save price ranges");
+      handleClientError(err, { fallback: "Unable to save price ranges" });
     } finally {
       setBusy(false);
     }

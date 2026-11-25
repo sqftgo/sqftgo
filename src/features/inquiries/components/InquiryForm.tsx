@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import type { Property } from "@/types";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -85,7 +86,7 @@ export const InquiryForm: React.FC<InquiryFormProps> = ({
       setIsSuccess(true);
       onSuccess?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to send inquiry. Please try again.");
+      handleClientError(err, { fallback: "Unable to send inquiry. Please try again." });
     } finally {
       setIsSubmitting(false);
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { kycService } from "@/services";
 import type { DealerKycRecord } from "@/types";
 import { Alert, Button, FormField, TextInput, TextArea } from "@/components/ui";
@@ -152,7 +153,7 @@ export function DealerKycPanel({
               );
               setKycMessage(`Uploaded ${doc.fileName}`);
             } catch (err) {
-              setKycError(err instanceof Error ? err.message : "Upload failed");
+              handleClientError(err, { fallback: "Upload failed" });
             } finally {
               setKycBusy(false);
               e.target.value = "";
@@ -187,7 +188,7 @@ export function DealerKycPanel({
               setKyc(saved);
               setKycMessage("KYC draft saved");
             } catch (err) {
-              setKycError(err instanceof Error ? err.message : "Save failed");
+              handleClientError(err, { fallback: "Save failed" });
             } finally {
               setKycBusy(false);
             }
@@ -214,7 +215,7 @@ export function DealerKycPanel({
               setKyc(saved);
               setKycMessage("Submitted for admin review");
             } catch (err) {
-              setKycError(err instanceof Error ? err.message : "Submit failed");
+              handleClientError(err, { fallback: "Submit failed" });
             } finally {
               setKycBusy(false);
             }

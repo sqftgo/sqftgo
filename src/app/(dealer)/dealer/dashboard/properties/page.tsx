@@ -8,6 +8,8 @@ import type { Property } from "@/types";
 import { usePropertiesQuery } from "@/hooks/queries/marketplace";
 import { Plus, Edit2, Trash2, ExternalLink, Building2, CheckCircle2, XCircle, Grid, List, MoreVertical } from "lucide-react";
 import { motion } from "framer-motion";
+import { ApiError } from "@/lib/api/client";
+import { toPublicErrorMessage } from "@/lib/api/public-error";
 import {
   DropdownMenu,
   CustomSelect,
@@ -278,11 +280,12 @@ export default function DealerPropertiesPage() {
       {myPropertiesQuery.isError ? (
         <ErrorState
           title="Could not load your listings"
-          message={
+          message={toPublicErrorMessage(
             myPropertiesQuery.error instanceof Error
               ? myPropertiesQuery.error.message
-              : "We couldn't load your property listings. Please try again."
-          }
+              : "We couldn't load your property listings. Please try again.",
+            myPropertiesQuery.error instanceof ApiError ? myPropertiesQuery.error.status : 500,
+          )}
           onRetry={() => void myPropertiesQuery.refetch()}
         />
       ) : propertiesLoading ? (

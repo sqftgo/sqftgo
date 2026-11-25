@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
@@ -146,7 +147,7 @@ export default function ManageServicePage() {
       });
       setMessage("Profile saved.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to save");
+      handleClientError(err, { fallback: "Unable to save" });
     } finally {
       setBusy(false);
     }
@@ -189,7 +190,7 @@ export default function ManageServicePage() {
             setPromoPayments(refreshed.payments);
             setPromo(refreshed.promotion);
           } catch (err) {
-            setError(err instanceof Error ? err.message : "Payment verification failed");
+            handleClientError(err, { fallback: "Payment verification failed" });
           } finally {
             setBusy(false);
           }
@@ -199,7 +200,7 @@ export default function ManageServicePage() {
         },
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to start checkout");
+      handleClientError(err, { fallback: "Unable to start checkout" });
       setBusy(false);
     }
   };
@@ -213,7 +214,7 @@ export default function ManageServicePage() {
       setPromo(res.promotion);
       setMessage("Website URL updated on your public profile.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update website");
+      handleClientError(err, { fallback: "Unable to update website" });
     } finally {
       setBusy(false);
     }
@@ -233,7 +234,7 @@ export default function ManageServicePage() {
       setPortfolioCaption("");
       setMessage("Portfolio image added.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to add image");
+      handleClientError(err, { fallback: "Unable to add image" });
     } finally {
       setBusy(false);
     }
@@ -251,7 +252,7 @@ export default function ManageServicePage() {
       setVerification(v);
       setMessage("Verification submitted for admin review.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to submit verification");
+      handleClientError(err, { fallback: "Unable to submit verification" });
     } finally {
       setBusy(false);
     }
@@ -265,7 +266,7 @@ export default function ManageServicePage() {
       const updated = await servicePlatformService.updateBooking(id, { status });
       setBookings((prev) => prev.map((b) => (b.id === id ? updated : b)));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update booking");
+      handleClientError(err, { fallback: "Unable to update booking" });
     }
   };
 

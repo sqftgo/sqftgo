@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { useApp } from "@/context/AppContext";
 import { propertyService, projectService } from "@/services";
 import type { Project, Property } from "@/types";
@@ -63,7 +64,7 @@ export default function AdminApprovalsPage() {
         ...projectsPage.items.map((item) => ({ kind: "project" as const, item })),
       ]);
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Unable to load approval queue");
+      handleClientError(err, { fallback: "Unable to load approval queue" });
       setQueue([]);
     } finally {
       setLoading(false);
@@ -99,7 +100,7 @@ export default function AdminApprovalsPage() {
       setQueue((prev) => prev.filter((q) => !(q.kind === kind && q.item.id === id)));
       setPreviewProperty((prev) => (prev?.id === id ? null : prev));
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Unable to approve listing");
+      handleClientError(err, { fallback: "Unable to approve listing" });
     } finally {
       setBusy(false);
     }
@@ -148,7 +149,7 @@ export default function AdminApprovalsPage() {
       setPendingReject(null);
       setRejectReason("");
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Unable to reject listing");
+      handleClientError(err, { fallback: "Unable to reject listing" });
     } finally {
       setBusy(false);
     }

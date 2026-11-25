@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { useApp } from "@/context/AppContext";
 import { Tag } from "lucide-react";
 import { TextInput, TextArea } from "@/components/ui";
@@ -79,7 +80,7 @@ export default function AdminCategoriesPage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to add category");
+      handleClientError(err, { fallback: "Unable to add category" });
     } finally {
       setBusy(false);
     }
@@ -89,7 +90,7 @@ export default function AdminCategoriesPage() {
     try {
       await updateCategory(id, { active: !active });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update category");
+      handleClientError(err, { fallback: "Unable to update category" });
     }
   };
 
@@ -124,7 +125,7 @@ export default function AdminCategoriesPage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update category");
+      handleClientError(err, { fallback: "Unable to update category" });
     } finally {
       setBusy(false);
     }
@@ -137,7 +138,7 @@ export default function AdminCategoriesPage() {
         orderedIds.map((id, index) => updateCategory(id, { sortOrder: (index + 1) * 10 }))
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to reorder categories");
+      handleClientError(err, { fallback: "Unable to reorder categories" });
     }
   };
 
@@ -154,7 +155,7 @@ export default function AdminCategoriesPage() {
       });
       setPendingDelete(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to delete category");
+      handleClientError(err, { fallback: "Unable to delete category" });
     } finally {
       setBusy(false);
     }

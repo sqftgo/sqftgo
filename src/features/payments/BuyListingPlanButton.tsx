@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { Button } from "@/components/ui";
 import { listingPlanApi } from "@/services/listing-plans";
 import { openRazorpayCheckout } from "@/lib/razorpay/checkout";
@@ -54,7 +55,7 @@ export function BuyListingPlanButton({ plan, onPaid }: Props) {
       });
       onPaid();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Payment failed");
+      handleClientError(err, { fallback: "Payment failed" });
     } finally {
       setBusy(false);
     }

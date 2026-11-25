@@ -9,6 +9,8 @@ import type { PaginatedResult } from "@/lib/api/client";
 import type { DirectoryProfile, Property, UserProfile } from "@/types";
 import { propertyService } from "@/services";
 import { findMyDirectoryProfile } from "@/lib/ownership";
+import { ApiError } from "@/lib/api/client";
+import { toPublicErrorMessage } from "@/lib/api/public-error";
 
 type UsePropertyMutationsArgs = {
   isLoggedIn: boolean;
@@ -35,12 +37,14 @@ export function usePropertyMutations({
   const propertiesReady = propertiesQuery.isFetched || !hasSupabaseEnv();
   const propertiesLoading =
     propertiesQuery.isPending || (propertiesQuery.isFetching && !propertiesQuery.data);
-  const propertiesError =
-    propertiesQuery.isError && propertiesQuery.error instanceof Error
-      ? propertiesQuery.error.message
-      : propertiesQuery.isError
-        ? "Unable to load properties"
-        : null;
+  const propertiesError = propertiesQuery.isError
+    ? toPublicErrorMessage(
+        propertiesQuery.error instanceof Error
+          ? propertiesQuery.error.message
+          : "Unable to load properties",
+        propertiesQuery.error instanceof ApiError ? propertiesQuery.error.status : 500,
+      )
+    : null;
 
   const refreshProperties = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.properties.all });

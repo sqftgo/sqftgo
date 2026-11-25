@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -103,7 +104,7 @@ export default function DealerRegisterPage() {
       await sendOtp();
       setStep(1);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't send OTP.");
+      handleClientError(err, { fallback: "Couldn't send OTP." });
     } finally {
       setSubmitting(false);
     }
@@ -175,7 +176,7 @@ export default function DealerRegisterPage() {
       setDone(true);
       setTimeout(() => router.push("/dealer/dashboard"), 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to create account.");
+      handleClientError(err, { fallback: "Unable to create account." });
     } finally {
       setSubmitting(false);
     }
@@ -320,7 +321,7 @@ export default function DealerRegisterPage() {
                     try {
                       await sendOtp();
                     } catch (err) {
-                      setError(err instanceof Error ? err.message : "Couldn't resend OTP.");
+                      handleClientError(err, { fallback: "Couldn't resend OTP." });
                     } finally {
                       setSubmitting(false);
                     }

@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { GENERIC_SERVER_ERROR } from "@/lib/api/public-error";
+import { handleClientError } from "@/lib/errors/handle-client-error";
 import { motion } from "framer-motion";
 import {
   Check,
@@ -29,7 +31,6 @@ import type { SubscriptionOverview } from "@/types/billing";
 import { BuyListingPlanButton } from "@/features/payments/BuyListingPlanButton";
 import { listingPlanApi } from "@/services/listing-plans";
 import type { DealerListingQuotaView, ListingPlan } from "@/types/listing-plan";
-import { ApiError } from "@/lib/api/client";
 import {
   DashboardPageHeader,
   Alert,
@@ -102,7 +103,7 @@ export default function DealerSubscriptionPage() {
       setPacks(nextPacks);
       setQuota(nextQuota);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load subscription");
+      handleClientError(err, { fallback: "Failed to load subscription" });
     } finally {
       setLoading(false);
     }
@@ -153,11 +154,10 @@ export default function DealerSubscriptionPage() {
             setNotice("Payment verified — your plan is now active!");
             await load();
           } catch (verifyErr) {
-            setError(
-              verifyErr instanceof Error
-                ? verifyErr.message
-                : "Payment received but verification failed. Refresh in a moment."
-            );
+            handleClientError(verifyErr, {
+              fallback: "Payment received but verification failed. Refresh in a moment.",
+            });
+            setError(GENERIC_SERVER_ERROR);
           } finally {
             setBusyPlan(null);
           }
@@ -166,11 +166,7 @@ export default function DealerSubscriptionPage() {
       });
     } catch (err) {
       setBusyPlan(null);
-      setError(
-        err instanceof ApiError ? err.message
-          : err instanceof Error ? err.message
-          : "Could not start checkout"
-      );
+      handleClientError(err, { fallback: "Could not start checkout" });
     }
   };
 
