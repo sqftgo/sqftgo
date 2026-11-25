@@ -2,6 +2,7 @@ import { type NextRequest } from "next/server";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
 import { canAccessDealerDashboard } from "@/lib/authz";
 import { mapKycDocument } from "@/lib/mappers/kyc";
+import { verifyAllowedKycBytes } from "@/lib/security/image-magic";
 import { kycDocTypeSchema } from "@/lib/validation/kyc";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { hasServiceRoleKey, hasSupabaseEnv } from "@/lib/supabase/env";
@@ -11,12 +12,6 @@ export const runtime = "nodejs";
 
 const BUCKET = "dealer-kyc";
 const MAX_BYTES = 5 * 1024 * 1024;
-const ALLOWED = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "application/pdf",
-]);
 
 export async function POST(request: NextRequest) {
   if (!hasSupabaseEnv()) return jsonError("Supabase is not configured", 503);
@@ -40,7 +35,6 @@ export async function POST(request: NextRequest) {
   const docTypeParsed = kycDocTypeSchema.safeParse(docTypeRaw);
   if (!docTypeParsed.success) return jsonError("Invalid document type");
   if (!(file instanceof File)) return jsonError("file is required");
-  if (!ALLOWED.has(file.type)) return jsonError("Unsupported file type");
   if (file.size > MAX_BYTES) return jsonError("File too large (max 5MB)");
 
   const supabase = createServiceClient();
@@ -58,12 +52,23 @@ export async function POST(request: NextRequest) {
     return jsonError("Cannot upload while KYC is pending or approved", 400);
   }
 
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80);
-  const path = `${user.id}/${row.id}/${crypto.randomUUID()}-${safeName}`;
   const buffer = Buffer.from(await file.arrayBuffer());
+  const magic = verifyAllowedKycBytes(buffer, file.type);
+  if (!magic.ok) return jsonError(magic.error);
+
+  const ext =
+    magic.mime === "application/pdf"
+      ? "pdf"
+      : magic.mime === "image/png"
+        ? "png"
+        : magic.mime === "image/webp"
+          ? "webp"
+          : "jpg";
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80) || `kyc.${ext}`;
+  const path = `${user.id}/${row.id}/${crypto.randomUUID()}-${safeName}`;
 
   const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, buffer, {
-    contentType: file.type,
+    contentType: magic.mime,
     upsert: false,
   });
   if (upErr) return jsonError(upErr.message, 500);

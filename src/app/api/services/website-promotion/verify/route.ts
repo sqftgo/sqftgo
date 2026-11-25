@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
+import { enforceRateLimit } from "@/lib/auth/rate-limit";
 import { activateServiceWebsitePromotion } from "@/lib/billing/activate-website-promotion";
 import { isServiceDirectoryCategory } from "@/features/dealers/lib/is-dealer-category";
 import { mapWebsitePromotionRow } from "@/lib/mappers/website-promotion";
@@ -24,6 +25,15 @@ export async function POST(request: NextRequest) {
   if (!hasServiceRoleKey()) {
     return jsonError("Billing requires SUPABASE_SERVICE_ROLE_KEY", 503);
   }
+
+  const limited = await enforceRateLimit(
+    request,
+    "billing:website-promo-verify",
+    12,
+    60_000,
+    "Too many payment verification attempts. Try again shortly.",
+  );
+  if (limited) return limited;
 
   const config = getRazorpayConfig();
   if (!config) return jsonError("Razorpay is not configured", 503);

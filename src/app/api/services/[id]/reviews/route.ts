@@ -124,7 +124,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         rating: parsed.data.rating,
         title: parsed.data.title,
         body: parsed.data.body,
-        status: "published",
+        // Pending until admin/moderation publishes — blocks spam from going live immediately.
+        status: "pending",
         updated_at: new Date().toISOString(),
       },
       { onConflict: "directory_profile_id,user_id" }

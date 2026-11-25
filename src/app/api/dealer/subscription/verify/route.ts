@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
 import { authenticateApiRequest, jsonError, jsonOk } from "@/lib/api/auth";
+import { enforceRateLimit } from "@/lib/auth/rate-limit";
 import { canAccessDealerDashboard } from "@/lib/authz";
 import { activateDealerSubscription } from "@/lib/billing/activate";
 import { mapDealerSubscription } from "@/lib/mappers/billing";
@@ -20,6 +21,15 @@ export async function POST(request: NextRequest) {
   if (!hasServiceRoleKey()) {
     return jsonError("Billing requires SUPABASE_SERVICE_ROLE_KEY", 503);
   }
+
+  const limited = await enforceRateLimit(
+    request,
+    "billing:subscription-verify",
+    12,
+    60_000,
+    "Too many payment verification attempts. Try again shortly.",
+  );
+  if (limited) return limited;
 
   const config = getRazorpayConfig();
   if (!config) {
