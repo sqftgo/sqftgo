@@ -344,7 +344,11 @@ export const authApi: AuthRepository = {
 
   async getSession() {
     try {
-      return await apiClient<ApiSessionPayload>("/api/auth/me", { method: "GET" });
+      // Anonymous first visits 401 — expected; never toast session probes.
+      return await apiClient<ApiSessionPayload>("/api/auth/me", {
+        method: "GET",
+        toast: false,
+      });
     } catch {
       return null;
     }
